@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TE-TO-KA MASS SORTEOS PRO</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#050505;
+  color:white;
+  text-align:center;
+}
+header{
+  padding:25px 10px;
+  border-bottom:4px solid #38b000;
+}
+h1{
+  color:#39ff14;
+  font-size:34px;
+  margin:0;
+}
+.sub{font-size:17px;margin-top:10px}
+.panel{
+  max-width:900px;
+  margin:20px auto;
+  padding:15px;
+}
+button,input{
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  margin:6px;
+  font-weight:bold;
+}
+button{cursor:pointer}
+.btn-main{background:#38b000;color:white}
+.btn-dark{background:#222;color:white;border:1px solid #38b000}
+input{
+  width:250px;
+  max-width:90%;
+  text-align:center;
+}
+.stats{
+  font-size:18px;
+  margin:15px 0;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  max-width:700px;
+  margin:20px auto;
+  padding:10px;
+}
+.boleto{
+  padding:14px 5px;
+  border-radius:9px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.2s;
+}
+.boleto:hover{transform:scale(1.05)}
+.disponible{background:#16b000;color:white}
+.apartado{background:#ffd60a;color:#111}
+.vendido{background:#d00000;color:white}
+.bloqueado{background:#555;color:white}
+.selected{
+  outline:4px solid white;
+  transform:scale(1.08);
+}
+.card{
+  border:2px solid #38b000;
+  border-radius:14px;
+  padding:20px;
+  max-width:520px;
+  margin:25px auto;
+  background:#111;
+}
+.small{font-size:13px;color:#ccc}
+.footer{
+  margin:30px 0;
+  font-size:13px;
+  color:#aaa;
+}
+.spin-box{
+  display:none;
+  border:2px solid #39ff14;
+  border-radius:15px;
+  max-width:420px;
+  margin:20px auto;
+  padding:20px;
+  background:#111;
+}
+.spin-result{
+  font-size:26px;
+  color:#39ff14;
+  font-weight:bold;
+  margin-top:15px;
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(4,1fr)}
+  h1{font-size:27px}
+  .boleto{font-size:15px}
+
+.spin-box{
+  border:3px solid #39ff14;
+  box-shadow:0 0 25px #39ff14;
+  background:linear-gradient(135deg,#050505,#111,#050505);
+  border-radius:18px;
+  padding:25px;
+  margin:25px auto;
+  max-width:520px;
+}
+
+.spin-result{
+  margin-top:18px;
+  min-height:35px;
+  color:#39ff14;
+  text-shadow:0 0 12px #39ff14;
+}}
+
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🔥 TE-TO-KA MASS SORTEOS PRO 🔥</h1>
+  <div class="sub">Powered by TE-TO-KA SOLUTIONS, LLC</div>
+</header>
+
+<div class="panel">
+
+  <h2>🚘 Premio Principal</h2>
+  <h3>Ford Lobo 2018</h3>
+
+  <button class="btn-main" onclick="numeroSuerte()">🎲 Número de la suerte</button>
+  <button class="btn-dark" onclick="cargarBoletos()">🔄 Actualizar</button>
+  <button class="btn-dark" onclick="mostrarSoloDisponibles()">🟢 Solo disponibles</button>
+  <button class="btn-dark" onclick="mostrarTodos()">👁️ Ver todos</button>
+
+  <br>
+  <input id="buscar" placeholder="Buscar número: 0001" oninput="filtrarNumero()" />
+
+  <div class="stats" id="stats">Cargando números...</div>
+
+<div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
+  <h2>🎰 MASS LUCKY SPIN</h2>
+  <p>Giro promocional sin valor en efectivo</p>
+  <button class="btn-main" onclick="girarLuckySpin()">Girar</button>
+  <div id="spinResult" style="margin-top:18px; min-height:35px; color:#39ff14; font-size:24px; font-weight:bold;"></div>
+</div>
+
+  <div id="grid" class="grid"></div>
+
+  <div class="card">
+    <h2>📲 Apartar / Comprar</h2>
+    <p id="seleccionTexto">Selecciona un número disponible</p>
+
+    <input id="nombre" placeholder="Tu nombre" />
+    <br>
+    <input id="telefono" placeholder="Tu teléfono" />
+    <br>
+    <div id="saldoBox">Saldo: 0 MASS</div>
+    <br>
+<button onclick="recargarSaldo()" style="
+  margin-top:10px;
+  background:#00ff88;
+  color:black;
+  border:none;
+  padding:10px 15px;
+  border-radius:8px;
+  font-weight:bold;
+">
+  Recargar MASS 💰
+</button>
+
+<button onclick="cerrarSesion()" 
+style="
+background:red;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+">
+Cerrar sesión 🚪
+</button>
+
+    <button class="btn-main" onclick="apartarBoleto()">Apartar por WhatsApp</button>
+
+<button class="btn-dark" onclick="registrarPago()">Registrar pago pendiente</button>
+
+<button onclick="comprarConSaldo()" style="
+  background:#00ff88;
+  color:black;
+  border:none;
+  padding:12px;
+  border-radius:10px;
+  font-weight:bold;
+">
+  Comprar con MASS 💰
+</button>
+
+</div>
+
+<div class="card">
+  <h2>👤 Mis boletos</h2>
+  <div id="misBoletos">Cargando tus boletos...</div>
+  <div class="card">
+<h2>🏆 Historial de premios</h2>
+
+<div id="historialPremios">
+Cargando premios...
+</div>
+
+ </div>
+
+  <div class="card">
+    <h2>💳 Métodos de pago</h2>
+    <p><b>Zelle:</b> 9563724890</p>
+    <p><b>Cash App:</b> $MarPer69</p>
+    <p><b>Apple Pay:</b> 9563724890</p>
+    <p>Después de pagar, manda comprobante por WhatsApp.</p>
+  </div>
+
+  <div class="card small">
+    <p>
+      Esta dinámica es organizada por un tercero independiente.
+      TE-TO-KA SOLUTIONS, LLC únicamente proporciona la plataforma tecnológica.
+    </p>
+    <p>Términos y condiciones · Aviso de privacidad · Política de uso aceptable</p>
+  </div>
+
+</div>
+
+<button onclick="abrirAdmin()" style="opacity:0.25; font-size:12px; margin:20px;">
+  ⚙️ Admin
+</button>
+
+<div class="footer">
+  © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+
+function abrirAdmin(){
+  const clave = prompt("Clave de administrador");
+
+  if(clave !== "0910"){
+    alert("Clave incorrecta");
+    return;
+  }
+
+  let numero = prompt("Número a validar, ejemplo: 0009");
+if(!numero) return;
+numero = numero.padStart(4, "0");
+
+  if(!numero) return;
+
+  validarPagoAdmin(numero);
+}
+
+async function validarPagoAdmin(numero){
+
+  const pin = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const { error } = await supabaseClient
+    .from("boletos")
+    .update({
+  estado: "vendido",
+  pin_giro: pin,
+  giro_usado: false
+})
+    .eq("numero", numero);
+
+  if(error){
+    alert("Error validando pago: " + error.message);
+    console.error(error);
+    return;
+  }
+
+  alert("Pago validado.\nNúmero: " + numero + "\nPIN de giro: " + pin);
+
+  cargarBoletos();
+}
+
+const SUPABASE_URL = "https://yrmuxelajgmmonbbvshj.supabase.co";
+const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybXV4ZWxhamdtbW9uYmJ2c2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzgxNDYsImV4cCI6MjA5NDcxNDE0Nn0.mubpd6u9GPuAOovJhhPEFFdR8lLEIXt66pAcTdmXZD4";
+
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+let userActual = localStorage.getItem("mass_user");
+
+async function loginMASS(){
+
+  if(userActual){
+    return;
+  }
+
+  const telefono = prompt("📱 Ingresa tu teléfono");
+
+  if(!telefono){
+    alert("Debes ingresar teléfono");
+    location.reload();
+    return;
+  }
+
+  // 🔐 Buscar usuario
+  const { data } = await supabaseClient
+    .from("usuarios_mass")
+    .select("*")
+    .eq("telefono", telefono)
+    .maybeSingle();
+
+  // 🔥 SI NO EXISTE → REGISTRO
+  if(!data){
+
+    const nuevoPin = prompt("🔐 Crea un PIN de 4 dígitos");
+
+    if(!nuevoPin){
+      alert("Debes crear PIN");
+      location.reload();
+      return;
+    }
+
+    await supabaseClient.from("usuarios_mass").insert({
+      telefono: telefono,
+      pin: nuevoPin
+    });
+
+    usuarioMASS = telefono;
+    localStorage.setItem("mass_user", telefono);
+	
+	userActual = telefono;
+
+    alert("✅ Cuenta creada");
+    return;
+  }
+
+  // 🔥 LOGIN
+  const pinLogin = prompt("🔐 Ingresa tu PIN");
+
+  if(pinLogin !== data.pin){
+    alert("PIN incorrecto ❌");
+    location.reload();
+    return;
+  }
+
+  userActual = telefono;
+
+  localStorage.setItem("mass_user", telefono);
+
+  alert("✅ Bienvenido a MASS");
+}
+
+const WHATSAPP = "19563724890";
+
+let boletos = [];
+let filtrados = [];
+let boletoSeleccionado = null;
+let soloDisponibles = false;
+let usuarioMASS = null;
+
+const RIFA_ID = null;
+
+async function asegurarWallet() {
+  const { data } = await supabaseClient
+    .from("wallets")
+    .select("*")
+    .eq("user_id", userActual)
+    .single();
+
+  if (!data) {
+    await supabaseClient.from("wallets").insert({
+      user_id: userActual,
+      saldo: 0
+    });
+  }
+}
+
+let comprando = false;
+
+async function comprarConSaldo() {
+if (comprando) return;
+comprando = true
+  if (!boletoSeleccionado) {
+    alert("Selecciona un número primero");
+	comprando = false;
+    return;
+  }
+
+  const precioBoleto = 20; // 💰 cambia si quieres
+
+  // 1️⃣ Obtener saldo
+  const { data: wallet } = await supabaseClient
+  .from("wallets")
+  .select("saldo")
+  .eq("user_id", userActual)
+  .maybeSingle();
+
+if (!wallet || wallet.saldo < precioBoleto) {
+  alert("Saldo insuficiente 💸");
+  comprando = false;
+  return;
+}
+
+  // 🔥 Marcar boleto como vendido
+  
+  console.log("ID:", boletoSeleccionado.id);
+console.log("NUMERO:", boletoSeleccionado.numero);
+
+const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
+
+const { data: boletoVendido, error: boletoError } = await supabaseClient
+  .from("boletos")
+  .update({
+    estado: "vendido",
+    pin_giro: pinGiro,
+    giro_usado: false
+  })
+  .eq("id", boletoSeleccionado.id)
+  .eq("estado", "disponible")
+  .select()
+  .single();
+
+if (boletoError || !boletoVendido) {
+  alert("❌ Este boleto ya fue vendido");
+  console.error("ERROR BOLETO:", boletoError);
+
+  boletoSeleccionado = null;
+
+  await cargarBoletos();
+  await cargarMisBoletos();
+  
+  comprando = false;
+
+  return;
+}
+
+// 🧾 Descontar saldo
+const nuevoSaldo = wallet.saldo - precioBoleto;
+
+await supabaseClient
+  .from("wallets")
+  .update({ saldo: nuevoSaldo })
+  .eq("user_id", userActual);
+
+await supabaseClient.from("tickets").insert({
+  user_id: userActual,
+  numero: boletoSeleccionado.numero,
+  pin_giro: pinGiro,
+  monto: precioBoleto,
+  estado: "comprado",
+  giro_usado: false
+});
+
+alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
+
+await supabaseClient
+.from("historial_premios")
+.insert({
+    user_id: userActual,
+    numero: boletoSeleccionado.numero,
+    premio: ganador
+});
+  
+  boletoSeleccionado = null; // 🔥 RESET
+
+  // 4️⃣ Refrescar todo
+  cargarSaldo();
+  cargarBoletos();
+  cargarMisBoletos();
+  
+  comprando = false;
+}
+
+async function recargarSaldo() {
+  const cantidad = prompt("¿Cuánto quieres recargar?");
+
+  if (!cantidad || isNaN(cantidad)) {
+    alert("Cantidad inválida");
+    return;
+  }
+
+  const { data } = await supabaseClient
+    .from("wallets")
+    .select("saldo")
+    .eq("user_id", userActual)
+    .maybeSingle();
+	
+	if (!data) {
+  await supabaseClient.from("wallets").insert({
+    user_id: userActual,
+    saldo: 0
+  });
+
+  alert("Wallet creada. Intenta de nuevo.");
+  return;
+}
+
+  const nuevoSaldo = Number(data.saldo) + Number(cantidad);
+
+  const { error: updateError } = await supabaseClient
+  .from("wallets")
+  .update({ saldo: nuevoSaldo })
+  .eq("user_id", userActual);
+
+if (updateError) {
+  alert("Error al recargar ❌");
+  return;
+}
+
+alert("Saldo actualizado 💰");
+cargarSaldo();
+}  
+
+async function cargarSaldo() {
+  const { data } = await supabaseClient
+    .from("wallets")
+    .select("saldo")
+    .eq("user_id", userActual)
+    .maybeSingle();
+
+  if (!data) {
+  document.getElementById("saldoBox").innerText = "Saldo: 0 MASS";
+  return;
+}
+
+document.getElementById("saldoBox").innerText =
+  "Saldo: " + data.saldo + " MASS";
+}
+
+// 🔥 CARGAR BOLETOS
+async function cargarBoletos(){
+  document.getElementById("stats").innerText = "Cargando números...";
+
+  let query = supabaseClient
+    .from("boletos")
+    .select("*")
+    .order("numero", { ascending: true });
+
+  if(RIFA_ID){
+    query = query.eq("rifa_id", RIFA_ID);
+  }
+
+  const { data, error } = await query;
+
+  if(error){
+  console.error("ERROR SUPABASE:", error);
+  alert(JSON.stringify(error));
+  document.getElementById("stats").innerText = "Error cargando boletos";
+  return;
+}
+
+  boletos = data || [];
+  aplicarFiltros();
+}
+
+// 🔥 FILTROS
+function aplicarFiltros(){
+  const buscar = document.getElementById("buscar").value.trim();
+
+  filtrados = boletos.filter(b => {
+    let pasa = true;
+
+    if(soloDisponibles){
+      pasa = (b.estado || "disponible").toLowerCase() === "disponible";
+    }
+
+    if(buscar){
+      pasa = pasa && String(b.numero).includes(buscar);
+    }
+
+    return pasa;
+  });
+
+  renderBoletos();
+}
+
+// 🔥 RENDER
+function renderBoletos(){
+  const contenedor = document.getElementById("grid");
+  contenedor.innerHTML = "";
+
+  filtrados.forEach(b => {
+    const btn = document.createElement("button");
+    btn.innerText = b.numero;
+
+    if(b.estado === "vendido"){
+  btn.style.background = "#444";
+  btn.style.color = "#fff";
+  btn.disabled = true;
+}
+
+if(b.estado === "apartado"){
+  btn.style.background = "orange";
+  btn.style.color = "#111";
+}
+
+    if (b.estado !== "vendido") {
+  btn.onclick = () => seleccionarBoleto(b);
+}
+
+    contenedor.appendChild(btn);
+  });
+
+  document.getElementById("stats").innerText = filtrados.length + " números cargados";
+}
+
+// 🔥 SELECCIONAR
+function seleccionarBoleto(b){
+
+  if(b.estado === "vendido"){
+    alert("Ese número ya está vendido");
+    return;
+  }
+
+  if(b.estado === "apartado"){
+    alert("Ese número ya está apartado");
+    return;
+  }
+
+  boletoSeleccionado = b;
+  document.getElementById("seleccionTexto").innerText =
+    "Número seleccionado: " + b.numero;
+
+  alert("Seleccionaste número: " + b.numero);
+}
+
+// 🔥 WHATSAPP
+async function apartarWhats(){
+  if(!boletoSeleccionado){
+    alert("Selecciona un número primero");
+    return;
+  }
+
+  const nombre = document.getElementById("nombre").value;
+  const telefono = document.getElementById("telefono").value;
+
+  if(!nombre || !telefono){
+    alert("Escribe tu nombre y teléfono");
+    return;
+  }
+
+  // 🔥 ACTUALIZA EN SUPABASE
+  await supabaseClient
+    .from("boletos")
+    .update({ 
+      estado: "apartado",
+      nombre: nombre,
+      telefono: telefono
+    })
+    .eq("id", boletoSeleccionado.id);
+
+  // 🔥 MENSAJE WHATSAPP
+  const mensaje = `Hola, quiero apartar el número ${boletoSeleccionado.numero}
+Nombre: ${nombre}
+Teléfono: ${telefono}`;
+
+  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`, "_blank");
+
+  // 🔄 REFRESCAR
+  boletoSeleccionado = null;
+  cargarBoletos();
+}
+
+function apartarBoleto(){
+  apartarWhats();
+}
+
+function filtrarNumero(){
+  aplicarFiltros();
+}
+
+function mostrarSoloDisponibles(){
+  soloDisponibles = true;
+  aplicarFiltros();
+}
+
+function mostrarTodos(){
+  soloDisponibles = false;
+  aplicarFiltros();
+}
+
+function numeroSuerte(){
+  const disponibles = boletos.filter(b => (b.estado || "disponible") === "disponible");
+  if(disponibles.length === 0){
+    alert("No hay números disponibles");
+    return;
+  }
+  const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
+  seleccionarBoleto(ganador);
+}
+
+async function registrarPago(){
+  if(!boletoSeleccionado){
+    alert("Selecciona un número primero");
+    return;
+  }
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+
+  if(!nombre || !telefono){
+    alert("Escribe tu nombre y teléfono");
+    return;
+  }
+
+  await supabaseClient
+    .from("boletos")
+    .update({
+  estado: "apartado",
+  nombre: nombre,
+  telefono: telefono,
+  fecha: new Date().toISOString()
+})
+    .eq("id", boletoSeleccionado.numero);
+
+  alert("Pago pendiente de validación por el administrador");
+boletoSeleccionado.estado = "apartado";
+cargarBoletos();
+}
+
+async function girarLuckySpin(pinYaValidado = false){
+
+  if(!boletoSeleccionado){
+    let numeroPin = prompt("Ingresa tu número de boleto, ejemplo: 0002");
+
+    if(!numeroPin){
+      alert("Debes ingresar tu número de boleto");
+      return;
+    }
+
+    numeroPin = numeroPin.trim().padStart(4, "0");
+
+    boletoSeleccionado = boletos.find(b => b.numero === numeroPin);
+
+    if(!boletoSeleccionado){
+      alert("Ese número no existe");
+      return;
+    }
+  }
+
+  if(boletoSeleccionado.estado === "disponible"){
+    alert("Compra un boleto para poder participar");
+    return;
+  }
+
+  if(boletoSeleccionado.estado === "apartado"){
+    alert("Tu pago todavía no ha sido validado");
+    return;
+  }
+
+  if(boletoSeleccionado.estado !== "vendido"){
+    alert("Este boleto no está listo para girar");
+    return;
+  }
+
+  if(boletoSeleccionado.giro_usado === true){
+    alert("Este número ya usó su giro");
+    return;
+  }
+
+  if(!pinYaValidado){
+    const pinInput = prompt("Ingresa tu PIN de giro");
+
+    if(!pinInput){
+      alert("Debes ingresar tu PIN");
+      return;
+    }
+
+    if(pinInput.trim() !== boletoSeleccionado.pin_giro){
+      alert("PIN incorrecto");
+      return;
+    }
+  }
+
+  const premios = [
+    "🔥 Sigue participando",
+    "💚 10% OFF próximo sorteo",
+    "⚡ 25% OFF próximo sorteo",
+    "🎁 Segundo giro",
+    "🎟 Número bonus",
+    "👑 50% OFF próximo sorteo"
+  ];
+
+  let vueltas = 0;
+  const result = document.getElementById("spinResult");
+  const botonSpin = document.querySelector("#spinBox button");
+
+  if(botonSpin){
+    botonSpin.disabled = true;
+    botonSpin.innerText = "Girando... 🎰";
+  }
+
+  if(result){
+    result.style.fontSize = "24px";
+    result.style.fontWeight = "bold";
+    result.style.color = "#39ff14";
+  }
+
+  alert("Girando ruleta 🎰");
+
+  const intervalo = setInterval(async () => {
+    if(result){
+      result.innerText = premios[Math.floor(Math.random() * premios.length)];
+    }
+
+    vueltas++;
+
+    if(vueltas > 30){
+      clearInterval(intervalo);
+
+      const ganador = premios[Math.floor(Math.random() * premios.length)];
+
+      if(result){
+        result.innerText = "🏆 " + ganador;
+      }
+
+      let codigoCupon = null;
+
+      if(
+        ganador.includes("10% OFF") ||
+        ganador.includes("25% OFF") ||
+        ganador.includes("50% OFF") ||
+        ganador.includes("Número bonus")
+      ){
+        codigoCupon = "TK-" + Math.floor(100000 + Math.random() * 900000);
+
+        await supabaseClient.from("cupones").insert({
+          numero: boletoSeleccionado.numero,
+          premio: ganador,
+          codigo: codigoCupon,
+          usado: false
+        });
+      }
+
+      const giroRespuesta = await supabaseClient.from("giros").insert({
+        numero: boletoSeleccionado.numero,
+        premio: ganador,
+        pin_giro: boletoSeleccionado.pin_giro,
+        codigo: codigoCupon
+      });
+
+      if(giroRespuesta.error){
+        console.error("Error guardando giro:", giroRespuesta.error);
+      }
+
+      if(ganador.includes("Segundo giro")){
+        await supabaseClient.from("boletos").update({
+          giro_usado: false
+        }).eq("id", boletoSeleccionado.id);
+
+        await supabaseClient.from("tickets").update({
+          giro_usado: false
+        })
+        .eq("numero", boletoSeleccionado.numero)
+        .eq("user_id", userActual);
+
+        boletoSeleccionado.giro_usado = false;
+
+        if(botonSpin){
+          botonSpin.disabled = false;
+          botonSpin.innerText = "Usar segundo giro 🎰";
+        }
+
+        alert("🎁 Ganaste un segundo giro, vuelve a intentar");
+      }else{
+        const usadoRespuesta = await supabaseClient.from("boletos").update({
+          giro_usado: true
+        }).eq("id", boletoSeleccionado.id);
+
+        if(usadoRespuesta.error){
+          console.error("Error marcando giro usado:", usadoRespuesta.error);
+          alert("El giro salió, pero no se pudo marcar como usado");
+          return;
+        }
+
+        await supabaseClient.from("tickets").update({
+          giro_usado: true
+        })
+        .eq("numero", boletoSeleccionado.numero)
+        .eq("user_id", userActual);
+
+        boletoSeleccionado.giro_usado = true;
+
+        if(botonSpin){
+          botonSpin.disabled = false;
+          botonSpin.innerText = "Girar 🎰";
+        }
+      }
+
+      cargarMisBoletos();
+      cargarBoletos();
+
+      if(codigoCupon){
+        alert("MASS LUCKY SPIN: " + ganador + "\nCódigo para próximo sorteo: " + codigoCupon);
+      }else{
+        alert("MASS LUCKY SPIN: " + ganador);
+      }
+
+      setTimeout(() => {
+        if(!ganador.includes("Segundo giro")){
+          if(result){
+            result.innerText = "";
+          }
+
+          if(botonSpin){
+            botonSpin.innerText = "Girar 🎰";
+            botonSpin.disabled = false;
+          }
+
+          boletoSeleccionado = null;
+        }
+      }, 3000);
+    }
+  }, 90);
+}
+
+async function cargarHistorialPremios(){
+
+    const { data, error } = await supabaseClient
+    .from("historial_premios")
+    .select("*")
+    .eq("user_id", userActual)
+    .order("fecha", { ascending:false });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    const box = document.getElementById("historialPremios");
+
+    if(!data.length){
+        box.innerHTML = "Sin premios todavía";
+        return;
+    }
+
+    box.innerHTML = data.map(p => `
+        <div style="
+            background:#111;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:10px;
+        ">
+            🎟️ ${p.numero}<br>
+            🏆 ${p.premio}<br>
+            📅 ${new Date(p.fecha).toLocaleString()}
+        </div>
+    `).join("");
+
+}
+
+async function cargarMisBoletos(){
+  const { data, error } = await supabaseClient
+    .from("tickets")
+    .select("*")
+    .eq("user_id", userActual)
+    .order("fecha", { ascending: false });
+
+  if(error){
+  console.error("ERROR MIS BOLETOS:", error);
+  document.getElementById("misBoletos").innerText =
+    "Error cargando boletos: " + error.message;
+  return;
+}
+
+  document.getElementById("misBoletos").innerHTML =
+    data.map(t => `
+      <div style="
+        border:1px solid #38b000;
+        border-radius:10px;
+        padding:10px;
+        margin:10px 0;
+      ">
+        🎟️ Boleto: <b>${t.numero}</b><br>
+        🎰 PIN: <b>${t.pin_giro}</b><br>
+        ${t.giro_usado
+ ? "❌ Giro usado"
+ : `<button
+      onclick="usarGiro('${t.numero}','${t.pin_giro}')"
+      style="
+        margin-top:8px;
+        background:#00ff88;
+        color:black;
+        border:none;
+        padding:8px 12px;
+        border-radius:8px;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      🎰 USAR GIRO
+    </button>`
+}
+      </div>
+    `).join("");
+}
+
+async function usarGiro(numero, pin){
+
+  const inputPin = prompt("🎰 Confirma tu PIN para usar el giro:");
+
+  if(inputPin !== pin){
+    alert("PIN incorrecto ❌");
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("boletos")
+    .select("*")
+    .eq("numero", numero)
+    .single();
+
+  if(error || !data){
+    alert("No se encontró el boleto ❌");
+    return;
+  }
+
+  boletoSeleccionado = data;
+
+  girarLuckySpin(true);
+}
+
+function cerrarSesion(){
+
+    localStorage.removeItem("mass_user");
+
+    alert("Sesión cerrada 👋");
+
+    location.reload();
+
+}
+
+// Realtime
+loginMASS().then(() => {
+
+    asegurarWallet().then(() => {
+        cargarSaldo();
+        cargarBoletos();
+        cargarMisBoletos();
+		cargarHistorialPremios();
+    });
+
+});
+
+</script>
+
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+OneSignalDeferred.push(async function(OneSignal) {
+
+  await OneSignal.init({
+    appId: "151b8694-aaa9-45d1-a6ee-4d49f715ac6f",
+    notifyButton: {
+      enable: true,
+    },
+    allowLocalhostAsSecureOrigin: true
+  });
+
+});
+</script>
+
+</body>
+</html>
