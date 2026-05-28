@@ -1070,7 +1070,10 @@ OneSignalDeferred.push(async function(OneSignal) {
     notifyButton: {
       enable: true,
     },
-    allowLocalhostAsSecureOrigin: true
+    allowLocalhostAsSecureOrigin: true,
+
+ serviceWorkerPath: "onesignalsdkworker.js",
+serviceWorkerUpdaterPath: "onesignalsdkupdaterworker.js",
   });
 
 });
