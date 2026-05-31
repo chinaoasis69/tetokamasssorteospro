@@ -470,17 +470,27 @@ await supabaseClient.from("tickets").insert({
   giro_usado: false
 });
 	
-const { error: notifError } = await supabaseClient
+await supabaseClient
 .from("notificaciones")
 .insert({
-  titulo: "🎟️ Nuevo boleto vendido",
-  mensaje: "Se vendió el boleto " + boletoSeleccionado.numero,
-  tipo: "general"
+    titulo: "🎟️ Nuevo boleto vendido",
+    mensaje: "Se vendió el boleto " + boletoSeleccionado.numero,
+    tipo: "general"
 });
 
-if (notifError) {
-  alert("Error notificación: " + notifError.message);
-  console.error(notifError);
+const { count } = await supabaseClient
+.from("boletos")
+.select("*", { count: "exact", head: true })
+.eq("estado", "vendido");
+
+if (count === 100) {
+    await supabaseClient
+    .from("notificaciones")
+    .insert({
+        titulo: "🏆 Sorteo lleno",
+        mensaje: "¡El último boleto acaba de venderse! Mucha suerte para todos los participantes. 🍀",
+        tipo: "general"
+    });
 }
 	
 alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
