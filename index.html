@@ -1084,6 +1084,16 @@ document.getElementById("historialSorteos").innerHTML =
 return;
 }
 
+const { data: sorteos } = await supabaseClient
+.from("sorteos")
+.select("*");
+
+let mapaSorteos = {};
+
+(sorteos || []).forEach(s => {
+  mapaSorteos[s.id] = s;
+});	
+
 let agrupados = {};
 
 data.forEach(t => {
@@ -1112,8 +1122,9 @@ Object.keys(agrupados).forEach(rifa => {
     margin:10px 0;
   ">
 
-    <h3>🎟️ Sorteo: ${rifa}</h3>
-
+    <h3>🚘 ${mapaSorteos[rifa]?.nombre || rifa}</h3>
+    <p>🏆 ${mapaSorteos[rifa]?.premio || ""}</p>
+    <p>📅 ${mapaSorteos[rifa]?.fecha_sorteo || ""}</p>
     <p>Boletos comprados: <b>${agrupados[rifa].length}</b></p>
 
     <button onclick="document.getElementById('boletos_${idSeguro}').style.display =
