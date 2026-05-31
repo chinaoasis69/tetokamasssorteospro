@@ -477,6 +477,7 @@ await supabaseClient
   .eq("user_id", userActual);
 await supabaseClient.from("tickets").insert({
   user_id: userActual,
+  rifa_id: rifaActual,	
   numero: boletoSeleccionado.numero,
   pin_giro: pinGiro,
   monto: precioBoleto,
