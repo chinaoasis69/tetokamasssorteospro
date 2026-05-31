@@ -236,6 +236,14 @@ Cerrar sesión 🚪
 <div class="card">
   <h2>👤 Mis boletos</h2>
   <div id="misBoletos">Cargando tus boletos...</div>
+<div class="card">
+<h2>📜 Historial de Sorteos</h2>
+
+<div id="historialSorteos">
+Cargando historial...
+</div>
+
+</div>	
   <div class="card">
 <h2>🏆 Historial de premios</h2>
 
@@ -525,7 +533,7 @@ if (count === 0) {
   cargarSaldo();
   cargarBoletos();
   cargarMisBoletos();
-  
+  cargarHistorialSorteos();
   comprando = false;
 }
 
@@ -1061,7 +1069,64 @@ async function cargarMisBoletos(){
       </div>
     `).join("");
 }
+	
+async function cargarHistorialSorteos(){
 
+const { data, error } = await supabaseClient
+.from("tickets")
+.select("*")
+.eq("user_id", userActual)
+.order("fecha",{ ascending:false });
+
+if(error){
+document.getElementById("historialSorteos").innerHTML =
+"Error cargando historial";
+return;
+}
+
+let agrupados = {};
+
+data.forEach(t => {
+
+const key = t.rifa_id || "SIN_RIFA";
+
+if(!agrupados[key]){
+agrupados[key] = [];
+}
+
+agrupados[key].push(t);
+
+});
+
+let html = "";
+
+Object.keys(agrupados).forEach(rifa => {
+
+html += `
+<div style="
+border:1px solid #38b000;
+border-radius:10px;
+padding:10px;
+margin:10px 0;
+">
+
+<h3>🎟️ Sorteo: ${rifa}</h3>
+
+<p>
+Boletos comprados:
+<b>${agrupados[rifa].length}</b>
+</p>
+
+</div>
+`;
+
+});
+
+document.getElementById("historialSorteos").innerHTML =
+html || "Sin historial";
+
+}
+	
 async function usarGiro(numero, pin){
 
   const inputPin = prompt("🎰 Confirma tu PIN para usar el giro:");
