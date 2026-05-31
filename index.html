@@ -205,6 +205,21 @@ Cerrar sesión 🚪
 
 <button class="btn-dark" onclick="registrarPago()">Registrar pago pendiente</button>
 
+<br><br>
+
+<input
+  type="file"
+  id="comprobante"
+  accept="image/*,.pdf"
+  style="
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    margin-top:10px;
+  "
+>	  
+
 <button onclick="comprarConSaldo()" style="
   background:#00ff88;
   color:black;
@@ -754,7 +769,7 @@ async function registrarPago(){
 })
     .eq("id", boletoSeleccionado.numero);
 
-await supabaseClient
+	await supabaseClient
 .from("notificaciones")
 .insert({
   titulo: "📄 Pago pendiente",
