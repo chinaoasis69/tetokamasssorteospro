@@ -1092,14 +1092,20 @@ let mapaSorteos = {};
 
 (sorteos || []).forEach(s => {
   mapaSorteos[s.id] = s;
-});	
-
+});
+	
+console.log("SORTEOS", sorteos);
+console.log("MAPA", mapaSorteos);
+	
 let agrupados = {};
 
 data.forEach(t => {
 
 const key = t.rifa_id || "SIN_RIFA";
-
+	
+console.log("KEY", key);
+console.log("ENCONTRADO", mapaSorteos[key]);
+	
 if(!agrupados[key]){
 agrupados[key] = [];
 }
