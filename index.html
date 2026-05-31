@@ -321,7 +321,7 @@ const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 let userActual = localStorage.getItem("mass_user");
-
+const rifaActual = "00000000-0000-0000-0000-000000000001";
 async function loginMASS(){
 
   if(userActual){
@@ -491,6 +491,7 @@ await supabaseClient
 .from("historial_premios")
 .insert({
     user_id: userActual,
+	rifa_id: rifaActual,
     numero: boletoSeleccionado.numero,
     premio: ganador
 });
@@ -1019,6 +1020,7 @@ async function cargarMisBoletos(){
     .from("tickets")
     .select("*")
     .eq("user_id", userActual)
+    .eq("rifa_id", rifaActual)
     .order("fecha", { ascending: false });
 
   if(error){
