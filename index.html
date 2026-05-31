@@ -1102,23 +1102,35 @@ let html = "";
 
 Object.keys(agrupados).forEach(rifa => {
 
-html += `
-<div style="
-border:1px solid #38b000;
-border-radius:10px;
-padding:10px;
-margin:10px 0;
-">
+  const idSeguro = rifa.replaceAll("-", "_");
 
-<h3>🎟️ Sorteo: ${rifa}</h3>
+  html += `
+  <div style="
+    border:1px solid #38b000;
+    border-radius:10px;
+    padding:10px;
+    margin:10px 0;
+  ">
 
-<p>
-Boletos comprados:
-<b>${agrupados[rifa].length}</b>
-</p>
+    <h3>🎟️ Sorteo: ${rifa}</h3>
 
-</div>
-`;
+    <p>Boletos comprados: <b>${agrupados[rifa].length}</b></p>
+
+    <button onclick="document.getElementById('boletos_${idSeguro}').style.display =
+    document.getElementById('boletos_${idSeguro}').style.display === 'none' ? 'block' : 'none'">
+      👁 Ver boletos
+    </button>
+
+    <div id="boletos_${idSeguro}" style="display:none; margin-top:10px;">
+      ${agrupados[rifa].map(t => `
+        <div>
+          🎟️ Boleto: <b>${t.numero}</b> — 🎰 PIN: <b>${t.pin_giro}</b>
+        </div>
+      `).join("")}
+    </div>
+
+  </div>
+  `;
 
 });
 
