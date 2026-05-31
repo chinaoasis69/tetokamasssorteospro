@@ -492,6 +492,29 @@ await supabaseClient
     numero: boletoSeleccionado.numero,
     premio: ganador
 });
+
+await supabaseClient
+.from("notificaciones")
+.insert({
+    titulo: "🎉 Premio ganado",
+    mensaje: "El boleto " + boletoSeleccionado.numero + " ganó: " + ganador,
+    tipo: "general"
+});
+
+const { count } = await supabaseClient
+  .from("boletos")
+  .select("*", { count: "exact", head: true })
+  .eq("estado", "disponible");
+
+if (count === 0) {
+  await supabaseClient
+    .from("notificaciones")
+    .insert({
+      titulo: "🏆 Sorteo lleno",
+      mensaje: "🎉 ¡El último boleto acaba de venderse! Mucha suerte para todos los participantes. 🍀",
+      tipo: "general"
+    });
+}	
   
   boletoSeleccionado = null; // 🔥 RESET
 
@@ -744,6 +767,14 @@ async function registrarPago(){
   fecha: new Date().toISOString()
 })
     .eq("id", boletoSeleccionado.numero);
+
+await supabaseClient
+.from("notificaciones")
+.insert({
+  titulo: "📄 Pago pendiente",
+  mensaje: "Hay un pago pendiente por revisar del boleto " + boletoSeleccionado.numero,
+  tipo: "general"
+});	
 
   alert("Pago pendiente de validación por el administrador");
 boletoSeleccionado.estado = "apartado";
