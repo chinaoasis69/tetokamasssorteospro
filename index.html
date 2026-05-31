@@ -473,7 +473,7 @@ await supabaseClient.from("tickets").insert({
 const { count } = await supabaseClient
 .from("boletos")
 .select("*", { count: "exact", head: true })
-.eq("estado", "vendido");
+.eq("estado", "comprado");
 
 if (count === 100) {
     await supabaseClient
