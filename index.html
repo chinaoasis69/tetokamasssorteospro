@@ -469,14 +469,6 @@ await supabaseClient.from("tickets").insert({
   estado: "comprado",
   giro_usado: false
 });
-	
-await supabaseClient
-.from("notificaciones")
-.insert({
-    titulo: "🎟️ Nuevo boleto vendido",
-    mensaje: "Se vendió el boleto " + boletoSeleccionado.numero,
-    tipo: "general"
-});
 
 const { count } = await supabaseClient
 .from("boletos")
@@ -491,6 +483,7 @@ if (count === 100) {
         mensaje: "¡El último boleto acaba de venderse! Mucha suerte para todos los participantes. 🍀",
         tipo: "general"
     });
+}
 	
 alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
 
