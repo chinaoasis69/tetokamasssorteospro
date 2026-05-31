@@ -460,7 +460,6 @@ await supabaseClient
   .from("wallets")
   .update({ saldo: nuevoSaldo })
   .eq("user_id", userActual);
-
 await supabaseClient.from("tickets").insert({
   user_id: userActual,
   numero: boletoSeleccionado.numero,
@@ -470,21 +469,6 @@ await supabaseClient.from("tickets").insert({
   giro_usado: false
 });
 
-const { count } = await supabaseClient
-.from("boletos")
-.select("*", { count: "exact", head: true })
-.eq("estado", "comprado");
-
-if (count === 100) {
-    await supabaseClient
-    .from("notificaciones")
-    .insert({
-        titulo: "🏆 Sorteo lleno",
-        mensaje: "¡El último boleto acaba de venderse! Mucha suerte para todos los participantes. 🍀",
-        tipo: "general"
-    });
-}
-	
 alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
 
 await supabaseClient
