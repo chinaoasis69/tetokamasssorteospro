@@ -469,15 +469,20 @@ await supabaseClient.from("tickets").insert({
   estado: "comprado",
   giro_usado: false
 });
-
-await supabaseClient
+	
+const { error: notifError } = await supabaseClient
 .from("notificaciones")
 .insert({
   titulo: "🎟️ Nuevo boleto vendido",
   mensaje: "Se vendió el boleto " + boletoSeleccionado.numero,
   tipo: "general"
-});	
+});
 
+if (notifError) {
+  alert("Error notificación: " + notifError.message);
+  console.error(notifError);
+}
+	
 alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
 
 await supabaseClient
