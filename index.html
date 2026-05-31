@@ -369,7 +369,8 @@ async function loginMASS(){
 
     usuarioMASS = telefono;
     localStorage.setItem("mass_user", telefono);
-	
+	localStorage.setItem("mass_telefono", telefono);
+	  
 	userActual = telefono;
 
     alert("✅ Cuenta creada");
@@ -388,7 +389,8 @@ async function loginMASS(){
   userActual = telefono;
 
   localStorage.setItem("mass_user", telefono);
-
+  localStorage.setItem("mass_telefono", telefono);
+	
   alert("✅ Bienvenido a MASS");
 }
 
@@ -1026,9 +1028,9 @@ async function cargarHistorialPremios(){
 async function cargarMisBoletos(){
   const { data, error } = await supabaseClient
     .from("tickets")
-    .select("*")
-    .eq("user_id", userActual)
+    .select("*") 
     .eq("rifa_id", rifaActual)
+	.or(`user_id.eq.${userActual},telefono.eq.${localStorage.getItem("mass_telefono")}`)	
     .order("fecha", { ascending: false });
 
   if(error){
