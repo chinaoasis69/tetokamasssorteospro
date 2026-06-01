@@ -1024,7 +1024,7 @@ async function cargarHistorialPremios(){
 
 async function cargarMisBoletos(){
   const { data, error } = await supabaseClient
-    .from("tickets")
+    .from("boletos")
     .select("*") 
     .eq("rifa_id", rifaActual)
 	.or(`user_id.eq.${userActual},telefono.eq.${localStorage.getItem("mass_telefono")}`)	
