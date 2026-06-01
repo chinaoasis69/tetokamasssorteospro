@@ -304,13 +304,15 @@ async function validarPagoAdmin(numero){
   const pin = Math.floor(100000 + Math.random() * 900000).toString();
 
   const { error } = await supabaseClient
-    .from("boletos")
-    .update({
-  estado: "vendido",
-  pin_giro: pin,
-  giro_usado: false
-})
-    .eq("numero", numero);
+  .from("boletos")
+  .update({
+    estado: "vendido",
+    pin_giro: pin,
+    giro_usado: false,
+    fecha: new Date().toISOString()
+  })
+  .eq("numero", numero)
+  .eq("estado", "apartado");
 
   if(error){
     alert("Error validando pago: " + error.message);
@@ -1027,7 +1029,8 @@ async function cargarMisBoletos(){
     .from("boletos")
     .select("*") 
     .eq("rifa_id", rifaActual)
-	.eq("telefono", localStorage.getItem("mass_telefono"))	
+	.eq("telefono", localStorage.getItem("mass_telefono"))
+	.eq("estado", "vendido")  
     .order("fecha", { ascending: false });
 
   if(error){
