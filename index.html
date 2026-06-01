@@ -1027,7 +1027,7 @@ async function cargarMisBoletos(){
     .from("boletos")
     .select("*") 
     .eq("rifa_id", rifaActual)
-	.or(`user_id.eq.${userActual},telefono.eq.${localStorage.getItem("mass_telefono")}`)	
+	.eq("telefono", localStorage.getItem("mass_telefono"))	
     .order("fecha", { ascending: false });
 
   if(error){
