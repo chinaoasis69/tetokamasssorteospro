@@ -714,7 +714,7 @@ async function apartarWhats(){
     .update({ 
       estado: "apartado",
       nombre: nombre,
-      telefono: telefono
+      telefono: telefono,
 	  rifa_id: rifaActual
     })
     .eq("id", boletoSeleccionado.id);
