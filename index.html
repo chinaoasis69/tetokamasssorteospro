@@ -715,6 +715,7 @@ async function apartarWhats(){
       estado: "apartado",
       nombre: nombre,
       telefono: telefono
+	  rifa_id: rifaActual
     })
     .eq("id", boletoSeleccionado.id);
 
@@ -1028,13 +1029,14 @@ async function cargarHistorialPremios(){
 
 async function cargarMisBoletos(){
 const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
-	
-  const { data, error } = await supabaseClient
-    .from("boletos")
-    .select("*") 
-    .eq("telefono", tel)
-	.eq("estado", "vendido")  
-    .order("fecha", { ascending: false });
+
+const { data, error } = await supabaseClient
+  .from("boletos")
+  .select("*")
+  .eq("rifa_id", rifaActual)
+  .eq("telefono", tel)
+  .eq("estado", "vendido")
+  .order("fecha", { ascending:false });
 
   if(error){
   console.error("ERROR MIS BOLETOS:", error);
@@ -1084,6 +1086,7 @@ const { data, error } = await supabaseClient
   .select("*")
   .eq("telefono", tel)
   .eq("estado", "vendido")
+  .neq("rifa_id", rifaActual)	
   .order("fecha", { ascending:false });
 
 if(error){
