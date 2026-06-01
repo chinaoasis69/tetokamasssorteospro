@@ -446,18 +446,15 @@ if (!wallet || wallet.saldo < precioBoleto) {
 }
 
   // 🔥 Marcar boleto como vendido
-  
-  console.log("ID:", boletoSeleccionado.id);
-console.log("NUMERO:", boletoSeleccionado.numero);
-
-const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
-
-const { data: boletoVendido, error: boletoError } = await supabaseClient
+  const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
+  const { data: boletoVendido, error: boletoError } = await supabaseClient
   .from("boletos")
   .update({
     estado: "vendido",
     pin_giro: pinGiro,
     giro_usado: false
+	nombre: document.getElementById("nombre").value.trim(),
+    telefono: localStorage.getItem("mass_telefono"),  
   })
   .eq("id", boletoSeleccionado.id)
   .eq("estado", "disponible")
