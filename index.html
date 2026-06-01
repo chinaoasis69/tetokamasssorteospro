@@ -1077,17 +1077,22 @@ const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 	
 async function cargarHistorialSorteos(){
 
+const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
+
 const { data, error } = await supabaseClient
-.from("boletos")
-.select("*")
-.eq("telefono", localStorage.getitem("mass_telefono"))
-.eq("estado", "vendido")
-.order("fecha",{ ascending:false });
+  .from("boletos")
+  .select("*")
+  .eq("telefono", tel)
+  .eq("estado", "vendido")
+  .order("fecha", { ascending:false });
 
 if(error){
-document.getElementById("historialSorteos").innerHTML =
-"Error cargando historial";
-return;
+  console.error("ERROR HISTORIAL:", error);
+
+  document.getElementById("historialSorteos").innerHTML =
+    "Error cargando historial: " + error.message;
+
+  return;
 }
 
 const { data: sorteos } = await supabaseClient
