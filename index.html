@@ -452,7 +452,7 @@ if (!wallet || wallet.saldo < precioBoleto) {
   .update({
     estado: "vendido",
     pin_giro: pinGiro,
-    giro_usado: false
+    giro_usado: false,
 	nombre: document.getElementById("nombre").value.trim(),
     telefono: localStorage.getItem("mass_telefono"),  
   })
