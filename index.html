@@ -245,10 +245,19 @@ Cargando historial...
 
 </div>	
   <div class="card">
-<h2>🏆 Historial de premios</h2>
+<h2>🎁 Mis Premios</h2>
 
-<div id="historialPremios">
-Cargando premios...
+<p>
+  Premios ganados:
+  <span id="contadorPremios">0</span>
+</p>
+
+<button onclick="verPremios()">
+  🎁 Ver mis premios
+</button>
+
+<div id="historialPremios" style="display:none;">
+  Cargando premios...
 </div>
 
  </div>
@@ -1207,10 +1216,18 @@ async function cargarHistorialPremios(){
     }
 
     if(!data || data.length === 0){
-        document.getElementById("historialPremios").innerHTML =
-        "🏆 Sin premios todavía";
-        return;
-    }
+
+    const contador = document.getElementById("contadorPremios");
+    if(contador) contador.innerText = "0";
+
+    document.getElementById("historialPremios").innerHTML =
+    "🏆 Sin premios todavía";
+
+    return;
+}
+
+	const contador = document.getElementById("contadorPremios");
+if(contador) contador.innerText = data.length;
 
     document.getElementById("historialPremios").innerHTML =
     data.map(p => `
@@ -1250,6 +1267,18 @@ async function usarGiro(numero, pin){
   boletoSeleccionado = data;
 
   girarLuckySpin(true);
+}
+
+	function verPremios(){
+
+    const div = document.getElementById("historialPremios");
+
+    if(div.style.display === "none"){
+        div.style.display = "block";
+    }else{
+        div.style.display = "none";
+    }
+
 }
 
 function cerrarSesion(){
