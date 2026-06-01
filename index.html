@@ -309,7 +309,8 @@ async function validarPagoAdmin(numero){
     estado: "vendido",
     pin_giro: pin,
     giro_usado: false,
-    fecha: new Date().toISOString()
+    fecha: new Date().toISOString(),
+	rifa_id: rifaActual
   })
   .eq("numero", numero)
   .eq("estado", "apartado");
@@ -458,7 +459,8 @@ if (!wallet || wallet.saldo < precioBoleto) {
     pin_giro: pinGiro,
     giro_usado: false,
 	nombre: document.querySelector('input[placeholder="Tu nombre"]').value.trim(),
-    telefono: localStorage.getItem("mass_telefono") || userActual  
+    telefono: localStorage.getItem("mass_telefono") || userActual,
+	rifa_id: rifaActual
   })
   .eq("id", boletoSeleccionado.id)
   .eq("estado", "disponible")
@@ -779,9 +781,10 @@ async function registrarPago(){
   estado: "apartado",
   nombre: nombre,
   telefono: telefono,
-  fecha: new Date().toISOString()
+  fecha: new Date().toISOString(),
+  rifa_id: rifaActual
 })
-    .eq("id", boletoSeleccionado.numero);
+    .eq("id", boletoSeleccionado.id);
 
 	await supabaseClient
 .from("notificaciones")
@@ -1033,7 +1036,6 @@ const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
-  .eq("rifa_id", rifaActual)
   .eq("telefono", tel)
   .eq("estado", "vendido")
   .order("fecha", { ascending:false });
@@ -1042,6 +1044,12 @@ const { data, error } = await supabaseClient
   console.error("ERROR MIS BOLETOS:", error);
   document.getElementById("misBoletos").innerText =
     "Error cargando boletos: " + error.message;
+  return;
+}
+
+	if(!data || data.length === 0){
+  document.getElementById("misBoletos").innerHTML =
+    "No tienes boletos pagados en esta rifa todavía";
   return;
 }
 
