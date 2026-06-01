@@ -1036,6 +1036,7 @@ const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
+  .eq("rifa_id", rifaActual)
   .eq("telefono", tel)
   .eq("estado", "vendido")
   .order("fecha", { ascending:false });
