@@ -453,8 +453,8 @@ if (!wallet || wallet.saldo < precioBoleto) {
     estado: "vendido",
     pin_giro: pinGiro,
     giro_usado: false,
-	nombre: document.getElementById("nombre").value.trim(),
-    telefono: localStorage.getItem("mass_telefono"),  
+	nombre: document.querySelector('input[placeholder="Tu nombre"]').value.trim(),
+    telefono: localStorage.getItem("mass_telefono") || userActual  
   })
   .eq("id", boletoSeleccionado.id)
   .eq("estado", "disponible")
