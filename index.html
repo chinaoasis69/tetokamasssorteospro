@@ -1174,6 +1174,42 @@ document.getElementById("historialSorteos").innerHTML =
 html || "Sin historial";
 
 }
+
+async function cargarHistorialPremios(){
+
+    const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
+
+    const { data, error } = await supabaseClient
+        .from("historial_premios")
+        .select("*")
+        .eq("user_id", tel)
+        .order("fecha", { ascending:false });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    if(!data || data.length === 0){
+        document.getElementById("historialPremios").innerHTML =
+        "🏆 Sin premios todavía";
+        return;
+    }
+
+    document.getElementById("historialPremios").innerHTML =
+    data.map(p => `
+        <div style="
+            border:1px solid gold;
+            padding:10px;
+            margin:10px 0;
+            border-radius:10px;
+        ">
+            🏆 Premio: <b>${p.premio}</b><br>
+            🎟 Número: <b>${p.numero}</b><br>
+            📅 ${new Date(p.fecha).toLocaleDateString()}
+        </div>
+    `).join("");
+}	
 	
 async function usarGiro(numero, pin){
 
