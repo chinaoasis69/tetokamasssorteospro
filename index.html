@@ -321,8 +321,10 @@ async function validarPagoAdmin(numero){
   }
 
   alert("Pago validado.\nNúmero: " + numero + "\nPIN de giro: " + pin);
-
-  cargarBoletos();
+	
+ cargarBoletos();
+ cargarMisBoletos();
+ cargarHistorialSorteos();
 }
 
 const SUPABASE_URL = "https://yrmuxelajgmmonbbvshj.supabase.co";
@@ -948,7 +950,7 @@ async function girarLuckySpin(pinYaValidado = false){
           return;
         }
 
-        await supabaseClient.from("tickets").update({
+        await supabaseClient.from("boletos").update({
           giro_usado: true
         })
         .eq("numero", boletoSeleccionado.numero)
@@ -1028,8 +1030,7 @@ async function cargarMisBoletos(){
   const { data, error } = await supabaseClient
     .from("boletos")
     .select("*") 
-    .eq("rifa_id", rifaActual)
-	.eq("telefono", localStorage.getItem("mass_telefono"))
+    .eq("telefono", localStorage.getItem("mass_telefono"))
 	.eq("estado", "vendido")  
     .order("fecha", { ascending: false });
 
