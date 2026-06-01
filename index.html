@@ -1011,7 +1011,7 @@ async function cargarHistorialPremios(){
     const { data, error } = await supabaseClient
     .from("historial_premios")
     .select("*")
-    .eq("user_id", tel)
+    .eq("user_id", "9563724890")
     .order("fecha", { ascending:false });
 
     if(error){
