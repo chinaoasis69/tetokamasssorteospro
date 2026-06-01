@@ -924,6 +924,15 @@ async function girarLuckySpin(pinYaValidado = false){
         console.error("Error guardando giro:", giroRespuesta.error);
       }
 
+	await supabaseClient.from("historial_premios").insert({
+  user_id: userActual,
+  numero: boletoSeleccionado.numero,
+  premio: ganador,
+  rifa_id: rifaActual
+});
+
+cargarHistorialPremios();	
+
       if(ganador.includes("Segundo giro")){
         await supabaseClient.from("boletos").update({
           giro_usado: false
