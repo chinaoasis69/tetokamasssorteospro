@@ -252,7 +252,7 @@ Cargando historial...
   <span id="contadorPremios">0</span>
 </p>
 
-<button onclick="verPremios()">
+<button onclick="abrirModalPremios()">
   🎁 Ver mis premios
 </button>
 
@@ -261,6 +261,18 @@ Cargando historial...
 </div>
 
  </div>
+
+	<div id="modalPremios" class="modal-premios" style="display:none;">
+  <div class="modal-premios-contenido">
+    <h2>🎁 Mis Premios</h2>
+
+    <div id="premiosDentroModal"></div>
+
+    <button onclick="cerrarModalPremios()">
+      ❌ Cerrar
+    </button>
+  </div>
+</div>
 
   <div class="card">
     <h2>💳 Métodos de pago</h2>
@@ -1269,15 +1281,18 @@ async function usarGiro(numero, pin){
   girarLuckySpin(true);
 }
 
-	function verPremios(){
+	function abrirModalPremios(){
 
-    const div = document.getElementById("historialPremios");
+    document.getElementById("premiosDentroModal").innerHTML =
+    document.getElementById("historialPremios").innerHTML;
 
-    if(div.style.display === "none"){
-        div.style.display = "block";
-    }else{
-        div.style.display = "none";
-    }
+    document.getElementById("modalPremios").style.display = "block";
+
+}
+
+function cerrarModalPremios(){
+
+    document.getElementById("modalPremios").style.display = "none";
 
 }
 
