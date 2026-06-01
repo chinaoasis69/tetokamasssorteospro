@@ -1054,36 +1054,39 @@ const { data, error } = await supabaseClient
   return;
 }
 
-  document.getElementById("misBoletos").innerHTML =
-    data.map(t => `
-      <div style="
-        border:1px solid #38b000;
-        border-radius:10px;
-        padding:10px;
-        margin:10px 0;
-      ">
-        🎟️ Boleto: <b>${t.numero}</b><br>
-        🎰 PIN: <b>${t.pin_giro}</b><br>
-        ${t.giro_usado
- ? "❌ Giro usado"
- : `<button
-      onclick="usarGiro('${t.numero}','${t.pin_giro}')"
-      style="
-        margin-top:8px;
-        background:#00ff88;
-        color:black;
-        border:none;
-        padding:8px 12px;
-        border-radius:8px;
-        font-weight:bold;
-        cursor:pointer;
-      "
-    >
-      🎰 USAR GIRO
-    </button>`
-}
-      </div>
-    `).join("");
+  const idMis = "mis_boletos_actual";
+
+document.getElementById("misBoletos").innerHTML = `
+  <div style="
+    border:1px solid #38b000;
+    border-radius:10px;
+    padding:15px;
+    margin:10px 0;
+    text-align:center;
+  ">
+    <h3>🎟️ Mis boletos de esta rifa</h3>
+    <p>Boletos comprados: <b>${data.length}</b></p>
+
+    <button onclick="
+      const box = document.getElementById('${idMis}');
+      box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    ">
+      👁️ Ver boletos
+    </button>
+
+    <div id="${idMis}" style="display:none; margin-top:10px;">
+      ${data.map(t => `
+        <div style="margin:8px 0;">
+          🎟️ Boleto: <b>${t.numero}</b> — 🎰 PIN: <b>${t.pin_giro || ""}</b><br>
+          ${t.giro_usado
+            ? "❌ Giro usado"
+            : `<button onclick="usarGiro('${t.numero}','${t.pin_giro}')">🎰 USAR GIRO</button>`
+          }
+        </div>
+      `).join("")}
+    </div>
+  </div>
+`;
 }
 	
 async function cargarHistorialSorteos(){
