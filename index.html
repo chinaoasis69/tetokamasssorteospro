@@ -1014,6 +1014,11 @@ async function cargarHistorialPremios(){
     .eq("user_id", "9563724890")
     .order("fecha", { ascending:false });
 
+	console.log("PREMIOS DATA:", data);
+    console.log("PREMIOS ERROR:", error);
+    console.log("USER ACTUAL:", userActual);
+    console.log("TEL:", localStorage.getItem("mass_telefono"));
+
     if(error){
         console.error(error);
         return;
