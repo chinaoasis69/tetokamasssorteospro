@@ -610,59 +610,6 @@ function mostrarConfigAdmin(){
         <p>Aquí administraremos WhatsApp, precios y métodos de pago.</p>
     `;
 
-}
-
-function crearRifaAdmin(){
-
-    const titulo = prompt("Título de la rifa:");
-    if(!titulo) return;
-
-    const premio = prompt("Premio principal:");
-    if(!premio) return;
-
-    const precio = prompt("Precio por boleto:");
-    if(!precio) return;
-
-    const total = prompt("Cantidad total de números:");
-    if(!total) return;
-
-    guardarRifaAdmin(
-        titulo,
-        premio,
-        precio,
-        total
-    );
-
-}
-
-async function guardarRifaAdmin(
-    titulo,
-    premio,
-    precio,
-    total
-){
-
-    const { error } = await supabaseClient
-    .from("rifas")
-    .insert([{
-    titulo: titulo,
-    premio: premio,
-    precio_boleto: Number(precio),
-    total_numeros: Number(total),
-    metodo_sorteo: "lucky_spin",
-    estado: "activa"
-}]);
-
-    if(error){
-        alert("Error guardando rifa");
-        console.error(error);
-        return;
-    }
-
-    alert("✅ Rifa creada");
-
-    mostrarSorteosAdmin();
-
 }	
 
 async function validarPagoAdmin(numero){
