@@ -591,12 +591,14 @@ async function guardarRifaAdmin(
     const { error } = await supabaseClient
     .from("rifas")
     .insert([{
-        titulo: titulo,
-        premio: premio,
-        precio_boleto: Number(precio),
-        total_numeros: Number(total),
-        estado: "activa"
-    }]);
+    user_id: userActual || null,
+    titulo: titulo,
+    premio: premio,
+    precio_boleto: Number(precio),
+    total_numeros: Number(total),
+    metodo_sorteo: "lucky_spin",
+    estado: "activa"
+}]);
 
     if(error){
         alert("Error guardando rifa");
