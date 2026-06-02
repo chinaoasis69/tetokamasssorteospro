@@ -452,13 +452,51 @@ function mostrarPremiosAdmin(){
 
 }
 
-function mostrarSorteosAdmin(){
+async function mostrarSorteosAdmin(){
+
+    document.getElementById("adminContenido").innerHTML =
+    "<p>Cargando sorteos...</p>";
+
+    const { data, error } = await supabaseClient
+        .from("rifas")
+        .select("*")
+        .order("created_at", { ascending:false });
+
+    if(error){
+        console.error(error);
+        document.getElementById("adminContenido").innerHTML =
+        "<p>❌ Error cargando sorteos.</p>";
+        return;
+    }
+
+    if(!data || data.length === 0){
+        document.getElementById("adminContenido").innerHTML = `
+            <h3>🎯 Sorteos</h3>
+            <p>No hay sorteos creados todavía.</p>
+        `;
+        return;
+    }
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
-        <p>Aquí administraremos las rifas y sorteos.</p>
-    `;
 
+        ${data.map(r => `
+            <div style="
+                border:1px solid #39ff14;
+                border-radius:12px;
+                padding:12px;
+                margin:10px 0;
+                text-align:left;
+            ">
+                <b>🎯 Título:</b> ${r.titulo || "Sin título"}<br>
+                <b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
+                <b>💵 Precio:</b> $${r.precio_boleto || 0}<br>
+                <b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
+                <b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
+                <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
+            </div>
+        `).join("")}
+    `;
 }
 
 function mostrarConfigAdmin(){
