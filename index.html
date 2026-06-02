@@ -479,6 +479,10 @@ async function mostrarSorteosAdmin(){
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
+		<button onclick="crearRifaAdmin()">
+        ➕ Nueva Rifa
+        </button>
+        <br><br>
 
         ${data.map(r => `
             <div style="
@@ -498,6 +502,45 @@ async function mostrarSorteosAdmin(){
         `).join("")}
     `;
 }
+
+async function crearRifaAdmin(){
+
+    const titulo = prompt("Título de la rifa");
+    if(!titulo) return;
+
+    const premio = prompt("Premio principal");
+    if(!premio) return;
+
+    const precio = prompt("Precio por boleto");
+    if(!precio) return;
+
+    const total = prompt("Cantidad de números");
+    if(!total) return;
+
+    const fecha = prompt("Fecha sorteo (2026-07-01)");
+    if(!fecha) return;
+
+    const { error } = await supabaseClient
+    .from("rifas")
+    .insert([{
+        titulo: titulo,
+        premio: premio,
+        precio_boleto: Number(precio),
+        total_numeros: Number(total),
+        fecha_sorteo: fecha,
+        estado: "programada"
+    }]);
+
+    if(error){
+        console.error(error);
+        alert("Error creando rifa");
+        return;
+    }
+
+    alert("✅ Rifa creada");
+
+    mostrarSorteosAdmin();
+}	
 
 function mostrarConfigAdmin(){
 
