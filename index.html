@@ -589,11 +589,23 @@ estado: "programada"
 
 async function activarRifaAdmin(id){
 
+    const confirmar = confirm("¿Activar esta rifa y desactivar las demás?");
+    if(!confirmar) return;
+
+    const { error: errorTodas } = await supabaseClient
+        .from("rifas")
+        .update({ estado: "programada" })
+        .neq("id", id);
+
+    if(errorTodas){
+        console.error(errorTodas);
+        alert("❌ Error desactivando otras rifas");
+        return;
+    }
+
     const { error } = await supabaseClient
         .from("rifas")
-        .update({
-            estado: "activa"
-        })
+        .update({ estado: "activa" })
         .eq("id", id);
 
     if(error){
