@@ -319,16 +319,37 @@ Cargando historial...
 
 </div>
 
+<!--
 <button onclick="abrirAdmin()" style="opacity:0.25; font-size:12px; margin:20px;">
-  ⚙️ Admin
+⚙️ Admin
 </button>
+-->
 
-<div class="footer">
-  © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
+<div class="footer" onclick="adminSecreto()">
+© TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+
+let tapsAdmin = 0;
+
+function adminSecreto(){
+
+    tapsAdmin++;
+
+    if(tapsAdmin >= 5){
+
+        abrirAdmin();
+
+        tapsAdmin = 0;
+    }
+
+    setTimeout(()=>{
+        tapsAdmin = 0;
+    },3000);
+
+}	
 
 function abrirAdmin(){
   const clave = prompt("Clave de administrador");
