@@ -506,9 +506,22 @@ async function mostrarSorteosAdmin(){
                 <b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
                 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
 				<br>
-                <button onclick="activarRifaAdmin('${r.id}')">
-    ✅ Activar rifa
+                ${r.estado !== 'activa' ? `
+<button onclick="activarRifaAdmin('${r.id}')">
+✅ Activar rifa
 </button>
+` : `
+<div style="
+background:#16a34a;
+padding:8px;
+border-radius:8px;
+font-weight:bold;
+display:inline-block;
+margin-top:8px;
+">
+🟢 Rifa Activa
+</div>
+`}
             </div>
         `).join("")}
     `;
