@@ -503,7 +503,15 @@ async function mostrarSorteosAdmin(){
 <b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
 <b>💵 Precio:</b> $${r.precio_boleto || 0}<br>
 <b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
-<b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
+<b>📅 Fecha:</b> ${
+r.fecha_sorteo
+? new Date(r.fecha_sorteo + "T00:00:00").toLocaleDateString("es-MX", {
+day: "numeric",
+month: "long",
+year: "numeric"
+})
+: "Sin fecha"
+}<br>
 <b>🎰 Método:</b> ${r.metodo_sorteo || "Sin método"}<br>
 <b>🔢 Cifras:</b> ${r.cifras_sorteo || "Sin cifras"}<br>
 <b>📢 Aviso:</b> ${r.aviso || "El sorteo se realizará al venderse el porcentaje mínimo establecido. Si no se alcanza, podrá ser reprogramado."}<br>
