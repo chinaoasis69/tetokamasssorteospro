@@ -544,15 +544,32 @@ async function crearRifaAdmin(){
     const fecha = prompt("Fecha sorteo (2026-07-01)");
     if(!fecha) return;
 
+	const metodo = prompt(
+"Metodo de sorteo: Pick 3 Texas, Loteria Nacional, Manual"
+);
+if(!metodo) return;
+
+const cifras = prompt(
+"Ultimas cuantas cifras (2, 3 o 4)"
+);
+if(!cifras) return;
+
+const imagen = prompt(
+"URL de imagen del premio (opcional)"
+) || "";
+
     const { error } = await supabaseClient
     .from("rifas")
     .insert([{
         titulo: titulo,
-        premio: premio,
-        precio_boleto: Number(precio),
-        total_numeros: Number(total),
-        fecha_sorteo: fecha,
-        estado: "programada"
+premio: premio,
+precio_boleto: Number(precio),
+total_numeros: Number(total),
+fecha_sorteo: fecha,
+metodo_sorteo: metodo,
+cifras_sorteo: Number(cifras),
+imagen_url: imagen,
+estado: "programada"
     }]);
 
     if(error){
