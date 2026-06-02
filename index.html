@@ -621,24 +621,69 @@ async function activarRifaAdmin(id){
 
 async function editarRifaAdmin(id){
 
-const nuevoTitulo = prompt("Nuevo título");
-if(!nuevoTitulo) return;
+    const { data, error } = await supabaseClient
+        .from("rifas")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-const { error } = await supabaseClient
-.from("rifas")
-.update({
-titulo: nuevoTitulo
-})
-.eq("id", id);
+    if(error){
+        console.error(error);
+        alert("❌ Error cargando rifa");
+        return;
+    }
 
-if(error){
-alert("Error actualizando");
-return;
-}
+    const titulo = prompt("Título de la rifa", data.titulo || "");
+    if(!titulo) return;
 
-alert("✅ Rifa actualizada");
-mostrarSorteosAdmin();
+    const premio = prompt("Premio principal", data.premio || "");
+    if(!premio) return;
 
+    const precio = prompt("Precio por boleto", data.precio_boleto || "");
+    if(!precio) return;
+
+    const total = prompt("Cantidad de números", data.total_numeros || "");
+    if(!total) return;
+
+    const fecha = prompt("Fecha sorteo (2026-09-15)", data.fecha_sorteo || "");
+    if(!fecha) return;
+
+    const metodo = prompt("Método de sorteo", data.metodo_sorteo || "");
+    if(!metodo) return;
+
+    const cifras = prompt("Últimas cuántas cifras", data.cifras_sorteo || "");
+    if(!cifras) return;
+
+    const aviso = prompt("Aviso", data.aviso || "");
+
+    const porcentaje = prompt("Mínimo para sortear %", data.porcentaje_minimo || 80);
+
+    const imagen = prompt("URL imagen premio", data.imagen_url || "");
+
+    const { error: errorUpdate } = await supabaseClient
+        .from("rifas")
+        .update({
+            titulo: titulo,
+            premio: premio,
+            precio_boleto: Number(precio),
+            total_numeros: Number(total),
+            fecha_sorteo: fecha,
+            metodo_sorteo: metodo,
+            cifras_sorteo: Number(cifras),
+            aviso: aviso,
+            porcentaje_minimo: Number(porcentaje),
+            imagen_url: imagen
+        })
+        .eq("id", id);
+
+    if(errorUpdate){
+        console.error(errorUpdate);
+        alert("❌ Error actualizando rifa");
+        return;
+    }
+
+    alert("✅ Rifa actualizada");
+    mostrarSorteosAdmin();
 }	
 
 function mostrarConfigAdmin(){
