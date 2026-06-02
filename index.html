@@ -505,6 +505,10 @@ async function mostrarSorteosAdmin(){
                 <b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
                 <b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
                 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
+				<br>
+                <button onclick="activarRifaAdmin('${r.id}')">
+    ✅ Activar rifa
+</button>
             </div>
         `).join("")}
     `;
@@ -545,6 +549,26 @@ async function crearRifaAdmin(){
     }
 
     alert("✅ Rifa creada");
+
+    mostrarSorteosAdmin();
+}
+
+async function activarRifaAdmin(id){
+
+    const { error } = await supabaseClient
+        .from("rifas")
+        .update({
+            estado: "activa"
+        })
+        .eq("id", id);
+
+    if(error){
+        console.error(error);
+        alert("❌ Error activando rifa");
+        return;
+    }
+
+    alert("✅ Rifa activada");
 
     mostrarSorteosAdmin();
 }	
