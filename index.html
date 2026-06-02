@@ -591,7 +591,6 @@ async function guardarRifaAdmin(
     const { error } = await supabaseClient
     .from("rifas")
     .insert([{
-    user_id: userActual || null,
     titulo: titulo,
     premio: premio,
     precio_boleto: Number(precio),
