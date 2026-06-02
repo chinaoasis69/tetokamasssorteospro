@@ -385,13 +385,50 @@ function cerrarPanelAdmin(){
 
 }
 
-function cargarPagosPendientes(){
+async function cargarPagosPendientes(){
+
+    document.getElementById("adminContenido").innerHTML =
+    "<p>Cargando pagos pendientes...</p>";
+
+    const { data, error } = await supabaseClient
+        .from("boletos")
+        .select("*")
+        .eq("estado", "apartado")
+        .order("numero", { ascending: true });
+
+    if(error){
+        console.error(error);
+        document.getElementById("adminContenido").innerHTML =
+        "<p>❌ Error cargando pagos pendientes.</p>";
+        return;
+    }
+
+    if(!data || data.length === 0){
+        document.getElementById("adminContenido").innerHTML =
+        "<h3>💳 Pagos pendientes</h3><p>No hay pagos pendientes.</p>";
+        return;
+    }
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>💳 Pagos pendientes</h3>
-        <p>Aquí aparecerán los pagos pendientes.</p>
-    `;
+        ${data.map(b => `
+            <div style="
+                border:1px solid #39ff14;
+                border-radius:12px;
+                padding:12px;
+                margin:10px 0;
+                text-align:left;
+            ">
+                <b>🎟️ Número:</b> ${b.numero}<br>
+                <b>📌 Estado:</b> ${b.estado}<br>
+                <b>👤 Usuario:</b> ${b.user_id || "Sin usuario"}<br><br>
 
+                <button onclick="validarPagoAdmin('${b.numero}')">
+                    ✅ Aprobar
+                </button>
+            </div>
+        `).join("")}
+    `;
 }	
 
 async function validarPagoAdmin(numero){
