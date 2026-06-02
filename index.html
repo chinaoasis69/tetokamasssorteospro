@@ -470,12 +470,19 @@ async function mostrarSorteosAdmin(){
     }
 
     if(!data || data.length === 0){
-        document.getElementById("adminContenido").innerHTML = `
-            <h3>🎯 Sorteos</h3>
-            <p>No hay sorteos creados todavía.</p>
-        `;
-        return;
-    }
+    document.getElementById("adminContenido").innerHTML = `
+        <h3>🎯 Sorteos</h3>
+
+        <button onclick="crearRifaAdmin()">
+            ➕ Nueva Rifa
+        </button>
+
+        <br><br>
+
+        <p>No hay sorteos creados todavía.</p>
+    `;
+    return;
+}
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
