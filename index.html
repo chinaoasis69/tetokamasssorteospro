@@ -514,7 +514,13 @@ async function mostrarSorteosAdmin(){
 <button onclick="activarRifaAdmin('${r.id}')">
 ✅ Activar rifa
 </button>
+
+<button onclick="editarRifaAdmin('${r.id}')">
+✏️ Editar rifa
+</button>
+
 ` : `
+
 <div style="
 background:#16a34a;
 padding:8px;
@@ -525,6 +531,11 @@ margin-top:8px;
 ">
 🟢 Rifa Activa
 </div>
+
+<button onclick="editarRifaAdmin('${r.id}')">
+✏️ Editar rifa
+</button>
+
 `}
             </div>
         `).join("")}
@@ -606,6 +617,28 @@ async function activarRifaAdmin(id){
     alert("✅ Rifa activada");
 
     mostrarSorteosAdmin();
+}
+
+async function editarRifaAdmin(id){
+
+const nuevoTitulo = prompt("Nuevo título");
+if(!nuevoTitulo) return;
+
+const { error } = await supabaseClient
+.from("rifas")
+.update({
+titulo: nuevoTitulo
+})
+.eq("id", id);
+
+if(error){
+alert("Error actualizando");
+return;
+}
+
+alert("✅ Rifa actualizada");
+mostrarSorteosAdmin();
+
 }	
 
 function mostrarConfigAdmin(){
