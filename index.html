@@ -328,6 +328,23 @@ Cargando historial...
 <div class="footer" onclick="adminSecreto()">
 © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
+
+<div id="panelAdmin" class="card" style="display:none;">
+  <h2>📊 Panel Administrativo</h2>
+
+  <button onclick="cargarPagosPendientes()">
+    💳 Pagos pendientes
+  </button>
+
+  <button onclick="cerrarPanelAdmin()">
+    ❌ Cerrar panel
+  </button>
+
+  <div id="adminContenido">
+    Selecciona una opción.
+  </div>
+</div>
+	
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
@@ -359,14 +376,23 @@ function abrirAdmin(){
     return;
   }
 
-  let numero = prompt("Número a validar, ejemplo: 0009");
-if(!numero) return;
-numero = numero.padStart(4, "0");
-
-  if(!numero) return;
-
-  validarPagoAdmin(numero);
+  document.getElementById("panelAdmin").style.display = "block";
 }
+
+function cerrarPanelAdmin(){
+
+    document.getElementById("panelAdmin").style.display = "none";
+
+}
+
+function cargarPagosPendientes(){
+
+    document.getElementById("adminContenido").innerHTML = `
+        <h3>💳 Pagos pendientes</h3>
+        <p>Aquí aparecerán los pagos pendientes.</p>
+    `;
+
+}	
 
 async function validarPagoAdmin(numero){
 
