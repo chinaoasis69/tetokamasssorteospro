@@ -500,11 +500,15 @@ async function mostrarSorteosAdmin(){
                 text-align:left;
             ">
                 <b>🎯 Título:</b> ${r.titulo || "Sin título"}<br>
-                <b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
-                <b>💵 Precio:</b> $${r.precio_boleto || 0}<br>
-                <b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
-                <b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
-                <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
+<b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
+<b>💵 Precio:</b> $${r.precio_boleto || 0}<br>
+<b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
+<b>📅 Fecha:</b> ${r.fecha_sorteo || "Sin fecha"}<br>
+<b>🎰 Método:</b> ${r.metodo_sorteo || "Sin método"}<br>
+<b>🔢 Cifras:</b> ${r.cifras_sorteo || "Sin cifras"}<br>
+<b>📢 Aviso:</b> ${r.aviso || "El sorteo se realizará al venderse el porcentaje mínimo establecido. Si no se alcanza, podrá ser reprogramado."}<br>
+<b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
+<b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo || 80}%<br>
 				<br>
                 ${r.estado !== 'activa' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
