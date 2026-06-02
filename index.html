@@ -332,13 +332,25 @@ Cargando historial...
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
-  <button onclick="cargarPagosPendientes()">
-    💳 Pagos pendientes
-  </button>
+ <button onclick="cargarPagosPendientes()">
+  💳 Pagos pendientes
+</button>
 
-  <button onclick="cerrarPanelAdmin()">
-    ❌ Cerrar panel
-  </button>
+<button onclick="mostrarPremiosAdmin()">
+  🎁 Premios
+</button>
+
+<button onclick="mostrarSorteosAdmin()">
+  🎯 Sorteos
+</button>
+
+<button onclick="mostrarConfigAdmin()">
+  ⚙️ Configuración
+</button>
+
+<button onclick="cerrarPanelAdmin()">
+  ❌ Cerrar panel
+</button> 
 
   <div id="adminContenido">
     Selecciona una opción.
@@ -429,6 +441,33 @@ async function cargarPagosPendientes(){
             </div>
         `).join("")}
     `;
+}
+
+function mostrarPremiosAdmin(){
+
+    document.getElementById("adminContenido").innerHTML = `
+        <h3>🎁 Premios</h3>
+        <p>Aquí administraremos los premios.</p>
+    `;
+
+}
+
+function mostrarSorteosAdmin(){
+
+    document.getElementById("adminContenido").innerHTML = `
+        <h3>🎯 Sorteos</h3>
+        <p>Aquí administraremos las rifas y sorteos.</p>
+    `;
+
+}
+
+function mostrarConfigAdmin(){
+
+    document.getElementById("adminContenido").innerHTML = `
+        <h3>⚙️ Configuración</h3>
+        <p>Aquí administraremos WhatsApp, precios y métodos de pago.</p>
+    `;
+
 }	
 
 async function validarPagoAdmin(numero){
