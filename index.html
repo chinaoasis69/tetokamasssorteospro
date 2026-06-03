@@ -1023,23 +1023,47 @@ document.getElementById("saldoBox").innerText =
   "Saldo: " + data.saldo + " MASS";
 }
 
+async function cargarRifasPublicas(){
+
+    const { data: rifas, error } = await supabaseClient
+        .from("rifas")
+        .select("*")
+        .in("estado", ["activa","programada"]);
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    const cont = document.getElementById("listaRifas");
+
+    cont.innerHTML = rifas.map(r => `
+        <div class="card" style="margin:10px 0">
+            <h3>🎁 ${r.premio}</h3>
+            <p>💰 $${r.precio}</p>
+            <p>🎟️ ${r.total_numeros} números</p>
+
+            <button onclick="abrirRifa('${r.id}')">
+                Ver números
+            </button>
+        </div>
+    `).join("");
+}
+
+async function abrirRifa(rifaId){
+    RIFA_ID = rifaId;
+    await cargarBoletos();
+    window.scrollTo(0, 0);
+}	
+
 // 🔥 CARGAR BOLETOS
 async function cargarBoletos(){
   document.getElementById("stats").innerText = "Cargando números...";
 
-const { data: rifa } = await supabaseClient
-.from("rifas")
-.select("*")
-.eq("estado","activa")
-.limit(1)
-.single();
-
-if(!rifa){
-  alert("No hay rifa activa");
+if(!RIFA_ID){
+  alert("Selecciona una rifa primero");
   return;
-}
-
-RIFA_ID = rifa.id;	
+}	
 
   let query = supabaseClient
     .from("boletos")
@@ -1728,7 +1752,7 @@ loginMASS().then(() => {
 
     asegurarWallet().then(() => {
         cargarSaldo();
-        cargarBoletos();
+		cargarRifasPublicas();
         cargarMisBoletos();
 		cargarHistorialSorteos();
 		cargarHistorialPremios();
