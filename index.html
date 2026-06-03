@@ -1718,6 +1718,38 @@ loginMASS().then(() => {
 
 });
 
+async function generarBoletosRifaAdmin(rifaId, totalNumeros){
+
+  if(!confirm(`Generar ${totalNumeros} boletos para esta rifa?`)){
+    return;
+  }
+
+  let boletos = [];
+
+  for(let i=0;i<totalNumeros;i++){
+
+    boletos.push({
+      rifa_id: rifaId,
+      numero: String(i).padStart(4,"0"),
+      estado:"disponible"
+    });
+
+  }
+
+  const { error } = await supabaseClient
+    .from("boletos")
+    .insert(boletos);
+
+  if(error){
+    console.error(error);
+    alert("Error generando boletos");
+    return;
+  }
+
+  alert("✅ Boletos generados correctamente");
+
+}	
+
 </script>
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
