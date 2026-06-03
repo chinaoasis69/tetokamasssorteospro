@@ -1040,7 +1040,7 @@ async function cargarRifasPublicas(){
     cont.innerHTML = rifas.map(r => `
         <div class="card" style="margin:10px 0">
             <h3>🎁 ${r.premio}</h3>
-            <p>💰 $${r.precio}</p>
+            <p>💰 $${r.precio_boleto || 0}</p>
             <p>🎟️ ${r.total_numeros} números</p>
 
             <button onclick="abrirRifa('${r.id}')">
@@ -1053,7 +1053,11 @@ async function cargarRifasPublicas(){
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
     await cargarBoletos();
-    window.scrollTo(0, 0);
+
+    document.getElementById("grid").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
 }	
 
 // 🔥 CARGAR BOLETOS
