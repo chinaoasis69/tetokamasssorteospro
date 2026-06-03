@@ -1053,6 +1053,7 @@ RIFA_ID = rifa.id;
 }
 
   boletos = data || [];
+  boletos.sort((a,b) => a.numero.localeCompare(b.numero));	
   aplicarFiltros();
 }
 
