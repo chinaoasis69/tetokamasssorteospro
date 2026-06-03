@@ -1041,9 +1041,7 @@ RIFA_ID = rifa.id;
     .select("*")
     .order("numero", { ascending: true });
 
-  if(RIFA_ID){
-    query = query.eq("rifa_id", RIFA_ID);
-  }
+	query = query.eq("rifa_id", RIFA_ID);
 
   const { data, error } = await query;
 
