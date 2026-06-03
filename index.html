@@ -754,7 +754,7 @@ const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 let userActual = localStorage.getItem("mass_user");
-const rifaActual = "00000000-0000-0000-0000-000000000001";
+let rifaActual = null;
 async function loginMASS(){
 
   if(userActual){
@@ -1021,6 +1021,20 @@ document.getElementById("saldoBox").innerText =
 // 🔥 CARGAR BOLETOS
 async function cargarBoletos(){
   document.getElementById("stats").innerText = "Cargando números...";
+
+const { data: rifa } = await supabaseClient
+.from("rifas")
+.select("*")
+.eq("estado","activa")
+.limit(1)
+.single();
+
+if(!rifa){
+  alert("No hay rifa activa");
+  return;
+}
+
+RIFA_ID = rifa.id;	
 
   let query = supabaseClient
     .from("boletos")
