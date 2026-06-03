@@ -499,6 +499,18 @@ async function mostrarSorteosAdmin(){
                 margin:10px 0;
                 text-align:left;
             ">
+
+			${r.imagen_url ? `
+<img src="${r.imagen_url}" style="
+width:100%;
+max-height:220px;
+object-fit:cover;
+border-radius:12px;
+margin-bottom:12px;
+border:1px solid #39ff14;
+">
+` : ""}
+
                 <b>🎯 Título:</b> ${r.titulo || "Sin título"}<br>
 <b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
 <b>💵 Precio:</b> $${r.precio_boleto || 0}<br>
