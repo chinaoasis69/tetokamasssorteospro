@@ -171,6 +171,21 @@ input{
 
 <div class="panel">
 
+<div style="text-align:center;margin-bottom:15px;">
+    <img
+        id="imagenRifa"
+        src=""
+        style="
+            max-width:350px;
+            width:100%;
+            border-radius:15px;
+            border:3px solid #39ff14;
+            box-shadow:0 0 20px #39ff14;
+            display:none;
+        "
+    >
+</div>	
+
 <h2>🎁 Sorteo Seleccionado</h2>
 
 <div id="nombreRifa" style="font-size:28px;font-weight:bold;">
@@ -1095,6 +1110,15 @@ async function abrirRifa(rifaId){
 
         document.getElementById("premioActual").innerText =
             rifa.premio || rifa.titulo || "";
+
+		const img = document.getElementById("imagenRifa");
+
+if(rifa.imagen_url){
+    img.src = rifa.imagen_url;
+    img.style.display = "block";
+}else{
+    img.style.display = "none";
+}
     }
 
     await cargarBoletos();
