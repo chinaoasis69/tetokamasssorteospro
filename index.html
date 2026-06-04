@@ -1676,39 +1676,54 @@ const { data, error } = await supabaseClient
   return;
 }
 
-  const idMis = "mis_boletos_actual";
+	const { data: sorteos } = await supabaseClient
+  .from("sorteos")
+  .select("*");
 
-document.getElementById("misBoletos").innerHTML = `
-  <div style="
-    border:1px solid #38b000;
-    border-radius:10px;
-    padding:15px;
-    margin:10px 0;
-    text-align:center;
-  ">
-    <h3>🎟️ Mis boletos de esta rifa</h3>
-    <p>Boletos comprados: <b>${data.length}</b></p>
+let mapaSorteos = {};
 
-    <button onclick="
-      const box = document.getElementById('${idMis}');
-      box.style.display = box.style.display === 'none' ? 'block' : 'none';
-    ">
-      👁️ Ver boletos
-    </button>
+(sorteos || []).forEach(s => {
+  mapaSorteos[s.id] = s;
+});
 
-    <div id="${idMis}" style="display:none; margin-top:10px;">
-      ${data.map(t => `
-        <div style="margin:8px 0;">
-          🎟️ Boleto: <b>${t.numero}</b> — 🎰 PIN: <b>${t.pin_giro || ""}</b><br>
-          ${t.giro_usado
-            ? "❌ Giro usado"
-            : `<button onclick="usarGiro('${t.numero}','${t.pin_giro}')">🎰 USAR GIRO</button>`
-          }
-        </div>
-      `).join("")}
+  let agrupados = {};
+
+data.forEach(t => {
+  const key = t.rifa_id || "SIN_RIFA";
+  if (!agrupados[key]) agrupados[key] = [];
+  agrupados[key].push(t);
+});
+
+document.getElementById("misBoletos").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
+  const lista = agrupados[rifaId];
+  const sorteo = mapaSorteos[rifaId];
+  const nombre = sorteo ? (sorteo.premio || sorteo.titulo) : "Sorteo anterior";
+  const idBox = "mis_boletos_" + i;
+
+  return `
+    <div style="border:1px solid #38b000;border-radius:10px;padding:15px;margin:10px 0;text-align:center;">
+      <h3>🎁 ${nombre}</h3>
+      <p>Boletos comprados: <b>${lista.length}</b></p>
+
+      <button onclick="
+        const box = document.getElementById('${idBox}');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+      ">👁️ Ver boletos</button>
+
+      <div id="${idBox}" style="display:none;margin-top:10px;">
+        ${lista.map(t => `
+          <div style="margin:8px 0;">
+            🎟️ Boleto: <b>${t.numero}</b> - 🧾 PIN: <b>${t.pin_giro || ""}</b><br>
+            ${t.giro_usado
+              ? "❌ Giro usado"
+              : `<button onclick="usarGiro('${t.numero}', '${t.pin_giro}')">🎰 USAR GIRO</button>`
+            }
+          </div>
+        `).join("")}
+      </div>
     </div>
-  </div>
-`;
+  `;
+}).join("");
 }
 	
 async function cargarHistorialSorteos(){
