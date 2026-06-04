@@ -591,6 +591,15 @@ year: "numeric"
 ✏️ Editar rifa
 </button>
 
+<button onclick="pausarRifa('${r.id}')">
+⏸️ Pausar rifa
+</button>
+
+<button onclick="eliminarRifa('${r.id}')"
+style="background:#a30000;color:white;">
+🗑️ Eliminar rifa
+</button>
+
 <button onclick="generarBoletosRifaAdmin('${r.id}', ${r.total_numeros || 0})">
 🎟️ Generar boletos
 </button>
@@ -617,6 +626,39 @@ margin-top:8px;
         `).join("")}
     `;
 }
+
+async function pausarRifa(id){
+  if(!confirm("¿Pausar esta rifa?")) return;
+
+  const { error } = await supabaseClient
+    .from("rifas")
+    .update({ estado:"pausada" })
+    .eq("id", id);
+
+  if(error) return alert(error.message);
+
+  alert("⏸️ Rifa pausada");
+  cargarAdminRifas();
+}
+
+async function eliminarRifa(id){
+  if(!confirm("⚠️ Se eliminará la rifa y todos sus boletos. ¿Continuar?")) return;
+
+  await supabaseClient
+    .from("boletos")
+    .delete()
+    .eq("rifa_id", id);
+
+  const { error } = await supabaseClient
+    .from("rifas")
+    .delete()
+    .eq("id", id);
+
+  if(error) return alert(error.message);
+
+  alert("🗑️ Rifa eliminada");
+  cargarAdminRifas();
+}	
 
 async function crearRifaAdmin(){
 
