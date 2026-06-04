@@ -601,7 +601,7 @@ ${r.estado === 'pausada' ? `
 </button>
 `}
 
-<button onclick="eliminarRifa('${r.id}')"
+<button onclick="eliminarRifa('${r.id}','${r.titulo}')"
 style="background:#a30000;color:white;">
 🗑️ Eliminar rifa
 </button>
@@ -662,8 +662,14 @@ async function pausarRifa(id){
   cargarAdminRifas();
 }
 
-async function eliminarRifa(id){
-  if(!confirm("⚠️ Se eliminará la rifa y todos sus boletos. ¿Continuar?")) return;
+async function eliminarRifa(id,titulo){
+
+alert(
+"ID: " + id +
+"\nTítulo: " + titulo
+);
+
+if(!confirm("⚠️ Se eliminará la rifa y todos sus boletos. ¿Continuar?")) return;
 
   const { error: errorBoletos } = await supabaseClient
     .from("boletos")
