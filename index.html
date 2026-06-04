@@ -1164,6 +1164,15 @@ if(rifa.imagen_url){
 }else{
     img.style.display = "none";
 }
+
+const btnVideo = document.getElementById("btnVideoRifa");
+
+if(rifa.video_url){
+    btnVideo.style.display = "inline-block";
+    btnVideo.dataset.video = rifa.video_url;
+}else{
+    btnVideo.style.display = "none";
+    btnVideo.dataset.video = "";		
     }
 
     await cargarBoletos();
