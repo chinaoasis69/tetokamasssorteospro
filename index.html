@@ -1147,15 +1147,6 @@ imagenes.forEach(url => {
   galeria.appendChild(mini);
 });
 
-const btnVideo = document.getElementById("btnVideoRifa");
-
-if (rifa.video_url) {
-  btnVideo.style.display = "inline-block";
-  btnVideo.dataset.video = rifa.video_url;
-} else {
-  btnVideo.style.display = "none";
-}
-
 		const img = document.getElementById("imagenRifa");
 
 if(rifa.imagen_url){
