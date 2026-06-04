@@ -1084,8 +1084,17 @@ async function abrirRifa(rifaId){
         .single();
 
     if(!error && rifa){
+        document.getElementById("nombreRifa").innerText =
+            rifa.premio || rifa.titulo || "Sorteo seleccionado";
+
+        document.getElementById("precioRifa").innerText =
+            `💰 $${rifa.precio_boleto || 0} por número`;
+
+        document.getElementById("fechaRifa").innerText =
+            `📅 Sorteo: ${rifa.fecha_sorteo || "--"}`;
+
         document.getElementById("premioActual").innerText =
-            rifa.premio || rifa.titulo || "Premio seleccionado";
+            rifa.premio || rifa.titulo || "";
     }
 
     await cargarBoletos();
@@ -1094,22 +1103,6 @@ async function abrirRifa(rifaId){
         behavior: "smooth",
         block: "start"
     });
-}
-
-const rifa = rifas.find(r => r.id === rifaId);
-
-if(rifa){
-    document.getElementById("nombreRifa").innerText =
-        rifa.nombre || "Sin nombre";
-
-    document.getElementById("precioRifa").innerText =
-        `💰 $${rifa.precio || 0} por número`;
-
-    document.getElementById("fechaRifa").innerText =
-        `📅 Sorteo: ${rifa.fecha_sorteo || "--"}`;
-
-    document.getElementById("premioActual").innerText =
-        rifa.nombre || "";
 }	
 
 // 🔥 CARGAR BOLETOS
