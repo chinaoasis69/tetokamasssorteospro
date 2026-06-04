@@ -1059,15 +1059,19 @@ async function cargarRifasPublicas(){
 }
 
 async function abrirRifa(rifaId){
-
     RIFA_ID = rifaId;
 
-	const rifa = rifas.find(r => r.id === rifaId);
+    const { data: rifa, error } = await supabaseClient
+        .from("rifas")
+        .select("*")
+        .eq("id", rifaId)
+        .single();
 
-if(rifa){
-   document.getElementById("premioActual").innerText =
-   rifa.premio;
-}
+    if(!error && rifa){
+        document.getElementById("premioActual").innerText =
+            rifa.premio || rifa.titulo || "Premio seleccionado";
+    }
+
     await cargarBoletos();
 
     document.getElementById("grid").scrollIntoView({
