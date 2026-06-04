@@ -186,7 +186,11 @@ input{
 
   <div id="porcentajeRifa" class="stats">
   📊 Vendidos: 0 / 0 · 0%
-  </div>	
+  </div>
+
+	<div style="width:100%; background:#222; border:1px solid #39ff14; border-radius:10px; overflow:hidden; margin:10px 0;">
+  <div id="barraPorcentaje" style="width:0%; height:18px; background:#39ff14;"></div>
+</div>
 
 <div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
   <h2>🎰 MASS LUCKY SPIN</h2>
@@ -1105,6 +1109,8 @@ const porcentaje = total > 0
 
 document.getElementById("porcentajeRifa").innerText =
   `📊 Vendidos: ${vendidos} / ${total} · ${porcentaje}%`;
+
+document.getElementById("barraPorcentaje").style.width = porcentaje + "%";	
 
 aplicarFiltros();
 }
