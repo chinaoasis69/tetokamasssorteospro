@@ -184,7 +184,15 @@ input{
             display:none;
         "
     >
-</div>	
+</div>
+
+<div id="galeriaRifa" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0;"></div>
+
+<button id="btnVideoRifa"
+  onclick="abrirVideoRifa()"
+  style="display:none;">
+  🎥 Ver video del premio
+</button>	
 
 <h2>🎁 Sorteo Seleccionado</h2>
 
@@ -1111,6 +1119,43 @@ async function abrirRifa(rifaId){
         document.getElementById("premioActual").innerText =
             rifa.premio || rifa.titulo || "";
 
+		const galeria = document.getElementById("galeriaRifa");
+galeria.innerHTML = "";
+
+const imagenes = [
+  rifa.imagen_url,
+  rifa.imagen2_url,
+  rifa.imagen3_url,
+  rifa.imagen4_url,
+  rifa.imagen5_url
+].filter(Boolean);
+
+imagenes.forEach(url => {
+  const mini = document.createElement("img");
+  mini.src = url;
+  mini.style.width = "70px";
+  mini.style.height = "70px";
+  mini.style.objectFit = "cover";
+  mini.style.borderRadius = "10px";
+  mini.style.border = "2px solid #39ff14";
+  mini.style.cursor = "pointer";
+
+  mini.onclick = () => {
+    document.getElementById("imagenRifa").src = url;
+  };
+
+  galeria.appendChild(mini);
+});
+
+const btnVideo = document.getElementById("btnVideoRifa");
+
+if (rifa.video_url) {
+  btnVideo.style.display = "inline-block";
+  btnVideo.dataset.video = rifa.video_url;
+} else {
+  btnVideo.style.display = "none";
+}
+
 		const img = document.getElementById("imagenRifa");
 
 if(rifa.imagen_url){
@@ -1314,6 +1359,13 @@ function numeroSuerte(){
   const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
   seleccionarBoleto(ganador);
 }
+
+function abrirVideoRifa(){
+  const btn = document.getElementById("btnVideoRifa");
+  if(btn.dataset.video){
+    window.open(btn.dataset.video, "_blank");
+  }
+}	
 
 async function registrarPago(){
   if(!boletoSeleccionado){
