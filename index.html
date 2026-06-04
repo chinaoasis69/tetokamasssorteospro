@@ -171,8 +171,8 @@ input{
 
 <div class="panel">
 
-  <h2>🚘 Premio Principal</h2>
-  <h3>Ford Lobo 2018</h3>
+  <h2>🎁 Premio Principal</h2>
+<p id="premioActual">Selecciona una rifa</p>
 
   <button class="btn-main" onclick="numeroSuerte()">🎲 Número de la suerte</button>
   <button class="btn-dark" onclick="cargarBoletos()">🔄 Actualizar</button>
@@ -1061,6 +1061,13 @@ async function cargarRifasPublicas(){
 async function abrirRifa(rifaId){
 
     RIFA_ID = rifaId;
+
+	const rifa = rifas.find(r => r.id === rifaId);
+
+if(rifa){
+   document.getElementById("premioActual").innerText =
+   rifa.premio;
+}
     await cargarBoletos();
 
     document.getElementById("grid").scrollIntoView({
