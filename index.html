@@ -1101,6 +1101,8 @@ const vendidos = boletos.filter(b =>
   (b.estado || "").toLowerCase() === "vendido"
 ).length;
 
+const disponibles = total - vendidos;	
+
 const total = boletos.length;
 
 const porcentaje = total > 0
@@ -1108,7 +1110,7 @@ const porcentaje = total > 0
   : 0;
 
 document.getElementById("porcentajeRifa").innerText =
-  `📊 Vendidos: ${vendidos} / ${total} · ${porcentaje}%`;
+`📊 Vendidos: ${vendidos} | Disponibles: ${disponibles} | ${porcentaje}%`;
 
 document.getElementById("barraPorcentaje").style.width = porcentaje + "%";	
 
