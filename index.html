@@ -1697,7 +1697,7 @@ data.forEach(t => {
 document.getElementById("misBoletos").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
   const lista = agrupados[rifaId];
   const sorteo = mapaSorteos[rifaId];
-  const nombre = sorteo ? (sorteo.premio || sorteo.titulo) : "Sorteo anterior";
+  const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
   const idBox = "mis_boletos_" + i;
 
   return `
