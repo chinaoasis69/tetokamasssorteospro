@@ -1726,8 +1726,7 @@ const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
   .eq("telefono", tel)
-  .eq("estado", "vendido")
-  .neq("rifa_id", rifaActual)	
+  .eq("estado", "vendido")	
   .order("fecha", { ascending:false });
 
 if(error){
