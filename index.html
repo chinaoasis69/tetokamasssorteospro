@@ -184,6 +184,10 @@ input{
 
   <div class="stats" id="stats">Cargando números...</div>
 
+  <div id="porcentajeRifa" class="stats">
+  📊 Vendidos: 0 / 0 · 0%
+  </div>	
+
 <div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
   <h2>🎰 MASS LUCKY SPIN</h2>
   <p>Giro promocional sin valor en efectivo</p>
@@ -1087,8 +1091,22 @@ if(!RIFA_ID){
 }
 
   boletos = data || [];
-  boletos.sort((a,b) => a.numero.localeCompare(b.numero));	
-  aplicarFiltros();
+boletos.sort((a,b) => a.numero.localeCompare(b.numero));
+
+const vendidos = boletos.filter(b =>
+  (b.estado || "").toLowerCase() === "vendido"
+).length;
+
+const total = boletos.length;
+
+const porcentaje = total > 0
+  ? ((vendidos / total) * 100).toFixed(1)
+  : 0;
+
+document.getElementById("porcentajeRifa").innerText =
+  `📊 Vendidos: ${vendidos} / ${total} · ${porcentaje}%`;
+
+aplicarFiltros();
 }
 
 // 🔥 FILTROS
