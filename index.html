@@ -1654,18 +1654,11 @@ async function cargarHistorialPremios(){
 }
 
 async function cargarMisBoletos(){
-const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
-
-if(!RIFA_ID){
-  document.getElementById("misBoletos").innerHTML =
-    "Selecciona una rifa primero";
-  return;
-}	
+const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();	
 
 const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
-  .eq("rifa_id", RIFA_ID)
   .eq("telefono", tel)
   .eq("estado", "vendido")
   .order("fecha", { ascending:false });
