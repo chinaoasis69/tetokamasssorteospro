@@ -591,9 +591,15 @@ year: "numeric"
 ✏️ Editar rifa
 </button>
 
+${r.estado === 'pausada' ? `
+<button onclick="activarRifaAdmin('${r.id}')">
+▶️ Reanudar rifa
+</button>
+` : `
 <button onclick="pausarRifa('${r.id}')">
 ⏸️ Pausar rifa
 </button>
+`}
 
 <button onclick="eliminarRifa('${r.id}')"
 style="background:#a30000;color:white;">
@@ -621,9 +627,15 @@ margin-top:8px;
 ✏️ Editar rifa
 </button>
 
+${r.estado === 'pausada' ? `
+<button onclick="activarRifaAdmin('${r.id}')">
+▶️ Reanudar rifa
+</button>
+` : `
 <button onclick="pausarRifa('${r.id}')">
 ⏸️ Pausar rifa
 </button>
+`}
 
 <button onclick="eliminarRifa('${r.id}')"
 style="background:#a30000;color:white;">
