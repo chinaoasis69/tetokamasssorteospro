@@ -2130,8 +2130,6 @@ function cerrarSesion(){
 // Realtime
 loginMASS().then(async () => {
 
-    await cargarClienteActual();
-
     await asegurarWallet();
 
     cargarSaldo();
