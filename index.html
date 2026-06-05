@@ -1296,7 +1296,6 @@ async function cargarRifasPublicas(){
     const { data: rifas, error } = await supabaseClient
         .from("rifas")
         .select("*")
-		.eq("cliente_id", clienteActual.id)
         .in("estado", ["activa","programada"]);
 
     if(error){
