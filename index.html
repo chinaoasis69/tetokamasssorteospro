@@ -1166,9 +1166,14 @@ async function cargarClienteActual(){
 
   if(error){
     console.error("Error cliente:", error);
-    alert("Error cargando cliente");
+
+    alert(
+      "Error cliente:\n" +
+      JSON.stringify(error)
+    );
+
     return;
-  }
+}
 
   if(!data){
     alert("Cliente no activo o no encontrado");
