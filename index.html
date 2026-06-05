@@ -1366,6 +1366,9 @@ async function abrirRifa(rifaId){
         .single();
 
     if(!error && rifa){
+		if(rifa.cliente_id){
+   await cargarClientePorId(rifa.cliente_id);
+}
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
