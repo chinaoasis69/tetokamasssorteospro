@@ -1158,7 +1158,7 @@ document.getElementById("saldoBox").innerText =
 async function cargarClienteActual(){
 
   const { data, error } = await supabaseClient
-    .from("clientes_sorteos")
+    .from("clientes_sorteo")
     .select("*")
     .eq("slug", CLIENTE_SLUG)
     .eq("mostrar_activo", true)
