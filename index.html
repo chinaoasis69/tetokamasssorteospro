@@ -1319,6 +1319,43 @@ async function cargarRifasPublicas(){
     `).join("");
 }
 
+async function cargarClientePorId(clienteId){
+
+  if(!clienteId) return;
+
+  const { data, error } = await supabaseClient
+    .from("clientes_sorteo")
+    .select("*")
+    .eq("id", clienteId)
+    .eq("mostrar_activo", true)
+    .maybeSingle();
+
+  if(error || !data){
+    console.error("Error cliente por rifa:", error);
+    return;
+  }
+
+  clienteActual = data;
+  WHATSAPP = data.whatsapp || "19563724890";
+
+  document.querySelector("h1").innerText =
+    "🔥 " + (data.nombre_publico || data.nombre || "MASS SORTEOS") + " 🔥";
+
+  const sloganBox = document.getElementById("sloganCliente");
+  if(sloganBox) sloganBox.innerText = data.slogan || "";
+
+  const logo = document.getElementById("logoCliente");
+  if(logo && data.logo_pequeno_url){
+    logo.src = data.logo_pequeno_url;
+    logo.style.display = "block";
+  }
+
+  document.getElementById("pagoZelle").textContent = data.zelle || "--";
+  document.getElementById("pagoCashapp").textContent = data.cashapp || "--";
+  document.getElementById("pagoApplePay").textContent = data.apple_pay || "--";
+  document.getElementById("pagoPaypal").textContent = data.paypal || "--";
+}	
+
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
