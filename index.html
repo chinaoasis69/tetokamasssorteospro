@@ -183,6 +183,12 @@ input{
 
 </div>	
   <h1>🔥 TE-TO-KA MASS SORTEOS PRO 🔥</h1>
+<div id="sloganCliente" style="
+    color:#fff;
+    font-size:14px;
+    margin-top:5px;
+">
+</div>	
   <div class="sub">Powered by TE-TO-KA SOLUTIONS, LLC</div>
 </header>
 
@@ -1220,7 +1226,13 @@ document.getElementById("pagoApplePay").textContent =
   data.apple_pay || "--";
 
 document.getElementById("pagoPaypal").textContent =
-  data.paypal || "--";	
+  data.paypal || "--";
+
+const sloganBox = document.getElementById("sloganCliente");
+
+if(sloganBox){
+  sloganBox.innerText = data.slogan || "";
+}	
 
   document.querySelector("h1").innerText =
     "🔥 " + (data.nombre_publico || data.nombre || "MASS SORTEOS") + " 🔥";
