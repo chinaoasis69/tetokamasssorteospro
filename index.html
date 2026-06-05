@@ -874,8 +874,26 @@ async function editarRifaAdmin(id){
 function mostrarConfigAdmin(){
 
     document.getElementById("adminContenido").innerHTML = `
-        <h3>⚙️ Configuración</h3>
-        <p>Aquí administraremos WhatsApp, precios y métodos de pago.</p>
+<h3>⚙️ Configuración</h3>
+
+<input id="cfgNombre" placeholder="Nombre público"><br><br>
+
+<input id="cfgSlogan" placeholder="Slogan"><br><br>
+
+<input id="cfgWhatsapp" placeholder="WhatsApp"><br><br>
+
+<input id="cfgZelle" placeholder="Zelle"><br><br>
+
+<input id="cfgCashapp" placeholder="Cash App"><br><br>
+
+<input id="cfgApplePay" placeholder="Apple Pay"><br><br>
+
+<input id="cfgPaypal" placeholder="PayPal"><br><br>
+
+<button onclick="guardarConfigCliente()">
+💾 Guardar cambios
+</button>
+`;
     `;
 
 }	
