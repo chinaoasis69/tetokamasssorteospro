@@ -165,6 +165,23 @@ input{
 <body>
 
 <header>
+
+<div style="text-align:center;margin-bottom:10px;">
+
+  <img
+    id="logoCliente"
+    src=""
+    style="
+      display:none;
+      width:80px;
+      height:80px;
+      object-fit:cover;
+      border-radius:50%;
+      border:3px solid #39ff14;
+    "
+  >
+
+</div>	
   <h1>🔥 TE-TO-KA MASS SORTEOS PRO 🔥</h1>
   <div class="sub">Powered by TE-TO-KA SOLUTIONS, LLC</div>
 </header>
@@ -357,9 +374,10 @@ Cargando historial...
 
   <div class="card">
     <h2>💳 Métodos de pago</h2>
-    <p><b>Zelle:</b> 9563724890</p>
-    <p><b>Cash App:</b> $MarPer69</p>
-    <p><b>Apple Pay:</b> 9563724890</p>
+    <p><b>Zelle:</b> <span id="pagoZelle">--</span></p>
+    <p><b>Cash App:</b> <span id="pagoCashapp">--</span></p>
+    <p><b>Apple Pay:</b> <span id="pagoApplePay">--</span></p>
+    <p><b>PayPal:</b> <span id="pagoPaypal">--</span></p>
     <p>Después de pagar, manda comprobante por WhatsApp.</p>
   </div>
 
@@ -956,7 +974,7 @@ async function loginMASS(){
   alert("✅ Bienvenido a MASS");
 }
 
-const WHATSAPP = "19563724890";
+let WHATSAPP = "19563724890";
 
 let boletos = [];
 let filtrados = [];
@@ -1181,6 +1199,28 @@ async function cargarClienteActual(){
   }
 
   clienteActual = data;
+WHATSAPP = data.whatsapp || "19563724890";
+if(data.logo_pequeno_url){
+
+  const logo = document.getElementById("logoCliente");
+
+  if(logo){
+    logo.src = data.logo_pequeno_url;
+    logo.style.display = "block";
+  }
+
+}	
+document.getElementById("pagoZelle").textContent =
+  data.zelle || "--";
+
+document.getElementById("pagoCashapp").textContent =
+  data.cashapp || "--";
+
+document.getElementById("pagoApplePay").textContent =
+  data.apple_pay || "--";
+
+document.getElementById("pagoPaypal").textContent =
+  data.paypal || "--";	
 
   document.querySelector("h1").innerText =
     "🔥 " + (data.nombre_publico || data.nombre || "MASS SORTEOS") + " 🔥";
