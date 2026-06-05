@@ -1155,6 +1155,32 @@ document.getElementById("saldoBox").innerText =
   "Saldo: " + data.saldo + " MASS";
 }
 
+async function cargarClienteActual(){
+
+  const { data, error } = await supabaseClient
+    .from("clientes_sorteos")
+    .select("*")
+    .eq("slug", CLIENTE_SLUG)
+    .eq("mostrar_activo", true)
+    .maybeSingle();
+
+  if(error){
+    console.error("Error cliente:", error);
+    alert("Error cargando cliente");
+    return;
+  }
+
+  if(!data){
+    alert("Cliente no activo o no encontrado");
+    return;
+  }
+
+  clienteActual = data;
+
+  document.querySelector("h1").innerText =
+    "🔥 " + (data.nombre_publico || data.nombre || "MASS SORTEOS") + " 🔥";
+}	
+
 async function cargarRifasPublicas(){
 
     const { data: rifas, error } = await supabaseClient
@@ -1991,15 +2017,17 @@ function cerrarSesion(){
 }
 
 // Realtime
-loginMASS().then(() => {
+loginMASS().then(async () => {
 
-    asegurarWallet().then(() => {
-        cargarSaldo();
-		cargarRifasPublicas();
-        cargarMisBoletos();
-		cargarHistorialSorteos();
-		cargarHistorialPremios();
-    });
+    await cargarClienteActual();
+
+    await asegurarWallet();
+
+    cargarSaldo();
+    cargarRifasPublicas();
+    cargarMisBoletos();
+    cargarHistorialSorteos();
+    cargarHistorialPremios();
 
 });
 
