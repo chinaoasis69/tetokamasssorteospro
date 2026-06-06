@@ -941,7 +941,7 @@ async function validarPagoAdmin(numero){
     pin_giro: pin,
     giro_usado: false,
     fecha: new Date().toISOString(),
-	rifa_id: rifaActual
+	rifa_id: RIFA_ID
   })
   .eq("numero", numero)
   .eq("estado", "apartado");
