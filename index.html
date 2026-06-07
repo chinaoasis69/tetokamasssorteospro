@@ -1408,10 +1408,10 @@ document.getElementById("saldoBox").innerText =
 async function cargarClienteActual(){
 
   const { data, error } = await supabaseClient
-    .from("clientes_sorteo")
-    .select("*")
-    .eq("slug", CLIENTE_SLUG)
-    .maybeSingle();
+  .from("organizadores")
+  .select("*")
+  .eq("slug", CLIENTE_SLUG)
+  .maybeSingle();
 
   if(error){
     console.error("Error cliente:", error);
