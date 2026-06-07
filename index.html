@@ -543,12 +543,14 @@ async function mostrarSorteosAdmin(){
         .select("*")
         .order("created_at", { ascending:false });
 
-    if(error){
-        console.error(error);
-        document.getElementById("adminContenido").innerHTML =
-        "<p>❌ Error cargando sorteos.</p>";
-        return;
-    }
+   if(error){
+  console.error("ERROR SORTEOS ADMIN:", error);
+  alert("ERROR SORTEOS ADMIN:\n" + JSON.stringify(error));
+
+  document.getElementById("adminContenido").innerHTML =
+  "<p>❌ Error cargando sorteos.</p>";
+  return;
+} 
 
     if(!data || data.length === 0){
     document.getElementById("adminContenido").innerHTML = `
