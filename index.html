@@ -1126,7 +1126,7 @@ await supabaseClient
   .eq("user_id", userActual);
 await supabaseClient.from("tickets").insert({
   user_id: userActual,
-  rifa_id: rifaActual,	
+  rifa_id: RIFA_ID,	
   numero: boletoSeleccionado.numero,
   pin_giro: pinGiro,
   monto: precioBoleto,
@@ -1140,7 +1140,7 @@ await supabaseClient
 .from("historial_premios")
 .insert({
     user_id: userActual,
-	rifa_id: rifaActual,
+	rifa_id: RIFA_ID,
     numero: boletoSeleccionado.numero,
     premio: ganador
 });
@@ -1580,7 +1580,7 @@ async function apartarWhats(){
       estado: "apartado",
       nombre: nombre,
       telefono: telefono,
-	  rifa_id: rifaActual
+	  rifa_id: RIFA_ID
     })
     .eq("id", boletoSeleccionado.id);
 
@@ -1652,7 +1652,7 @@ async function registrarPago(){
   nombre: nombre,
   telefono: telefono,
   fecha: new Date().toISOString(),
-  rifa_id: rifaActual
+  rifa_id: RIFA_ID
 })
     .eq("id", boletoSeleccionado.id);
 
@@ -1798,7 +1798,7 @@ async function girarLuckySpin(pinYaValidado = false){
   user_id: userActual,
   numero: boletoSeleccionado.numero,
   premio: ganador,
-  rifa_id: rifaActual
+  rifa_id: RIFA_ID
 });
 
 cargarHistorialPremios();	
