@@ -543,10 +543,6 @@ async function mostrarSorteosAdmin(){
   .select("*")
   .order("created_at", { ascending: false });
 
-if (clienteActual?.id) {
-  query = query.eq("organizador_id", clienteActual.id);
-}
-
 const { data, error } = await query;
 
    if(error){
