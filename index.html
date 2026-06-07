@@ -540,8 +540,13 @@ async function mostrarSorteosAdmin(){
 
     let query = supabaseClient
   .from("rifas")
-  .select("*")
-  .order("created_at", { ascending: false });
+  .select("*");
+
+if (clienteActual?.id) {
+  query = query.eq("organizador_id", clienteActual.id);
+}
+
+query = query.order("created_at", { ascending:false });
 
 const { data, error } = await query;
 
