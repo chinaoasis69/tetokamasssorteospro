@@ -1034,6 +1034,37 @@ async function mostrarOrganizadoresAdmin(){
       </div>
     `).join("")}
   `;
+}
+
+async function crearOrganizadorAdmin(){
+
+  const nombre = prompt("Nombre del organizador");
+  if(!nombre) return;
+
+  const slug = prompt("Slug ejemplo: rifas-matamoros");
+  if(!slug) return;
+
+  const email = prompt("Email del organizador") || "";
+  const telefono = prompt("Teléfono / WhatsApp") || "";
+
+  const { error } = await supabaseClient
+    .from("organizadores")
+    .insert([{
+      nombre,
+      slug,
+      email,
+      telefono,
+      activo: true
+    }]);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error creando organizador");
+    return;
+  }
+
+  alert("✅ Organizador creado");
+  mostrarOrganizadoresAdmin();
 }	
 
 async function validarPagoAdmin(numero){
