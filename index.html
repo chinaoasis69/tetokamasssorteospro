@@ -1035,8 +1035,13 @@ async function mostrarOrganizadoresAdmin(){
         <b>${o.nombre}</b><br>
         Slug: ${o.slug}<br>
         Tel: ${o.telefono || "--"}<br>
-        Activo: ${o.activo ? "Sí" : "No"}
-      </div>
+        Activo: ${o.activo ? "Sí" : "No"}<br><br>
+
+<button onclick="seleccionarOrganizadorAdmin('${o.id}')">
+  🎯 Ver / Crear Rifas
+</button>
+
+</div>
     `).join("")}
   `;
 }
