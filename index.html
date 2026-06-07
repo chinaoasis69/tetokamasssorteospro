@@ -1307,6 +1307,10 @@ if(sloganBox){
 
 async function cargarRifasPublicas(){
 
+	if (!clienteActual) {
+  await cargarClienteActual();
+}
+
     const { data: rifas, error } = await supabaseClient
         .from("rifas")
         .select("*")
