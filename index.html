@@ -1065,7 +1065,11 @@ async function seleccionarOrganizadorAdmin(id){
     return;
   }
 
-  clienteActual = data;
+clienteActual = data;
+localStorage.setItem("organizador_admin_id", data.id);
+	
+await cargarClienteActual();
+await cargarRifasPublicas();	
 
   alert("✅ Organizador seleccionado: " + data.nombre);
 
@@ -1410,7 +1414,7 @@ async function cargarClienteActual(){
   const { data, error } = await supabaseClient
   .from("organizadores")
   .select("*")
-  .eq("slug", CLIENTE_SLUG)
+  .eq("id", localStorage.getItem("organizador_admin_id") || clienteActual?.id)
   .maybeSingle();
 
   if(error){
