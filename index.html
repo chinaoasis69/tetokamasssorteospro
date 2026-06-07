@@ -902,6 +902,12 @@ function mostrarConfigAdmin(){
 <button onclick="guardarConfigCliente()">
 💾 Guardar cambios
 </button>
+
+<br><br>
+
+<button onclick="mostrarOrganizadoresAdmin()">
+  👤 Organizadores
+</button>
 `;
 
 document.getElementById("cfgNombre").value = clienteActual?.nombre_publico || "";
@@ -944,6 +950,90 @@ async function guardarConfigCliente(){
   alert("✅ Configuración actualizada");
 
   await cargarClienteActual();
+}
+
+async function mostrarOrganizadoresAdmin(){
+
+  document.getElementById("adminContenido").innerHTML =
+    "<p>Cargando organizadores...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("organizadores")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  if(error){
+    console.error(error);
+    document.getElementById("adminContenido").innerHTML =
+      "<p>❌ Error cargando organizadores.</p>";
+    return;
+  }
+
+  document.getElementById("adminContenido").innerHTML = `
+    <h3>👤 Organizadores</h3>
+
+    <button onclick="crearOrganizadorAdmin()">
+      ➕ Nuevo Organizador
+    </button>
+
+    <br><br>
+
+    ${(data || []).map(o => `
+      <div style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin:10px 0;
+      ">
+        <b>${o.nombre}</b><br>
+        Slug: ${o.slug}<br>
+        Tel: ${o.telefono || "--"}<br>
+        Activo: ${o.activo ? "Sí" : "No"}
+      </div>
+    `).join("")}
+  `;
+}
+
+async function mostrarOrganizadoresAdmin(){
+
+  document.getElementById("adminContenido").innerHTML =
+    "<p>Cargando organizadores...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("organizadores")
+    .select("*")
+    .order("created_at", { ascending:false });
+
+  if(error){
+    console.error(error);
+    document.getElementById("adminContenido").innerHTML =
+      "<p>❌ Error cargando organizadores.</p>";
+    return;
+  }
+
+  document.getElementById("adminContenido").innerHTML = `
+    <h3>👤 Organizadores</h3>
+
+    <button onclick="crearOrganizadorAdmin()">
+      ➕ Nuevo Organizador
+    </button>
+
+    <br><br>
+
+    ${(data || []).map(o => `
+      <div style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin:10px 0;
+      ">
+        <b>${o.nombre}</b><br>
+        Slug: ${o.slug}<br>
+        Tel: ${o.telefono || "--"}<br>
+        Activo: ${o.activo ? "Sí" : "No"}
+      </div>
+    `).join("")}
+  `;
 }	
 
 async function validarPagoAdmin(numero){
