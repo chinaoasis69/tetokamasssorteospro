@@ -909,6 +909,12 @@ document.getElementById("cfgPaypal").value = clienteActual.paypal || "";
 
 async function guardarConfigCliente(){
 
+  if(!clienteActual || !clienteActual.id){
+    alert("❌ No hay cliente cargado. Cierra y abre el panel otra vez.");
+    console.log("clienteActual:", clienteActual);
+    return;
+  }
+
   const { error } = await supabaseClient
     .from("clientes_sorteo")
     .update({
@@ -923,6 +929,7 @@ async function guardarConfigCliente(){
     .eq("id", clienteActual.id);
 
   if(error){
+    console.error("ERROR GUARDANDO CONFIG:", error);
     alert("❌ Error guardando configuración: " + error.message);
     return;
   }
