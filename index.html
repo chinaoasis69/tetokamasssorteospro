@@ -875,6 +875,10 @@ async function editarRifaAdmin(id){
 
 function mostrarConfigAdmin(){
 
+	if(!clienteActual){
+   cargarClienteActual();
+}
+
     document.getElementById("adminContenido").innerHTML = `
 <h3>⚙️ Configuración</h3>
 
@@ -897,13 +901,13 @@ function mostrarConfigAdmin(){
 </button>
 `;
 
-document.getElementById("cfgNombre").value = clienteActual.nombre_publico || "";
-document.getElementById("cfgSlogan").value = clienteActual.slogan || "";
-document.getElementById("cfgWhatsapp").value = clienteActual.whatsapp || "";
-document.getElementById("cfgZelle").value = clienteActual.zelle || "";
-document.getElementById("cfgCashapp").value = clienteActual.cashapp || "";
-document.getElementById("cfgApplePay").value = clienteActual.apple_pay || "";
-document.getElementById("cfgPaypal").value = clienteActual.paypal || "";	
+document.getElementById("cfgNombre").value = clienteActual?.nombre_publico || "";
+document.getElementById("cfgSlogan").value = clienteActual?.slogan || "";
+document.getElementById("cfgWhatsapp").value = clienteActual?.whatsapp || "";
+document.getElementById("cfgZelle").value = clienteActual?.zelle || "";
+document.getElementById("cfgCashapp").value = clienteActual?.cashapp || "";
+document.getElementById("cfgApplePay").value = clienteActual?.apple_pay || "";
+document.getElementById("cfgPaypal").value = clienteActual?.paypal || "";	
 
 }
 
