@@ -2013,8 +2013,10 @@ const { data, error } = await supabaseClient
 if(error){
   console.error("ERROR HISTORIAL:", error);
 
-  document.getElementById("historialSorteos").innerHTML =
-    "Error cargando historial: " + error.message;
+  const contHistorial = document.getElementById("historialSorteos");
+if (contHistorial) {
+  contHistorial.innerHTML = "Error cargando historial: " + error.message;
+}
 
   return;
 }
@@ -2079,9 +2081,9 @@ Object.keys(agrupados).forEach(rifa => {
 
 });
 
-document.getElementById("historialSorteos").innerHTML =
-html || "Sin historial";
-
+const contHistorial = document.getElementById("historialSorteos");
+if (contHistorial) {
+  contHistorial.innerHTML = html || "Sin historial";
 }
 
 async function cargarHistorialPremios(){
