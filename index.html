@@ -964,9 +964,9 @@ async function guardarConfigCliente(){
   }
 
   const { error } = await supabaseClient
-    .from("clientes_sorteo")
+    .from("organizadores")
     .update({
-      nombre_publico: document.getElementById("cfgNombre").value.trim(),
+      nombre: document.getElementById("cfgNombre").value.trim(),
       slogan: document.getElementById("cfgSlogan").value.trim(),
       whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
       zelle: document.getElementById("cfgZelle").value.trim(),
