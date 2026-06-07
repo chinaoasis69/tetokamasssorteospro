@@ -926,7 +926,7 @@ async function guardarConfigCliente(){
       apple_pay: document.getElementById("cfgApplePay").value.trim(),
       paypal: document.getElementById("cfgPaypal").value.trim()
     })
-    .eq("id", clienteActual.id);
+    .eq("slug", CLIENTE_SLUG);
 
   if(error){
     console.error("ERROR GUARDANDO CONFIG:", error);
