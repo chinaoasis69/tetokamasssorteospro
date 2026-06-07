@@ -1247,7 +1247,6 @@ async function cargarClienteActual(){
     .from("clientes_sorteo")
     .select("*")
     .eq("slug", CLIENTE_SLUG)
-    .eq("mostrar_activo", true)
     .maybeSingle();
 
   if(error){
