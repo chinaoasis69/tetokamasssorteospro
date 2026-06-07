@@ -1411,11 +1411,19 @@ document.getElementById("saldoBox").innerText =
 
 async function cargarClienteActual(){
 
-  const { data, error } = await supabaseClient
-  .from("organizadores")
-  .select("*")
-  .eq("id", localStorage.getItem("organizador_admin_id") || clienteActual?.id)
-  .maybeSingle();
+  const orgIdGuardado = localStorage.getItem("organizador_admin_id");
+
+let query = supabaseClient
+.from("organizadores")
+.select("*");
+
+if(orgIdGuardado){
+    query = query.eq("id", orgIdGuardado);
+}else{
+    query = query.eq("slug", CLIENTE_SLUG);
+}
+
+const { data, error } = await query.maybeSingle();
 
   if(error){
     console.error("Error cliente:", error);
