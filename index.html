@@ -767,7 +767,7 @@ const imagen = prompt(
 "URL de imagen del premio (opcional)"
 ) || "";
 
-    const { error } = await supabaseClient
+    const { data: nuevaRifa, error } = await supabaseClient
     .from("rifas")
     .insert([{
         titulo: titulo,
@@ -780,7 +780,9 @@ cifras_sorteo: Number(cifras),
 imagen_url: imagen,
 estado: "programada",
 organizador_id: clienteActual.id		
-    }]);
+    }])
+.select()
+.single();
 
     if(error){
         console.error(error);
@@ -788,10 +790,38 @@ organizador_id: clienteActual.id
         return;
     }
 
-    alert("✅ Rifa creada");
+	await generarBoletosParaRifa(nuevaRifa.id, Number(total));
 
+    alert("✅ Rifa creada");
     mostrarSorteosAdmin();
 }
+
+async function generarBoletosParaRifa(rifaId, total){
+
+    const boletos = [];
+
+    for(let i = 0; i < total; i++){
+
+        boletos.push({
+            rifa_id: rifaId,
+            numero: String(i).padStart(4,"0"),
+            estado: "disponible"
+        });
+
+    }
+
+    const { error } = await supabaseClient
+        .from("boletos")
+        .insert(boletos);
+
+    if(error){
+        console.error(error);
+        alert("⚠️ Rifa creada pero hubo error generando boletos");
+        return;
+    }
+
+    console.log("Boletos generados:", total);
+}	
 
 async function activarRifaAdmin(id){
 
