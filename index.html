@@ -989,6 +989,11 @@ async function mostrarOrganizadoresAdmin(){
         Slug: ${o.slug}<br>
         Tel: ${o.telefono || "--"}<br>
         Activo: ${o.activo ? "Sí" : "No"}
+
+	<br><br>
+<button onclick="seleccionarOrganizadorAdmin('${o.id}')">
+  🎯 Ver / Crear Rifas
+</button>	
       </div>
     `).join("")}
   `;
@@ -1035,6 +1040,27 @@ async function mostrarOrganizadoresAdmin(){
     `).join("")}
   `;
 }
+
+async function seleccionarOrganizadorAdmin(id){
+
+  const { data, error } = await supabaseClient
+    .from("organizadores")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(error){
+    console.error(error);
+    alert("❌ Error seleccionando organizador");
+    return;
+  }
+
+  clienteActual = data;
+
+  alert("✅ Organizador seleccionado: " + data.nombre);
+
+  mostrarSorteosAdmin();
+}	
 
 async function crearOrganizadorAdmin(){
 
