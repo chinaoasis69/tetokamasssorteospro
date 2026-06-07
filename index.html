@@ -1322,7 +1322,7 @@ async function cargarRifasPublicas(){
     cont.innerHTML = rifas.map(r => `
         <div class="card" style="margin:10px 0">
            <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
-  🎯 Organizado por: ${clienteActual?.nombre_publico || "Rifas"}
+  🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
 </p>
 
 <h3>🎁 ${r.premio}</h3> 
