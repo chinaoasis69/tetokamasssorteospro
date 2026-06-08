@@ -1619,6 +1619,16 @@ async function cargarRifasPublicas(){
         return;
     }
 
+for (let r of rifas) {
+  const { data: premios } = await supabaseClient
+    .from("premios_rifa")
+    .select("*")
+    .eq("rifa_id", r.id)
+    .order("lugar", { ascending: true });
+
+  r.premios_lista = premios || [];
+}	
+
     const cont = document.getElementById("listaRifas");
 
     cont.innerHTML = rifas.map(r => `
@@ -1627,7 +1637,10 @@ async function cargarRifasPublicas(){
   🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
 </p>
 
-<h3>🎁 ${r.premio}</h3> 
+<h3>🏆 Premios</h3>
+${(r.premios_lista || []).map(p => `
+  <p><b>${p.lugar}° Premio:</b> ${p.nombre}<br>${p.descripcion || ""}</p>
+`).join("")} 
             <p>💰 $${r.precio_boleto || 0}</p>
             <p>🎟️ ${r.total_numeros} números</p>
 
