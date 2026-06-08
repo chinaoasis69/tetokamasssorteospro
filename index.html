@@ -565,6 +565,9 @@ async function mostrarPatrocinadoresAdmin(){
         <h4>${p.nombre}</h4>
         <p>${p.descripcion || ""}</p>
         <p>${p.promocion || ""}</p>
+		<button onclick="eliminarPatrocinador('${p.id}')">
+  🗑️ Eliminar
+</button>
       </div>
     `).join("")}
   `;
@@ -607,6 +610,27 @@ const { error } = await supabaseClient
   }
 
   alert("✅ Patrocinador agregado");
+  mostrarPatrocinadoresAdmin();
+}
+
+async function eliminarPatrocinador(id){
+
+  const confirmar = confirm("¿Eliminar este patrocinador?");
+  if(!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from("patrocinadores")
+    .delete()
+    .eq("id", id)
+    .eq("organizador_id", clienteActual.id);
+
+  if(error){
+    console.error(error);
+    alert("Error eliminando patrocinador");
+    return;
+  }
+
+  alert("Patrocinador eliminado");
   mostrarPatrocinadoresAdmin();
 }	
 
