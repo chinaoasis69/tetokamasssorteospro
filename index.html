@@ -858,19 +858,27 @@ async function administrarPremiosRifa(rifaId){
 
 <br><br>
 
-<input 
-  type="file" 
-  accept="image/*" 
-  onchange="subirImagenPremio(event, '${p.id}', '${rifaId}')"
+<label class="btn">
+📤 Subir imagen
+<input
+    type="file"
+    accept="image/*"
+    style="display:none"
+    onchange="subirImagenPremio(event, '${p.id}', '${rifaId}')"
 />
+</label>
 
 <br><br>
 
+<label class="btn">
+🎥 Subir video
 <input
-  type="file"
-  accept="video/*"
-  onchange="subirVideoPremio(event, '${p.id}', '${rifaId}')"
+    type="file"
+    accept="video/*"
+    style="display:none"
+    onchange="subirVideoPremio(event, '${p.id}', '${rifaId}')"
 />
+</label>
 
 <br><br>
 
