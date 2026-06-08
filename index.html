@@ -425,6 +425,8 @@ Cargando historial...
   🎯 Sorteos
 </button>
 
+<button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores</button>	
+
 <button onclick="mostrarConfigAdmin()">
   ⚙️ Configuración
 </button>
@@ -532,6 +534,40 @@ function mostrarPremiosAdmin(){
     `;
 
 }
+
+async function mostrarPatrocinadoresAdmin(){
+
+  const cont = document.getElementById("adminContenido");
+
+  const { data, error } = await supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .order("created_at",{ascending:false});
+
+  if(error){
+    alert("Error cargando patrocinadores");
+    console.error(error);
+    return;
+  }
+
+  cont.innerHTML = `
+    <h3>🤝 Patrocinadores</h3>
+
+    <button onclick="nuevoPatrocinador()">
+      ➕ Agregar patrocinador
+    </button>
+
+    <hr>
+
+    ${data.map(p => `
+      <div class="card">
+        <h4>${p.nombre}</h4>
+        <p>${p.descripcion || ""}</p>
+        <p>${p.promocion || ""}</p>
+      </div>
+    `).join("")}
+  `;
+}	
 
 async function mostrarSorteosAdmin(){
 
