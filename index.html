@@ -1646,7 +1646,29 @@ for (let r of rifas) {
 
     const cont = document.getElementById("listaRifas");
 
-    cont.innerHTML = rifas.map(r => `
+	cont.innerHTML = `
+  <div class="card" style="text-align:center; margin-bottom:25px;">
+    <h2>🏆 TE-TO-KA MASS SORTEOS PRO</h2>
+    <p>La plataforma profesional para administrar sorteos en línea.</p>
+    <p><b>Powered by TE-TO-KA SOLUTIONS, LLC</b></p>
+
+    <button onclick="alert('Próximamente: solicitar demo')">
+      🚀 Quiero mi plataforma
+    </button>
+
+    <button onclick="document.getElementById('listaRifas').scrollIntoView({behavior:'smooth'})">
+      🎯 Ver sorteos activos
+    </button>
+
+    <button onclick="window.open('https://wa.me/19563724890','_blank')">
+      📞 Contactar
+    </button>
+  </div>
+
+  <h2>🎯 Sorteos Activos</h2>
+`;
+
+    cont.innerHTML += rifas.map(r => `
         <div class="card" style="margin:10px 0">
            <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
   🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
