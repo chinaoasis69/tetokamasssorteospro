@@ -828,11 +828,15 @@ async function administrarPremiosRifa(rifaId){
     <br><br>
 
     ${(data || []).map(p => `
-      <div style="border:1px solid #39ff14;border-radius:12px;padding:12px;margin:10px 0;">
-        <b>${p.lugar}° Premio:</b> ${p.nombre}<br>
-        ${p.descripcion || ""}
-      </div>
-    `).join("")}
+  <div style="border:1px solid #39ff14;border-radius:12px;padding:12px;margin:10px 0;">
+    <b>${p.lugar}° Premio:</b> ${p.nombre}<br>
+    ${p.descripcion || ""}
+    <br><br>
+    <button onclick="eliminarPremioRifa('${p.id}', '${rifaId}')">
+      🗑️ Eliminar premio
+    </button>
+  </div>
+`).join("")}
   `;
 }
 
@@ -870,6 +874,31 @@ if(!lugar || !lugarNumero){
   }
 
   alert("✅ Premio guardado");
+  administrarPremiosRifa(rifaId);
+}
+
+async function eliminarPremioRifa(id, rifaId){
+
+  if(!confirm("¿Eliminar este premio?")) return;
+
+  const { data, error } = await supabaseClient
+    .from("premios_rifa")
+    .delete()
+    .eq("id", id)
+    .select();
+
+  if(error){
+    console.error(error);
+    alert("Error eliminando premio");
+    return;
+  }
+
+  if(!data || data.length === 0){
+    alert("No se eliminó el premio");
+    return;
+  }
+
+  alert("Premio eliminado");
   administrarPremiosRifa(rifaId);
 }	
 
