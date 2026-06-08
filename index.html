@@ -829,6 +829,18 @@ async function administrarPremiosRifa(rifaId){
 
     ${(data || []).map(p => `
   <div style="border:1px solid #39ff14;border-radius:12px;padding:12px;margin:10px 0;">
+
+  ${p.imagen_url ? `
+<img
+  src="${p.imagen_url}"
+  style="
+    max-width:200px;
+    border-radius:12px;
+    margin-bottom:10px;
+    display:block;
+  ">
+` : ""}
+
     <b>${p.lugar}° Premio:</b> ${p.nombre}<br>
     ${p.descripcion || ""}
     <br><br>
