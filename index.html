@@ -844,6 +844,12 @@ async function administrarPremiosRifa(rifaId){
     <b>${p.lugar}° Premio:</b> ${p.nombre}<br>
     ${p.descripcion || ""}
     <br><br>
+
+	<button onclick="editarImagenPremio('${p.id}', '${rifaId}', '${p.imagen_url || ""}')">
+🖼️ Cambiar imagen
+</button>
+
+<br><br>
     <button onclick="eliminarPremioRifa('${p.id}', '${rifaId}')">
       🗑️ Eliminar premio
     </button>
@@ -888,6 +894,33 @@ if(!lugar || !lugarNumero){
   alert("✅ Premio guardado");
   administrarPremiosRifa(rifaId);
 }
+
+async function editarImagenPremio(id, rifaId, imagenActual){
+
+  const nuevaImagen = prompt(
+    "Nueva URL de imagen del premio",
+    imagenActual || ""
+  );
+
+  if(nuevaImagen === null) return;
+
+  const { error } = await supabaseClient
+    .from("premios_rifa")
+    .update({
+      imagen_url: nuevaImagen.trim()
+    })
+    .eq("id", id);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error actualizando imagen");
+    return;
+  }
+
+  alert("✅ Imagen actualizada");
+
+  administrarPremiosRifa(rifaId);
+}	
 
 async function eliminarPremioRifa(id, rifaId){
 
