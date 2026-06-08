@@ -579,17 +579,25 @@ async function nuevoPatrocinador(){
   const logo_url = prompt("URL del logo opcional") || "";
   const whatsapp = prompt("WhatsApp del patrocinador") || "";
 
-  const { error } = await supabaseClient
-    .from("patrocinadores")
-    .insert({
-      organizador_id: clienteActual?.id || null,
-      nombre,
-      descripcion,
-      promocion,
-      logo_url,
-      whatsapp,
-      activo: true
-    });
+if(!clienteActual?.id){
+   alert("No se encontró el organizador. Cierra y abre el panel admin otra vez.");
+   return;
+}
+
+const { error } = await supabaseClient
+.from("patrocinadores")
+.insert({
+
+   organizador_id: clienteActual.id,
+
+   nombre,
+   descripcion,
+   promocion,
+   logo_url,
+   whatsapp,
+   activo: true
+
+});
 
   if(error){
     console.error(error);
