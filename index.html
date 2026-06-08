@@ -1783,6 +1783,7 @@ async function cargarPatrocinadoresPublicos(){
     .from("patrocinadores")
     .select("*")
     .eq("activo", true)
+    .eq("organizador_id", clienteActual.id)
     .order("created_at", { ascending: false });
 
   if(error){
