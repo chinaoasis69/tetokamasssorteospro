@@ -806,10 +806,17 @@ async function administrarPremiosRifa(rifaId){
     "<h3>🏆 Premios de la rifa</h3><p>Cargando premios...</p>";
 
   const { data, error } = await supabaseClient
-    .from("premios_rifa")
-    .select("*")
-    .eq("rifa_id", rifaId)
-    .order("lugar", { ascending: true });
+  .from("premios_rifa")
+  .select(`
+    *,
+    premio_media (
+      id,
+      tipo,
+      url
+    )
+  `)
+  .eq("rifa_id", rifaId)
+  .order("lugar", { ascending: true });
 
   if(error){
     console.error(error);
@@ -858,6 +865,15 @@ async function administrarPremiosRifa(rifaId){
 />
 
 <br><br>
+
+<input
+  type="file"
+  accept="video/*"
+  onchange="subirVideoPremio(event, '${p.id}', '${rifaId}')"
+/>
+
+<br><br>
+
     <button onclick="eliminarPremioRifa('${p.id}', '${rifaId}')">
       🗑️ Eliminar premio
     </button>
@@ -971,6 +987,53 @@ async function subirImagenPremio(event, premioId, rifaId){
   }
 
   alert("✅ Foto del premio subida");
+  administrarPremiosRifa(rifaId);
+}
+
+async function subirVideoPremio(event, premioId, rifaId){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const extension = file.name.split(".").pop();
+  const nombreArchivo = `${rifaId}/${premioId}-video-${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await supabaseClient
+    .storage
+    .from("premios")
+    .upload(nombreArchivo, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if(uploadError){
+    console.error(uploadError);
+    alert("❌ Error subiendo video");
+    return;
+  }
+
+  const { data: urlData } = supabaseClient
+    .storage
+    .from("premios")
+    .getPublicUrl(nombreArchivo);
+
+  const publicUrl = urlData.publicUrl;
+
+  const { error } = await supabaseClient
+    .from("premio_media")
+    .insert({
+      premio_id: premioId,
+      tipo: "video",
+      url: publicUrl
+    });
+
+  if(error){
+    console.error(error);
+    alert("❌ Video subido, pero no se guardó");
+    return;
+  }
+
+  alert("✅ Video subido");
   administrarPremiosRifa(rifaId);
 }	
 
