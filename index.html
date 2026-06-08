@@ -644,6 +644,10 @@ style="background:#a30000;color:white;">
 🗑️ Eliminar rifa
 </button>
 
+<button onclick="administrarPremiosRifa('${r.id}')">
+  🏆 Premios
+</button>
+
 <button onclick="generarBoletosRifaAdmin('${r.id}', ${r.total_numeros || 0})">
 🎟️ Generar boletos
 </button>
@@ -685,6 +689,72 @@ style="background:#a30000;color:white;">
         `).join("")}
     `;
 }
+
+async function administrarPremiosRifa(rifaId){
+  document.getElementById("adminContenido").innerHTML =
+    "<h3>🏆 Premios de la rifa</h3><p>Cargando premios...</p>";
+
+  const { data, error } = await supabaseClient
+    .from("premios_rifa")
+    .select("*")
+    .eq("rifa_id", rifaId)
+    .order("lugar", { ascending: true });
+
+  if(error){
+    console.error(error);
+    document.getElementById("adminContenido").innerHTML =
+      "<p>❌ Error cargando premios.</p>";
+    return;
+  }
+
+  document.getElementById("adminContenido").innerHTML = `
+    <h3>🏆 Premios de la rifa</h3>
+
+    <button onclick="crearPremioRifa('${rifaId}')">
+      ➕ Agregar premio
+    </button>
+
+    <br><br>
+
+    ${(data || []).map(p => `
+      <div style="border:1px solid #39ff14;border-radius:12px;padding:12px;margin:10px 0;">
+        <b>${p.lugar}° Premio:</b> ${p.nombre}<br>
+        ${p.descripcion || ""}
+      </div>
+    `).join("")}
+  `;
+}
+
+async function crearPremioRifa(rifaId){
+  const lugar = prompt("Lugar del premio (1, 2, 3, 4...)");
+  if(!lugar) return;
+
+  const nombre = prompt("Nombre del premio");
+  if(!nombre) return;
+
+  const descripcion = prompt("Descripción del premio (opcional)") || "";
+
+  const imagen = prompt("URL de imagen del premio (opcional)") || "";
+
+  const { error } = await supabaseClient
+    .from("premios_rifa")
+    .insert([{
+      rifa_id: rifaId,
+      lugar: Number(lugar),
+      nombre: nombre,
+      descripcion: descripcion,
+      imagen_url: imagen
+    }]);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error guardando premio");
+    return;
+  }
+
+  alert("✅ Premio guardado");
+  administrarPremiosRifa(rifaId);
+}	
 
 async function pausarRifa(id){
   if(!confirm("¿Pausar esta rifa?")) return;
