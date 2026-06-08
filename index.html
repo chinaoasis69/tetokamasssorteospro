@@ -540,9 +540,10 @@ async function mostrarPatrocinadoresAdmin(){
   const cont = document.getElementById("adminContenido");
 
   const { data, error } = await supabaseClient
-    .from("patrocinadores")
-    .select("*")
-    .order("created_at",{ascending:false});
+.from("patrocinadores")
+.select("*")
+.eq("organizador_id", clienteActual.id)
+.order("created_at", { ascending: false });
 
   if(error){
     alert("Error cargando patrocinadores");
