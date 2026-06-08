@@ -850,6 +850,14 @@ async function administrarPremiosRifa(rifaId){
 </button>
 
 <br><br>
+
+<input 
+  type="file" 
+  accept="image/*" 
+  onchange="subirImagenPremio(event, '${p.id}', '${rifaId}')"
+/>
+
+<br><br>
     <button onclick="eliminarPremioRifa('${p.id}', '${rifaId}')">
       🗑️ Eliminar premio
     </button>
@@ -919,6 +927,50 @@ async function editarImagenPremio(id, rifaId, imagenActual){
 
   alert("✅ Imagen actualizada");
 
+  administrarPremiosRifa(rifaId);
+}
+
+async function subirImagenPremio(event, premioId, rifaId){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const extension = file.name.split(".").pop();
+  const nombreArchivo = `${rifaId}/${premioId}-${Date.now()}.${extension}`;
+
+  const { data: uploadData, error: uploadError } = await supabaseClient
+    .storage
+    .from("premios")
+    .upload(nombreArchivo, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if(uploadError){
+    console.error(uploadError);
+    alert("❌ Error subiendo imagen");
+    return;
+  }
+
+  const { data: urlData } = supabaseClient
+    .storage
+    .from("premios")
+    .getPublicUrl(nombreArchivo);
+
+  const publicUrl = urlData.publicUrl;
+
+  const { error } = await supabaseClient
+    .from("premios_rifa")
+    .update({ imagen_url: publicUrl })
+    .eq("id", premioId);
+
+  if(error){
+    console.error(error);
+    alert("❌ Imagen subida, pero no se guardó en el premio");
+    return;
+  }
+
+  alert("✅ Foto del premio subida");
   administrarPremiosRifa(rifaId);
 }	
 
