@@ -622,7 +622,6 @@ async function eliminarPatrocinador(id){
     .from("patrocinadores")
     .delete()
     .eq("id", id)
-    .eq("organizador_id", clienteActual.id)
     .select();
 
   if(error){
