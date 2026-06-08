@@ -821,7 +821,7 @@ async function crearRifaAdmin(){
     const titulo = prompt("Título de la rifa");
     if(!titulo) return;
 
-    const premio = prompt("Premio principal");
+    const premio = prompt("1° Premio");
     if(!premio) return;
 
     const precio = prompt("Precio por boleto");
@@ -872,11 +872,26 @@ organizador_id: clienteActual.id
 
 	await generarBoletosParaRifa(nuevaRifa.id, Number(total));
 
+const { error: premioError } = await supabaseClient
+  .from("premios_rifa")
+  .insert([{
+    rifa_id: nuevaRifa.id,
+    lugar: 1,
+    nombre: premio,
+    descripcion: "Premio principal",
+    imagen_url: imagen
+  }]);
+
+if(premioError){
+  console.error(premioError);
+  alert("⚠️ Rifa creada, pero no se pudo guardar el 1° premio");
+}	
+
     alert("✅ Rifa creada");
     mostrarSorteosAdmin();
 }
 
-async function generarBoletosParaRifa(rifaId, total){
+async function generarBoletosParaRifa(rifaId, total){	
 
     const boletos = [];
 
