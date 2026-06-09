@@ -1947,7 +1947,14 @@ async function cargarRifasPublicas(){
 for (let r of rifas) {
   const { data: premios } = await supabaseClient
     .from("premios_rifa")
-    .select("*")
+    .select(`
+  *,
+  premio_media (
+    id,
+    tipo,
+    url
+  )
+`)
     .eq("rifa_id", r.id)
     .order("lugar", { ascending: true });
 
@@ -2010,6 +2017,12 @@ margin:10px auto;
 display:block;
 ">
 ` : ""}
+
+${(p.premio_media || []).map(m => m.tipo === "video" ? `
+  <video controls style="max-width:220px;border-radius:12px;margin:10px auto;display:block;">
+    <source src="${m.url}" type="video/mp4">
+  </video>
+` : "").join("")}
 
 `).join("")} 
             <p>💰 $${r.precio_boleto || 0}</p>
