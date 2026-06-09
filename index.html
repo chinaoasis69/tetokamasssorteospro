@@ -2493,16 +2493,36 @@ function seleccionarBoleto(b){
 
   boletoSeleccionado = boletosSeleccionados[0] || null;
 
-  document.getElementById("seleccionTexto").innerText =
-    boletosSeleccionados.length
-      ? "Boletos seleccionados: " + boletosSeleccionados.map(x => x.numero).join(", ")
-      : "Selecciona un número disponible";
+  document.getElementById("seleccionTexto").innerHTML =
+  boletosSeleccionados.length
+    ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
+        <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
+          ${x.numero} ❌
+        </button>
+      `).join("")
+    : "Selecciona un número disponible";
 
   document.getElementById("seleccionTexto").scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
 }
+
+function quitarBoletoSeleccionado(id){
+  boletosSeleccionados = boletosSeleccionados.filter(x => x.id !== id);
+  boletoSeleccionado = boletosSeleccionados[0] || null;
+
+  document.getElementById("seleccionTexto").innerHTML =
+    boletosSeleccionados.length
+      ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
+          <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
+            ${x.numero} ❌
+          </button>
+        `).join("")
+      : "Selecciona un número disponible";
+
+  cargarBoletos();
+}	
 
 // 🔥 WHATSAPP
 async function apartarWhats(){
