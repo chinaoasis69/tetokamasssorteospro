@@ -1904,6 +1904,7 @@ if (patrocinadorBeneficio) {
       user_id: userActual,
       rifa_id: RIFA_ID,
       patrocinador_id: patrocinadorBeneficio.id,
+	  patrocinador_nombre: patrocinadorBeneficio.nombre || "",
       codigo: codigoBeneficio,
       promocion: patrocinadorBeneficio.promocion || "",
       usado: false
@@ -3018,12 +3019,34 @@ async function abrirMisBeneficios() {
     ? data.map(b => `
       <div class="card">
         <b>🎁 Beneficio</b><br>
+		🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
         ${b.promocion || "Promoción especial"}<br>
         🔑 Código: <b>${b.codigo}</b><br>
-        Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}
+		Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
+${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Marcar usado</button>` : ""}
+        🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
       </div>
     `).join("")
     : "Todavía no tienes beneficios.";
+}
+
+async function marcarBeneficioUsado(id) {
+  const ok = confirm("¿Marcar este beneficio como usado?");
+  if (!ok) return;
+
+  const { error } = await supabaseClient
+    .from("beneficios_entregados")
+    .update({ usado: true })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error marcando beneficio");
+    console.error(error);
+    return;
+  }
+
+  alert("✅ Beneficio marcado como usado");
+  abrirMisBeneficios();
 }	
 	
 async function cargarHistorialSorteos(){
