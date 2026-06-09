@@ -382,6 +382,23 @@ Cargando historial...
   </div>
 </div>
 
+<div class="card">
+  <h2>🏪 Mis Beneficios</h2>
+
+  <p>
+    Beneficios obtenidos:
+    <span id="contadorBeneficios">0</span>
+  </p>
+
+  <button onclick="abrirMisBeneficios()">
+    🎁 Ver mis beneficios
+  </button>
+
+  <div id="misBeneficios" style="display:none;">
+    Cargando beneficios...
+  </div>
+</div>	
+
   <div class="card">
     <h2>💳 Métodos de pago</h2>
     <p><b>Zelle:</b> <span id="pagoZelle">--</span></p>
@@ -2971,6 +2988,43 @@ document.getElementById("misBoletos").innerHTML = Object.keys(agrupados).map((ri
   `;
 }).join("");
 }
+
+async function abrirMisBeneficios() {
+  const box = document.getElementById("misBeneficios");
+
+  if (box.style.display === "block") {
+    box.style.display = "none";
+    return;
+  }
+
+  box.style.display = "block";
+  box.innerHTML = "Cargando beneficios...";
+
+  const { data, error } = await supabaseClient
+    .from("beneficios_entregados")
+    .select("*")
+    .eq("user_id", userActual)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    box.innerHTML = "Error cargando beneficios";
+    return;
+  }
+
+  document.getElementById("contadorBeneficios").innerText = data.length;
+
+  box.innerHTML = data.length
+    ? data.map(b => `
+      <div class="card">
+        <b>🎁 Beneficio</b><br>
+        ${b.promocion || "Promoción especial"}<br>
+        🔑 Código: <b>${b.codigo}</b><br>
+        Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}
+      </div>
+    `).join("")
+    : "Todavía no tienes beneficios.";
+}	
 	
 async function cargarHistorialSorteos(){
 
