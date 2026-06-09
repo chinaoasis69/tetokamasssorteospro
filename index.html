@@ -2158,6 +2158,7 @@ async function cargarPatrocinadoresPublicos(){
 
 function pintarPatrocinador(){
   const p = data[patrocinadorIndex];
+  const mostrarBotones = data.length > 1;
 
   box.innerHTML = `
     <div class="card" style="margin:10px 0;text-align:center;">
@@ -2172,9 +2173,20 @@ function pintarPatrocinador(){
 
       ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}','_blank')">📲 Contactar</button>` : ""}
 
-      <br><br>
-      <button onclick="patrocinadorAnterior()">⬅️ Anterior</button>
-      <button onclick="patrocinadorSiguiente()">Siguiente ➡️</button>
+	  <br>
+
+<div style="margin-top:10px;color:#7CFF00;font-weight:bold;">
+${patrocinadorIndex + 1} / ${data.length}
+</div>
+
+      ${mostrarBotones ? `
+<br><br>
+
+<button onclick="patrocinadorAnterior()">⬅️ Anterior</button>
+
+<button onclick="patrocinadorSiguiente()">Siguiente ➡️</button>
+` : ""}
+
     </div>
   `;
 }
@@ -2194,7 +2206,7 @@ pintarPatrocinador();
 setInterval(() => {
   patrocinadorIndex = (patrocinadorIndex + 1) % data.length;
   pintarPatrocinador();
-}, 4000);
+}, 6000);
 	
 }	
 
