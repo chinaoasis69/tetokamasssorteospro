@@ -1759,6 +1759,7 @@ let WHATSAPP = "19563724890";
 let boletos = [];
 let filtrados = [];
 let boletoSeleccionado = null;
+let boletosSeleccionados = [];	
 let soloDisponibles = false;
 let usuarioMASS = null;
 	
@@ -2482,15 +2483,25 @@ function seleccionarBoleto(b){
     return;
   }
 
-  boletoSeleccionado = b;
+  const existe = boletosSeleccionados.find(x => x.id === b.id);
+
+  if(existe){
+    boletosSeleccionados = boletosSeleccionados.filter(x => x.id !== b.id);
+  } else {
+    boletosSeleccionados.push(b);
+  }
+
+  boletoSeleccionado = boletosSeleccionados[0] || null;
+
   document.getElementById("seleccionTexto").innerText =
-    "Número seleccionado: " + b.numero;
+    boletosSeleccionados.length
+      ? "Boletos seleccionados: " + boletosSeleccionados.map(x => x.numero).join(", ")
+      : "Selecciona un número disponible";
 
   document.getElementById("seleccionTexto").scrollIntoView({
     behavior: "smooth",
     block: "center"
-});
-
+  });
 }
 
 // 🔥 WHATSAPP
