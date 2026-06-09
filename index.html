@@ -2460,6 +2460,15 @@ if(b.estado === "apartado"){
   btn.style.color = "#111";
 }
 
+	const seleccionado =
+  boletosSeleccionados.some(x => x.id === b.id);
+
+if(seleccionado){
+  btn.style.background = "#39ff14";
+  btn.style.color = "#000";
+  btn.style.fontWeight = "bold";
+}  
+
     if (b.estado !== "vendido") {
   btn.onclick = () => seleccionarBoleto(b);
 }
