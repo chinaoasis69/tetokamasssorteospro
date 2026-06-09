@@ -1817,6 +1817,16 @@ async function comprarConSaldo() {
 
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
   const codigoBeneficio = pinGiro;
+	const { data: patrocinadores } = await supabaseClient
+  .from("patrocinadores")
+  .select("*")
+  .eq("activo", true)
+  .eq("organizador_id", clienteActual.id);
+
+const patrocinadorBeneficio =
+  patrocinadores && patrocinadores.length
+    ? patrocinadores[Math.floor(Math.random() * patrocinadores.length)]
+    : null;
 
   const { error: boletoError } = await supabaseClient
     .from("boletos")
@@ -1858,11 +1868,17 @@ async function comprarConSaldo() {
   );
 
   alert(
-    "✅ Compra exitosa\n" +
-    "Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
-    "\nTotal pagado: " + totalPagar + " MASS\n" +
-    "🎁 Código de beneficio: " + codigoBeneficio
-  );
+  "✅ Compra exitosa\n\n" +
+  "🎟️ Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
+  "\n💰 Total pagado: " + totalPagar + " MASS\n\n" +
+
+  (patrocinadorBeneficio
+    ? "🎁 Beneficio desbloqueado\n\n" +
+      "🏪 Negocio: " + patrocinadorBeneficio.nombre +
+      "\n📢 Promoción: " + (patrocinadorBeneficio.promocion || "Promoción especial") +
+      "\n🔑 Código: " + codigoBeneficio
+    : "🎁 Código de beneficio: " + codigoBeneficio)
+);
 
   boletosSeleccionados = [];
   boletoSeleccionado = null;
