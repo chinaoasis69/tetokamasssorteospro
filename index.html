@@ -567,7 +567,7 @@ async function mostrarPatrocinadoresAdmin(){
         <p>${p.descripcion || ""}</p>
        <p>${p.promocion || ""}</p>
 
-<button onclick="editarPatrocinador('${p.id}')">
+<button onclick='editarPatrocinador(${JSON.stringify(p)})'>
 ✏️ Modificar
 </button>
 
@@ -619,15 +619,15 @@ const { error } = await supabaseClient
   mostrarPatrocinadoresAdmin();
 }
 
-async function editarPatrocinador(id){
+async function editarPatrocinador(p){
 
-const nombre = prompt("Nuevo nombre");
+const nombre = prompt("Nuevo nombre", p.nombre || "");
 if(!nombre) return;
 
-const descripcion = prompt("Nueva descripción") || "";
-const promocion = prompt("Nueva promoción") || "";
-const logo_url = prompt("Nueva URL del logo") || "";
-const whatsapp = prompt("Nuevo WhatsApp") || "";
+const descripcion = prompt("Nueva descripción", p.descripcion || "") || "";
+const promocion = prompt("Nueva promoción", p.promocion || "") || "";
+const logo_url = prompt("Nueva URL del logo", p.logo_url || "") || "";
+const whatsapp = prompt("Nuevo WhatsApp", p.whatsapp || "") || "";
 
 const { error } = await supabaseClient
 .from("patrocinadores")
@@ -638,7 +638,7 @@ promocion,
 logo_url,
 whatsapp
 })
-.eq("id", id);
+.eq("id", p.id);
 
 if(error){
 alert("Error actualizando patrocinador");
