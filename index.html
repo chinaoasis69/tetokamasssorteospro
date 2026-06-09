@@ -1783,118 +1783,96 @@ async function asegurarWallet() {
 let comprando = false;
 
 async function comprarConSaldo() {
-if (comprando) return;
-comprando = true
-  if (!boletoSeleccionado) {
-    alert("Selecciona un número primero");
-	comprando = false;
+  if (comprando) return;
+  comprando = true;
+
+  if (!boletosSeleccionados || boletosSeleccionados.length === 0) {
+    alert("Selecciona uno o más números primero");
+    comprando = false;
     return;
   }
 
-  const precioBoleto = 20; // 💰 cambia si quieres
+  const { data: rifa } = await supabaseCliente
+    .from("rifas")
+    .select("precio_boleto")
+    .eq("id", RIFA_ID)
+    .single();
 
-  // 1️⃣ Obtener saldo
-  const { data: wallet } = await supabaseClient
-  .from("wallets")
-  .select("saldo")
-  .eq("user_id", userActual)
-  .maybeSingle();
+  const precioBoleto = Number(rifa?.precio_boleto || 0);
+  const totalPagar = boletosSeleccionados.length * precioBoleto;
 
-if (!wallet || wallet.saldo < precioBoleto) {
-  alert("Saldo insuficiente 💸");
-  comprando = false;
-  return;
-}
+  const { data: wallet } = await supabaseCliente
+    .from("wallets")
+    .select("saldo")
+    .eq("user_id", userActual)
+    .maybeSingle();
 
-  // 🔥 Marcar boleto como vendido
+  if (!wallet || wallet.saldo < totalPagar) {
+    alert("Saldo insuficiente 💸");
+    comprando = false;
+    return;
+  }
+
+  const ids = boletosSeleccionados.map(b => b.id);
+
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
-  const { data: boletoVendido, error: boletoError } = await supabaseClient
-  .from("boletos")
-  .update({
-    estado: "vendido",
-    pin_giro: pinGiro,
-    giro_usado: false,
-	nombre: document.querySelector('input[placeholder="Tu nombre"]').value.trim(),
-    telefono: localStorage.getItem("mass_telefono") || userActual,
-	rifa_id: RIFA_ID
-  })
-  .eq("id", boletoSeleccionado.id)
-  .eq("estado", "disponible")
-  .select()
-  .single();
 
-if (boletoError || !boletoVendido) {
-  alert("❌ Este boleto ya fue vendido");
-  console.error("ERROR BOLETO:", boletoError);
+  const { error: boletoError } = await supabaseCliente
+    .from("boletos")
+    .update({
+      estado: "vendido",
+      pin_giro: pinGiro,
+      giro_usado: false,
+      nombre: document.querySelector('input[placeholder="Tu nombre"]').value.trim(),
+      telefono: localStorage.getItem("mass_telefono") || userActual,
+      rifa_id: RIFA_ID
+    })
+    .in("id", ids)
+    .eq("estado", "disponible");
 
+  if (boletoError) {
+    alert("❌ Error vendiendo boletos");
+    console.error(boletoError);
+    comprando = false;
+    return;
+  }
+
+  const nuevoSaldo = wallet.saldo - totalPagar;
+
+  await supabaseCliente
+    .from("wallets")
+    .update({ saldo: nuevoSaldo })
+    .eq("user_id", userActual);
+
+  await supabaseCliente.from("tickets").insert(
+    boletosSeleccionados.map(b => ({
+      user_id: userActual,
+      rifa_id: RIFA_ID,
+      numero: b.numero,
+      pin_giro: pinGiro,
+      monto: precioBoleto,
+      estado: "comprado",
+      giro_usado: false
+    }))
+  );
+
+  alert(
+    "✅ Compra exitosa\n" +
+    "Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
+    "\nTotal pagado: " + totalPagar + " MASS\n" +
+    "Tu PIN es: " + pinGiro
+  );
+
+  boletosSeleccionados = [];
   boletoSeleccionado = null;
 
+  document.getElementById("seleccionTexto").innerHTML =
+    "Selecciona un número disponible";
+
+  await cargarSaldo();
   await cargarBoletos();
   await cargarMisBoletos();
-  
-  comprando = false;
 
-  return;
-}
-
-// 🧾 Descontar saldo
-const nuevoSaldo = wallet.saldo - precioBoleto;
-
-await supabaseClient
-  .from("wallets")
-  .update({ saldo: nuevoSaldo })
-  .eq("user_id", userActual);
-await supabaseClient.from("tickets").insert({
-  user_id: userActual,
-  rifa_id: RIFA_ID,	
-  numero: boletoSeleccionado.numero,
-  pin_giro: pinGiro,
-  monto: precioBoleto,
-  estado: "comprado",
-  giro_usado: false
-});
-
-alert("✅ Compra exitosa\n🎰 Buena suerte en tu MASS LUCKY SPIN\nTu PIN es: " + pinGiro);
-
-await supabaseClient
-.from("historial_premios")
-.insert({
-    user_id: userActual,
-	rifa_id: RIFA_ID,
-    numero: boletoSeleccionado.numero,
-    premio: ganador
-});
-
-await supabaseClient
-.from("notificaciones")
-.insert({
-    titulo: "🎉 Premio ganado",
-    mensaje: "El boleto " + boletoSeleccionado.numero + " ganó: " + ganador,
-    tipo: "general"
-});
-
-const { count } = await supabaseClient
-  .from("boletos")
-  .select("*", { count: "exact", head: true })
-  .eq("estado", "disponible");
-
-if (count === 0) {
-  await supabaseClient
-    .from("notificaciones")
-    .insert({
-      titulo: "🏆 Sorteo lleno",
-      mensaje: "🎉 ¡El último boleto acaba de venderse! Mucha suerte para todos los participantes. 🍀",
-      tipo: "general"
-    });
-}	
-  
-  boletoSeleccionado = null; // 🔥 RESET
-
-  // 4️⃣ Refrescar todo
-  cargarSaldo();
-  cargarBoletos();
-  cargarMisBoletos();
-  cargarHistorialSorteos();
   comprando = false;
 }
 
