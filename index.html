@@ -1816,6 +1816,7 @@ async function comprarConSaldo() {
   const ids = boletosSeleccionados.map(b => b.id);
 
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
+  const codigoBeneficio = pinGiro;
 
   const { error: boletoError } = await supabaseClient
     .from("boletos")
@@ -1860,7 +1861,7 @@ async function comprarConSaldo() {
     "✅ Compra exitosa\n" +
     "Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
     "\nTotal pagado: " + totalPagar + " MASS\n" +
-    "Tu PIN es: " + pinGiro
+    "🎁 Código de beneficio: " + codigoBeneficio
   );
 
   boletosSeleccionados = [];
