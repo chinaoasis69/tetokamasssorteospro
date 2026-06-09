@@ -571,6 +571,18 @@ async function mostrarPatrocinadoresAdmin(){
 ✏️ Modificar
 </button>
 
+<br><br>
+
+<label style="cursor:pointer;">
+  🖼️ Subir logo
+  <input
+    type="file"
+    accept="image/*"
+    style="display:none;"
+    onchange="subirLogoPatrocinador(event, '${p.id}')"
+  >
+</label>
+
 <button onclick="eliminarPatrocinador('${p.id}')">
 🗑️ Eliminar
 </button> 
@@ -649,6 +661,50 @@ return;
 alert("Patrocinador actualizado");
 mostrarPatrocinadoresAdmin();
 
+}
+
+async function subirLogoPatrocinador(event, patrocinadorId){
+
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const extension = file.name.split(".").pop();
+  const nombreArchivo = `patrocinadores/${patrocinadorId}-${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await supabaseClient
+    .storage
+    .from("premios")
+    .upload(nombreArchivo, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if(uploadError){
+    console.error(uploadError);
+    alert("❌ Error subiendo logo");
+    return;
+  }
+
+  const { data: urlData } = supabaseClient
+    .storage
+    .from("premios")
+    .getPublicUrl(nombreArchivo);
+
+  const publicUrl = urlData.publicUrl;
+
+  const { error } = await supabaseClient
+    .from("patrocinadores")
+    .update({ logo_url: publicUrl })
+    .eq("id", patrocinadorId);
+
+  if(error){
+    console.error(error);
+    alert("❌ Logo subido, pero no se guardó");
+    return;
+  }
+
+  alert("✅ Logo del patrocinador subido");
+  mostrarPatrocinadoresAdmin();
 }	
 
 async function eliminarPatrocinador(id){
