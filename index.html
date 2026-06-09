@@ -268,7 +268,8 @@ Selecciona una rifa
     <h2>🎯 Sorteos Activos</h2>
     <div id="listaRifas"></div>
 </div>	
-
+  <div id="tituloNumeros"></div>
+	
   <div id="grid" class="grid"></div>
 
   <div class="card">
@@ -2201,9 +2202,30 @@ if(rifa.video_url){
     }
 	  }
 
+	document.getElementById("tituloNumeros").innerHTML = `
+<div style="
+border:2px solid #39ff14;
+border-radius:14px;
+padding:12px;
+margin:15px auto;
+max-width:520px;
+text-align:center;
+color:white;
+background:#111;
+">
+<h3 style="color:#7CFF00;margin:0 0 8px 0;">
+🎯 Números de esta rifa
+</h3>
+
+<b>${rifa.titulo || rifa.premio || "Sorteo seleccionado"}</b><br>
+💰 $${rifa.precio_boleto || 0} por número<br>
+🎟️ ${rifa.total_numeros || ""} números
+</div>
+`;
+
     await cargarBoletos();
 
-    document.getElementById("grid").scrollIntoView({
+    document.getElementById("tituloNumeros").scrollIntoView({
         behavior: "smooth",
         block: "start"
     });
