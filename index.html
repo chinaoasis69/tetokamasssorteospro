@@ -2348,7 +2348,11 @@ function seleccionarBoleto(b){
   document.getElementById("seleccionTexto").innerText =
     "Número seleccionado: " + b.numero;
 
-  alert("Seleccionaste número: " + b.numero);
+  document.getElementById("seleccionTexto").scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+});	
+
 }
 
 // 🔥 WHATSAPP
