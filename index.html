@@ -565,10 +565,15 @@ async function mostrarPatrocinadoresAdmin(){
       <div class="card">
         <h4>${p.nombre}</h4>
         <p>${p.descripcion || ""}</p>
-        <p>${p.promocion || ""}</p>
-		<button onclick="eliminarPatrocinador('${p.id}')">
-  🗑️ Eliminar
+       <p>${p.promocion || ""}</p>
+
+<button onclick="editarPatrocinador('${p.id}')">
+✏️ Modificar
 </button>
+
+<button onclick="eliminarPatrocinador('${p.id}')">
+🗑️ Eliminar
+</button> 
       </div>
     `).join("")}
   `;
@@ -613,6 +618,38 @@ const { error } = await supabaseClient
   alert("✅ Patrocinador agregado");
   mostrarPatrocinadoresAdmin();
 }
+
+async function editarPatrocinador(id){
+
+const nombre = prompt("Nuevo nombre");
+if(!nombre) return;
+
+const descripcion = prompt("Nueva descripción") || "";
+const promocion = prompt("Nueva promoción") || "";
+const logo_url = prompt("Nueva URL del logo") || "";
+const whatsapp = prompt("Nuevo WhatsApp") || "";
+
+const { error } = await supabaseClient
+.from("patrocinadores")
+.update({
+nombre,
+descripcion,
+promocion,
+logo_url,
+whatsapp
+})
+.eq("id", id);
+
+if(error){
+alert("Error actualizando patrocinador");
+console.error(error);
+return;
+}
+
+alert("Patrocinador actualizado");
+mostrarPatrocinadoresAdmin();
+
+}	
 
 async function eliminarPatrocinador(id){
 
