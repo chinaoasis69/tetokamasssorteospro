@@ -1792,7 +1792,7 @@ async function comprarConSaldo() {
     return;
   }
 
-  const { data: rifa } = await supabaseCliente
+  const { data: rifa } = await supabaseClient
     .from("rifas")
     .select("precio_boleto")
     .eq("id", RIFA_ID)
@@ -1801,7 +1801,7 @@ async function comprarConSaldo() {
   const precioBoleto = Number(rifa?.precio_boleto || 0);
   const totalPagar = boletosSeleccionados.length * precioBoleto;
 
-  const { data: wallet } = await supabaseCliente
+  const { data: wallet } = await supabaseClient
     .from("wallets")
     .select("saldo")
     .eq("user_id", userActual)
@@ -1817,7 +1817,7 @@ async function comprarConSaldo() {
 
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
 
-  const { error: boletoError } = await supabaseCliente
+  const { error: boletoError } = await supabaseClient
     .from("boletos")
     .update({
       estado: "vendido",
@@ -1839,12 +1839,12 @@ async function comprarConSaldo() {
 
   const nuevoSaldo = wallet.saldo - totalPagar;
 
-  await supabaseCliente
+  await supabaseClient
     .from("wallets")
     .update({ saldo: nuevoSaldo })
     .eq("user_id", userActual);
 
-  await supabaseCliente.from("tickets").insert(
+  await supabaseClient.from("tickets").insert(
     boletosSeleccionados.map(b => ({
       user_id: userActual,
       rifa_id: RIFA_ID,
