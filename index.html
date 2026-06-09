@@ -2154,15 +2154,48 @@ async function cargarPatrocinadoresPublicos(){
     return;
   }
 
-  box.innerHTML = data.map(p => `
-    <div class="card" style="margin:10px 0;">
-      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:120px;border-radius:12px;"><br>` : ""}
+  let patrocinadorIndex = 0;
+
+function pintarPatrocinador(){
+  const p = data[patrocinadorIndex];
+
+  box.innerHTML = `
+    <div class="card" style="margin:10px 0;text-align:center;">
+      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:140px;border-radius:12px;"><br>` : ""}
+
       <b>${p.nombre}</b><br>
       ${p.descripcion || ""}<br>
-      <span style="color:#7CFF00;font-weight:bold;">${p.promocion || ""}</span><br>
+
+      <span style="color:#7CFF00;font-weight:bold;">
+        ${p.promocion || ""}
+      </span><br><br>
+
       ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}','_blank')">📲 Contactar</button>` : ""}
+
+      <br><br>
+      <button onclick="patrocinadorAnterior()">⬅️ Anterior</button>
+      <button onclick="patrocinadorSiguiente()">Siguiente ➡️</button>
     </div>
-  `).join("");
+  `;
+}
+
+window.patrocinadorAnterior = function(){
+  patrocinadorIndex = (patrocinadorIndex - 1 + data.length) % data.length;
+  pintarPatrocinador();
+}
+
+window.patrocinadorSiguiente = function(){
+  patrocinadorIndex = (patrocinadorIndex + 1) % data.length;
+  pintarPatrocinador();
+}
+
+pintarPatrocinador();
+
+setInterval(() => {
+  patrocinadorIndex = (patrocinadorIndex + 1) % data.length;
+  pintarPatrocinador();
+}, 4000);
+	
 }	
 
 async function cargarClientePorId(clienteId){
