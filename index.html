@@ -3400,9 +3400,12 @@ async function usarGiro(numero){
 
   const { data, error } = await supabaseClient
     .from("boletos")
-    .select("*")
-    .eq("numero", numero)
-    .single();
+.select("*")
+.eq("numero", numero)
+.eq("user_id", userActual)
+.order("id", { ascending: false })
+.limit(1)
+.single();
 
   if(error || !data){
     alert("No se encontró el boleto ❌");
