@@ -1959,12 +1959,12 @@ const patrocinadorBeneficio =
   "🎟️ Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
   "\n💰 Total pagado: " + totalPagar + " MASS\n\n" +
 
-  (patrocinadorBeneficio
-    ? "🎁 Beneficio desbloqueado\n\n" +
-      "🏪 Negocio: " + patrocinadorBeneficio.nombre +
-      "\n📢 Promoción: " + (patrocinadorBeneficio.promocion || "Promoción especial") +
-      "\n🔑 Código: " + codigoBeneficio
-    : "🎁 Código de beneficio: " + codigoBeneficio)
+  (premioLucky
+ ? "🎁 Premio Lucky Spin desbloqueado\n\n" +
+   "🏆 Premio: " + premioLucky.nombre +
+   "\n📢 Descripción: " + (premioLucky.descripcion || "Premio especial") +
+   "\n🔑 Código: " + (premioLucky.codigo || codigoBeneficio)
+ : "🎁 Código de beneficio: " + codigoBeneficio)
 );
 
   if (premioLucky) {
