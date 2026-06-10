@@ -3044,10 +3044,10 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
       <div id="${idBox}" style="display:none;margin-top:10px;">
         ${lista.map(t => `
           <div style="margin:8px 0;">
-            🎟️ Boleto: <b>${t.numero}</b> - 🧾 PIN: <b>${t.pin_giro || ""}</b><br>
+            🎟️ Boleto: <b>${t.numero}</b><br>
             ${t.giro_usado
               ? "❌ Giro usado"
-              : `<button onclick="usarGiro('${t.numero}', '${t.pin_giro}')">🎰 USAR GIRO</button>`
+              : `<button onclick="usarGiro('${t.numero}')">🎰 Girar Lucky Spin</button>`
             }
           </div>
         `).join("")}
