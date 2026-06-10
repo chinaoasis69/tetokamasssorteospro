@@ -3159,6 +3159,37 @@ async function ocultarBeneficio(id) {
   abrirModalBeneficios();
 }
 
+async function abrirCanjeados(){
+
+    const box = document.getElementById("beneficiosDentroModal");
+
+    const { data, error } = await supabaseClient
+        .from("beneficios_entregados")
+        .select("*")
+        .eq("usado", true)
+        .order("created_at", { ascending:false });
+
+    if(error){
+        alert("Error cargando canjeados");
+        console.error(error);
+        return;
+    }
+
+    document.getElementById("modalBeneficios").style.display = "block";
+
+    box.innerHTML = data.length
+    ? data.map(b => `
+        <div class="card">
+            <b>✅ Beneficio canjeado</b><br>
+            🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
+            🎁 ${b.promocion || ""}<br>
+            🔑 Código: <b>${b.codigo}</b><br>
+            Estado: Canjeado ✅
+        </div>
+    `).join("")
+    : "No hay beneficios canjeados.";
+}	
+
 async function abrirBeneficiosOcultos() {
   document.getElementById("modalOcultos").style.display = "block";
 
