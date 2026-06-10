@@ -3122,7 +3122,7 @@ document.getElementById("contadorBeneficios").innerText = totalBeneficios;
         ${b.promocion || "Promoción especial"}<br>
         🔑 Código: <b>${b.codigo}</b><br>
 		Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
-${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Marcar usado</button>` : ""}
+${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Canjear beneficio</button>` : ""}
 <button onclick="ocultarBeneficio('${b.id}')">🗑️ Ocultar</button>
       </div>
     `).join("")
@@ -3213,7 +3213,7 @@ async function restaurarBeneficio(id) {
 }	
 
 async function marcarBeneficioUsado(id) {
-  const ok = confirm("¿Marcar este beneficio como usado?");
+  const ok = confirm("¿Quieres canjear este beneficio?");
   if (!ok) return;
 
   const { error } = await supabaseClient
@@ -3227,7 +3227,7 @@ async function marcarBeneficioUsado(id) {
     return;
   }
 
-  alert("✅ Beneficio marcado como usado");
+  alert("✅ Beneficio canjeado correctamente");
   abrirMisBeneficios();
 }	
 	
