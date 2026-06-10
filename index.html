@@ -3015,6 +3015,7 @@ document.getElementById("modalBeneficios").style.display = "block";
     .from("beneficios_entregados")
     .select("*")
     .eq("user_id", userActual)
+	.eq("oculto_usuario", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -3038,6 +3039,7 @@ document.getElementById("modalBeneficios").style.display = "block";
         🔑 Código: <b>${b.codigo}</b><br>
 		Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
 ${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Marcar usado</button>` : ""}
+<button onclick="ocultarBeneficio('${b.id}')">🗑️ Ocultar</button>
       </div>
     `).join("")
     : "Todavía no tienes beneficios.";
@@ -3045,6 +3047,24 @@ ${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Marcar usado
 
 function cerrarModalBeneficios() {
   document.getElementById("modalBeneficios").style.display = "none";
+}
+
+async function ocultarBeneficio(id) {
+  const ok = confirm("¿Ocultar este beneficio de tu lista?");
+  if (!ok) return;
+
+  const { error } = await supabaseClient
+    .from("beneficios_entregados")
+    .update({ oculto_usuario: true })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error ocultando beneficio");
+    console.error(error);
+    return;
+  }
+
+  abrirModalBeneficios();
 }	
 
 async function marcarBeneficioUsado(id) {
