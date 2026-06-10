@@ -3012,7 +3012,7 @@ const { data, error } = await supabaseClient
 let mapaSorteos = {};
 
 (sorteos || []).forEach(s => {
-  mapaSorteos[s.id] = s;
+  mapaSorteos[String(s.id)] = s;
 });
 
   let agrupados = {};
@@ -3027,7 +3027,7 @@ document.getElementById("contadorMisBoletos").innerText =
 Object.keys(agrupados).length;
 document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
   const lista = agrupados[rifaId];
-  const sorteo = mapaSorteos[rifaId];
+  const sorteo = mapaSorteos[String(rifaId)];
   const rifaActiva = sorteo ? sorteo.activo === true : false;	
   const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
   const idBox = "mis_boletos_" + i;
