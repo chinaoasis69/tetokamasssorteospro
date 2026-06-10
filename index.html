@@ -3064,6 +3064,31 @@ document.getElementById("modalBeneficios").style.display = "block";
   box.style.display = "block";
   box.innerHTML = "Cargando beneficios...";
 
+const telefono = localStorage.getItem("mass_telefono");
+
+const { data: beneficiosLucky } = await supabaseClient
+.from("historial_premios")
+.select("*")
+.eq("telefono", telefono)
+.order("fecha", { ascending:false });
+
+if(beneficiosLucky && beneficiosLucky.length > 0){
+
+    box.innerHTML += beneficiosLucky.map(b => `
+    <div style="
+    border:1px solid #38b000;
+    border-radius:10px;
+    padding:10px;
+    margin:10px 0;
+    background:#111;
+    ">
+        <h3>🏆 ${b.premio}</h3>
+        <p>📢 ${b.descripcion || ""}</p>
+        <p>🔑 Código: ${b.codigo || ""}</p>
+    </div>
+    `).join("");
+}	
+
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .select("*")
