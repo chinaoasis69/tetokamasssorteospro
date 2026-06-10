@@ -3020,8 +3020,10 @@ data.forEach(t => {
   if (!agrupados[key]) agrupados[key] = [];
   agrupados[key].push(t);
 });
-
-document.getElementById("misBoletos").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
+	
+document.getElementById("contadorMisBoletos").innerText =
+Object.keys(agrupados).length;
+document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
   const lista = agrupados[rifaId];
   const sorteo = mapaSorteos[rifaId];
   const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
