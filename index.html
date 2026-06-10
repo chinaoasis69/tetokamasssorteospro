@@ -3102,7 +3102,10 @@ if(beneficiosLucky && beneficiosLucky.length > 0){
     return;
   }
 
-  document.getElementById("contadorBeneficios").innerText = data.length;
+  const totalLucky = beneficiosLucky ? beneficiosLucky.length : 0;
+  const totalBeneficios = (data ? data.length : 0) + totalLucky;
+
+document.getElementById("contadorBeneficios").innerText = totalBeneficios;
 
   box.innerHTML = data.length
     ? data.map(b => `
