@@ -1967,20 +1967,18 @@ const patrocinadorBeneficio =
     : "🎁 Código de beneficio: " + codigoBeneficio)
 );
 
-if (patrocinadorBeneficio) {
+  if (premioLucky) {
   await supabaseClient
     .from("beneficios_entregados")
     .insert({
       user_id: userActual,
       rifa_id: RIFA_ID,
-      patrocinador_id: patrocinadorBeneficio.id,
-	  patrocinador_nombre: patrocinadorBeneficio.nombre || "",
-
-	  patrocinador_logo_url: patrocinadorBeneficio.logo_url || "",
-      patrocinador_whatsapp: patrocinadorBeneficio.whatsapp || "",
-		
-      codigo: codigoBeneficio,
-      promocion: patrocinadorBeneficio.promocion || "",
+      patrocinador_id: premioLucky.patrocinador_id || null,
+      patrocinador_nombre: premioLucky.nombre || "",
+      patrocinador_logo_url: "",
+      patrocinador_whatsapp: "",
+      codigo: premioLucky.codigo || codigoBeneficio,
+      promocion: premioLucky.descripcion || premioLucky.nombre || "",
       usado: false
     });
 }	
