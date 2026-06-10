@@ -3332,14 +3332,10 @@ if(contador) contador.innerText = data.length;
     `).join("");
 }	
 	
-async function usarGiro(numero, pin){
+async function usarGiro(numero){
 
-  const inputPin = prompt("🎰 Confirma tu PIN para usar el giro:");
-
-  if(inputPin !== pin){
-    alert("PIN incorrecto ❌");
-    return;
-  }
+  const ok = confirm("🎰 ¿Quieres usar tu giro para este boleto?");
+  if(!ok) return;
 
   const { data, error } = await supabaseClient
     .from("boletos")
