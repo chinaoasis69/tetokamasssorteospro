@@ -2784,28 +2784,17 @@ async function girarLuckySpin(pinYaValidado = false){
     return;
   }
 
-  if(!pinYaValidado){
-    const pinInput = prompt("Ingresa tu PIN de giro");
+  const { data: premiosLucky, error: errorLucky } = await supabaseClient
+  .from("lucky_spin_premios")
+  .select("*")
+  .eq("activo", true);
 
-    if(!pinInput){
-      alert("Debes ingresar tu PIN");
-      return;
-    }
+if (errorLucky || !premiosLucky || premiosLucky.length === 0) {
+  alert("No hay premios activos en MASS LUCKY SPIN");
+  return;
+}
 
-    if(pinInput.trim() !== boletoSeleccionado.pin_giro){
-      alert("PIN incorrecto");
-      return;
-    }
-  }
-
-  const premios = [
-    "🔥 Sigue participando",
-    "💚 10% OFF próximo sorteo",
-    "⚡ 25% OFF próximo sorteo",
-    "🎁 Segundo giro",
-    "🎟 Número bonus",
-    "👑 50% OFF próximo sorteo"
-  ];
+const premios = premiosLucky.map(p => p.nombre);
 
   let vueltas = 0;
   const result = document.getElementById("spinResult");
@@ -2835,6 +2824,7 @@ async function girarLuckySpin(pinYaValidado = false){
       clearInterval(intervalo);
 
       const ganador = premios[Math.floor(Math.random() * premios.length)];
+	  const premioGanador = premiosLucky.find(p => p.nombre === ganador);
 
       if(result){
         result.innerText = "🏆 " + ganador;
@@ -2925,11 +2915,12 @@ cargarHistorialPremios();
       cargarMisBoletos();
       cargarBoletos();
 
-      if(codigoCupon){
-        alert("MASS LUCKY SPIN: " + ganador + "\nCódigo para próximo sorteo: " + codigoCupon);
-      }else{
-        alert("MASS LUCKY SPIN: " + ganador);
-      }
+      alert(
+    "🎰 MASS LUCKY SPIN\n\n" +
+    "🏆 Premio: " + (premioGanador?.nombre || ganador) + "\n" +
+    "📢 Descripción: " + (premioGanador?.descripcion || "") + "\n" +
+    "🔑 Código: " + (premioGanador?.codigo || codigoCupon || "N/A")
+);
 
       setTimeout(() => {
         if(!ganador.includes("Segundo giro")){
