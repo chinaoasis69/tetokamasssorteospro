@@ -3418,9 +3418,15 @@ async function usarGiro(numero){
   .eq("id", data.rifa_id)
   .single();
 
-if(errorRifa || !rifa || rifa.activo !== true){
-  alert("⏰ Esta rifa ya no está activa. Este giro ya expiró.");
-  return;
+const rifaActiva = rifa
+    ? (rifa.activo === true ||
+       rifa.estado === "activa" ||
+       rifa.estado === "activo")
+    : false;
+
+if(errorRifa || !rifa || !rifaActiva){
+    alert("⏰ Esta rifa ya no está activa. Este giro ya expiró.");
+    return;
 }
 
   boletoSeleccionado = data;
