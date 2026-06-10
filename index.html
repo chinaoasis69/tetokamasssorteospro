@@ -1893,6 +1893,17 @@ async function comprarConSaldo() {
 
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
   const codigoBeneficio = pinGiro;
+
+	let premioLucky = null;
+
+const { data: premiosLucky, error: errorLucky } = await supabaseClient
+  .from("lucky_spin_premios")
+  .select("*")
+  .eq("activo", true);
+
+if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
+  premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
+}
 	const { data: patrocinadores } = await supabaseClient
   .from("patrocinadores")
   .select("*")
