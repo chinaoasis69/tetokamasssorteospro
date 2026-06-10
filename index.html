@@ -3069,7 +3069,7 @@ const telefono = localStorage.getItem("mass_telefono");
 const { data: beneficiosLucky } = await supabaseClient
 .from("historial_premios")
 .select("*")
-.eq("telefono", telefono)
+.eq("user_id", telefono)
 .order("fecha", { ascending:false });
 
 if(beneficiosLucky && beneficiosLucky.length > 0){
