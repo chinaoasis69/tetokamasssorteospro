@@ -419,6 +419,20 @@ Cargando historial...
     </button>
 
   </div>
+</div>
+
+<div id="modalMisBoletos" class="modal-premios" style="display:none;">
+  <div class="modal-premios-contenido">
+    <h2>🎟️ Mis Boletos</h2>
+
+    <div id="misBoletosDentroModal">
+      Cargando tus boletos...
+    </div>
+
+    <button onclick="cerrarModalMisBoletos()">
+      ❌ Cerrar
+    </button>
+  </div>
 </div>	
 
 <div class="card">
@@ -3085,7 +3099,11 @@ function cerrarModalBeneficios() {
 }
 
 function abrirModalMisBoletos() {
-    alert("Modal Mis Boletos funcionando");
+  document.getElementById("modalMisBoletos").style.display = "block";
+}
+
+function cerrarModalMisBoletos() {
+    document.getElementById("modalMisBoletos").style.display = "none";
 }	
 
 async function ocultarBeneficio(id) {
