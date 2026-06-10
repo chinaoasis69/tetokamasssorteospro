@@ -3028,6 +3028,7 @@ Object.keys(agrupados).length;
 document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupados).map((rifaId, i) => {
   const lista = agrupados[rifaId];
   const sorteo = mapaSorteos[rifaId];
+  const rifaActiva = sorteo ? sorteo.activo === true : false;	
   const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
   const idBox = "mis_boletos_" + i;
 
@@ -3045,10 +3046,12 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
         ${lista.map(t => `
           <div style="margin:8px 0;">
             🎟️ Boleto: <b>${t.numero}</b><br>
-            ${t.giro_usado
-              ? "❌ Giro usado"
-              : `<button onclick="usarGiro('${t.numero}')">🎰 Girar Lucky Spin</button>`
-            }
+           ${t.giro_usado
+ ? "❌ Giro usado"
+ : rifaActiva
+    ? `<button onclick="usarGiro('${t.numero}')">🎰 Girar Lucky Spin</button>`
+    : "⏳ Rifa finalizada"
+} 
           </div>
         `).join("")}
       </div>
