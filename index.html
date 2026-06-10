@@ -3094,6 +3094,59 @@ async function ocultarBeneficio(id) {
   }
 
   abrirModalBeneficios();
+}
+
+async function abrirBeneficiosOcultos() {
+  document.getElementById("modalOcultos").style.display = "block";
+
+  const box = document.getElementById("ocultosDentroModal");
+  box.innerHTML = "Cargando beneficios ocultos...";
+
+  const { data, error } = await supabaseClient
+    .from("beneficios_entregados")
+    .select("*")
+    .eq("user_id", userActual)
+    .eq("oculto_usuario", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    box.innerHTML = "Error cargando ocultos";
+    return;
+  }
+
+  box.innerHTML = data.length
+    ? data.map(b => `
+      <div class="card">
+        <b>🎁 Beneficio oculto</b><br>
+        🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
+        ${b.promocion || "Promoción especial"}<br>
+        🔑 Código: <b>${b.codigo}</b><br>
+        Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
+        <button onclick="restaurarBeneficio('${b.id}')">↩️ Restaurar</button>
+      </div>
+    `).join("")
+    : "No tienes beneficios ocultos.";
+}
+
+function cerrarModalOcultos() {
+  document.getElementById("modalOcultos").style.display = "none";
+}
+
+async function restaurarBeneficio(id) {
+  const { error } = await supabaseClient
+    .from("beneficios_entregados")
+    .update({ oculto_usuario: false })
+    .eq("id", id);
+
+  if (error) {
+    alert("Error restaurando beneficio");
+    console.error(error);
+    return;
+  }
+
+  abrirBeneficiosOcultos();
+  abrirModalBeneficios();
 }	
 
 async function marcarBeneficioUsado(id) {
