@@ -382,6 +382,20 @@ Cargando historial...
   </div>
 </div>
 
+<div id="modalBeneficios" class="modal-premios" style="display:none;">
+  <div class="modal-premios-contenido">
+    <h2>🏪 Mis Beneficios</h2>
+
+    <div id="beneficiosDentroModal">
+      Cargando beneficios...
+    </div>
+
+    <button onclick="cerrarModalBeneficios()">
+      ❌ Cerrar
+    </button>
+  </div>
+</div>	
+
 <div class="card">
   <h2>🏪 Mis Beneficios</h2>
 
@@ -394,9 +408,9 @@ Cargando historial...
     🎁 Ver mis beneficios
   </button>
 
-  <div id="misBeneficios" style="display:none;">
-    Cargando beneficios...
-  </div>
+  <button onclick="abrirModalBeneficios()">
+  🎁 Ver mis beneficios
+</button>
 </div>	
 
   <div class="card">
@@ -2994,13 +3008,9 @@ document.getElementById("misBoletos").innerHTML = Object.keys(agrupados).map((ri
 }).join("");
 }
 
-async function abrirMisBeneficios() {
-  const box = document.getElementById("misBeneficios");
-
-  if (box.style.display === "block") {
-    box.style.display = "none";
-    return;
-  }
+async function abrirModalBeneficios() {
+document.getElementById("modalBeneficios").style.display = "block";	
+  const box = document.getElementById("beneficiosDentroModal");
 
   box.style.display = "block";
   box.innerHTML = "Cargando beneficios...";
@@ -3032,11 +3042,14 @@ async function abrirMisBeneficios() {
         🔑 Código: <b>${b.codigo}</b><br>
 		Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
 ${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Marcar usado</button>` : ""}
-        🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
       </div>
     `).join("")
     : "Todavía no tienes beneficios.";
 }
+
+function cerrarModalBeneficios() {
+  document.getElementById("modalBeneficios").style.display = "none";
+}	
 
 async function marcarBeneficioUsado(id) {
   const ok = confirm("¿Marcar este beneficio como usado?");
