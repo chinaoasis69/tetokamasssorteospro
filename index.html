@@ -1901,6 +1901,8 @@ const { data: premiosLucky, error: errorLucky } = await supabaseClient
   .select("*")
   .eq("activo", true);
 
+	console.log("PREMIOS LUCKY", premiosLucky);
+
 if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
   premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
 }
