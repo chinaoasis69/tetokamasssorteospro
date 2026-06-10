@@ -3402,7 +3402,7 @@ async function usarGiro(numero){
     .from("boletos")
 .select("*")
 .eq("numero", numero)
-.eq("user_id", userActual)
+.eq("telefono", userActual)
 .order("id", { ascending: false })
 .limit(1)
 .single();
