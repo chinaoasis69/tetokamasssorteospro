@@ -2910,8 +2910,11 @@ cargarHistorialPremios();
         }
       }
 
-      cargarMisBoletos();
-      cargarBoletos();
+      boletoSeleccionado = null;
+
+await cargarBoletos();
+await cargarMisBoletos();
+await cargarHistorialPremios();
 
       alert(
     "🎰 MASS LUCKY SPIN\n\n" +
