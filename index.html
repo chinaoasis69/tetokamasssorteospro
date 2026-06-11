@@ -2121,126 +2121,115 @@ if(sloganBox){
 
 async function cargarRifasPublicas(){
 
-	if (!clienteActual) {
-  await cargarClienteActual();
-}
+  if (!clienteActual) {
+    await cargarClienteActual();
+  }
 
-    const { data: rifas, error } = await supabaseClient
-  .from("rifas")
-  .select("*")
-  .eq("organizador_id", clienteActual.id)
-  .in("estado", ["activa","programada"]);
+  const { data: rifas, error } = await supabaseClient
+    .from("rifas")
+    .select("*")
+    .eq("organizador_id", clienteActual.id)
+    .in("estado", ["activa","programada"]);
 
-    if(error){
-        console.error(error);
-        return;
-    }
+  if(error){
+    console.error(error);
+    return;
+  }
 
-for (let r of rifas) {
-  const { data: premios } = await supabaseClient
-    .from("premios_rifa")
-    .select(`
-  *,
-  premio_media (
-    id,
-    tipo,
-    url
-  )
-`)
-    .eq("rifa_id", r.id)
-    .order("lugar", { ascending: true });
+  for (let r of rifas) {
+    const { data: premios } = await supabaseClient
+      .from("premios_rifa")
+      .select(`
+        *,
+        premio_media (
+          id,
+          tipo,
+          url
+        )
+      `)
+      .eq("rifa_id", r.id)
+      .order("lugar", { ascending: true });
 
-  r.premios_lista = premios || [];
-}	
+    r.premios_lista = premios || [];
+  }
 
-    const cont = document.getElementById("listaRifas");
+  const cont = document.getElementById("listaRifas");
 
-	cont.innerHTML = `
-  <div class="card" style="text-align:center; margin-bottom:25px;">
-    <h2>🏆 TE-TO-KA MASS SORTEOS PRO</h2>
-    <p>La plataforma profesional para administrar sorteos en línea.</p>
-    <p><b>Powered by TE-TO-KA SOLUTIONS, LLC</b></p>
+  cont.innerHTML = `
+    <div class="card" style="text-align:center; margin-bottom:25px;">
+      <h2>🏆 TE-TO-KA MASS SORTEOS PRO</h2>
+      <p>La plataforma profesional para administrar sorteos en línea.</p>
+      <p><b>Powered by TE-TO-KA SOLUTIONS, LLC</b></p>
 
-    <button onclick="window.open('https://wa.me/19563724890?text=Hola%20quiero%20mi%20propia%20plataforma%20de%20sorteos','_blank')">
-      🚀 Quiero mi plataforma
-    </button>
+      <button onclick="window.open('https://wa.me/19563724890?text=Hola%20quiero%20mi%20propia%20plataforma%20de%20sorteos','_blank')">
+        🚀 Quiero mi plataforma
+      </button>
 
-    <button onclick="
-const box = document.getElementById('sorteosActivosBox');
-if(box){
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-">
-      🎯 Ver sorteos activos
-    </button>
+      <button onclick="toggleSorteosActivos()">
+        🎯 Ver sorteos activos
+      </button>
 
-    <button onclick="window.open('https://wa.me/19563724890','_blank')">
-      📞 Contactar
-    </button>
-  </div>
-
-<div class="card" style="text-align:center; margin-bottom:25px;">
-    <h2>🤝 Negocios Patrocinadores</h2>
-
-    <div id="patrocinadoresBox">
-        Próximamente...
+      <button onclick="window.open('https://wa.me/19563724890','_blank')">
+        📞 Contactar
+      </button>
     </div>
-</div>
 
-<h2>🎯 Sorteos Activos</h2>
+    <div class="card" style="text-align:center; margin-bottom:25px;">
+      <h2>🤝 Negocios Patrocinadores</h2>
+      <div id="patrocinadoresBox">
+        Próximamente...
+      </div>
+    </div>
 
-<button onclick="
-  const box = document.getElementById('sorteosActivosBox');
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
-">
-  🎯 Ver sorteos activos
-</button>
+    <div id="sorteosActivosBox" style="display:none; margin-top:15px;">
+      <h2>🎯 Sorteos Activos</h2>
 
-cont.innerHTML += '<div id="sorteosActivosBox" style="display:none; margin-top:15px;">';
-
-    document.getElementById("sorteosActivosBox").innerHTML = rifas.map(r => `
+      ${rifas.map(r => `
         <div class="card" style="margin:10px 0">
-           <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
-  🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
-</p>
+          <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
+            🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
+          </p>
 
-<h3>🏆 Premios</h3>
-${(r.premios_lista || []).map(p => `
-<p>
-<b>${p.lugar}° Premio:</b> ${p.nombre}
-<br>
-${p.descripcion || ""}
-</p>
+          <h3>🏆 Premios</h3>
 
-${p.imagen_url ? `
-<img src="${p.imagen_url}"
-style="
-max-width:200px;
-width:100%;
-border-radius:12px;
-margin:10px auto;
-display:block;
-">
-` : ""}
+          ${(r.premios_lista || []).map(p => `
+            <p>
+              <b>${p.lugar}° Premio:</b> ${p.nombre}
+              <br>
+              ${p.descripcion || ""}
+            </p>
 
-${(p.premio_media || []).map(m => m.tipo === "video" ? `
-  <video controls style="max-width:220px;border-radius:12px;margin:10px auto;display:block;">
-    <source src="${m.url}" type="video/mp4">
-  </video>
-` : "").join("")}
+            ${p.imagen_url ? `
+              <img src="${p.imagen_url}"
+                style="max-width:200px;width:100%;border-radius:12px;margin:10px auto;display:block;">
+            ` : ""}
 
-`).join("")} 
-            <p>💰 $${r.precio_boleto || 0}</p>
-            <p>🎟️ ${r.total_numeros} números</p>
+            ${(p.premio_media || []).map(m => m.tipo === "video" ? `
+              <video controls style="max-width:220px;border-radius:12px;margin:10px auto;display:block;">
+                <source src="${m.url}" type="video/mp4">
+              </video>
+            ` : "").join("")}
+          `).join("")}
 
-            <button onclick='abrirRifa("${r.id}")'>
-                Ver números
-            </button>
+          <p>💰 $${r.precio_boleto || 0}</p>
+          <p>🎟️ ${r.total_numeros} números</p>
+
+          <button onclick='abrirRifa("${r.id}")'>
+            Ver números
+          </button>
         </div>
-	  </div>
-    `).join("");
+      `).join("")}
+    </div>
+  `;
 
-	await cargarPatrocinadoresPublicos();
+  await cargarPatrocinadoresPublicos();
+}
+
+function toggleSorteosActivos(){
+  const box = document.getElementById("sorteosActivosBox");
+  if(!box) return;
+
+  box.style.display = box.style.display === "none" ? "block" : "none";
 }	
 
 async function cargarPatrocinadoresPublicos(){
