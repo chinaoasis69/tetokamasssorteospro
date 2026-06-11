@@ -2183,6 +2183,15 @@ for (let r of rifas) {
 </div>
 
 <h2>🎯 Sorteos Activos</h2>
+
+<button onclick="
+  const box = document.getElementById('sorteosActivosBox');
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+">
+  🎯 Ver sorteos activos
+</button>
+
+<div id="sorteosActivosBox" style="display:none; margin-top:15px;">
 `;
 
     cont.innerHTML += rifas.map(r => `
@@ -2224,10 +2233,11 @@ ${(p.premio_media || []).map(m => m.tipo === "video" ? `
                 Ver números
             </button>
         </div>
+	  </div>
     `).join("");
 
 	await cargarPatrocinadoresPublicos();
-}
+}	
 
 async function cargarPatrocinadoresPublicos(){
 
