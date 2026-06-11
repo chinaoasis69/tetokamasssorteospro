@@ -3049,7 +3049,7 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
            ${t.giro_usado
  ? "❌ Giro usado"
  : rifaActiva
-    ? `<button onclick="usarGiro('${t.numero}')">🎰 Girar Lucky Spin</button>`
+    ? `<button onclick="usarGiro('${t.numero}','${rifaId}')">🎟️ Girar Lucky Spin</button>`
     : "⏳ Rifa finalizada"
 } 
           </div>
@@ -3394,13 +3394,14 @@ if(contador) contador.innerText = data.length;
     `).join("");
 }	
 	
-async function usarGiro(numero){
+async function usarGiro(numero, rifaId){
 
   const { data, error } = await supabaseClient
     .from("boletos")
 .select("*")
 .eq("numero", numero)
 .eq("telefono", userActual)
+.eq("rifa_id", rifaId)
 .order("id", { ascending: false })
 .limit(1)
 .single();
@@ -3413,7 +3414,7 @@ async function usarGiro(numero){
 	const { data: rifa, error: errorRifa } = await supabaseClient
   .from("rifas")
   .select("*")
-  .eq("id", data.rifa_id)
+  .eq("id", rifaId)
   .single();
 
 const rifaActiva = rifa
