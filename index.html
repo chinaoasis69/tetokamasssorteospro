@@ -2165,7 +2165,12 @@ for (let r of rifas) {
       🚀 Quiero mi plataforma
     </button>
 
-    <button onclick="document.getElementById('listaRifas').scrollIntoView({behavior:'smooth'})">
+    <button onclick="
+const box = document.getElementById('sorteosActivosBox');
+if(box){
+  box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+">
       🎯 Ver sorteos activos
     </button>
 
