@@ -2226,10 +2226,16 @@ async function cargarRifasPublicas(){
 }
 
 function toggleSorteosActivos(){
-  const box = document.getElementById("sorteosActivosBox");
-  if(!box) return;
+  alert("Botón sí respondió");
 
-  box.style.display = box.style.display === "none" ? "block" : "none";
+  const box = document.getElementById("sorteosActivosBox");
+
+  if(!box){
+    alert("No encontré sorteosActivosBox");
+    return;
+  }
+
+  box.style.display = "block";
 }	
 
 async function cargarPatrocinadoresPublicos(){
