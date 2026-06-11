@@ -3429,23 +3429,9 @@ if(errorRifa || !rifa || !rifaActiva){
 }
 
   boletoSeleccionado = data;
+  girarLuckSpin(true);
 
-const { error: errorUpdate } = await supabaseClient
-  .from("boletos")
-  .update({
-    giro_usado: true
-  })
-  .eq("id", data.id);
-
-if(errorUpdate){
-  console.error(errorUpdate);
-  alert("No se pudo marcar el giro usado ❌");
-  return;
 }
-
-await cargarMisBoletos();
-
-girarLuckySpin(true);
 	
 }
 
