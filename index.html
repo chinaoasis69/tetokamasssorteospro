@@ -2198,7 +2198,7 @@ if(box){
 
 cont.innerHTML += '<div id="sorteosActivosBox" style="display:none; margin-top:15px;">';
 
-    cont.innerHTML += rifas.map(r => `
+    document.getElementById("sorteosActivosBox").innerHTML = rifas.map(r => `
         <div class="card" style="margin:10px 0">
            <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
   🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
@@ -2239,8 +2239,6 @@ ${(p.premio_media || []).map(m => m.tipo === "video" ? `
         </div>
 	  </div>
     `).join("");
-	
-    cont.innerHTML += `</div>`;
 
 	await cargarPatrocinadoresPublicos();
 }	
