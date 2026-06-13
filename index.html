@@ -1687,8 +1687,7 @@ async function seleccionarOrganizadorAdmin(id){
 
 clienteActual = data;
 localStorage.setItem("organizador_admin_id", data.id);
-	
-await cargarClienteActual();
+
 await cargarRifasPublicas();	
 
   alert("✅ Organizador seleccionado: " + data.nombre);
