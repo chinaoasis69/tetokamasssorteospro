@@ -2058,12 +2058,8 @@ async function cargarClienteActual(){
 let query = supabaseClient
 .from("organizadores")
 .select("*");
-
-if(orgIdGuardado){
-    query = query.eq("id", orgIdGuardado);
-}else{
+	
     query = query.eq("slug", CLIENTE_SLUG);
-}
 
 const { data, error } = await query.maybeSingle();
 
