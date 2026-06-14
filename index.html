@@ -1577,7 +1577,10 @@ async function guardarConfigCliente(){
       zelle: document.getElementById("cfgZelle").value.trim(),
       cashapp: document.getElementById("cfgCashapp").value.trim(),
       apple_pay: document.getElementById("cfgApplePay").value.trim(),
-      paypal: document.getElementById("cfgPaypal").value.trim()
+      paypal: document.getElementById("cfgPaypal").value.trim(),
+      logo_url: document.getElementById("cfgLogoUrl").value.trim(),
+      banner_url: document.getElementById("cfgBannerUrl").value.trim(),
+      color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
     })
     .eq("id", clienteActual.id);
 
