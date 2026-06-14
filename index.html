@@ -2188,18 +2188,6 @@ mapaOrganizadores = {};
     <div id="sorteosActivosBox" style="display:none; margin-top:15px;">
       <h2>🎯 Sorteos Activos</h2>
 
-	  ${Object.values(mapaOrganizadores).map(org => `
-  <div class="card" style="margin:15px 0">
-    <h3>👥 ${org.nombre_publico || org.nombre || "Organizador"}</h3>
-
-    <button onclick="document.getElementById('rifas_org_${org.id}').style.display =
-      document.getElementById('rifas_org_${org.id}').style.display === 'none' ? 'block' : 'none'">
-      🎯 Ver sorteos
-    </button>
-
-    <div id="rifas_org_${org.id}" style="display:none; margin-top:15px;">
-      ${rifas.filter(r => r.organizador_id === org.id).map(r => `
-
       ${rifas.map(r => `
         <div class="card" style="margin:10px 0">
           <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
