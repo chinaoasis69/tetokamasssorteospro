@@ -2170,7 +2170,7 @@ mapaOrganizadores = {};
       </button>
 
       <button onclick="toggleSorteosActivos()">
-        🎯 Ver sorteos activos
+        👥 Ver organizadores activos
       </button>
 
       <button onclick="window.open('https://wa.me/19563724890','_blank')">
@@ -2187,6 +2187,18 @@ mapaOrganizadores = {};
 
     <div id="sorteosActivosBox" style="display:none; margin-top:15px;">
       <h2>🎯 Sorteos Activos</h2>
+
+	  ${Object.values(mapaOrganizadores).map(org => `
+  <div class="card" style="margin:15px 0">
+    <h3>👥 ${org.nombre_publico || org.nombre || "Organizador"}</h3>
+
+    <button onclick="document.getElementById('rifas_org_${org.id}').style.display =
+      document.getElementById('rifas_org_${org.id}').style.display === 'none' ? 'block' : 'none'">
+      🎯 Ver sorteos
+    </button>
+
+    <div id="rifas_org_${org.id}" style="display:none; margin-top:15px;">
+      ${rifas.filter(r => r.organizador_id === org.id).map(r => `
 
       ${rifas.map(r => `
         <div class="card" style="margin:10px 0">
