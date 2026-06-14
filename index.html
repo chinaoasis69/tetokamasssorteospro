@@ -1764,6 +1764,7 @@ let userActual = localStorage.getItem("mass_user");
 let rifaActual = null;
 let clienteActual = null;
 let CLIENTE_SLUG = "china-nl";
+let mapaOrganizadores = {};	
 	
 async function loginMASS(){
 
@@ -2128,7 +2129,7 @@ const { data: organizadores } = await supabaseClient
   .from("organizadores")
   .select("*");
 
-let mapaOrganizadores = {};
+mapaOrganizadores = {};
 
 (organizadores || []).forEach(o => {
   mapaOrganizadores[o.id] = o;
@@ -2364,6 +2365,15 @@ async function abrirRifa(rifaId){
 		if(rifa.cliente_id){
    await cargarClientePorId(rifa.cliente_id);
 }
+
+const org = mapaOrganizadores[rifa.organizador_id];
+
+if(org){
+  document.getElementById("pagoZelle").textContent = org.zelle || "--";
+  document.getElementById("pagoCashapp").textContent = org.cashapp || "--";
+  document.getElementById("pagoApplePay").textContent = org.apple_pay || "--";
+  document.getElementById("pagoPaypal").textContent = org.paypal || "--";
+}		
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
