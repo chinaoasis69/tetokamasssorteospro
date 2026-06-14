@@ -2201,7 +2201,7 @@ mapaOrganizadores = {};
       <h2>🎯 Sorteos Activos</h2>
 
       ${rifas.map(r => `
-        <div class="card" style="margin:10px 0">
+        <div class="card" data-org-id="${r.organizador_id}" style="margin:10px 0">
           <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
             🎯 Organizado por: ${mapaOrganizadores[r.organizador_id]?.nombre_publico || mapaOrganizadores[r.organizador_id]?.nombre || "Rifas"}
           </p>
@@ -2278,6 +2278,23 @@ function toggleOrganizadoresActivos(){
         box.style.display === "none"
         ? "block"
         : "none";
+}
+
+function verSorteosDeOrganizador(orgId){
+    const box = document.getElementById("sorteosActivosBox");
+    if(!box) return;
+
+    box.style.display = "block";
+
+    document.querySelectorAll("#sorteosActivosBox .card").forEach(card => {
+        card.style.display = "none";
+    });
+
+    document.querySelectorAll(`[data-org-id="${orgId}"]`).forEach(card => {
+        card.style.display = "block";
+    });
+
+    box.scrollIntoView({ behavior: "smooth", block: "start" });
 }	
 
 async function cargarPatrocinadoresPublicos(){
