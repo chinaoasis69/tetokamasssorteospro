@@ -2173,6 +2173,10 @@ mapaOrganizadores = {};
         👥 Ver organizadores activos
       </button>
 
+	  <button onclick="toggleOrganizadoresActivos()">
+  👥 Ver lista de organizadores
+</button>
+
       <button onclick="window.open('https://wa.me/19563724890','_blank')">
         📞 Contactar
       </button>
@@ -2184,6 +2188,14 @@ mapaOrganizadores = {};
         Próximamente...
       </div>
     </div>
+
+	<div id="organizadoresActivosBox" style="display:none; margin-top:15px;">
+  <h2>👥 Organizadores Activos</h2>
+
+  <div id="listaOrganizadoresActivos">
+    Cargando organizadores...
+  </div>
+</div>
 
     <div id="sorteosActivosBox" style="display:none; margin-top:15px;">
       <h2>🎯 Sorteos Activos</h2>
