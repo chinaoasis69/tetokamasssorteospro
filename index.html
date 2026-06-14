@@ -3608,6 +3608,49 @@ async function generarBoletosRifaAdmin(rifaId, totalNumeros){
 
   alert("✅ Boletos generados correctamente");
 
+}
+
+async function subirImagenOrganizador(tipo){
+
+  const input =
+    tipo === "logo"
+      ? document.getElementById("fileLogo")
+      : document.getElementById("fileBanner");
+
+  const archivo = input.files[0];
+
+  if(!archivo){
+    return;
+  }
+
+  const nombreArchivo =
+    `${clienteActual.id}_${tipo}_${Date.now()}`;
+
+  const { error } = await supabaseClient.storage
+    .from("organizadores")
+    .upload(nombreArchivo, archivo, {
+      upsert: true
+    });
+
+  if(error){
+    alert("❌ Error subiendo imagen");
+    console.error(error);
+    return;
+  }
+
+  const { data } = supabaseClient.storage
+    .from("organizadores")
+    .getPublicUrl(nombreArchivo);
+
+  if(tipo === "logo"){
+    document.getElementById("cfgLogoUrl").value =
+      data.publicUrl;
+  }else{
+    document.getElementById("cfgBannerUrl").value =
+      data.publicUrl;
+  }
+
+  alert("✅ Imagen subida");
 }	
 
 </script>
