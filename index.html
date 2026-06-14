@@ -3635,7 +3635,13 @@ async function editarOrganizadorAdmin(id){
 
   clienteActual = data;
   mostrarConfigAdmin();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+setTimeout(() => {
+  document.getElementById("adminPanel")?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}, 300);
 }
 
 async function eliminarOrganizador(id){
