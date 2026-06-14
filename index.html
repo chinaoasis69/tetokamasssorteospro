@@ -1524,6 +1524,12 @@ function mostrarConfigAdmin(){
 
 <input id="cfgPaypal" placeholder="PayPal"><br><br>
 
+<input id="cfgLogoUrl" placeholder="Logo URL"><br><br>
+
+<input id="cfgBannerUrl" placeholder="Banner URL"><br><br>
+
+<input id="cfgColorPrincipal" placeholder="Color Principal (#7CFF00)"><br><br>
+
 <button onclick="guardarConfigCliente()">
 💾 Guardar cambios
 </button>
@@ -1541,7 +1547,16 @@ document.getElementById("cfgWhatsapp").value = clienteActual?.whatsapp || "";
 document.getElementById("cfgZelle").value = clienteActual?.zelle || "";
 document.getElementById("cfgCashapp").value = clienteActual?.cashapp || "";
 document.getElementById("cfgApplePay").value = clienteActual?.apple_pay || "";
-document.getElementById("cfgPaypal").value = clienteActual?.paypal || "";	
+document.getElementById("cfgPaypal").value = clienteActual?.paypal || "";
+
+document.getElementById("cfgLogoUrl").value =
+clienteActual?.logo_url || "";
+
+document.getElementById("cfgBannerUrl").value =
+clienteActual?.banner_url || "";
+
+document.getElementById("cfgColorPrincipal").value =
+clienteActual?.color_principal || "#7CFF00";	
 
 }
 
