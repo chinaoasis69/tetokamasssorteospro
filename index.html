@@ -2238,6 +2238,23 @@ mapaOrganizadores = {};
     </div>
   `;
 
+const listaOrg = document.getElementById("listaOrganizadoresActivos");
+
+if(listaOrg){
+    listaOrg.innerHTML = Object.values(mapaOrganizadores)
+        .map(org => `
+            <div class="card" style="margin:10px 0">
+                <h3>👥 ${org.nombre_publico || org.nombre || "Organizador"}</h3>
+
+                <p>
+                    ${rifas.filter(r => r.organizador_id === org.id).length}
+                    sorteo(s) activo(s)
+                </p>
+            </div>
+        `)
+        .join("");
+}	
+
   await cargarPatrocinadoresPublicos();
 }
 
@@ -2246,6 +2263,17 @@ function toggleSorteosActivos(){
   if(!box) return;
 
   box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
+function toggleOrganizadoresActivos(){
+    const box = document.getElementById("organizadoresActivosBox");
+
+    if(!box) return;
+
+    box.style.display =
+        box.style.display === "none"
+        ? "block"
+        : "none";
 }	
 
 async function cargarPatrocinadoresPublicos(){
