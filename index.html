@@ -3647,29 +3647,27 @@ setTimeout(() => {
 async function eliminarOrganizador(id){
   if(!confirm("⚠️ ¿Seguro que quieres eliminar este organizador?")) return;
 
-  const { count } = await supabaseClient
-    .from("rifas")
-    .select("*", { count: "exact", head: true })
-    .eq("organizador_id", id);
+  const { data, error } = await supabaseClient
+    .from("organizadores")
+    .delete()
+    .eq("id", id)
+    .select();
 
-  if(count > 0){
-    alert("❌ Este organizador tiene rifas. Primero elimina sus rifas.");
+  console.log("BORRADO:", data);
+  console.log("ERROR BORRADO:", error);
+
+  if(error){
+    alert("❌ Error eliminando: " + error.message);
     return;
   }
 
-  const { error } = await supabaseClient
-    .from("organizadores")
-    .delete()
-    .eq("id", id);
-
-  if(error){
-    alert("❌ Error eliminando organizador");
-    console.error(error);
+  if(!data || data.length === 0){
+    alert("⚠️ No se borró nada. Revisa RLS o ID.");
     return;
   }
 
   alert("✅ Organizador eliminado");
-  mostrarOrganizadoresAdmin();
+  await mostrarOrganizadoresAdmin();
 }	
 
 </script>
