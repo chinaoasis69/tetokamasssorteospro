@@ -1524,9 +1524,14 @@ function mostrarConfigAdmin(){
 
 <input id="cfgPaypal" placeholder="PayPal"><br><br>
 
-<input id="cfgLogoUrl" placeholder="Logo URL"><br><br>
+<label>📷 Logo del organizador</label><br>
+<input type="file" id="fileLogo" accept="image/*" onchange="subirImagenOrganizador('logo')"><br><br>
 
-<input id="cfgBannerUrl" placeholder="Banner URL"><br><br>
+<label>🖼️ Banner del organizador</label><br>
+<input type="file" id="fileBanner" accept="image/*" onchange="subirImagenOrganizador('banner')"><br><br>
+
+<input id="cfgLogoUrl" placeholder="Logo URL" style="display:none;"><br>
+<input id="cfgBannerUrl" placeholder="Banner URL" style="display:none;"><br>
 
 <input id="cfgColorPrincipal" placeholder="Color Principal (#7CFF00)"><br><br>
 
