@@ -3618,6 +3618,52 @@ async function subirImagenOrganizador(tipo){
   }
 
   alert("✅ Imagen subida");
+}
+
+async function editarOrganizadorAdmin(id){
+  const { data, error } = await supabaseClient
+    .from("organizadores")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(error || !data){
+    alert("❌ No se pudo cargar el organizador");
+    console.error(error);
+    return;
+  }
+
+  clienteActual = data;
+  mostrarConfiguracion();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function eliminarOrganizador(id){
+  if(!confirm("⚠️ ¿Seguro que quieres eliminar este organizador?")) return;
+
+  const { count } = await supabaseClient
+    .from("rifas")
+    .select("*", { count: "exact", head: true })
+    .eq("organizador_id", id);
+
+  if(count > 0){
+    alert("❌ Este organizador tiene rifas. Primero elimina sus rifas.");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("organizadores")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("❌ Error eliminando organizador");
+    console.error(error);
+    return;
+  }
+
+  alert("✅ Organizador eliminado");
+  mostrarOrganizadoresAdmin();
 }	
 
 </script>
