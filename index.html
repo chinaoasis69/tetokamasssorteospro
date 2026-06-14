@@ -2121,16 +2121,7 @@ async function cargarRifasPublicas(){
 
   const { data: rifas, error } = await supabaseClient
   .from("rifas")
-  .select(`
-    *,
-    organizadores (
-      id,
-      nombre,
-      nombre_publico,
-      slug,
-      telefono
-    )
-  `)
+  .select("*")
   .in("estado", ["activa","programada"]);
 
   if(error){
