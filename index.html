@@ -2124,6 +2124,16 @@ async function cargarRifasPublicas(){
   .select("*")
   .in("estado", ["activa","programada"]);
 
+const { data: organizadores } = await supabaseClient
+  .from("organizadores")
+  .select("*");
+
+let mapaOrganizadores = {};
+
+(organizadores || []).forEach(o => {
+  mapaOrganizadores[o.id] = o;
+});	
+
   if(error){
     console.error(error);
     return;
@@ -2180,7 +2190,7 @@ async function cargarRifasPublicas(){
       ${rifas.map(r => `
         <div class="card" style="margin:10px 0">
           <p style="color:#7CFF00;font-weight:bold;margin-bottom:8px;">
-            🎯 Organizado por: ${clienteActual?.nombre_publico || clienteActual?.nombre || "Rifas"}
+            🎯 Organizado por: ${mapaOrganizadores[r.organizador_id]?.nombre_publico || mapaOrganizadores[r.organizador_id]?.nombre || "Rifas"}
           </p>
 
           <h3>🏆 Premios</h3>
