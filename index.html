@@ -2427,8 +2427,8 @@ async function cargarClientePorId(clienteId){
   if(sloganBox) sloganBox.innerText = data.slogan || "";
 
   const logo = document.getElementById("logoCliente");
-  if(logo && data.logo_pequeno_url){
-    logo.src = data.logo_pequeno_url;
+  if(logo && data.logo_url){
+    logo.src = data.logo_url;
     logo.style.display = "block";
   }
 
