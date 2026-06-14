@@ -2101,14 +2101,22 @@ const { data, error } = await query.maybeSingle();
 console.log("CLIENTE:", data);
 	
 WHATSAPP = data.whatsapp || "19563724890";
-if(data.logo_pequeno_url){
+const logoNuevo = document.getElementById("logoCliente");
+if (logoNuevo && data.logo_url) {
+  logoNuevo.src = data.logo_url;
+  logoNuevo.style.display = "block";
+}
 
-  const logo = document.getElementById("logoCliente");
+if (data.banner_url) {
+  document.body.style.backgroundImage = `url('${data.banner_url}')`;
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundAttachment = "fixed";
+}
 
-  if(logo){
-    logo.src = data.logo_pequeno_url;
-    logo.style.display = "block";
-  }
+if (data.color_principal) {
+  document.documentElement.style.setProperty("--verde", data.color_principal);
+}	
 
 }	
 document.getElementById("pagoZelle").textContent =
