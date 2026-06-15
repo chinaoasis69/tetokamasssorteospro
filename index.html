@@ -1503,8 +1503,9 @@ async function editarRifaAdmin(id){
 
 function mostrarConfigAdmin(){
 
-	if(!clienteActual){
-   cargarClienteActual();
+	if(!clienteActual || !clienteActual.id){
+  alert("❌ Primero entra desde Editar Organizador o selecciona un organizador.");
+  return;
 }
 
     document.getElementById("adminContenido").innerHTML = `
@@ -1566,6 +1567,21 @@ clienteActual?.color_principal || "#7CFF00";
 }
 
 async function guardarConfigCliente(){
+
+const idGuardado = localStorage.getItem("organizador_admin_id");
+
+if((!clienteActual || !clienteActual.id) && idGuardado){
+
+    const { data } = await supabaseClient
+        .from("organizadores")
+        .select("*")
+        .eq("id", idGuardado)
+        .single();
+
+    if(data){
+        clienteActual = data;
+    }
+}	
 
   if(!clienteActual || !clienteActual.id){
     alert("❌ No hay cliente cargado. Cierra y abre el panel otra vez.");
@@ -3637,8 +3653,14 @@ async function editarOrganizadorAdmin(id){
     return;
   }
 
-  clienteActual = data;
-  mostrarConfigAdmin();
+ clienteActual = data;
+
+localStorage.setItem(
+  "organizador_admin_id",
+  data.id
+);
+
+mostrarConfigAdmin(); 
 
 setTimeout(() => {
   document.getElementById("adminPanel")?.scrollIntoView({
