@@ -264,7 +264,9 @@ Selecciona una rifa
 <p id="premioActual">Selecciona una rifa</p>
 
 </div>	
-
+	
+  <div id="zonaRifaActiva" style="display:none;">
+	  
   <button class="btn-main" onclick="numeroSuerte()">🎲 Número de la suerte</button>
   <button class="btn-dark" onclick="cargarBoletos()">🔄 Actualizar</button>
   <button class="btn-dark" onclick="mostrarSoloDisponibles()">🟢 Solo disponibles</button>
@@ -2509,6 +2511,7 @@ if (logoOrg) {
 }
 		
 		document.getElementById("sorteoSeleccionadoBox").style.display = "block";
+		document.getElementById("zonaRifaActiva").style.display = "block";
 		
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
