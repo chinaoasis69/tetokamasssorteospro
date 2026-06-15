@@ -2472,7 +2472,15 @@ if(org){
   document.getElementById("pagoCashapp").textContent = org.cashapp || "--";
   document.getElementById("pagoApplePay").textContent = org.apple_pay || "--";
   document.getElementById("pagoPaypal").textContent = org.paypal || "--";
-}		
+}
+
+document.getElementById("nombreOrganizadorSorteo").innerText =
+"👥 " + (org?.nombre_publico || org?.nombre || "");
+
+document.getElementById("sloganOrganizadorSorteo").innerText =
+org?.slogan || "";
+
+		
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
