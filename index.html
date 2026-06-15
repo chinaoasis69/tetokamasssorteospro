@@ -2296,15 +2296,19 @@ function verSorteosDeOrganizador(orgId){
 
 async function cargarPatrocinadoresPublicos(){
 
-  const box = document.getElementById("patrocinadoresBox");
-  if(!box) return;
+const box = document.getElementById("patrocinadoresBox");
+if(!box) return;
 
-  const { data, error } = await supabaseClient
-    .from("patrocinadores")
-    .select("*")
-    .eq("activo", true)
-    .eq("organizador_id", clienteActual.id)
-    .order("created_at", { ascending: false });
+if(!clienteActual || !clienteActual.id){
+   return;
+}
+
+const { data, error } = await supabaseClient
+.from("patrocinadores")
+.select("*")
+.eq("activo", true)
+.eq("organizador_id", clienteActual.id)
+.order("created_at", { ascending: false });
 
   if(error){
     console.error(error);
