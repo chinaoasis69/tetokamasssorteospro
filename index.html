@@ -2080,10 +2080,10 @@ const { data, error } = await query.maybeSingle();
     return;
 }
 
-  if(!data){
-    alert("Cliente no activo o no encontrado");
-    return;
-  }
+if(!data){
+  console.log("Cliente no activo o no encontrado");
+  return;
+}
 
   clienteActual = data;
 console.log("CLIENTE:", data);
