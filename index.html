@@ -205,6 +205,20 @@ Powered by TE-TO-KA SOLUTIONS, LLC
 
 <div id="infoOrganizadorSorteo" style="margin:10px 0 15px 0; text-align:center;">
 
+	<img
+  id="logoOrganizadorSorteo"
+  src=""
+  style="
+    display:none;
+    width:70px;
+    height:70px;
+    object-fit:cover;
+    border-radius:50%;
+    border:3px solid #39ff14;
+    margin:0 auto 10px auto;
+  "
+>
+
   <div id="nombreOrganizadorSorteo"
        style="color:#39ff14;font-size:18px;font-weight:bold;">
   </div>
@@ -2463,6 +2477,17 @@ document.getElementById("nombreOrganizadorSorteo").innerText =
 
 document.getElementById("sloganOrganizadorSorteo").innerText =
 org?.slogan || "";
+
+		const logoOrg = document.getElementById("logoOrganizadorSorteo");
+
+if (logoOrg) {
+    if (org?.logo_url) {
+        logoOrg.src = org.logo_url;
+        logoOrg.style.display = "block";
+    } else {
+        logoOrg.style.display = "none";
+    }
+}
 				
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
