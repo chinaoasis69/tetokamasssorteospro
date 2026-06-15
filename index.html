@@ -1501,14 +1501,20 @@ async function editarRifaAdmin(id){
     mostrarSorteosAdmin();
 }	
 
-function mostrarConfigAdmin(){
+async function mostrarConfigAdmin(){
 
-	if(!clienteActual || !clienteActual.id){
-  alert("❌ Primero entra desde Editar Organizador o selecciona un organizador.");
-  return;
-}
+  const idGuardado = localStorage.getItem("organizador_admin_id");
 
-    document.getElementById("adminContenido").innerHTML = `
+  if((!clienteActual || !clienteActual.id) && idGuardado){
+    await cargarClienteActual();
+  }
+
+  if(!clienteActual || !clienteActual.id){
+    console.log("No hay organizador cargado");
+    return;
+  }
+
+  document.getElementById("adminContenido").innerHTML = `
 <h3>⚙️ Configuración</h3>
 
 <input id="cfgNombre" placeholder="Nombre público"><br><br>
