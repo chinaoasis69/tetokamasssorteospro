@@ -2071,7 +2071,13 @@ let query = supabaseClient
 .from("organizadores")
 .select("*");
 	
+   if(orgIdGuardado){
+    query = query.eq("id", orgIdGuardado);
+}else if(CLIENTE_SLUG){
     query = query.eq("slug", CLIENTE_SLUG);
+}else{
+    query = query.eq("activo", true);
+} 
 
 const { data, error } = await query.maybeSingle();
 
