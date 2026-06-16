@@ -2068,7 +2068,7 @@ async function recargarSaldo() {
       .eq("id", RIFA_ID)
       .single();
 
-    organizadorId = rifaActual?.organizador_id || clienteActual?.id || null;
+    organizadorId = rifaActual?.organizador_id || clienteActual?.id || localStorage.getItem("organizador_admin_id") || null;
   }
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
