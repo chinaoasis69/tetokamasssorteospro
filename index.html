@@ -3022,6 +3022,8 @@ const esNada = premioGanador.esNada === true;
       let codigoCupon = null;
 
       if(
+  !esNada &&
+  (
         ganador.includes("10% OFF") ||
         ganador.includes("25% OFF") ||
         ganador.includes("50% OFF") ||
@@ -3056,7 +3058,7 @@ const esNada = premioGanador.esNada === true;
 
 cargarHistorialPremios();	
 
-      if(ganador.includes("Segundo giro")){
+      if(!esNada && ganador.includes("Segundo giro")){
         await supabaseClient.from("boletos").update({
           giro_usado: false
         }).eq("id", boletoSeleccionado.id);
