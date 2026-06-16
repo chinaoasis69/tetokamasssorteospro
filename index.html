@@ -3395,7 +3395,7 @@ async function abrirModalBeneficios() {
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .select("*")
-    .eq("user_id", userActual)
+    .eq("user_id", localStorage.getItem("mass_telefono"))
     .eq("oculto_usuario", false)
     .order("created_at", { ascending: false });
 
@@ -3448,7 +3448,7 @@ async function ocultarBeneficio(id) {
     .from("beneficios_entregados")
     .update({ oculto_usuario: true })
     .eq("id", id)
-    .eq("user_id", userActual)
+    .eq("user_id", localStorage.getItem("mass_telefono"))
     .eq("oculto_usuario", false)
     .select();
 
