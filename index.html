@@ -644,11 +644,24 @@ let rifaPremiosAdminId = null;
 async function mostrarPremiosAdmin(){
 
     const cont = document.getElementById("adminContenido");
+	const { data: rifas } = await supabaseClient
+  .from("rifas")
+  .select("id,titulo")
+  .order("created_at", { ascending:false });
 
-    const { data, error } = await supabaseClient
-        .from("lucky_spin_premios")
-        .select("*")
-        .order("created_at", { ascending:false });
+    let data = [];
+let error = null;
+
+if(rifaPremiosAdminId){
+  const res = await supabaseClient
+    .from("lucky_spin_premios")
+    .select("*")
+    .eq("rifa_id", rifaPremiosAdminId)
+    .order("created_at", { ascending:false });
+
+  data = res.data || [];
+  error = res.error;
+}
 
     if(error){
         alert("Error cargando premios");
@@ -658,6 +671,16 @@ async function mostrarPremiosAdmin(){
 
     cont.innerHTML = `
         <h3>🎁 Premios Lucky Spin</h3>
+
+	<select onchange="rifaPremiosAdminId = this.value; mostrarPremiosAdmin();">
+  <option value="">Selecciona una rifa</option>
+  ${rifas.map(r => `
+    <option value="${r.id}" ${r.id === rifaPremiosAdminId ? "selected" : ""}>
+      ${r.titulo}
+    </option>
+  `).join("")}
+</select>
+<br><br>	
 
         <button onclick="nuevoPremioLucky()">
             ➕ Agregar premio
