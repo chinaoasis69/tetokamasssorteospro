@@ -700,6 +700,95 @@ async function mostrarPremiosAdmin(){
 
 }
 
+async function nuevoPremioLucky(){
+  const nombre = prompt("Nombre del premio:");
+  if(!nombre) return;
+
+  const descripcion = prompt("Descripción:") || "";
+  const codigo = prompt("Código:") || "";
+  const cantidad = Number(prompt("Cantidad disponible:") || 1);
+  const probabilidad = Number(prompt("Probabilidad %:") || 0);
+
+  const { error } = await supabaseClient
+    .from("lucky_spin_premios")
+    .insert({
+      organizador_id: clienteActual.id,
+      nombre,
+      descripcion,
+      codigo,
+      cantidad,
+      entregados: 0,
+      probabilidad,
+      activo: true
+    });
+
+  if(error){
+    alert("Error agregando premio");
+    console.error(error);
+    return;
+  }
+
+  alert("Premio agregado ✅");
+  mostrarPremiosAdmin();
+}
+
+async function editarPremioLucky(id){
+  const { data: p, error } = await supabaseClient
+    .from("lucky_spin_premios")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(error || !p){
+    alert("No se encontró el premio");
+    return;
+  }
+
+  const nombre = prompt("Nombre:", p.nombre) || p.nombre;
+  const descripcion = prompt("Descripción:", p.descripcion || "") || "";
+  const codigo = prompt("Código:", p.codigo || "") || "";
+  const cantidad = Number(prompt("Cantidad:", p.cantidad || 1) || p.cantidad || 1);
+  const probabilidad = Number(prompt("Probabilidad %:", p.probabilidad || 0) || p.probabilidad || 0);
+
+  const { error: updateError } = await supabaseClient
+    .from("lucky_spin_premios")
+    .update({
+      nombre,
+      descripcion,
+      codigo,
+      cantidad,
+      probabilidad
+    })
+    .eq("id", id);
+
+  if(updateError){
+    alert("Error editando premio");
+    console.error(updateError);
+    return;
+  }
+
+  alert("Premio actualizado ✅");
+  mostrarPremiosAdmin();
+}
+
+async function eliminarPremioLucky(id){
+  if(!confirm("¿Eliminar este premio?")) return;
+
+  const { error } = await supabaseClient
+    .from("lucky_spin_premios")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("Error eliminando premio");
+    console.error(error);
+    return;
+  }
+
+  alert("Premio eliminado ✅");
+  mostrarPremiosAdmin();
+}	
+
 async function mostrarPatrocinadoresAdmin(){
 
   const cont = document.getElementById("adminContenido");
