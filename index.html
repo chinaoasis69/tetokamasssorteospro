@@ -3226,6 +3226,17 @@ if(spinResult){
         rifa_id: boletoSeleccionado.rifa_id
       });
 
+	if (!esNada) {
+  await supabaseClient.from("beneficios_entregados").insert({
+    user_id: userActual,
+    rifa_id: boletoSeleccionado.rifa_id,
+    codigo: premioGanador.codigo || codigoCupon || "N/A",
+    promocion: ganador,
+    usado: false,
+    oculto_usuario: false
+  });
+}	
+
       await supabaseClient
         .from("lucky_spin_premios")
         .update({ entregados: Number(premioGanador.entregados || 0) + 1 })
