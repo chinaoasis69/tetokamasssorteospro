@@ -646,7 +646,6 @@ async function mostrarPremiosAdmin(){
     const { data, error } = await supabaseClient
         .from("lucky_spin_premios")
         .select("*")
-        .eq("organizador_id", clienteActual.id)
         .order("created_at", { ascending:false });
 
     if(error){
