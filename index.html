@@ -2986,37 +2986,34 @@ if (errorLucky || !premiosLucky || premiosLucky.length === 0) {
   return;
 }
 
-const premios = premiosLucky.map(p => p.nombre);
+let bolsaPremios = [];
 
-  let vueltas = 0;
-  const result = document.getElementById("spinResult");
-  const botonSpin = document.querySelector("#spinBox button");
+premiosLucky.forEach(p => {
+  const prob = Number(p.probabilidad || 0);
+  const disponibles = Number(p.cantidad || 0) - Number(p.entregados || 0);
 
-  if(botonSpin){
-    botonSpin.disabled = true;
-    botonSpin.innerText = "Girando... 🎰";
-  }
-
-  if(result){
-    result.style.fontSize = "24px";
-    result.style.fontWeight = "bold";
-    result.style.color = "#39ff14";
-  }
-
-  alert("Girando ruleta 🎰");
-
-  const intervalo = setInterval(async () => {
-    if(result){
-      result.innerText = premios[Math.floor(Math.random() * premios.length)];
+  if (prob > 0 && disponibles > 0) {
+    for (let i = 0; i < prob; i++) {
+      bolsaPremios.push(p);
     }
+  }
+});
 
-    vueltas++;
+const totalProbabilidad = bolsaPremios.length;
+const nada = Math.max(0, 100 - totalProbabilidad);
 
-    if(vueltas > 30){
-      clearInterval(intervalo);
+for (let i = 0; i < nada; i++) {
+  bolsaPremios.push({
+    nombre: "Sigue participando",
+    descripcion: "No ganaste premio esta vez",
+    codigo: "N/A",
+    esNada: true
+  });
+}
 
-      const ganador = premios[Math.floor(Math.random() * premios.length)];
-	  const premioGanador = premiosLucky.find(p => p.nombre === ganador);
+const premioGanador = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)];
+const ganador = premioGanador.nombre;
+const esNada = premioGanador.esNada === true;	
 
       if(result){
         result.innerText = "🏆 " + ganador;
