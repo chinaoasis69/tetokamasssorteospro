@@ -2086,6 +2086,10 @@ async function recargarSaldo() {
     .from("comprobantes-mass")
     .getPublicUrl(nombreArchivo);
 
+console.log("RIFA_ID:", RIFA_ID);
+console.log("clienteActual:", clienteActual);
+console.log("organizadorId:", organizadorId);	
+
   const { error } = await supabaseClient
     .from("recargas_mass")
     .insert({
