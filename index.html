@@ -700,6 +700,11 @@ async function mostrarPremiosAdmin(){
 }
 
 async function nuevoPremioLucky(){
+
+	if(!RIFA_ID){
+  alert("Primero selecciona una rifa para agregar premios Lucky Spin");
+  return;
+}
   const nombre = prompt("Nombre del premio:");
   if(!nombre) return;
 
@@ -711,6 +716,7 @@ async function nuevoPremioLucky(){
   const { error } = await supabaseClient
     .from("lucky_spin_premios")
     .insert({
+	rifa_id: RIFA_ID,	
       nombre,
       descripcion,
       codigo,
