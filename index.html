@@ -534,6 +534,10 @@ Cargando historial...
 
 <button onclick="mostrarRecargasMassAdmin()">
 💰 Recargas MASS
+</button>
+
+<button onclick="mostrarHistorialRecargasMassAdmin()">
+📜 Historial recargas
 </button>	
 
 <button onclick="mostrarConfigAdmin()">
@@ -3838,6 +3842,42 @@ async function mostrarRecargasMassAdmin() {
 
   document.getElementById("adminContenido").innerHTML = html;
 }
+
+async function mostrarHistorialRecargasMassAdmin() {
+  const orgId = localStorage.getItem("organizador_admin_id");
+
+  const { data, error } = await supabaseClient
+    .from("recargas_mass")
+    .select("*")
+    .eq("organizador_id", orgId)
+    .order("created_at", { ascending:false });
+
+  if(error){
+    alert("Error cargando historial");
+    return;
+  }
+
+  let html = `
+    <h2>📜 Historial de recargas</h2>
+  `;
+
+  if(!data || data.length === 0){
+    html += `<p>No hay recargas todavía.</p>`;
+  }
+
+  data.forEach(r => {
+    html += `
+      <div class="card">
+        <p><b>Teléfono:</b> ${r.telefono}</p>
+        <p><b>Monto:</b> ${r.monto} MASS</p>
+        <p><b>Estado:</b> ${r.estado}</p>
+        <a href="${r.comprobante_url}" target="_blank">Ver comprobante</a>
+      </div>
+    `;
+  });
+
+  document.getElementById("adminContenido").innerHTML = html;
+}	
 
 async function aprobarRecarga(id, telefono, monto){
 
