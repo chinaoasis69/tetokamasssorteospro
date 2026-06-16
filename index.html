@@ -3785,6 +3785,49 @@ async function eliminarOrganizador(id){
 
   alert("✅ Organizador eliminado");
   await mostrarOrganizadoresAdmin();
+}
+
+async function mostrarRecargasMassAdmin() {
+
+  const orgId = localStorage.getItem("organizador_admin_id");
+
+  const { data, error } = await supabaseClient
+    .from("recargas_mass")
+    .select("*")
+    .eq("organizador_id", orgId)
+    .eq("estado", "pendiente")
+    .order("created_at", { ascending:false });
+
+  if(error){
+    alert("Error cargando recargas");
+    return;
+  }
+
+  let html = `
+    <h2>💰 Recargas pendientes</h2>
+  `;
+
+  data.forEach(r => {
+
+    html += `
+      <div class="card">
+        <p><b>Teléfono:</b> ${r.telefono}</p>
+        <p><b>Monto:</b> ${r.monto} MASS</p>
+
+        <a href="${r.comprobante_url}" target="_blank">
+          Ver comprobante
+        </a>
+
+        <br><br>
+
+        <button onclick="aprobarRecarga('${r.id}','${r.telefono}',${r.monto})">
+          ✅ Aprobar
+        </button>
+      </div>
+    `;
+  });
+
+  document.getElementById("adminContenido").innerHTML = html;
 }	
 
 </script>
