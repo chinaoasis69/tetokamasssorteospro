@@ -3572,26 +3572,22 @@ async function marcarBeneficioUsado(id) {
   const ok = confirm("¿Quieres canjear este beneficio?");
   if (!ok) return;
 
-const { data: beneficio } = await supabaseClient
-  .from("beneficios_entregados")
-  .select("usado")
-  .eq("id", id)
-  .single();
-
-if (beneficio?.usado === true) {
-  alert("❌ Este beneficio ya fue canjeado");
-  abrirMisBeneficios();
-  return;
-}	
-
-  const { error } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ usado: true })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("usado", false)
+    .select();
 
   if (error) {
     alert("Error marcando beneficio");
     console.error(error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("❌ Este beneficio ya fue canjeado");
+    abrirMisBeneficios();
     return;
   }
 
