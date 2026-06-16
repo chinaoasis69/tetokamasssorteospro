@@ -3817,7 +3817,7 @@ async function mostrarRecargasMassAdmin() {
   `;
 
   data.forEach(r => {
-
+	  
     html += `
       <div class="card">
         <p><b>Teléfono:</b> ${r.telefono}</p>
@@ -3866,11 +3866,16 @@ async function mostrarHistorialRecargasMassAdmin() {
   }
 
   data.forEach(r => {
+
+let estadoColor = "⚪";
+if (r.estado === "aprobado") estadoColor = "🟢";
+if (r.estado === "pendiente") estadoColor = "🟡";
+if (r.estado === "rechazado") estadoColor = "🔴";	  
     html += `
       <div class="card">
         <p><b>Teléfono:</b> ${r.telefono}</p>
         <p><b>Monto:</b> ${r.monto} MASS</p>
-        <p><b>Estado:</b> ${r.estado}</p>
+        <p><b>Estado:</b> ${estadoColor} ${r.estado}</p>
         <a href="${r.comprobante_url}" target="_blank">Ver comprobante</a>
       </div>
     `;
