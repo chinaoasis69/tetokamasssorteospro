@@ -2979,6 +2979,7 @@ async function girarLuckySpin(pinYaValidado = false){
   .from("lucky_spin_premios")
   .select("*")
   .eq("activo", true);
+  .eq("rifa_id", boletoSeleccionado.rifa_id)
 
 if (errorLucky || !premiosLucky || premiosLucky.length === 0) {
   alert("No hay premios activos en MASS LUCKY SPIN");
@@ -3053,7 +3054,7 @@ const premios = premiosLucky.map(p => p.nombre);
   user_id: userActual,
   numero: boletoSeleccionado.numero,
   premio: ganador,
-  rifa_id: RIFA_ID
+  rifa_id: boletoSeleccionado.rifa_id
 });
 
 cargarHistorialPremios();	
