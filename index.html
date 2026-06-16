@@ -639,6 +639,8 @@ async function cargarPagosPendientes(){
     `;
 }
 
+let rifaPremiosAdminId = null;
+
 async function mostrarPremiosAdmin(){
 
     const cont = document.getElementById("adminContenido");
@@ -701,7 +703,7 @@ async function mostrarPremiosAdmin(){
 
 async function nuevoPremioLucky(){
 
-	if(!RIFA_ID){
+	if(!rifaPremiosAdminId){
   alert("Primero selecciona una rifa para agregar premios Lucky Spin");
   return;
 }
@@ -716,7 +718,7 @@ async function nuevoPremioLucky(){
   const { error } = await supabaseClient
     .from("lucky_spin_premios")
     .insert({
-	rifa_id: RIFA_ID,	
+	rifa_id: rifaPremiosAdminId,	
       nombre,
       descripcion,
       codigo,
