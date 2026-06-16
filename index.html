@@ -3470,10 +3470,13 @@ async function ocultarBeneficio(id) {
   const ok = confirm("¿Ocultar este beneficio de tu lista?");
   if (!ok) return;
 
-  const { error } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ oculto_usuario: true })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userActual)
+    .eq("oculto_usuario", false)
+    .select();
 
   if (error) {
     alert("Error ocultando beneficio");
@@ -3481,8 +3484,16 @@ async function ocultarBeneficio(id) {
     return;
   }
 
+  if (!data || data.length === 0) {
+    alert("⚠️ Este beneficio ya estaba oculto");
+    abrirModalBeneficios();
+    return;
+  }
+
   alert("✅ Beneficio ocultado");
-abrirModalBeneficios();
+  setTimeout(() => {
+    abrirModalBeneficios();
+  }, 300);
 }
 
 async function abrirCanjeados(){
