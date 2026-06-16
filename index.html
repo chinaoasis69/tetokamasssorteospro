@@ -2060,16 +2060,17 @@ async function recargarSaldo() {
     return;
   }
 
-  let organizadorId = null;
-  if (RIFA_ID) {
-    const { data: rifaActual } = await supabaseClient
-      .from("rifas")
-      .select("organizador_id")
-      .eq("id", RIFA_ID)
-      .single();
+ let organizadorId = localStorage.getItem("organizador_admin_id") || clienteActual?.id || null;
 
-    organizadorId = rifaActual?.organizador_id || clienteActual?.id || localStorage.getItem("organizador_admin_id") || null;
-  }
+if (RIFA_ID) {
+  const { data: rifaActual } = await supabaseClient
+    .from("rifas")
+    .select("organizador_id")
+    .eq("id", RIFA_ID)
+    .single();
+
+  organizadorId = rifaActual?.organizador_id || organizadorId;
+} 
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
 
