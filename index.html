@@ -3876,6 +3876,7 @@ if (r.estado === "rechazado") estadoColor = "🔴";
         <p><b>Teléfono:</b> ${r.telefono}</p>
         <p><b>Monto:</b> ${r.monto} MASS</p>
         <p><b>Estado:</b> ${estadoColor} ${r.estado}</p>
+		<p><b>Fecha:</b> ${new Date(r.created_at).toLocaleString()}</p>
         <a href="${r.comprobante_url}" target="_blank">Ver comprobante</a>
       </div>
     `;
