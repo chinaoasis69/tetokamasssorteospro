@@ -3832,6 +3832,43 @@ async function mostrarRecargasMassAdmin() {
   });
 
   document.getElementById("adminContenido").innerHTML = html;
+}
+
+async function aprobarRecarga(id, telefono, monto){
+
+  if(!confirm(`¿Aprobar ${monto} MASS para ${telefono}?`)){
+    return;
+  }
+
+  const { data: wallet } = await supabaseClient
+    .from("wallets")
+    .select("saldo")
+    .eq("user_id", telefono)
+    .maybeSingle();
+
+  if(!wallet){
+    await supabaseClient
+      .from("wallets")
+      .insert({
+        user_id: telefono,
+        saldo: Number(monto)
+      });
+  } else {
+    await supabaseClient
+      .from("wallets")
+      .update({
+        saldo: Number(wallet.saldo || 0) + Number(monto)
+      })
+      .eq("user_id", telefono);
+  }
+
+  await supabaseClient
+    .from("recargas_mass")
+    .update({ estado: "aprobado" })
+    .eq("id", id);
+
+  alert("✅ Recarga aprobada");
+  mostrarRecargasMassAdmin();
 }	
 
 </script>
