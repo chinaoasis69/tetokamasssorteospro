@@ -3827,6 +3827,10 @@ async function mostrarRecargasMassAdmin() {
         <button onclick="aprobarRecarga('${r.id}','${r.telefono}',${r.monto})">
           ✅ Aprobar
         </button>
+
+		<button onclick="rechazarRecarga('${r.id}')">
+  ❌ Rechazar
+</button>
       </div>
     `;
   });
@@ -3868,6 +3872,29 @@ async function aprobarRecarga(id, telefono, monto){
     .eq("id", id);
 
   alert("✅ Recarga aprobada");
+  mostrarRecargasMassAdmin();
+}
+
+async function rechazarRecarga(id){
+
+  if(!confirm("¿Rechazar esta recarga?")){
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("recargas_mass")
+    .update({
+      estado: "rechazado"
+    })
+    .eq("id", id);
+
+  if(error){
+    alert("❌ Error al rechazar");
+    console.error(error);
+    return;
+  }
+
+  alert("✅ Recarga rechazada");
   mostrarRecargasMassAdmin();
 }	
 
