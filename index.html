@@ -3386,42 +3386,17 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
 }
 
 async function abrirModalBeneficios() {
-document.getElementById("modalBeneficios").style.display = "block";	
+  document.getElementById("modalBeneficios").style.display = "block";
   const box = document.getElementById("beneficiosDentroModal");
 
   box.style.display = "block";
   box.innerHTML = "Cargando beneficios...";
 
-const telefono = localStorage.getItem("mass_telefono");
-
-const { data: beneficiosLucky } = await supabaseClient
-.from("historial_premios")
-.select("*")
-.eq("user_id", telefono)
-.order("fecha", { ascending:false });
-
-if(beneficiosLucky && beneficiosLucky.length > 0){
-
-    box.innerHTML += beneficiosLucky.map(b => `
-    <div style="
-    border:1px solid #38b000;
-    border-radius:10px;
-    padding:10px;
-    margin:10px 0;
-    background:#111;
-    ">
-        <h3>🏆 ${b.premio}</h3>
-        <p>📢 ${b.descripcion || ""}</p>
-        <p>🔑 Código: ${b.codigo || ""}</p>
-    </div>
-    `).join("");
-}	
-
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .select("*")
     .eq("user_id", userActual)
-	.eq("oculto_usuario", false)
+    .eq("oculto_usuario", false)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -3430,30 +3405,29 @@ if(beneficiosLucky && beneficiosLucky.length > 0){
     return;
   }
 
-  const totalLucky = beneficiosLucky ? beneficiosLucky.length : 0;
-  const totalBeneficios = (data ? data.length : 0) + totalLucky;
-
-document.getElementById("contadorBeneficios").innerText = totalBeneficios;
-
-  box.innerHTML = data.length
+  box.innerHTML = data && data.length
     ? data.map(b => `
       <div class="card">
-        ${b.patrocinador_logo_url ? `
-  <img src="${b.patrocinador_logo_url}" style="max-width:120px;border-radius:12px;margin-bottom:8px;"><br>
-` : ""}
+        ${b.patrocinador_logo ? `
+          <img src="${b.patrocinador_logo}" style="max-width:120px;border-radius:12px;margin-bottom:8px;"><br>
+        ` : ""}
 
-<b>🎁 Beneficio</b><br>
-🏪 ${b.patrocinador_nombre || "Patrocinador"}<br>
+        <b>🎁 Beneficio</b><br>
+        🏪 ${b.patrocinador_nom || b.patrocinador_nombre || "Patrocinador"}<br>
         ${b.promocion || "Promoción especial"}<br>
         🔑 Código: <b>${b.codigo}</b><br>
-		Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br>
-${!b.usado ? `<button onclick="marcarBeneficioUsado('${b.id}')">✅ Canjear beneficio</button>` : ""}
-<button onclick="ocultarBeneficio('${b.id}')">🗑️ Ocultar</button>
+        Estado: ${b.usado ? "Canjeado ✅" : "Disponible 🟢"}<br><br>
+
+        ${!b.usado ? `
+          <button onclick="marcarBeneficioUsado('${b.id}')">✅ Canjear beneficio</button>
+        ` : ""}
+
+        <button onclick="ocultarBeneficio('${b.id}')">🗑️ Ocultar</button>
       </div>
     `).join("")
     : "Todavía no tienes beneficios.";
 }
-
+	
 function cerrarModalBeneficios() {
   document.getElementById("modalBeneficios").style.display = "none";
 }
