@@ -711,7 +711,6 @@ async function nuevoPremioLucky(){
   const { error } = await supabaseClient
     .from("lucky_spin_premios")
     .insert({
-      organizador_id: clienteActual.id,
       nombre,
       descripcion,
       codigo,
