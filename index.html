@@ -2978,7 +2978,7 @@ async function girarLuckySpin(pinYaValidado = false){
   const { data: premiosLucky, error: errorLucky } = await supabaseClient
   .from("lucky_spin_premios")
   .select("*")
-  .eq("activo", true);
+  .eq("activo", true)
   .eq("rifa_id", boletoSeleccionado.rifa_id);
 
 if (errorLucky || !premiosLucky || premiosLucky.length === 0) {
