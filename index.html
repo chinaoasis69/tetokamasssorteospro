@@ -639,11 +639,63 @@ async function cargarPagosPendientes(){
     `;
 }
 
-function mostrarPremiosAdmin(){
+async function mostrarPremiosAdmin(){
 
-    document.getElementById("adminContenido").innerHTML = `
-        <h3>🎁 Premios</h3>
-        <p>Aquí administraremos los premios.</p>
+    const cont = document.getElementById("adminContenido");
+
+    const { data, error } = await supabaseClient
+        .from("lucky_spin_premios")
+        .select("*")
+        .eq("organizador_id", clienteActual.id)
+        .order("created_at", { ascending:false });
+
+    if(error){
+        alert("Error cargando premios");
+        console.error(error);
+        return;
+    }
+
+    cont.innerHTML = `
+        <h3>🎁 Premios Lucky Spin</h3>
+
+        <button onclick="nuevoPremioLucky()">
+            ➕ Agregar premio
+        </button>
+
+        <hr>
+
+        ${
+            data.map(p => `
+                <div class="card">
+
+                    <h4>${p.nombre}</h4>
+
+                    <p>${p.descripcion || ""}</p>
+
+                    <p>
+                        Probabilidad: ${p.probabilidad || 0}
+                    </p>
+
+                    <p>
+                        Cantidad: ${p.cantidad || 0}
+                    </p>
+
+                    <p>
+                        Entregados: ${p.entregados || 0}
+                    </p>
+
+                    <button onclick="editarPremioLucky('${p.id}')">
+                        ✏️ Editar
+                    </button>
+
+                    <button onclick="eliminarPremioLucky('${p.id}')">
+                        🗑️ Eliminar
+                    </button>
+
+                </div>
+            `).join("")
+        }
+
     `;
 
 }
