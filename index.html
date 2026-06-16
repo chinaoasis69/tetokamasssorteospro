@@ -3587,12 +3587,12 @@ async function marcarBeneficioUsado(id) {
 
   if (!data || data.length === 0) {
     alert("❌ Este beneficio ya fue canjeado");
-    abrirMisBeneficios();
+    abrirModalBeneficios();
     return;
   }
 
   alert("✅ Beneficio canjeado correctamente");
-  abrirMisBeneficios();
+  abrirModalBeneficios();
 }	
 	
 async function cargarHistorialSorteos(){
