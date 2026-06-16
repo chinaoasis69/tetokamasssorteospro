@@ -3150,8 +3150,17 @@ async function girarLuckySpin(pinYaValidado = false){
   .select("*")
   .eq("activo", true)
   .eq("rifa_id", boletoSeleccionado.rifa_id);
+	console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
+    console.log("PREMIOS ENCONTRADOS:", premiosLucky);
 
-if (errorLucky || !premiosLucky || premiosLucky.length === 0) {
+if(errorLucky){
+  console.error(errorLucky);
+}
+
+console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
+console.log("PREMIOS ENCONTRADOS:", premiosLucky);
+
+if (!premiosLucky || premiosLucky.length === 0) {
   alert("No hay premios activos en MASS LUCKY SPIN");
   return;
 }
