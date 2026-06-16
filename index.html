@@ -3011,127 +3011,65 @@ for (let i = 0; i < nada; i++) {
   });
 }
 
-const premioGanador = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)];
-const ganador = premioGanador.nombre;
-const esNada = premioGanador.esNada === true;	
+let vueltas = 0;
+const intervalo = setInterval(async () => {
+  if (result) {
+    result.innerText = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)].nombre;
+  }
 
-      if(result){
-        result.innerText = "🏆 " + ganador;
-      }
+  vueltas++;
 
-      let codigoCupon = null;
+  if (vueltas > 30) {
+    clearInterval(intervalo);
 
-      if(
-  !esNada &&
-  (
-        ganador.includes("10% OFF") ||
-        ganador.includes("25% OFF") ||
-        ganador.includes("50% OFF") ||
-        ganador.includes("Número bonus")
-	    )
-      ){
-        codigoCupon = "TK-" + Math.floor(100000 + Math.random() * 900000);
+    const premioGanador = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)];
+    const ganador = premioGanador.nombre;
+    const esNada = premioGanador.esNada === true;
 
-        await supabaseClient.from("cupones").insert({
-          numero: boletoSeleccionado.numero,
-          premio: ganador,
-          codigo: codigoCupon,
-          usado: false
-        });
-      }
+    if (result) {
+      result.innerText = "🏆 " + ganador;
+    }
 
-      const giroRespuesta = await supabaseClient.from("giros").insert({
+    alert(
+      "🎰 MASS LUCKY SPIN\n\n" +
+      "🏆 Premio: " + ganador + "\n" +
+      "📢 Descripción: " + (premioGanador.descripcion || "") + "\n" +
+      "🔑 Código: " + (premioGanador.codigo || "N/A")
+    );
+
+    if (!esNada) {
+      await supabaseClient.from("historial_premios").insert({
+        user_id: userActual,
         numero: boletoSeleccionado.numero,
         premio: ganador,
-        pin_giro: boletoSeleccionado.pin_giro,
+        rifa_id: boletoSeleccionado.rifa_id
       });
 
-      if(giroRespuesta.error){
-        console.error("Error guardando giro:", giroRespuesta.error);
-      }
+      await supabaseClient
+        .from("lucky_spin_premios")
+        .update({ entregados: Number(premioGanador.entregados || 0) + 1 })
+        .eq("id", premioGanador.id);
+    }
 
-	await supabaseClient.from("historial_premios").insert({
-  user_id: userActual,
-  numero: boletoSeleccionado.numero,
-  premio: ganador,
-  rifa_id: boletoSeleccionado.rifa_id
-});
+    await supabaseClient.from("boletos").update({
+      giro_usado: true
+    }).eq("id", boletoSeleccionado.id);
 
-cargarHistorialPremios();	
+    boletoSeleccionado.giro_usado = true;
 
-      if(!esNada && ganador.includes("Segundo giro")){
-        await supabaseClient.from("boletos").update({
-          giro_usado: false
-        }).eq("id", boletoSeleccionado.id);
+    if (botonSpin) {
+      botonSpin.disabled = false;
+      botonSpin.innerText = "Girar 🎟️";
+    }
 
-        await supabaseClient.from("tickets").update({
-          giro_usado: false
-        })
-        .eq("numero", boletoSeleccionado.numero)
-        .eq("user_id", userActual);
+    boletoSeleccionado = null;
 
-        boletoSeleccionado.giro_usado = false;
-
-        if(botonSpin){
-          botonSpin.disabled = false;
-          botonSpin.innerText = "Usar segundo giro 🎰";
-        }
-
-        alert("🎁 Ganaste un segundo giro, vuelve a intentar");
-      }else{
-        const usadoRespuesta = await supabaseClient.from("boletos").update({
-          giro_usado: true
-        }).eq("id", boletoSeleccionado.id);
-
-        if(usadoRespuesta.error){
-          console.error("Error marcando giro usado:", usadoRespuesta.error);
-          alert("El giro salió, pero no se pudo marcar como usado");
-          return;
-        }
-
-        await supabaseClient.from("boletos").update({
-          giro_usado: true
-        })
-        .eq("id", boletoSeleccionado.id);
-
-        boletoSeleccionado.giro_usado = true;
-
-        if(botonSpin){
-          botonSpin.disabled = false;
-          botonSpin.innerText = "Girar 🎰";
-        }
-      }
-
-      boletoSeleccionado = null;
-
-await cargarBoletos();
-await cargarMisBoletos();
-await cargarHistorialPremios();
-
-      alert(
-    "🎰 MASS LUCKY SPIN\n\n" +
-    "🏆 Premio: " + (premioGanador?.nombre || ganador) + "\n" +
-    "📢 Descripción: " + (premioGanador?.descripcion || "") + "\n" +
-    "🔑 Código: " + (premioGanador?.codigo || codigoCupon || "N/A")
-);
-
-      setTimeout(() => {
-        if(!ganador.includes("Segundo giro")){
-          if(result){
-            result.innerText = "";
-          }
-
-          if(botonSpin){
-            botonSpin.innerText = "Girar 🎰";
-            botonSpin.disabled = false;
-          }
-
-          boletoSeleccionado = null;
-        }
-      }, 3000);
-  }, 90);
-}
-
+    await cargarBoletos();
+    await cargarMisBoletos();
+    await cargarHistorialPremios();
+  }
+}, 90);
+	
 async function cargarHistorialPremios(){
 
 	const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
