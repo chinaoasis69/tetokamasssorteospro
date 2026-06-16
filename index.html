@@ -3192,9 +3192,11 @@ for (let i = 0; i < nada; i++) {
 
 let vueltas = 0;
 const intervalo = setInterval(async () => {
-  if(document.getElementById("spinResult")){
-    result.innerText = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)].nombre;
-  }
+  const spinResult = document.getElementById("spinResult");
+
+if(spinResult){
+    spinResult.innerText = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)].nombre;
+}
 
   vueltas++;
 
@@ -3205,8 +3207,8 @@ const intervalo = setInterval(async () => {
     const ganador = premioGanador.nombre;
     const esNada = premioGanador.esNada === true;
 
-    if (result) {
-      document.getElementById("spinResult").innerText = "🏆 " + ganador;
+    if(spinResult){
+     spinResult.innerText = "🏆 " + ganador; 
     }
 
     alert(
