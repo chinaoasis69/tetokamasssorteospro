@@ -3407,7 +3407,7 @@ async function abrirModalBeneficios() {
 
   box.innerHTML = data && data.length
     ? data.map(b => `
-      <div class="card">
+      <div class="card" id="beneficio-${b.id}">
         ${b.patrocinador_logo ? `
           <img src="${b.patrocinador_logo}" style="max-width:120px;border-radius:12px;margin-bottom:8px;"><br>
         ` : ""}
@@ -3459,10 +3459,16 @@ async function ocultarBeneficio(id) {
   }
 
   if (!data || data.length === 0) {
-    alert("⚠️ Este beneficio ya estaba oculto");
-    abrirModalBeneficios();
+
+    const card = document.getElementById("beneficio-" + id);
+    if (card) card.remove();
+
+    alert("✅ Beneficio ocultado");
     return;
-  }
+}
+
+	const card = document.getElementById("beneficio-" + id);
+if (card) card.remove();
 
   alert("✅ Beneficio ocultado");
   setTimeout(() => {
