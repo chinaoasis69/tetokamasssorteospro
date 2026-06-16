@@ -2037,42 +2037,68 @@ const patrocinadorBeneficio =
 
 async function recargarSaldo() {
   const cantidad = prompt("¿Cuánto quieres recargar?");
-
-  if (!cantidad || isNaN(cantidad)) {
+  if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
     alert("Cantidad inválida");
     return;
   }
 
-  const { data } = await supabaseClient
-    .from("wallets")
-    .select("saldo")
-    .eq("user_id", userActual)
-    .maybeSingle();
-	
-	if (!data) {
-  await supabaseClient.from("wallets").insert({
-    user_id: userActual,
-    saldo: 0
-  });
+  const comprobante = document.getElementById("comprobante").files[0];
 
-  alert("Wallet creada. Intenta de nuevo.");
-  return;
-}
+  if (!comprobante) {
+    alert("Primero sube tu comprobante de pago");
+    return;
+  }
 
-  const nuevoSaldo = Number(data.saldo) + Number(cantidad);
+  const telefono = document.getElementById("telefono").value.trim();
 
-  const { error: updateError } = await supabaseClient
-  .from("wallets")
-  .update({ saldo: nuevoSaldo })
-  .eq("user_id", userActual);
+  if (!telefono) {
+    alert("Escribe tu teléfono");
+    return;
+  }
 
-if (updateError) {
-  alert("Error al recargar ❌");
-  return;
-}
+  let organizadorId = null;
+  if (RIFA_ID) {
+    const { data: rifaActual } = await supabaseClient
+      .from("rifas")
+      .select("organizador_id")
+      .eq("id", RIFA_ID)
+      .single();
 
-alert("Saldo actualizado 💰");
-cargarSaldo();
+    organizadorId = rifaActual?.organizador_id || null;
+  }
+
+  const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
+
+  const { error: uploadError } = await supabaseClient.storage
+    .from("comprobantes-mass")
+    .upload(nombreArchivo, comprobante);
+
+  if (uploadError) {
+    alert("Error al subir comprobante ❌");
+    return;
+  }
+
+  const { data: urlData } = supabaseClient.storage
+    .from("comprobantes-mass")
+    .getPublicUrl(nombreArchivo);
+
+  const { error } = await supabaseClient
+    .from("recargas_mass")
+    .insert({
+      user_id: telefono,
+      telefono: telefono,
+      monto: Number(cantidad),
+      comprobante_url: urlData.publicUrl,
+      estado: "pendiente",
+      organizador_id: organizadorId
+    });
+
+  if (error) {
+    alert("Error al registrar recarga ❌");
+    return;
+  }
+
+  alert("Recarga enviada ✅ Espera aprobación del organizador.");
 }  
 
 async function cargarSaldo() {
