@@ -2307,6 +2307,13 @@ document.getElementById("saldoBox").innerText =
   "Saldo: " + data.saldo + " MASS";
 }
 
+function limpiarMetodosPago() {
+  document.getElementById("pagoZelle").textContent = "--";
+  document.getElementById("pagoCashapp").textContent = "--";
+  document.getElementById("pagoApplePay").textContent = "--";
+  document.getElementById("pagoPaypal").textContent = "--";
+}	
+
 async function cargarClienteActual(){
 
   const orgIdGuardado = localStorage.getItem("organizador_admin_id");
@@ -2361,18 +2368,6 @@ if (data.banner_url) {
 if (data.color_principal) {
   document.documentElement.style.setProperty("--verde", data.color_principal);
 }	
-	
-document.getElementById("pagoZelle").textContent =
-  data.zelle || "--";
-
-document.getElementById("pagoCashapp").textContent =
-  data.cashapp || "--";
-
-document.getElementById("pagoApplePay").textContent =
-  data.apple_pay || "--";
-
-document.getElementById("pagoPaypal").textContent =
-  data.paypal || "--";
 
 const sloganBox = document.getElementById("sloganCliente");
 
