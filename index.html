@@ -3218,7 +3218,7 @@ if(spinResult){
       "🔑 Código: " + (premioGanador.codigo || "N/A")
     );
 
-	if (!esNada && !codigoCupon) {
+	if (!esNada && !(premioGanador.codigo || "").trim()) {
   await supabaseClient.from("historial_premios").insert({
     user_id: userActual,
     numero: boletoSeleccionado.numero,
@@ -3226,11 +3226,11 @@ if(spinResult){
     rifa_id: boletoSeleccionado.rifa_id
   }); 
 
-	if (!esNada && codigoCupon) {
+	if (!esNada && (premioGanador.codigo || "").trim()) {
   await supabaseClient.from("beneficios_entregados").insert({
     user_id: userActual,
     rifa_id: boletoSeleccionado.rifa_id,
-    codigo: premioGanador.codigo || codigoCupon || "N/A",
+    codigo: premioGanador.codigo || "N/A",
     promocion: ganador,
     usado: false,
     oculto_usuario: false
