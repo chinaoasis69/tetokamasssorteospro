@@ -3594,19 +3594,13 @@ async function marcarBeneficioUsado(id) {
 const beneficioReal = await supabaseClient
   .from("beneficios_entregados")
   .select("*")
-  .eq("id", id);
-
-console.log("BENEFICIO REAL:", beneficioReal);	
+  .eq("id", id);	
 
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ usado: true })
     .eq("id", id)
     .select("*");
-	
-  console.log("ID BENEFICIO:", id);
-  console.log("DATA CANJE:", data);
-  console.log("ERROR CANJE:", error);
 
   if (error) {
     alert("Error marcando beneficio");
@@ -3620,12 +3614,11 @@ console.log("BENEFICIO REAL:", beneficioReal);
     return;
   }
 
-  alert("✅ Beneficio canjeado correctamente");
+ alert("✅ Beneficio canjeado correctamente");
 
-  setTimeout(() => {
-    abrirModalBeneficios();
-  }, 300);
-}	
+abrirModalBeneficios();
+actualizarContadorBeneficios();
+} 	
 	
 async function cargarHistorialSorteos(){
 
