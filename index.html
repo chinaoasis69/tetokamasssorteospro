@@ -2086,6 +2086,7 @@ alert("Entró a comprarConSaldo");
     comprando = false;
     return;
   }
+	alert("Boletos seleccionados: " + boletosSeleccionados.length);
 
   const { data: rifa } = await supabaseClient
     .from("rifas")
