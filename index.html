@@ -3217,7 +3217,6 @@ if(spinResult){
       "📢 Descripción: " + (premioGanador.descripcion || "") + "\n" +
       "🔑 Código: " + (premioGanador.codigo || "N/A")
     );
-  }
 
 	if (!esNada) {
   await supabaseClient.from("beneficios_entregados").insert({
