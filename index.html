@@ -2469,23 +2469,17 @@ mapaOrganizadores = {};
 
 const listaOrg = document.getElementById("listaOrganizadoresActivos");
 
-if(listaOrg){
-    listaOrg.innerHTML = Object.values(mapaOrganizadores)
-        .map(org => `
-            <div class="card" style="margin:10px 0">
-                <h3>👥 ${org.nombre_publico || org.nombre || "Organizador"}</h3>
+if (listaOrg) {
+  listaOrg.innerHTML = Object.values(mapaOrganizadores).map(org => {
+    const total = rifas.filter(r => r.organizador_id === org.id).length;
+    const nombre = org.nombre_publico || org.nombre || "Organizador";
 
-                <p>
-                    ${rifas.filter(r => r.organizador_id === org.id).length}
-                    sorteo(s) activo(s)
-                </p>
-
-                <button onclick="verSorteosDeOrganizador('${org.id}')">
-                    🎯 Ver sorteos
-                </button>
-            </div>
-        `).join("");
-}
+    return '<div class="card" style="margin:10px 0">' +
+      '<h3>👥 ' + nombre + '</h3>' +
+      '<p>' + total + ' sorteo(s) activo(s)</p>' +
+      '<button onclick="verSorteosDeOrganizador(\'' + org.id + '\')">🎯 Ver sorteos</button>' +
+      '</div>';
+  }).join("");
 }
 
   await cargarPatrocinadoresPublicos();
