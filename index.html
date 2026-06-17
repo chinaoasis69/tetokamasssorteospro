@@ -3557,7 +3557,6 @@ async function actualizarContadorBeneficios() {
     .from("beneficios_entregados")
     .select("id")
     .eq("user_id", usuario)
-    .eq("usado", false)
     .eq("oculto_usuario", false);
 
   if (error) {
