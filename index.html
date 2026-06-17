@@ -2565,6 +2565,14 @@ if (grid) {
 const tituloNumeros = document.getElementById("tituloNumeros");
 if (tituloNumeros) {
     tituloNumeros.innerHTML = "";
+}
+
+RIFA_ID = null;
+boletos = [];
+filtrados = [];
+
+if (typeof aplicarFiltros === "function") {
+    aplicarFiltros();
 }	
 
     box.style.display =
