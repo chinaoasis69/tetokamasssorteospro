@@ -3249,7 +3249,7 @@ if(spinResult){
 
     boletoSeleccionado.giro_usado = true;
 
-    if (botonSpin) {
+    if (typeof botonSpin !== "undefined" && botonSpin) {
       botonSpin.disabled = false;
       botonSpin.innerText = "Girar 🎟️";
     }
