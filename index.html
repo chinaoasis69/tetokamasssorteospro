@@ -3577,12 +3577,6 @@ async function marcarBeneficioUsado(id) {
     return;
   }
 
-  if (!data || data.length === 0) {
-    alert("❌ Este beneficio ya fue canjeado");
-    abrirModalBeneficios();
-    return;
-  }
-
   alert("✅ Beneficio canjeado correctamente");
   setTimeout(() => {
   abrirModalBeneficios();
