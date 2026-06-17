@@ -2539,8 +2539,13 @@ function toggleSorteosActivos(){
 
 function toggleOrganizadoresActivos(){
     const box = document.getElementById("organizadoresActivosBox");
-
     if(!box) return;
+
+const sorteosBox = document.getElementById("sorteosActivosBox");
+if (sorteosBox) {
+    sorteosBox.style.display = "none";
+    sorteosBox.innerHTML = "";
+}	
 
     box.style.display =
         box.style.display === "none"
