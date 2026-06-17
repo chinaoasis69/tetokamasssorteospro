@@ -2404,15 +2404,7 @@ mapaOrganizadores = {};
   if(error){
     console.error(error);
     return;
-  }
-
-rifas = data || [];
-
-const organizadorSeleccionadoId = localStorage.getItem("organizador_publico_id");
-
-if (organizadorSeleccionadoId && organizadorSeleccionadoId !== "todos") {
-    rifas = rifas.filter(r => String(r.organizador_id) === String(organizadorSeleccionadoId));
-}	
+  }	
 
   for (let r of rifas) {
     const { data: premios } = await supabaseClient
