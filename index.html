@@ -3547,6 +3547,25 @@ function cerrarModalOcultos() {
   document.getElementById("modalOcultos").style.display = "none";
 }
 
+async function actualizarContadorBeneficios() {
+  const usuario = (userActual || localStorage.getItem("mass_telefono") || "").trim();
+
+  const { data, error } = await supabaseClient
+    .from("beneficios_entregados")
+    .select("id")
+    .eq("user_id", usuario)
+    .eq("usado", false)
+    .eq("oculto_usuario", false);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  const contador = document.getElementById("contadorBeneficios");
+  if (contador) contador.innerText = data ? data.length : 0;
+}	
+
 async function restaurarBeneficio(id) {
   const { error } = await supabaseClient
     .from("beneficios_entregados")
