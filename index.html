@@ -2378,7 +2378,9 @@ if(sloganBox){
 }	
 
  document.querySelector("h1").innerText = "🔥 TE-TO-KA MASS SORTEOS PRO 🔥"; 
-}	
+}
+
+	let rifas = [];
 
 async function cargarRifasPublicas(){
 
@@ -2386,7 +2388,7 @@ async function cargarRifasPublicas(){
     await cargarClienteActual();
   }
 
-  const { data: rifas, error } = await supabaseClient
+  const { data, error } = await supabaseClient
   .from("rifas")
   .select("*")
   .in("estado", ["activa","programada"]);
@@ -2405,6 +2407,8 @@ mapaOrganizadores = {};
     console.error(error);
     return;
   }	
+
+	rifas = data || [];
 
   for (let r of rifas) {
     const { data: premios } = await supabaseClient
