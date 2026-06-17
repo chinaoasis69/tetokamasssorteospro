@@ -2076,8 +2076,7 @@ async function asegurarWallet() {
 
 let comprando = false;
 
-async function comprarConSaldo() {
-alert("Entró a comprarConSaldo");	
+async function comprarConSaldo() {	
   if (comprando) return;
   comprando = true;
 
@@ -2086,7 +2085,6 @@ alert("Entró a comprarConSaldo");
     comprando = false;
     return;
   }
-	alert("Boletos seleccionados: " + boletosSeleccionados.length);
 
   const { data: rifa } = await supabaseClient
     .from("rifas")
@@ -2102,8 +2100,6 @@ alert("Entró a comprarConSaldo");
     .select("saldo")
     .eq("user_id", userActual)
     .maybeSingle();
-
-	alert("Wallet encontrada: " + JSON.stringify(wallet));
 
   if (!wallet || wallet.saldo < totalPagar) {
     alert("Saldo insuficiente 💸");
@@ -2125,8 +2121,6 @@ const { data: premiosLucky, error: errorLucky } = await supabaseClient
 
 	console.log("PREMIOS LUCKY", premiosLucky);
 
-	alert("Premios lucky cargados: " + (premiosLucky ? premiosLucky.length : 0));
-
 if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
   premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
 }
@@ -2136,8 +2130,6 @@ if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
   rifa?.organizador_id ||
   rifa?.cliente_id ||
   null;
-
-alert("Organizador ID: " + organizadorId);
 	
 const { data: patrocinadores } = await supabaseClient
   .from("patrocinadores")
