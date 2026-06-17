@@ -2103,6 +2103,8 @@ alert("Entró a comprarConSaldo");
     .eq("user_id", userActual)
     .maybeSingle();
 
+	alert("Wallet encontrada: " + JSON.stringify(wallet));
+
   if (!wallet || wallet.saldo < totalPagar) {
     alert("Saldo insuficiente 💸");
     comprando = false;
