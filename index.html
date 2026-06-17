@@ -3218,7 +3218,7 @@ if(spinResult){
       "🔑 Código: " + (premioGanador.codigo || "N/A")
     );
 
-	if (!esNada && premioGanador.tipo === "premio") {
+	if (!esNada) {
   await supabaseClient.from("historial_premios").insert({
     user_id: userActual,
     numero: boletoSeleccionado.numero,
