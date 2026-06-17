@@ -3573,9 +3573,9 @@ async function marcarBeneficioUsado(id) {
     .from("beneficios_entregados")
     .update({ usado: true })
     .eq("id", id)
-    .eq("usado", false)
     .select("*");
-
+	
+  console.log("ID BENEFICIO:", id);
   console.log("DATA CANJE:", data);
   console.log("ERROR CANJE:", error);
 
