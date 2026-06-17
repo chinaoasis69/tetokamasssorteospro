@@ -3569,6 +3569,13 @@ async function marcarBeneficioUsado(id) {
 
   console.log("ID BENEFICIO:", id);
 
+const beneficioReal = await supabaseClient
+  .from("beneficios_entregados")
+  .select("*")
+  .eq("id", id);
+
+console.log("BENEFICIO REAL:", beneficioReal);	
+
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ usado: true })
