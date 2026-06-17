@@ -3392,13 +3392,15 @@ async function abrirModalBeneficios() {
   box.style.display = "block";
   box.innerHTML = "Cargando beneficios...";
 
-  const { data, error } = await supabaseClient
-    .from("beneficios_entregados")
-    .select("*")
-    .eq("user_id", userActual)
-	.eq("usado", false) 
-    .eq("oculto_usuario", false) 
-    .order("created_at", { ascending: false });
+  const usuario = (userActual || localStorage.getItem("mass_telefono") || "").trim();
+
+const { data, error } = await supabaseClient
+  .from("beneficios_entregados")
+  .select("*")
+  .eq("user_id", usuario)
+  .eq("usado", false)
+  .eq("oculto_usuario", false)
+  .order("created_at", { ascending: false });
 
   if (error) {
     console.error(error);
