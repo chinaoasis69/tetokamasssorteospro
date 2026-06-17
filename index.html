@@ -2547,20 +2547,30 @@ function toggleOrganizadoresActivos(){
 }
 
 function verSorteosDeOrganizador(orgId){
-    const box = document.getElementById("sorteosActivosBox");
-    if(!box) return;
+  const box = document.getElementById("sorteosActivosBox");
+  if(!box) return;
 
-    box.style.display = "block";
+  box.style.display = "block";
 
-    document.querySelectorAll("#sorteosActivosBox .card").forEach(card => {
-        card.style.display = "none";
-    });
+  const rifasOrg = rifas.filter(r => r.organizador_id === orgId);
 
-    document.querySelectorAll(`[data-org-id="${orgId}"]`).forEach(card => {
-        card.style.display = "block";
-    });
+  box.innerHTML = `
+    <h2>🎯 Sorteos de este organizador</h2>
+    ${
+      rifasOrg.length
+      ? rifasOrg.map(r => `
+        <div class="card">
+          <h3>🎯 ${r.titulo || "Sorteo activo"}</h3>
+          <p>💰 $${r.precio_boleto || 0} por número</p>
+          <p>🎟️ ${r.total_numeros || 0} números</p>
+          <button onclick="abrirRifa('${r.id}')">Ver números</button>
+        </div>
+      `).join("")
+      : "<p>No hay sorteos activos de este organizador.</p>"
+    }
+  `;
 
-    box.scrollIntoView({ behavior: "smooth", block: "start" });
+  box.scrollIntoView({ behavior: "smooth", block: "start" });
 }	
 
 async function cargarPatrocinadoresPublicos(){
