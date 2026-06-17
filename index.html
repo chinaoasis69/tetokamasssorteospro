@@ -2552,6 +2552,9 @@ function verSorteosDeOrganizador(orgId){
 
   box.style.display = "block";
 
+const orgBox = document.getElementById("organizadoresActivosBox");
+if (orgBox) orgBox.style.display = "none";	
+
   const rifasOrg = rifas.filter(r => r.organizador_id === orgId);
 
   box.innerHTML = `
