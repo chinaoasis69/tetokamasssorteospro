@@ -3564,12 +3564,17 @@ async function marcarBeneficioUsado(id) {
   const ok = confirm("¿Quieres canjear este beneficio?");
   if (!ok) return;
 
+  console.log("ID BENEFICIO:", id);
+
   const { data, error } = await supabaseClient
-  .from("beneficios_entregados")
-  .update({ usado: true })
-  .eq("codigo", id)
-  .eq("usado", false)
-  .select("*")
+    .from("beneficios_entregados")
+    .update({ usado: true })
+    .eq("id", id)
+    .eq("usado", false)
+    .select("*");
+
+  console.log("DATA CANJE:", data);
+  console.log("ERROR CANJE:", error);
 
   if (error) {
     alert("Error marcando beneficio");
@@ -3577,10 +3582,17 @@ async function marcarBeneficioUsado(id) {
     return;
   }
 
+  if (!data || data.length === 0) {
+    alert("❌ Este beneficio ya fue canjeado o no se encontró");
+    abrirModalBeneficios();
+    return;
+  }
+
   alert("✅ Beneficio canjeado correctamente");
+
   setTimeout(() => {
-  abrirModalBeneficios();
-}, 300);
+    abrirModalBeneficios();
+  }, 300);
 }	
 	
 async function cargarHistorialSorteos(){
