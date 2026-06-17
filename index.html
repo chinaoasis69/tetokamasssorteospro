@@ -2545,33 +2545,40 @@ function toggleOrganizadoresActivos(){
 }
 
 function verSorteosDeOrganizador(orgId){
-  const box = document.getElementById("sorteosActivosBox");
-  if(!box) return;
 
-  box.style.display = "block";
+    localStorage.setItem("organizador_publico_id", orgId);
 
-const orgBox = document.getElementById("organizadoresActivosBox");
-if (orgBox) orgBox.style.display = "none";	
+    const box = document.getElementById("sorteosActivosBox");
+    if(!box) return;
 
-  const rifasOrg = rifas.filter(r => r.organizador_id === orgId);
+    const orgBox = document.getElementById("organizadoresActivosBox");
+    if (orgBox) orgBox.style.display = "none";
 
-  box.innerHTML = `
-    <h2>🎯 Sorteos de este organizador</h2>
-    ${
-      rifasOrg.length
-      ? rifasOrg.map(r => `
-        <div class="card">
-          <h3>🎯 ${r.titulo || "Sorteo activo"}</h3>
-          <p>💰 $${r.precio_boleto || 0} por número</p>
-          <p>🎟️ ${r.total_numeros || 0} números</p>
-          <button onclick="abrirRifa('${r.id}')">Ver números</button>
-        </div>
-      `).join("")
-      : "<p>No hay sorteos activos de este organizador.</p>"
-    }
-  `;
+    box.style.display = "block";
 
-  box.scrollIntoView({ behavior: "smooth", block: "start" });
+    const rifasOrg = (rifas || []).filter(r =>
+        String(r.organizador_id) === String(orgId)
+    );
+
+    box.innerHTML = `
+        <h2>🎯 Sorteos de este organizador</h2>
+
+        ${
+            rifasOrg.length
+            ? rifasOrg.map(r => `
+                <div class="card">
+                    <h3>🎯 ${r.titulo || "Sorteo activo"}</h3>
+                    <p>💰 $${r.precio_boleto || 0} por número</p>
+                    <p>🎟️ ${r.total_numeros || 0} números</p>
+
+                    <button onclick="abrirRifa('${r.id}')">
+                        Ver números
+                    </button>
+                </div>
+            `).join("")
+            : "<p>No hay sorteos activos de este organizador.</p>"
+        }
+    `;
 }	
 
 async function cargarPatrocinadoresPublicos(){
