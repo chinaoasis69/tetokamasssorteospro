@@ -2125,6 +2125,8 @@ const { data: premiosLucky, error: errorLucky } = await supabaseClient
 
 	console.log("PREMIOS LUCKY", premiosLucky);
 
+	alert("Premios lucky cargados: " + (premiosLucky ? premiosLucky.length : 0));
+
 if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
   premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
 }
