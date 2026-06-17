@@ -3567,7 +3567,7 @@ async function marcarBeneficioUsado(id) {
   const { data, error } = await supabaseClient
   .from("beneficios_entregados")
   .update({ usado: true })
-  .eq("id", id)
+  .eq("codigo", id)
   .eq("usado", false)
   .select("*")
 
