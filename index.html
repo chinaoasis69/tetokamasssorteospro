@@ -3218,14 +3218,6 @@ if(spinResult){
       "🔑 Código: " + (premioGanador.codigo || "N/A")
     );
 
-    if (!esNada) {
-      await supabaseClient.from("historial_premios").insert({
-        user_id: userActual,
-        numero: boletoSeleccionado.numero,
-        premio: ganador,
-        rifa_id: boletoSeleccionado.rifa_id
-      });
-
 	if (!esNada) {
   await supabaseClient.from("beneficios_entregados").insert({
     user_id: userActual,
