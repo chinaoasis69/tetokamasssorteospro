@@ -2130,11 +2130,20 @@ const { data: premiosLucky, error: errorLucky } = await supabaseClient
 if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
   premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
 }
-	const { data: patrocinadores } = await supabaseClient
+
+	const organizadorId =
+  clienteActual?.id ||
+  rifa?.organizador_id ||
+  rifa?.cliente_id ||
+  null;
+
+alert("Organizador ID: " + organizadorId);
+	
+const { data: patrocinadores } = await supabaseClient
   .from("patrocinadores")
   .select("*")
   .eq("activo", true)
-  .eq("organizador_id", clienteActual.id);
+  .eq("organizador_id", organizadorId);
 
 const patrocinadorBeneficio =
   patrocinadores && patrocinadores.length
