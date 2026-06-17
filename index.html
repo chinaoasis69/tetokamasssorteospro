@@ -2410,8 +2410,8 @@ rifas = data || [];
 
 const organizadorSeleccionadoId = localStorage.getItem("organizador_publico_id");
 
-if (organizadorSeleccionadoId) {
-  rifas = rifas.filter(r => String(r.organizador_id) === String(organizadorSeleccionadoId));
+if (organizadorSeleccionadoId && organizadorSeleccionadoId !== "todos") {
+    rifas = rifas.filter(r => String(r.organizador_id) === String(organizadorSeleccionadoId));
 }	
 
   for (let r of rifas) {
