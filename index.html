@@ -2556,6 +2556,15 @@ function verSorteosDeOrganizador(orgId){
 
     box.style.display = "block";
 
+	console.log("ORG ID:", orgId);
+
+console.log(
+  "RIFAS FILTRADAS:",
+  (rifas || []).filter(r =>
+    String(r.organizador_id) === String(orgId)
+  )
+);
+
     const rifasOrg = (rifas || []).filter(r =>
         String(r.organizador_id) === String(orgId)
     );
