@@ -2439,13 +2439,13 @@ mapaOrganizadores = {};
         🚀 Quiero mi plataforma
       </button>
 
-      <button onclick="toggleOrganizadoresActivos()">
+      <button onclick="toggleOrganizadoresActivos('activos')">
     👥 Ver organizadores activos
      </button>
 
-	  <button onclick="toggleOrganizadoresActivos()">
-  👥 Ver lista de organizadores
-    </button>
+	  <button onclick="toggleOrganizadoresActivos('todos')">
+    👥 Ver lista de organizadores
+     </button>
 
       <button onclick="window.open('https://wa.me/19563724890','_blank')">
         📞 Contactar
@@ -2517,8 +2517,11 @@ const listaOrg = document.getElementById("listaOrganizadoresActivos");
 if (listaOrg) {
   listaOrg.innerHTML = Object.values(mapaOrganizadores)
 .filter(org => {
-    const total = rifas.filter(r => r.organizador_id === org.id).length;
-    return total > 0;
+    const total = rifas.filter(r =>
+        String(r.organizador_id) === String(org.id)
+    ).length;
+
+    return modo === "todos" ? true : total > 0;
 })
 .map(org => {
 
@@ -2543,7 +2546,7 @@ function toggleSorteosActivos(){
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-function toggleOrganizadoresActivos(){
+function toggleOrganizadoresActivos(modo = "activos"){
     const box = document.getElementById("organizadoresActivosBox");
     if(!box) return;
 
