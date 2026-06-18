@@ -1077,7 +1077,11 @@ if (adminRol === "organizador") {
   const { error } = await supabaseClient
     .from("patrocinadores")
     .update({ logo_url: publicUrl })
-    .eq("id", patrocinadorId);
+    .eq("id", patrocinadorId)
+    .eq(
+        "organizador_id",
+        localStorage.getItem("admin_organizador_id") || clienteActual.id
+    );
 
   if(error){
     console.error(error);
