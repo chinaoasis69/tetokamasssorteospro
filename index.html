@@ -4290,6 +4290,23 @@ async function aprobarRecarga(id, telefono, monto){
     return;
   }
 
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador") {
+  const { data: recargaCheck } = await supabaseClient
+    .from("recargas_mass")
+    .select("id, organizador_id")
+    .eq("id", id)
+    .eq("organizador_id", adminOrgId)
+    .maybeSingle();
+
+  if (!recargaCheck) {
+    alert("No puedes aprobar recargas de otro organizador");
+    return;
+  }
+}	
+
   const { data: wallet } = await supabaseClient
     .from("wallets")
     .select("saldo")
@@ -4315,7 +4332,8 @@ async function aprobarRecarga(id, telefono, monto){
   await supabaseClient
     .from("recargas_mass")
     .update({ estado: "aprobado" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organizador_id", adminOrgId);
 
   alert("✅ Recarga aprobada");
   mostrarRecargasMassAdmin();
