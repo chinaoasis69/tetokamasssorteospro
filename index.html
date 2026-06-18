@@ -1024,8 +1024,11 @@ async function mostrarSorteosAdmin(){
   .from("rifas")
   .select("*");
 
-if (clienteActual?.id) {
-  query = query.eq("organizador_id", clienteActual.id);
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador" && adminOrgId) {
+    query = query.eq("organizador_id", adminOrgId);
 }
 
 query = query.order("created_at", { ascending:false });
