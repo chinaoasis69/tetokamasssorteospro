@@ -2055,6 +2055,25 @@ async function validarPagoAdmin(numero){
 
   const pin = Math.floor(100000 + Math.random() * 900000).toString();
 
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador") {
+
+  const { data: boletoCheck } = await supabaseClient
+    .from("boletos")
+    .select("id")
+    .eq("numero", numero)
+    .eq("organizador_id", adminOrgId)
+    .maybeSingle();
+
+  if (!boletoCheck) {
+    alert("No puedes validar pagos de otro organizador");
+    return;
+  }
+
+}	
+
   const { error } = await supabaseClient
   .from("boletos")
   .update({
@@ -2078,7 +2097,7 @@ async function validarPagoAdmin(numero){
  cargarBoletos();
  cargarMisBoletos();
  cargarHistorialSorteos();
-}
+}	
 
 const SUPABASE_URL = "https://yrmuxelajgmmonbbvshj.supabase.co";
 const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybXV4ZWxhamdtbW9uYmJ2c2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzgxNDYsImV4cCI6MjA5NDcxNDE0Nn0.mubpd6u9GPuAOovJhhPEFFdR8lLEIXt66pAcTdmXZD4";
