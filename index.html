@@ -989,6 +989,14 @@ const { error } = await supabaseClient
 
 async function editarPatrocinador(p){
 
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador" && String(p.organizador_id) !== String(adminOrgId)) {
+    alert("No puedes modificar patrocinadores de otro organizador");
+    return;
+}	
+
 const nombre = prompt("Nuevo nombre", p.nombre || "");
 if(!nombre) return;
 
@@ -1006,7 +1014,8 @@ promocion,
 logo_url,
 whatsapp
 })
-.eq("id", p.id);
+.eq("id", p.id)
+.eq("organizador_id", localStorage.getItem("admin_organizador_id") || clienteActual.id);
 
 if(error){
 alert("Error actualizando patrocinador");
