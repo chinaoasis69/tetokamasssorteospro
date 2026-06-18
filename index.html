@@ -1812,7 +1812,7 @@ clienteActual?.color_principal || "#7CFF00";
 
 async function guardarConfigCliente(){
 
-const idGuardado = localStorage.getItem("organizador_admin_id");
+const idGuardado = localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_admin_id");
 
 if((!clienteActual || !clienteActual.id) && idGuardado){
 
@@ -1847,7 +1847,7 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
       banner_url: document.getElementById("cfgBannerUrl").value.trim(),
       color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
     })
-    .eq("id", clienteActual.id);
+    .eq("id", idGuardado);
 
   if(error){
     console.error("ERROR GUARDANDO CONFIG:", error);
