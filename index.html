@@ -2069,6 +2069,7 @@ async function validarAdminPorTelefono(telefono){
     localStorage.setItem("admin_organizador_id", data.organizador_id || "");
 
     if (data.rol === "super_admin") {
+		alert("ADMIN DETECTADO");
         document.getElementById("panelAdmin").style.display = "block";
     }
 }	
