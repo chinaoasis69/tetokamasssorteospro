@@ -2049,6 +2049,30 @@ await validarAdminPorTelefono(telefono);
 alert("✅ Bienvenido a MASS");
 }
 
+async function validarAdminPorTelefono(telefono){
+
+    const { data, error } = await supabaseClient
+        .from("admin_organizadores")
+        .select("*")
+        .eq("telefono", telefono)
+        .eq("activo", true)
+        .maybeSingle();
+
+    if (error) {
+        console.error("Error validando admin:", error);
+        return;
+    }
+
+    if (!data) return;
+
+    localStorage.setItem("admin_rol", data.rol);
+    localStorage.setItem("admin_organizador_id", data.organizador_id || "");
+
+    if (data.rol === "super_admin") {
+        document.getElementById("panelAdmin").style.display = "block";
+    }
+}	
+
 let WHATSAPP = "19563724890";
 
 let boletos = [];
