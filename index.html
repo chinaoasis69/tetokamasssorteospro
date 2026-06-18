@@ -665,10 +665,19 @@ let rifaPremiosAdminId = null;
 async function mostrarPremiosAdmin(){
 
     const cont = document.getElementById("adminContenido");
-	const { data: rifas } = await supabaseClient
+	const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+let queryRifas = supabaseClient
   .from("rifas")
   .select("id,titulo")
   .order("created_at", { ascending:false });
+
+if (adminRol === "organizador" && adminOrgId) {
+  queryRifas = queryRifas.eq("organizador_id", adminOrgId);
+}
+
+const { data: rifas } = await queryRifas;
 
     let data = [];
 let error = null;
