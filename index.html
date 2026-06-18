@@ -799,6 +799,23 @@ async function editarPremioLucky(id){
     .single();
 
   if(error || !p){
+
+	const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador") {
+    const { data: rifaCheck } = await supabaseClient
+        .from("rifas")
+        .select("id")
+        .eq("id", p.rifa_id)
+        .eq("organizador_id", adminOrgId)
+        .maybeSingle();
+
+    if (!rifaCheck) {
+        alert("No puedes editar premios de otro organizador");
+        return;
+    }
+}  
     alert("No se encontró el premio");
     return;
   }
@@ -833,7 +850,35 @@ async function editarPremioLucky(id){
 async function eliminarPremioLucky(id){
   if(!confirm("¿Eliminar este premio?")) return;
 
-  const { error } = await supabaseClient
+  const { data: premio, error: premioError } = await supabaseClient
+    .from("lucky_spin_premios")
+    .select("id, rifa_id")
+    .eq("id", id)
+    .single();
+
+if (premioError || !premio) {
+    alert("No se encontró el premio");
+    return;
+}
+
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador") {
+    const { data: rifaCheck } = await supabaseClient
+        .from("rifas")
+        .select("id")
+        .eq("id", premio.rifa_id)
+        .eq("organizador_id", adminOrgId)
+        .maybeSingle();
+
+    if (!rifaCheck) {
+        alert("No puedes eliminar premios de otro organizador");
+        return;
+    }
+}
+
+const { error } = await supabaseClient
     .from("lucky_spin_premios")
     .delete()
     .eq("id", id);
