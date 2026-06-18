@@ -4329,11 +4329,16 @@ if (adminRol === "organizador") {
       .eq("user_id", telefono);
   }
 
-  await supabaseClient
-    .from("recargas_mass")
-    .update({ estado: "aprobado" })
-    .eq("id", id)
-    .eq("organizador_id", adminOrgId);
+  let aprobarQuery = supabaseClient
+  .from("recargas_mass")
+  .update({ estado: "aprobado" })
+  .eq("id", id);
+
+if (adminRol === "organizador") {
+  aprobarQuery = aprobarQuery.eq("organizador_id", adminOrgId);
+}
+
+await aprobarQuery;
 
   alert("✅ Recarga aprobada");
   mostrarRecargasMassAdmin();
