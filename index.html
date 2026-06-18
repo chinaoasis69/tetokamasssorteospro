@@ -2041,10 +2041,12 @@ async function loginMASS(){
 
   userActual = telefono;
 
-  localStorage.setItem("mass_user", telefono);
-  localStorage.setItem("mass_telefono", telefono);
-	
-  alert("✅ Bienvenido a MASS");
+localStorage.setItem("mass_user", telefono);
+localStorage.setItem("mass_telefono", telefono);
+
+await validarAdminPorTelefono(telefono);
+
+alert("✅ Bienvenido a MASS");
 }
 
 let WHATSAPP = "19563724890";
