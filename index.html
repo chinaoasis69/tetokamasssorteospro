@@ -2061,16 +2061,28 @@ const adminOrgId = localStorage.getItem("admin_organizador_id");
 if (adminRol === "organizador") {
 
   const { data: boletoCheck } = await supabaseClient
-    .from("boletos")
-    .select("id")
-    .eq("numero", numero)
-    .eq("organizador_id", adminOrgId)
-    .maybeSingle();
+.from("boletos")
+.select("id, rifa_id")
+.eq("numero", numero)
+.eq("estado", "apartado")
+.maybeSingle();
 
-  if (!boletoCheck) {
-    alert("No puedes validar pagos de otro organizador");
-    return;
-  }
+if (!boletoCheck) {
+  alert("No se encontró el boleto apartado");
+  return;
+}
+
+const { data: rifaCheck } = await supabaseClient
+.from("rifas")
+.select("id")
+.eq("id", boletoCheck.rifa_id)
+.eq("organizador_id", adminOrgId)
+.maybeSingle();
+
+if (!rifaCheck) {
+  alert("No puedes validar pagos de otro organizador");
+  return;
+}
 
 }	
 
@@ -2081,7 +2093,7 @@ if (adminRol === "organizador") {
     pin_giro: pin,
     giro_usado: false,
     fecha: new Date().toISOString(),
-	rifa_id: RIFA_ID
+	rifa_id: boletoCheck.rifa_id
   })
   .eq("numero", numero)
   .eq("estado", "apartado");
