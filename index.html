@@ -4364,13 +4364,16 @@ if (adminRol === "organizador") {
 
 }
 
-  const { error } = await supabaseClient
-    .from("recargas_mass")
-    .update({
-      estado: "rechazado"
-    })
-    .eq("id", id)
-    .eq("organizador_id", adminOrgId);
+  let rechazarQuery = supabaseClient
+  .from("recargas_mass")
+  .update({ estado: "rechazado" })
+  .eq("id", id);
+
+if (adminRol === "organizador") {
+  rechazarQuery = rechazarQuery.eq("organizador_id", adminOrgId);
+}
+
+const { error } = await rechazarQuery;
 
   if(error){
     alert("❌ Error al rechazar");
