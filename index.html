@@ -597,11 +597,33 @@ async function cargarPagosPendientes(){
     document.getElementById("adminContenido").innerHTML =
     "<p>Cargando pagos pendientes...</p>";
 
-    const { data, error } = await supabaseClient
-        .from("boletos")
-        .select("*")
-        .eq("estado", "apartado")
-        .order("numero", { ascending: true });
+    const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+let rifaIds = [];
+
+if (adminRol === "organizador" && adminOrgId) {
+
+    const { data: rifasAdmin } = await supabaseClient
+        .from("rifas")
+        .select("id")
+        .eq("organizador_id", adminOrgId);
+
+    rifaIds = (rifasAdmin || []).map(r => r.id);
+}
+
+let query = supabaseClient
+    .from("boletos")
+    .select("*")
+    .eq("estado", "apartado");
+
+if (adminRol === "organizador") {
+    query = query.in("rifa_id", rifaIds);
+}
+
+query = query.order("numero", { ascending: true });
+
+const { data, error } = await query;
 
     if(error){
         console.error(error);
