@@ -2439,11 +2439,11 @@ mapaOrganizadores = {};
         🚀 Quiero mi plataforma
       </button>
 
-      <button onclick="toggleOrganizadoresActivos('activos')">
+      <button onclick="localStorage.setItem('modo_organizadores','activos'); toggleOrganizadoresActivos()">
     👥 Ver organizadores activos
      </button>
 
-	  <button onclick="toggleOrganizadoresActivos('todos')">
+	  <button onclick="localStorage.setItem('modo_organizadores','todos'); toggleOrganizadoresActivos()">
     👥 Ver lista de organizadores
      </button>
 
@@ -2515,13 +2515,15 @@ ${rifas.map(r => `
 const listaOrg = document.getElementById("listaOrganizadoresActivos");
 
 if (listaOrg) {
+	
+  const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
   listaOrg.innerHTML = Object.values(mapaOrganizadores)
 .filter(org => {
     const total = rifas.filter(r =>
         String(r.organizador_id) === String(org.id)
     ).length;
 
-    return modo === "todos" ? true : total > 0;
+    return modoOrganizadores === "todos" ? true : total > 0;
 })
 .map(org => {
 
