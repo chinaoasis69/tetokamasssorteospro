@@ -1033,6 +1033,23 @@ async function subirLogoPatrocinador(event, patrocinadorId){
   const file = event.target.files[0];
   if(!file) return;
 
+const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+if (adminRol === "organizador") {
+    const { data: patrocinadorCheck } = await supabaseClient
+        .from("patrocinadores")
+        .select("id")
+        .eq("id", patrocinadorId)
+        .eq("organizador_id", adminOrgId)
+        .maybeSingle();
+
+    if (!patrocinadorCheck) {
+        alert("No puedes subir logo a patrocinadores de otro organizador");
+        return;
+    }
+}	
+
   const extension = file.name.split(".").pop();
   const nombreArchivo = `patrocinadores/${patrocinadorId}-${Date.now()}.${extension}`;
 
