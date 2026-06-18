@@ -855,7 +855,7 @@ async function mostrarPatrocinadoresAdmin(){
   const { data, error } = await supabaseClient
 .from("patrocinadores")
 .select("*")
-.eq("organizador_id", clienteActual.id)
+.eq("organizador_id", localStorage.getItem("admin_organizador_id") || clienteActual.id)
 .order("created_at", { ascending: false });
 
   if(error){
@@ -922,8 +922,7 @@ const { error } = await supabaseClient
 .from("patrocinadores")
 .insert({
 
-   organizador_id: clienteActual.id,
-
+   organizador_id: localStorage.getItem("admin_organizador_id") || clienteActual.id,
    nombre,
    descripcion,
    promocion,
