@@ -4466,13 +4466,14 @@ if(!wallet){
       saldo: Number(monto)
     });
 } else {
-  await supabaseClient
-    .from("wallets")
-    .update({
-      saldo: Number(wallet.saldo || 0) + Number(monto)
-    })
-    .eq("user_id", recargaCheck.user_id)
-    .eq("organizador_id", orgId);
+  const nuevoSaldo = Number(wallet.saldo || 0) + Number(monto);
+
+await supabaseClient
+  .from("wallets")
+  .update({
+    saldo: nuevoSaldo
+  })
+  .eq("id", wallet.id);
 } 
 
 let aprobarQuery = supabaseClient
