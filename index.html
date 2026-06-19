@@ -572,25 +572,31 @@ let tapsAdmin = 0;
 
    if(tapsAdmin >= 5){
 
-    const adminRol = localStorage.getItem("admin_rol");
-    const adminOrgId = localStorage.getItem("admin_organizador_id");
+  const adminRol = localStorage.getItem("admin_rol");
+  const adminOrgId = localStorage.getItem("admin_organizador_id");
 
-    if(adminRol === "organizador" && adminOrgId){
-        abrirPanelAdmin();
-        await mostrarSorteosAdmin();
-        tapsAdmin = 0;
-        return;
-    }
-
-    if(adminRol === "super_admin"){
-        await mostrarOrganizadoresAdmin();
-        tapsAdmin = 0;
-        return;
-    }
-
+  if(adminRol === "organizador" && adminOrgId){
     abrirAdmin();
+    setTimeout(() => {
+      mostrarSorteosAdmin();
+    }, 300);
 
     tapsAdmin = 0;
+    return;
+  }
+
+  if(adminRol === "super_admin"){
+    abrirAdmin();
+    setTimeout(() => {
+      mostrarOrganizadoresAdmin();
+    }, 300);
+
+    tapsAdmin = 0;
+    return;
+  }
+
+  abrirAdmin();
+  tapsAdmin = 0;
 } 
 
     setTimeout(()=>{
