@@ -4484,10 +4484,10 @@ async function aprobarRecarga(id, telefono, monto){
      });
 
     if (insertWalletError) {
-      alert("Error creando wallet");
-      console.error(insertWalletError);
-      return;
-    }
+    alert("Error creando wallet: " + insertWalletError.message);
+    console.error(insertWalletError);
+    return;
+}
   } else {
     const { error: updateWalletError } = await supabaseClient
       .from("wallets")
