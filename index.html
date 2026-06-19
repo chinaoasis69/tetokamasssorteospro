@@ -3952,8 +3952,9 @@ const beneficioReal = await supabaseClient
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ usado: true })
-    .eq("id", id)
-    .select("*");
+.eq("id", id)
+.eq("user_id", localStorage.getItem("mass_telefono"))
+.select("*");
 
   if (error) {
     alert("Error marcando beneficio");
