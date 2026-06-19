@@ -2049,6 +2049,27 @@ async function crearOrganizadorAdmin(){
     return;
   }
 
+const pinAdmin = prompt("PIN del organizador");
+if(!pinAdmin) return;
+
+const { error: adminError } = await supabaseClient
+  .from("admin_organizadores")
+  .insert([{
+    organizador_id: orgNuevo.id,
+    email,
+    nombre,
+    telefono,
+    pin_admin: pinAdmin,
+    rol: "organizador",
+    activo: true
+  }]);
+
+if(adminError){
+  console.error(adminError);
+  alert("❌ Organizador creado, pero no se creó su acceso admin");
+  return;
+}	
+
   alert("✅ Organizador creado");
   mostrarOrganizadoresAdmin();
 }	
