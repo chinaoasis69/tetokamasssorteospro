@@ -613,6 +613,9 @@ async function adminSecreto(){
       return;
     }
 
+localStorage.removeItem("admin_rol");
+localStorage.removeItem("admin_organizador_id");	  
+
 alert("❌ No tienes permisos de administrador");
 tapsAdmin = 0;
 return;
