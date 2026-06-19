@@ -2031,7 +2031,7 @@ async function crearOrganizadorAdmin(){
   const email = prompt("Email del organizador") || "";
   const telefono = prompt("Teléfono / WhatsApp") || "";
 
-  const { error } = await supabaseClient
+  const { data: orgNuevo, error } = await supabaseClient
     .from("organizadores")
     .insert([{
       nombre,
