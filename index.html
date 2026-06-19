@@ -2508,6 +2508,18 @@ async function recargarSaldo() {
     alert("Cantidad inválida");
     return;
   }
+	
+if (!confirm(
+`⚠️ IMPORTANTE
+
+Esta recarga MASS será válida únicamente para el organizador actual.
+
+Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
+
+¿Deseas continuar?`
+)) {
+    return;
+}	
 
   const comprobante = document.getElementById("comprobante").files[0];
 
