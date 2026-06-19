@@ -565,59 +565,62 @@ window.addEventListener("load", () => {
 <script>
 
 let tapsAdmin = 0;
+let adminTapTimer = null;
 
-	async function adminSecreto(){
+async function adminSecreto(){
 
-    tapsAdmin++;
+  tapsAdmin++;
+
+  clearTimeout(adminTapTimer);
 
   if(tapsAdmin >= 5){
 
-  let adminRol = localStorage.getItem("admin_rol");
-  let adminOrgId = localStorage.getItem("admin_organizador_id");
-  const tel = localStorage.getItem("mass_telefono");
+    let adminRol = localStorage.getItem("admin_rol");
+    let adminOrgId = localStorage.getItem("admin_organizador_id");
+    const tel = localStorage.getItem("mass_telefono");
 
-  if((!adminRol || !adminOrgId) && tel){
-    const { data: adminData } = await supabaseClient
-      .from("admin_organizadores")
-      .select("*")
-      .eq("telefono", tel)
-      .eq("activo", true)
-      .maybeSingle();
+    if((!adminRol || !adminOrgId) && tel){
+      const { data: adminData } = await supabaseClient
+        .from("admin_organizadores")
+        .select("*")
+        .eq("telefono", tel)
+        .eq("activo", true)
+        .maybeSingle();
 
-    if(adminData){
-      adminRol = adminData.rol;
-      adminOrgId = adminData.organizador_id || "";
+      if(adminData){
+        adminRol = adminData.rol;
+        adminOrgId = adminData.organizador_id || "";
 
-      localStorage.setItem("admin_rol", adminRol);
-      localStorage.setItem("admin_organizador_id", adminOrgId);
+        localStorage.setItem("admin_rol", adminRol);
+        localStorage.setItem("admin_organizador_id", adminOrgId);
+      }
     }
-  }
 
-  if(adminRol === "organizador" && adminOrgId){
+    if(adminRol === "organizador" && adminOrgId){
       document.getElementById("panelAdmin").style.display = "block";
-	  
+
       setTimeout(() => {
-         mostrarSorteosAdmin();
+        mostrarSorteosAdmin();
       }, 300);
-	  
+
       tapsAdmin = 0;
       return;
-  }
+    }
 
-  if(adminRol === "super_admin"){
-    abrirPanelAdmin();
+    if(adminRol === "super_admin"){
+      tapsAdmin = 0;
+      abrirAdmin();
+      return;
+    }
+
     tapsAdmin = 0;
+    abrirAdmin();
     return;
   }
 
-  abrirAdmin();
-  tapsAdmin = 0;
-}  
-
-    setTimeout(()=>{
-        tapsAdmin = 0;
-    },3000);
-
+  adminTapTimer = setTimeout(() => {
+    tapsAdmin = 0;
+  }, 3000);
 }	
 
 function abrirAdmin(){
