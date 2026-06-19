@@ -1818,14 +1818,19 @@ async function mostrarConfigAdmin(){
 
   const idGuardado = localStorage.getItem("organizador_admin_id");
 
-  if((!clienteActual || !clienteActual.id) && idGuardado){
-    await cargarClienteActual();
-  }
+  const adminRol = localStorage.getItem("admin_rol");
+const orgIdGuardado = localStorage.getItem("admin_organizador_id");
 
-  if(!clienteActual || !clienteActual.id){
-    console.log("No hay organizador cargado");
-    return;
-  }
+if (adminRol === "organizador" && orgIdGuardado && (!clienteActual || !clienteActual.id)) {
+  await cargarClienteActual();
+}
+
+if (adminRol === "organizador" && (!clienteActual || !clienteActual.id)) {
+  console.log("No hay organizador cargado");
+  return;
+}
+
+const cfg = clienteActual || {};	
 
   document.getElementById("adminContenido").innerHTML = `
 <h3>⚙️ Configuración</h3>
