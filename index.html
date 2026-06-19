@@ -566,16 +566,31 @@ window.addEventListener("load", () => {
 
 let tapsAdmin = 0;
 
-function adminSecreto(){
+	async function adminSecreto(){
 
     tapsAdmin++;
 
-    if(tapsAdmin >= 5){
+   if(tapsAdmin >= 5){
 
-        abrirAdmin();
+    const adminRol = localStorage.getItem("admin_rol");
+    const adminOrgId = localStorage.getItem("admin_organizador_id");
 
+    if(adminRol === "organizador" && adminOrgId){
+        await seleccionarOrganizadorAdmin(adminOrgId);
         tapsAdmin = 0;
+        return;
     }
+
+    if(adminRol === "super_admin"){
+        await mostrarOrganizadoresAdmin();
+        tapsAdmin = 0;
+        return;
+    }
+
+    abrirAdmin();
+
+    tapsAdmin = 0;
+} 
 
     setTimeout(()=>{
         tapsAdmin = 0;
