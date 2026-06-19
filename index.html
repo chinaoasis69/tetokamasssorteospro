@@ -2179,9 +2179,14 @@ if(adminData){
   userActual = telefono;
 
   alert("✅ ADMIN DETECTADO");
-  await cargarClienteActual();
-  return;
-}	
+
+if (adminData.rol === "super_admin") {
+  await mostrarOrganizadoresAdmin();
+} else {
+  await seleccionarOrganizadorAdmin(adminData.organizador_id);
+}
+
+return;	
 
   // 🔐 Buscar usuario
   const { data } = await supabaseClient
