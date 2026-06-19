@@ -4454,10 +4454,11 @@ if(!wallet){
     .eq("organizador_id", orgId);
 } 
 
-  let aprobarQuery = supabaseClient
+ let aprobarQuery = supabaseClient
   .from("recargas_mass")
   .update({ estado: "aprobado" })
-  .eq("id", id);
+  .eq("id", id)
+  .eq("organizador_id", orgId);
 
 if (adminRol === "organizador") {
   aprobarQuery = aprobarQuery.eq("organizador_id", adminOrgId);
