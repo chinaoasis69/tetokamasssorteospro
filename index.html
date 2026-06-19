@@ -2512,7 +2512,9 @@ async function recargarSaldo() {
 if (!confirm(
 `⚠️ IMPORTANTE
 
-Esta recarga MASS será válida únicamente para el organizador actual.
+Esta recarga MASS será válida únicamente para:
+
+🏢 ${clienteActual?.nombre || 'Organizador'}
 
 Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 
