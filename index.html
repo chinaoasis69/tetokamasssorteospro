@@ -4437,7 +4437,7 @@ const adminOrgId = localStorage.getItem("admin_organizador_id");
 if (adminRol === "organizador") {
   const { data: recargaCheck } = await supabaseClient
     .from("recargas_mass")
-    .select("id, organizador_id")
+    .select("id, user_id, organizador_id")
     .eq("id", id)
     .eq("organizador_id", adminOrgId)
     .maybeSingle();
