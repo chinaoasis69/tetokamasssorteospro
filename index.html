@@ -570,34 +570,50 @@ let tapsAdmin = 0;
 
     tapsAdmin++;
 
-   if(tapsAdmin >= 5){
+  if(tapsAdmin >= 5){
 
-  const adminRol = localStorage.getItem("admin_rol");
-  const adminOrgId = localStorage.getItem("admin_organizador_id");
+  let adminRol = localStorage.getItem("admin_rol");
+  let adminOrgId = localStorage.getItem("admin_organizador_id");
+  const tel = localStorage.getItem("mass_telefono");
+
+  if((!adminRol || !adminOrgId) && tel){
+    const { data: adminData } = await supabaseClient
+      .from("admin_organizadores")
+      .select("*")
+      .eq("telefono", tel)
+      .eq("activo", true)
+      .maybeSingle();
+
+    if(adminData){
+      adminRol = adminData.rol;
+      adminOrgId = adminData.organizador_id || "";
+
+      localStorage.setItem("admin_rol", adminRol);
+      localStorage.setItem("admin_organizador_id", adminOrgId);
+    }
+  }
 
   if(adminRol === "organizador" && adminOrgId){
-    abrirAdmin();
+    abrirPanelAdmin();
     setTimeout(() => {
       mostrarSorteosAdmin();
     }, 300);
-
     tapsAdmin = 0;
     return;
   }
 
   if(adminRol === "super_admin"){
-    abrirAdmin();
+    abrirPanelAdmin();
     setTimeout(() => {
       mostrarOrganizadoresAdmin();
     }, 300);
-
     tapsAdmin = 0;
     return;
   }
 
   abrirAdmin();
   tapsAdmin = 0;
-} 
+}  
 
     setTimeout(()=>{
         tapsAdmin = 0;
