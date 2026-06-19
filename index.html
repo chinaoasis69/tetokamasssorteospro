@@ -594,15 +594,13 @@ let tapsAdmin = 0;
   }
 
   if(adminRol === "organizador" && adminOrgId){
-
-	alert("ORGANIZADOR DETECTADO");
+      abrirAdmin();
+      setTimeout(() => {
+         mostrarSorteosAdmin();
+      }, 300);
 	  
-    abrirPanelAdmin();
-    setTimeout(() => {
-      mostrarSorteosAdmin();
-    }, 300);
-    tapsAdmin = 0;
-    return;
+      tapsAdmin = 0;
+      return;
   }
 
   if(adminRol === "super_admin"){
