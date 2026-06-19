@@ -3926,7 +3926,8 @@ async function restaurarBeneficio(id) {
   const { error } = await supabaseClient
     .from("beneficios_entregados")
     .update({ oculto_usuario: false })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", localStorage.getItem("mass_telefono"));
 
   if (error) {
     alert("Error restaurando beneficio");
