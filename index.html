@@ -1871,22 +1871,17 @@ const cfg = clienteActual || {};
 </button>
 `;
 
-document.getElementById("cfgNombre").value = clienteActual?.nombre_publico || "";
-document.getElementById("cfgSlogan").value = clienteActual?.slogan || "";
-document.getElementById("cfgWhatsapp").value = clienteActual?.whatsapp || "";
-document.getElementById("cfgZelle").value = clienteActual?.zelle || "";
-document.getElementById("cfgCashapp").value = clienteActual?.cashapp || "";
-document.getElementById("cfgApplePay").value = clienteActual?.apple_pay || "";
-document.getElementById("cfgPaypal").value = clienteActual?.paypal || "";
+document.getElementById("cfgNombre").value = cfg.nombre_publico || "";
+document.getElementById("cfgSlogan").value = cfg.slogan || "";
+document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
+document.getElementById("cfgZelle").value = cfg.zelle || "";
+document.getElementById("cfgCashapp").value = cfg.cashapp || "";
+document.getElementById("cfgApplePay").value = cfg.apple_pay || "";
+document.getElementById("cfgPaypal").value = cfg.paypal || "";
 
-document.getElementById("cfgLogoUrl").value =
-clienteActual?.logo_url || "";
-
-document.getElementById("cfgBannerUrl").value =
-clienteActual?.banner_url || "";
-
-document.getElementById("cfgColorPrincipal").value =
-clienteActual?.color_principal || "#7CFF00";	
+document.getElementById("cfgLogoUrl").value = cfg.logo_url || "";
+document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
+document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";	
 
 }
 
