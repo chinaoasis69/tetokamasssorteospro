@@ -4452,7 +4452,7 @@ if (adminRol === "organizador") {
 
 const { data: wallet } = await supabaseClient
   .from("wallets")
-  .select("saldo")
+  .select("id, saldo")
   .eq("user_id", recargaCheck.user_id)
   .eq("organizador_id", orgId)
   .maybeSingle();
