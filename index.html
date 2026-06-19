@@ -2202,6 +2202,9 @@ async function loginMASS(){
 
   const telefono = (prompt("📱 Ingresa tu teléfono") || "").trim();
 
+	localStorage.removeItem("admin_rol");
+    localStorage.removeItem("admin_organizador_id");
+
   if(!telefono){
     alert("Debes ingresar teléfono");
     location.reload();
