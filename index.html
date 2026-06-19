@@ -4453,7 +4453,7 @@ if (adminRol === "organizador") {
 const { data: wallet } = await supabaseClient
   .from("wallets")
   .select("saldo")
-  .eq("user_id", telefono)
+  .eq("user_id", recargaCheck.user_id)
   .eq("organizador_id", orgId)
   .maybeSingle();
 
@@ -4461,7 +4461,7 @@ if(!wallet){
   await supabaseClient
     .from("wallets")
     .insert({
-      user_id: telefono,
+      user_id: recargaCheck.user_id,
       organizador_id: orgId,
       saldo: Number(monto)
     });
@@ -4471,7 +4471,7 @@ if(!wallet){
     .update({
       saldo: Number(wallet.saldo || 0) + Number(monto)
     })
-    .eq("user_id", telefono)
+    .eq("user_id", recargaCheck.user_id)
     .eq("organizador_id", orgId);
 } 
 
