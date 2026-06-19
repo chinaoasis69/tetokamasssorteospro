@@ -2368,18 +2368,25 @@ async function comprarConSaldo() {
 
   const { data: rifa } = await supabaseClient
     .from("rifas")
-    .select("precio_boleto")
+    .select("precio_boleto, organizador_id, cliente_id")
     .eq("id", RIFA_ID)
     .single();
 
   const precioBoleto = Number(rifa?.precio_boleto || 0);
   const totalPagar = boletosSeleccionados.length * precioBoleto;
 
+const organizadorId =
+  rifa?.organizador_id ||
+  rifa?.cliente_id ||
+  clienteActual?.id ||
+  null;	
+
   const { data: wallet } = await supabaseClient
-    .from("wallets")
-    .select("saldo")
-    .eq("user_id", userActual)
-    .maybeSingle();
+  .from("wallets")
+  .select("saldo")
+  .eq("user_id", userActual)
+  .eq("organizador_id", organizadorId)
+  .maybeSingle();
 
   if (!wallet || wallet.saldo < totalPagar) {
     alert("Saldo insuficiente 💸");
@@ -2444,10 +2451,11 @@ const patrocinadorBeneficio =
 
   const nuevoSaldo = wallet.saldo - totalPagar;
 
-  await supabaseClient
-    .from("wallets")
-    .update({ saldo: nuevoSaldo })
-    .eq("user_id", userActual);
+ await supabaseClient
+  .from("wallets")
+  .update({ saldo: nuevoSaldo })
+  .eq("user_id", userActual)
+  .eq("organizador_id", organizadorId); 
 
   await supabaseClient.from("tickets").insert(
     boletosSeleccionados.map(b => ({
