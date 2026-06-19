@@ -2586,19 +2586,26 @@ console.log("organizadorId:", organizadorId);
 }  
 
 async function cargarSaldo() {
+  const organizadorId =
+    clienteActual?.id ||
+    localStorage.getItem("organizador_admin_id") ||
+    null;
+
   const { data } = await supabaseClient
     .from("wallets")
     .select("saldo")
     .eq("user_id", userActual)
+    .eq("organizador_id", organizadorId)
     .maybeSingle();
 
   if (!data) {
-  document.getElementById("saldoBox").innerText = "Saldo: 0 MASS";
-  return;
-}
+    document.getElementById("saldoBox").innerText =
+      "💰 Saldo disponible con este organizador: 0 MASS";
+    return;
+  }
 
-document.getElementById("saldoBox").innerText =
-  "Saldo: " + data.saldo + " MASS";
+  document.getElementById("saldoBox").innerText =
+    "💰 Saldo disponible con este organizador: " + data.saldo + " MASS";
 }
 
 function limpiarMetodosPago() {
