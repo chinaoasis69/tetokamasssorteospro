@@ -4195,6 +4195,11 @@ setTimeout(() => {
 async function eliminarOrganizador(id){
   if(!confirm("⚠️ ¿Seguro que quieres eliminar este organizador?")) return;
 
+  await supabaseClient
+    .from("admin_organizadores")
+    .delete()
+    .eq("organizador_id", id);
+
   const { data, error } = await supabaseClient
     .from("organizadores")
     .delete()
@@ -4206,11 +4211,6 @@ async function eliminarOrganizador(id){
 
   if(error){
     alert("❌ Error eliminando: " + error.message);
-    return;
-  }
-
-  if(!data || data.length === 0){
-    alert("⚠️ No se borró nada. Revisa RLS o ID.");
     return;
   }
 
