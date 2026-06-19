@@ -2159,6 +2159,30 @@ async function loginMASS(){
     return;
   }
 
+// 🔐 PRIMERO VERIFICAR SI ES ADMIN / ORGANIZADOR
+const pinAdmin = (prompt("🔐 Ingresa tu PIN") || "").trim();
+
+const { data: adminData, error: adminError } = await supabaseClient
+  .from("admin_organizadores")
+  .select("*")
+  .eq("telefono", telefono)
+  .eq("pin_admin", pinAdmin)
+  .eq("activo", true)
+  .maybeSingle();
+
+if(adminData){
+  localStorage.setItem("admin_rol", adminData.rol);
+  localStorage.setItem("admin_organizador_id", adminData.organizador_id || "");
+  localStorage.setItem("mass_user", telefono);
+  localStorage.setItem("mass_telefono", telefono);
+
+  userActual = telefono;
+
+  alert("✅ ADMIN DETECTADO");
+  await cargarClienteActual();
+  return;
+}	
+
   // 🔐 Buscar usuario
   const { data } = await supabaseClient
     .from("usuarios_mass")
@@ -2201,7 +2225,7 @@ if(insertUserError){
   }
 
   // 🔥 LOGIN
-  const pinLogin = (prompt("🔐 Ingresa tu PIN") || "").trim();
+const pinLogin = pinAdmin;
 
   if(pinLogin !== data.pin){
     alert("PIN incorrecto ❌");
