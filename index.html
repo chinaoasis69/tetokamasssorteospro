@@ -3837,11 +3837,14 @@ async function abrirCanjeados(){
 
     const box = document.getElementById("beneficiosDentroModal");
 
-    const { data, error } = await supabaseClient
-        .from("beneficios_entregados")
-        .select("*")
-        .eq("usado", true)
-        .order("created_at", { ascending:false });
+    const usuario = (userActual || localStorage.getItem("mass_telefono") || "").trim();
+
+const { data, error } = await supabaseClient
+  .from("beneficios_entregados")
+  .select("*")
+  .eq("user_id", usuario)
+  .eq("usado", true)
+  .order("created_at", { ascending:false });
 
     if(error){
         alert("Error cargando canjeados");
