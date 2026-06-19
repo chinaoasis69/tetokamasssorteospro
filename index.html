@@ -2039,7 +2039,9 @@ async function crearOrganizadorAdmin(){
       email,
       telefono,
       activo: true
-    }]);
+    }])
+    .select()
+    .single();
 
   if(error){
     console.error(error);
