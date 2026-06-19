@@ -539,11 +539,9 @@ Cargando historial...
 📜 Historial recargas
 </button>	
 
-${localStorage.getItem("admin_rol") === "super_admin" ? `
-  <button onclick="mostrarConfigAdmin()">
-    ⚙️ Configuración
-  </button>
-` : ""}
+<button id="btnConfigAdmin" onclick="mostrarConfigAdmin()">
+  ⚙️ Configuración
+</button>
 
 <button onclick="cerrarPanelAdmin()">
   ❌ Cerrar panel
