@@ -2151,7 +2151,7 @@ async function loginMASS(){
     return;
   }
 
-  const telefono = prompt("📱 Ingresa tu teléfono");
+  const telefono = (prompt("📱 Ingresa tu teléfono") || "").trim();
 
   if(!telefono){
     alert("Debes ingresar teléfono");
@@ -2177,10 +2177,18 @@ async function loginMASS(){
       return;
     }
 
-    await supabaseClient.from("usuarios_mass").insert({
-      telefono: telefono,
-      pin: nuevoPin
-    });
+    const { error: insertUserError } = await supabaseClient
+  .from("usuarios_mass")
+  .insert({
+    telefono: telefono.trim(),
+    pin: nuevoPin.trim()
+  });
+
+if(insertUserError){
+  console.error("ERROR CREANDO USUARIO MASS:", insertUserError);
+  alert("❌ No se pudo crear usuario MASS: " + insertUserError.message);
+  return;
+}
 
     usuarioMASS = telefono;
     localStorage.setItem("mass_user", telefono);
@@ -2193,7 +2201,7 @@ async function loginMASS(){
   }
 
   // 🔥 LOGIN
-  const pinLogin = prompt("🔐 Ingresa tu PIN");
+  const pinLogin = (prompt("🔐 Ingresa tu PIN") || "").trim();
 
   if(pinLogin !== data.pin){
     alert("PIN incorrecto ❌");
