@@ -576,7 +576,8 @@ let tapsAdmin = 0;
     const adminOrgId = localStorage.getItem("admin_organizador_id");
 
     if(adminRol === "organizador" && adminOrgId){
-        await seleccionarOrganizadorAdmin(adminOrgId);
+        abrirPanelAdmin();
+        await mostrarSorteosAdmin();
         tapsAdmin = 0;
         return;
     }
