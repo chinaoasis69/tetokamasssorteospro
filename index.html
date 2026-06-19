@@ -4475,11 +4475,13 @@ async function aprobarRecarga(id, telefono, monto){
   if (!wallet) {
     const { error: insertWalletError } = await supabaseClient
       .from("wallets")
-      .insert({
-        user_id: recargaCheck.user_id,
-        organizador_id: orgId,
-        saldo: nuevoSaldo
-      });
+      .upsert({
+       user_id: recargaCheck.user_id,
+       organizador_id: orgId,
+       saldo: nuevoSaldo
+     }, {
+       onConflict: "user_id,organizador_id"
+     });
 
     if (insertWalletError) {
       alert("Error creando wallet");
