@@ -4426,73 +4426,101 @@ if (r.estado === "rechazado") estadoColor = "🔴";
 }	
 
 async function aprobarRecarga(id, telefono, monto){
-
   if(!confirm(`¿Aprobar ${monto} MASS para ${telefono}?`)){
     return;
   }
 
-const adminRol = localStorage.getItem("admin_rol");
-const adminOrgId = localStorage.getItem("admin_organizador_id");
+  const adminRol = localStorage.getItem("admin_rol");
+  const adminOrgId = localStorage.getItem("admin_organizador_id");
 
-if (adminRol === "organizador") {
-  const { data: recargaCheck } = await supabaseClient
+  const { data: recargaCheck, error: recargaError } = await supabaseClient
     .from("recargas_mass")
-    .select("id, user_id, organizador_id")
+    .select("id, user_id, telefono, monto, estado, organizador_id")
     .eq("id", id)
-    .eq("organizador_id", adminOrgId)
     .maybeSingle();
 
-  if (!recargaCheck) {
+  if (recargaError || !recargaCheck) {
+    alert("No se encontró la recarga");
+    console.error(recargaError);
+    return;
+  }
+
+  const orgId = recargaCheck.organizador_id;
+
+  if (!orgId) {
+    alert("Esta recarga no tiene organizador_id");
+    return;
+  }
+
+  if (adminRol === "organizador" && adminOrgId !== orgId) {
     alert("No puedes aprobar recargas de otro organizador");
     return;
   }
-}	
 
- const orgId = recargaCheck.organizador_id;
-
-const { data: wallet } = await supabaseClient
-  .from("wallets")
-  .select("id, saldo")
-  .eq("user_id", recargaCheck.user_id)
-  .eq("organizador_id", orgId)
-  .maybeSingle();
-
-if(!wallet){
-  await supabaseClient
+  const { data: wallet, error: walletBuscarError } = await supabaseClient
     .from("wallets")
-    .insert({
-      user_id: recargaCheck.user_id,
-      organizador_id: orgId,
-      saldo: Number(monto)
-    });
-} else {
-  const nuevoSaldo = Number(wallet.saldo || 0) + Number(monto);
+    .select("id, saldo")
+    .eq("user_id", recargaCheck.user_id)
+    .eq("organizador_id", orgId)
+    .maybeSingle();
 
-await supabaseClient
-  .from("wallets")
-  .update({
-    saldo: nuevoSaldo
-  })
-  .eq("id", wallet.id);
-} 
+  if (walletBuscarError) {
+    alert("Error buscando wallet");
+    console.error(walletBuscarError);
+    return;
+  }
 
-let aprobarQuery = supabaseClient
-  .from("recargas_mass")
-  .update({ estado: "aprobado" })
-  .eq("id", id);
+  const nuevoSaldo = Number(wallet?.saldo || 0) + Number(recargaCheck.monto || monto || 0);
 
-if (adminRol === "organizador") {
-  aprobarQuery = aprobarQuery.eq("organizador_id", adminOrgId);
-} else {
-  aprobarQuery = aprobarQuery.eq("organizador_id", orgId);
-}
+  if (!wallet) {
+    const { error: insertWalletError } = await supabaseClient
+      .from("wallets")
+      .insert({
+        user_id: recargaCheck.user_id,
+        organizador_id: orgId,
+        saldo: nuevoSaldo
+      });
 
-await aprobarQuery; 
+    if (insertWalletError) {
+      alert("Error creando wallet");
+      console.error(insertWalletError);
+      return;
+    }
+  } else {
+    const { error: updateWalletError } = await supabaseClient
+      .from("wallets")
+      .update({ saldo: nuevoSaldo })
+      .eq("id", wallet.id);
 
-  alert("✅ Recarga aprobada");
+    if (updateWalletError) {
+      alert("Error actualizando wallet");
+      console.error(updateWalletError);
+      return;
+    }
+  }
+
+  let aprobarQuery = supabaseClient
+    .from("recargas_mass")
+    .update({ estado: "aprobado" })
+    .eq("id", id)
+    .eq("organizador_id", orgId);
+
+  if (adminRol === "organizador") {
+    aprobarQuery = aprobarQuery.eq("organizador_id", adminOrgId);
+  }
+
+  const { error: aprobarError } = await aprobarQuery;
+
+  if (aprobarError) {
+    alert("Error aprobando recarga");
+    console.error(aprobarError);
+    return;
+  }
+
+  alert("✅ Recarga aprobada y saldo agregado");
   mostrarRecargasMassAdmin();
 }
-
+	
 async function rechazarRecarga(id){
 
   if(!confirm("¿Rechazar esta recarga?")){
