@@ -4427,27 +4427,32 @@ if (adminRol === "organizador") {
   }
 }	
 
-  const { data: wallet } = await supabaseClient
-    .from("wallets")
-    .select("saldo")
-    .eq("user_id", telefono)
-    .maybeSingle();
+ const orgId = recargaCheck.organizador_id;
 
-  if(!wallet){
-    await supabaseClient
-      .from("wallets")
-      .insert({
-        user_id: telefono,
-        saldo: Number(monto)
-      });
-  } else {
-    await supabaseClient
-      .from("wallets")
-      .update({
-        saldo: Number(wallet.saldo || 0) + Number(monto)
-      })
-      .eq("user_id", telefono);
-  }
+const { data: wallet } = await supabaseClient
+  .from("wallets")
+  .select("saldo")
+  .eq("user_id", telefono)
+  .eq("organizador_id", orgId)
+  .maybeSingle();
+
+if(!wallet){
+  await supabaseClient
+    .from("wallets")
+    .insert({
+      user_id: telefono,
+      organizador_id: orgId,
+      saldo: Number(monto)
+    });
+} else {
+  await supabaseClient
+    .from("wallets")
+    .update({
+      saldo: Number(wallet.saldo || 0) + Number(monto)
+    })
+    .eq("user_id", telefono)
+    .eq("organizador_id", orgId);
+} 
 
   let aprobarQuery = supabaseClient
   .from("recargas_mass")
