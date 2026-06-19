@@ -594,7 +594,8 @@ let tapsAdmin = 0;
   }
 
   if(adminRol === "organizador" && adminOrgId){
-      abrirAdmin();
+      document.getElementById("panelAdmin").style.display = "block";
+	  
       setTimeout(() => {
          mostrarSorteosAdmin();
       }, 300);
