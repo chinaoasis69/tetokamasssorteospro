@@ -4488,12 +4488,6 @@ if (adminRol === "organizador") {
 
 await aprobarQuery; 
 
-if (adminRol === "organizador") {
-  aprobarQuery = aprobarQuery.eq("organizador_id", adminOrgId);
-}
-
-await aprobarQuery;
-
   alert("✅ Recarga aprobada");
   mostrarRecargasMassAdmin();
 }
