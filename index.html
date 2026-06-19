@@ -551,6 +551,14 @@ Cargando historial...
     Selecciona una opción.
   </div>
 </div>
+
+<script>
+window.addEventListener("load", () => {
+  if(localStorage.getItem("admin_rol") !== "super_admin"){
+    document.getElementById("btnConfigAdmin")?.remove();
+  }
+});
+</script>	
 	
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
