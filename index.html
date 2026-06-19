@@ -2184,6 +2184,8 @@ if (adminData.rol === "super_admin") {
   await mostrarOrganizadoresAdmin();
 } else {
   await seleccionarOrganizadorAdmin(adminData.organizador_id);
+document.getElementById("panelAdmin").style.display = "block";
+document.getElementById("panelAdmin").scrollIntoView({ behavior: "smooth" });
 }
 
 return;
