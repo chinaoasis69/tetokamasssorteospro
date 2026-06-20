@@ -4402,7 +4402,7 @@ async function mostrarHistorialRecargasMassAdmin() {
 const orgIds = [...new Set((data || []).map(r => r.organizador_id).filter(Boolean))];
 
 const { data: orgs } = await supabaseClient
-  .from("admin_organizadores")
+  .from("organizadores")
   .select("id, nombre")
   .in("id", orgIds);
 
