@@ -4390,7 +4390,7 @@ async function mostrarHistorialRecargasMassAdmin() {
 
   const { data, error } = await supabaseClient
     .from("recargas_mass")
-    .select("*")
+    .select("*, organizador_id")
     .eq("organizador_id", orgId)
     .order("created_at", { ascending:false });
 
@@ -4398,6 +4398,18 @@ async function mostrarHistorialRecargasMassAdmin() {
     alert("Error cargando historial");
     return;
   }
+
+const orgIds = [...new Set((data || []).map(r => r.organizador_id).filter(Boolean))];
+
+const { data: orgs } = await supabaseClient
+  .from("admin_organizadores")
+  .select("id, nombre")
+  .in("id", orgIds);
+
+const orgMap = {};
+(orgs || []).forEach(o => {
+  orgMap[o.id] = o.nombre;
+});	
 
   let html = `
     <h2>📜 Historial de recargas</h2>
@@ -4416,6 +4428,7 @@ if (r.estado === "rechazado") estadoColor = "🔴";
     html += `
       <div class="card">
         <p><b>Teléfono:</b> ${r.telefono}</p>
+		<p><b>🏢 Organizador:</b> ${orgMap[r.organizador_id] || "Sin organizador"}</p>
         <p><b>Monto:</b> ${r.monto} MASS</p>
         <p><b>Estado:</b> ${estadoColor} ${r.estado}</p>
 		<p><b>Fecha:</b> ${new Date(r.created_at).toLocaleString()}</p>
