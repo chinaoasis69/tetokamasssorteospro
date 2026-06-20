@@ -4440,8 +4440,8 @@ if (r.estado === "rechazado") estadoColor = "🔴";
   document.getElementById("adminContenido").innerHTML = html;
 }	
 
-async function aprobarRecarga(id, telefono, monto){
-  if(!confirm(`¿Aprobar ${monto} MASS para ${telefono}?`)){
+async function aprobarRecarga(id, userId, monto){
+  if(!confirm(`¿Aprobar ${monto} MASS para este usuario?`)){
     return;
   }
 
