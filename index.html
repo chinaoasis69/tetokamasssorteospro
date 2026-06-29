@@ -2372,14 +2372,6 @@ async function apartarBoletosInterno() {
     return;
   }
 
-  const nombre = document.getElementById("nombre").value.trim();
-  const telefono = document.getElementById("telefono").value.trim();
-
-  if (!nombre || !telefono) {
-    alert("Ingresa tu nombre y teléfono");
-    return;
-  }
-
   if (!confirm(`¿Reservar ${boletosSeleccionados.length} boleto(s)?`)) return;
 
   const ids = boletosSeleccionados.map(b => b.id);
@@ -2388,8 +2380,7 @@ async function apartarBoletosInterno() {
     .from("boletos")
     .update({
       estado: "apartado",
-      nombre: nombre,
-      telefono: telefono
+      telefono: userActual
     })
     .in("id", ids)
     .eq("estado", "disponible");
