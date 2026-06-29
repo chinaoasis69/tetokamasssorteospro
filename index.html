@@ -3733,7 +3733,7 @@ const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
   .eq("telefono", tel)
-  .eq("estado", ["vendido", "apartado"])
+  .in("estado", ["vendido", "apartado"])
   .order("fecha", { ascending:false });
 
   if(error){
