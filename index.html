@@ -2366,6 +2366,52 @@ async function asegurarWallet() {
 
 let comprando = false;
 
+async function apartarBoletosInterno() {
+  if (!boletosSeleccionados || boletosSeleccionados.length === 0) {
+    alert("Selecciona al menos un boleto");
+    return;
+  }
+
+  const nombre = document.getElementById("nombre").value.trim();
+  const telefono = document.getElementById("telefono").value.trim();
+
+  if (!nombre || !telefono) {
+    alert("Ingresa tu nombre y teléfono");
+    return;
+  }
+
+  if (!confirm(`¿Reservar ${boletosSeleccionados.length} boleto(s)?`)) return;
+
+  const ids = boletosSeleccionados.map(b => b.id);
+
+  const { error } = await supabaseClient
+    .from("boletos")
+    .update({
+      estado: "apartado",
+      nombre: nombre,
+      telefono: telefono
+    })
+    .in("id", ids)
+    .eq("estado", "disponible");
+
+  if (error) {
+    console.error(error);
+    alert("Error reservando boletos");
+    return;
+  }
+
+  alert("🟡 Boletos reservados correctamente");
+
+  boletosSeleccionados = [];
+  boletoSeleccionado = null;
+
+  document.getElementById("seleccionTexto").innerHTML =
+    "Selecciona un número disponible";
+
+  await cargarBoletos();
+  await cargarMisBoletos();
+}	
+
 async function comprarConSaldo() {	
   if (comprando) return;
   comprando = true;
