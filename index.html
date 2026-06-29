@@ -3742,7 +3742,7 @@ const { data, error } = await supabaseClient
   .from("boletos")
   .select("*")
   .eq("telefono", tel)
-  .eq("estado", "vendido")
+  .eq("estado", ["vendido", "apartado"])
   .order("fecha", { ascending:false });
 
   if(error){
@@ -3754,7 +3754,7 @@ const { data, error } = await supabaseClient
 
 	if(!data || data.length === 0){
   document.getElementById("misBoletos").innerHTML =
-    "No tienes boletos pagados en esta rifa todavía";
+    "No tienes boletos en esta rifa todavía";
   return;
 }
 
