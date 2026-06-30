@@ -2602,11 +2602,22 @@ if (RIFA_ID) {
         console.log("ORGANIZADOR:", org);
 
         nombreOrganizador =
-            org?.nombre_publico ||
-            org?.nombre ||
-            org?.nombre_empresa ||
-            "Organizador";
+    org?.nombre_publico ||
+    org?.nombre ||
+    org?.nombre_empresa ||
+    clienteActual?.nombre ||
+    clienteActual?.nombre_publico ||
+    clienteActual?.nombre_empresa ||
+    "Organizador";
     }
+}
+
+if (nombreOrganizador === "Organizador" && clienteActual) {
+    nombreOrganizador =
+        clienteActual.nombre ||
+        clienteActual.nombre_publico ||
+        clienteActual.nombre_empresa ||
+        "Organizador";
 }	
 	
 if (!confirm(
