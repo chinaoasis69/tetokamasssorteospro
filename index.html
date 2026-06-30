@@ -3151,6 +3151,9 @@ async function abrirRifa(rifaId){
         .eq("id", rifaId)
         .single();
 
+	localStorage.setItem("organizador_actual_id", rifa.organizador_id);
+await cargarSaldo();
+
     if(!error && rifa){
 		if(rifa.cliente_id){
    await cargarClientePorId(rifa.cliente_id);
