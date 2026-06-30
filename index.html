@@ -2576,30 +2576,37 @@ if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
 let nombreOrganizador = "Organizador";
 
 if (RIFA_ID) {
-  const { data: rifaActual } = await supabaseClient
-    .from("rifas")
-    .select("organizador_id")
-    .eq("id", RIFA_ID)
-    .single();
+    const { data: rifaActual } = await supabaseClient
+        .from("rifas")
+        .select("organizador_id, cliente_id")
+        .eq("id", RIFA_ID)
+        .single();
 
-console.log("RIFA_ID:", RIFA_ID);
-console.log("RIFA ACTUAL:", rifaActual);
-console.log("ID ORGANIZADOR:", rifaActual?.organizador_id);	
+    console.log("RIFA_ID:", RIFA_ID);
+    console.log("RIFA ACTUAL:", rifaActual);
 
-  if (rifaActual?.organizador_id) {
-    const { data: org } = await supabaseClient
-      .from("organizadores")
-      .select("nombre, nombre_publico, nombre_empresa")
-      .eq("id", rifaActual.organizador_id)
-      .single();
-	  console.log("ORGANIZADOR:", org);
+    const orgId =
+        rifaActual?.organizador_id ||
+        rifaActual?.cliente_id ||
+        null;
 
-    nombreOrganizador =
-    org?.nombre_publico ||
-    org?.nombre ||
-    org?.nombre_empresa ||
-    "Organizador";
-  }
+    console.log("ID ORGANIZADOR:", orgId);
+
+    if (orgId) {
+        const { data: org } = await supabaseClient
+            .from("organizadores")
+            .select("nombre, nombre_publico, nombre_empresa")
+            .eq("id", orgId)
+            .maybeSingle();
+
+        console.log("ORGANIZADOR:", org);
+
+        nombreOrganizador =
+            org?.nombre_publico ||
+            org?.nombre ||
+            org?.nombre_empresa ||
+            "Organizador";
+    }
 }	
 	
 if (!confirm(
