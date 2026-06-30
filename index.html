@@ -288,7 +288,7 @@ Selecciona una rifa
 <div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
   <h2>🎰 MASS LUCKY SPIN</h2>
   <p>Giro promocional sin valor en efectivo</p>
-  <button class="btn-main" onclick="abrirModalMisBoletos()">🎟️ Ver mis boletos para girar</button>
+  <button class="btn-main" onclick="abrirBoletosParaGirar()">🎟️ Ver mis boletos para girar</button>
   <div id="spinResult" style="margin-top:18px; min-height:35px; color:#39ff14; font-size:24px; font-weight:bold;"></div>
 </div>
 	  
@@ -3987,6 +3987,20 @@ function cerrarModalBeneficios() {
 function abrirModalMisBoletos() {
   document.getElementById("modalMisBoletos").style.display = "block";
 }
+
+function abrirBoletosParaGirar() {
+    abrirModalMisBoletos();
+
+    setTimeout(() => {
+        const spinBox = document.getElementById("spinBox");
+        if (spinBox) {
+            spinBox.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+    }, 500);
+}	
 
 function cerrarModalMisBoletos() {
     document.getElementById("modalMisBoletos").style.display = "none";
