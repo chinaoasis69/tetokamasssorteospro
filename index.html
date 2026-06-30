@@ -2628,18 +2628,6 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
   if (!telefono) {
   alert("Inicia sesión primero");
   return;
-}
-
- let organizadorId = null;
-
-if (RIFA_ID) {
-  const { data: rifaActual } = await supabaseClient
-    .from("rifas")
-    .select("organizador_id")
-    .eq("id", RIFA_ID)
-    .single();
-
-  organizadorId = rifaActual?.organizador_id || null;
 }	
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
