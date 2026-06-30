@@ -2555,13 +2555,33 @@ async function recargarSaldo() {
     alert("Cantidad inválida");
     return;
   }
+
+let nombreOrganizador = "Organizador";
+
+if (RIFA_ID) {
+  const { data: rifaActual } = await supabaseClient
+    .from("rifas")
+    .select("organizador_id")
+    .eq("id", RIFA_ID)
+    .single();
+
+  if (rifaActual?.organizador_id) {
+    const { data: org } = await supabaseClient
+      .from("organizadores")
+      .select("nombre")
+      .eq("id", rifaActual.organizador_id)
+      .single();
+
+    nombreOrganizador = org?.nombre || "Organizador";
+  }
+}	
 	
 if (!confirm(
 `⚠️ IMPORTANTE
 
 Esta recarga MASS será válida únicamente para:
 
-🏢 ${clienteActual?.nombre || 'Organizador'}
+🏢 ${nombreOrganizador}
 
 Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 
