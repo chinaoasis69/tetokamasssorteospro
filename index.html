@@ -3657,16 +3657,8 @@ console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
 console.log("PREMIOS ENCONTRADOS:", premiosLucky);
 
 if (!premiosLucky || premiosLucky.length === 0) {
-    premiosLucky = [];
-
-    for (let i = 0; i < 100; i++) {
-        premiosLucky.push({
-            nombre: "Sigue participando",
-            descripcion: "No ganaste premio esta vez",
-            codigo: "N/A",
-            esNada: true
-        });
-    }
+    alert("🎁 Por el momento este sorteo no cuenta con promociones activas. ¡Sigue pendiente de futuras promociones!");
+    return;
 }
 
 let bolsaPremios = [];
