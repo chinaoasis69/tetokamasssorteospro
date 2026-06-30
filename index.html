@@ -2609,7 +2609,7 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
   return;
 }
 
- let organizadorId = localStorage.getItem("organizador_admin_id") || clienteActual?.id || null;
+ let organizadorId = null;
 
 if (RIFA_ID) {
   const { data: rifaActual } = await supabaseClient
@@ -2619,7 +2619,12 @@ if (RIFA_ID) {
     .single();
 
   organizadorId = rifaActual?.organizador_id || organizadorId;
-} 
+}
+
+if (!organizadorId) {
+  alert("⚠️ Primero elige un organizador activo o abre una rifa antes de recargar MASS.");
+  return;
+}	
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
 
