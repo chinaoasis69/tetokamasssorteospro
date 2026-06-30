@@ -2565,12 +2565,17 @@ if (RIFA_ID) {
     .eq("id", RIFA_ID)
     .single();
 
+console.log("RIFA_ID:", RIFA_ID);
+console.log("RIFA ACTUAL:", rifaActual);
+console.log("ID ORGANIZADOR:", rifaActual?.organizador_id);	
+
   if (rifaActual?.organizador_id) {
     const { data: org } = await supabaseClient
       .from("organizadores")
       .select("nombre")
       .eq("id", rifaActual.organizador_id)
       .single();
+	  console.log("ORGANIZADOR:", org);
 
     nombreOrganizador = org?.nombre || "Organizador";
   }
