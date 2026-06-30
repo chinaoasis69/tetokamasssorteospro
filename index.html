@@ -3641,7 +3641,7 @@ async function girarLuckySpin(pinYaValidado = false){
     return;
   }
 
-  const { data: premiosLucky, error: errorLucky } = await supabaseClient
+  let { data: premiosLucky, error: errorLucky } = await supabaseClient
   .from("lucky_spin_premios")
   .select("*")
   .eq("activo", true)
