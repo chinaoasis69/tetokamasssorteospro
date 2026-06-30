@@ -2679,6 +2679,9 @@ if (!organizadorId) {
         null;
 }
 
+console.log("USUARIO ACTUAL:", userActual);
+console.log("ORGANIZADOR BUSCADO:", organizadorId);	
+
   const { data } = await supabaseClient
     .from("wallets")
     .select("saldo")
