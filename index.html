@@ -3359,6 +3359,19 @@ function pintarMetodoPago(id, valor) {
   } else {
     fila.style.display = "none";
   }
+}
+
+function copiarPago(id) {
+  const valor = document.getElementById(id)?.innerText?.trim();
+
+  if (!valor || valor === "--") {
+    alert("No hay dato para copiar");
+    return;
+  }
+
+  navigator.clipboard.writeText(valor)
+    .then(() => alert("✅ Copiado al portapapeles"))
+    .catch(() => alert("No se pudo copiar. Mantén presionado el dato para copiarlo."));
 }	
 
 // 🔥 CARGAR BOLETOS
