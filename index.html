@@ -2660,10 +2660,24 @@ console.log("organizadorId:", organizadorId);
 }  
 
 async function cargarSaldo() {
-  const organizadorId =
-    clienteActual?.id ||
-    localStorage.getItem("organizador_admin_id") ||
-    null;
+  let organizadorId = null;
+
+if (RIFA_ID) {
+    const { data: rifaActual } = await supabaseClient
+        .from("rifas")
+        .select("organizador_id")
+        .eq("id", RIFA_ID)
+        .single();
+
+    organizadorId = rifaActual?.organizador_id || null;
+}
+
+if (!organizadorId) {
+    organizadorId =
+        localStorage.getItem("organizador_admin_id") ||
+        clienteActual?.id ||
+        null;
+}
 
   const { data } = await supabaseClient
     .from("wallets")
