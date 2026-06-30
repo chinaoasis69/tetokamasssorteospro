@@ -3765,6 +3765,22 @@ if(spinResult){
     await cargarHistorialPremios();
   }
 }, 90);
+}
+
+async function girarLuckySpinConBoleto(numero, rifaId) {
+  RIFA_ID = rifaId;
+
+  boletoSeleccionado = boletos.find(b =>
+    String(b.numero) === String(numero).padStart(4, "0") &&
+    String(b.rifa_id) === String(rifaId)
+  );
+
+  if (!boletoSeleccionado) {
+    alert("No se encontró el boleto para girar ❌");
+    return;
+  }
+
+  await girarLuckySpin(true);
 }	
 	
 async function cargarHistorialPremios(){
