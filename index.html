@@ -3370,8 +3370,8 @@ function copiarPago(id) {
   }
 
   navigator.clipboard.writeText(valor)
-    .then(() => alert("✅ Copiado al portapapeles"))
-    .catch(() => alert("No se pudo copiar. Mantén presionado el dato para copiarlo."));
+  .then(() => mostrarToast("✅ Copiado al portapapeles"))
+  .catch(() => mostrarToast("No se pudo copiar. Mantén presionado el dato para copiarlo."));
 }	
 
 // 🔥 CARGAR BOLETOS
