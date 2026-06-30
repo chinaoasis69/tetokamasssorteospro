@@ -3361,7 +3361,7 @@ function pintarMetodoPago(id, valor) {
   }
 }
 
-function copiarPago(id) {
+function copiarPago(id, event) {
   const valor = document.getElementById(id)?.innerText?.trim();
 
   if (!valor || valor === "--") {
@@ -3371,27 +3371,24 @@ function copiarPago(id) {
 
   const boton = event.target;
 
+const boton = event?.target;
+const textoOriginal = boton?.innerHTML;	
+
 navigator.clipboard.writeText(valor)
 .then(() => {
+  mostrarToast("✅ Copiado al portapapeles");
 
-    mostrarToast("✅ Copiado al portapapeles");
+  if (boton) {
+    boton.innerHTML = "✅ Copiado";
+    boton.style.background = "#39ff14";
+    boton.style.color = "#111";
 
-    if (boton) {
-        const textoOriginal = boton.innerHTML;
-
-        boton.innerHTML = "✅ Copiado";
-        boton.style.background = "#39ff14";
-        boton.style.color = "#111";
-        boton.style.fontWeight = "bold";
-
-        setTimeout(() => {
-            boton.innerHTML = textoOriginal;
-            boton.style.background = "";
-            boton.style.color = "";
-            boton.style.fontWeight = "";
-        }, 2000);
-    }
-
+    setTimeout(() => {
+      boton.innerHTML = textoOriginal;
+      boton.style.background = "";
+      boton.style.color = "";
+    }, 2000);
+  }
 })
 .catch(() => {
     mostrarToast("❌ No se pudo copiar");
