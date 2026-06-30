@@ -2550,11 +2550,28 @@ const patrocinadorBeneficio =
 }
 
 async function recargarSaldo() {
-  const cantidad = prompt("¿Cuánto quieres recargar?");
-  if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
+  let organizadorId = null;
+
+if (RIFA_ID) {
+    const { data: rifaActual } = await supabaseClient
+        .from("rifas")
+        .select("organizador_id")
+        .eq("id", RIFA_ID)
+        .single();
+
+    organizadorId = rifaActual?.organizador_id || null;
+}
+
+if (!organizadorId) {
+    alert("⚠️ Primero elige un organizador activo o abre una rifa antes de recargar MASS.");
+    return;
+}
+
+const cantidad = prompt("¿Cuánto quieres recargar?");
+if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
     alert("Cantidad inválida");
     return;
-  }
+}
 
 let nombreOrganizador = "Organizador";
 
@@ -2623,11 +2640,6 @@ if (RIFA_ID) {
     .single();
 
   organizadorId = rifaActual?.organizador_id || null;
-}
-
-if (!organizadorId) {
-  alert("⚠️ Primero elige un organizador activo o abre una rifa antes de recargar MASS.");
-  return;
 }	
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
