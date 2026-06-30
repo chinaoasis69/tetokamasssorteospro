@@ -3891,6 +3891,47 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
 }).join("");
 }
 
+async function pagarReservadoConMass(numero, rifaId) {
+  const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
+
+  const { data: rifa } = await supabaseClient
+    .from("rifas")
+    .select("precio_boleto, organizador_id")
+    .eq("id", rifaId)
+    .single();
+
+  const precio = Number(rifa?.precio_boleto || 0);
+  const organizadorId = rifa?.organizador_id;
+
+  const { data: wallet } = await supabaseClient
+    .from("wallets")
+    .select("id, saldo")
+    .eq("user_id", tel)
+    .eq("organizador_id", organizadorId)
+    .maybeSingle();
+
+  if (!wallet || Number(wallet.saldo) < precio) {
+    alert("Saldo MASS insuficiente con este organizador");
+    return;
+  }
+
+  await supabaseClient
+    .from("wallets")
+    .update({ saldo: Number(wallet.saldo) - precio })
+    .eq("id", wallet.id);
+
+  await supabaseClient
+    .from("boletos")
+    .update({ estado: "vendido" })
+    .eq("rifa_id", rifaId)
+    .eq("numero", numero)
+    .eq("telefono", tel);
+
+  alert("✅ Boleto pagado con MASS");
+  cargarSaldo();
+  cargarMisBoletos();
+}	
+
 async function abrirModalBeneficios() {
   document.getElementById("modalBeneficios").style.display = "block";
   const box = document.getElementById("beneficiosDentroModal");
