@@ -2602,12 +2602,12 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
     return;
   }
 
-  const telefono = document.getElementById("telefono").value.trim();
+  const telefono = localStorage.getItem("mass_telefono") || userActual || "";
 
   if (!telefono) {
-    alert("Escribe tu teléfono");
-    return;
-  }
+  alert("Inicia sesión primero");
+  return;
+}
 
  let organizadorId = localStorage.getItem("organizador_admin_id") || clienteActual?.id || null;
 
