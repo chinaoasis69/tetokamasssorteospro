@@ -4832,6 +4832,24 @@ const { error } = await rechazarQuery;
 
   alert("✅ Recarga rechazada");
   mostrarRecargasMassAdmin();
+}
+
+function mostrarToast(mensaje){
+    const toast = document.getElementById("toast");
+    if(!toast) return;
+
+    toast.innerHTML = mensaje;
+    toast.style.display = "block";
+    toast.style.opacity = "1";
+
+    setTimeout(()=>{
+        toast.style.opacity = "0";
+
+        setTimeout(()=>{
+            toast.style.display = "none";
+        },300);
+
+    },1800);
 }	
 
 </script>
@@ -4856,6 +4874,24 @@ serviceWorkerUpdaterPath: "onesignalsdkupdaterworker.js",
 
 });
 </script>
+
+<div id="toast"
+style="
+position:fixed;
+bottom:25px;
+left:50%;
+transform:translateX(-50%);
+background:#111;
+color:#39ff14;
+border:2px solid #39ff14;
+padding:14px 22px;
+border-radius:14px;
+font-weight:bold;
+font-size:16px;
+display:none;
+z-index:99999;
+box-shadow:0 0 18px #39ff14;">
+</div>	
 
 </body>
 </html>
