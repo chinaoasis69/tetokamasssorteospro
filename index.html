@@ -3870,8 +3870,13 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
  ? "🟡 Reservado: <b>" + t.numero + "</b><br>"
  : "🎟️ Comprado: <b>" + t.numero + "</b><br>"}
            ${t.estado === "apartado"
- ? "⏳ Pendiente de compra"
- : t.giro_usado
+  ? `
+    ⏳ Pendiente de compra<br>
+    <button onclick="pagarReservadoConMass('${t.numero}', '${rifaId}')">
+      💰 Pagar con MASS
+    </button>
+  `
+  : t.giro_usado
     ? "❌ Giro usado"
     : rifaActiva
        ? `<button onclick="usarGiro('${t.numero}','${rifaId}')">🎰 Girar Lucky Spin</button>`
