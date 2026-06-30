@@ -2682,7 +2682,7 @@ if (!organizadorId) {
   const { data } = await supabaseClient
     .from("wallets")
     .select("saldo")
-    .eq("user_id", userActual)
+    .eq("user_id", localStorage.getItem("mass_telefono") || userActual)
     .eq("organizador_id", organizadorId)
     .maybeSingle();
 
