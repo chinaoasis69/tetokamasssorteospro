@@ -3014,6 +3014,14 @@ function verSorteosDeOrganizador(orgId){
 
     box.style.display = "block";
 
+	const rifasOrg = (rifas || []).filter(r =>
+  String(r.organizador_id) === String(orgId)
+);
+
+if (rifasOrg.length === 1) {
+  abrirRifa(rifasOrg[0].id);
+}
+
 	console.log("ORG ID:", orgId);
 
 console.log(
