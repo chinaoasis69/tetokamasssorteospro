@@ -3369,9 +3369,33 @@ function copiarPago(id) {
     return;
   }
 
-  navigator.clipboard.writeText(valor)
-  .then(() => mostrarToast("✅ Copiado al portapapeles"))
-  .catch(() => mostrarToast("No se pudo copiar. Mantén presionado el dato para copiarlo."));
+  const boton = event.target;
+
+navigator.clipboard.writeText(valor)
+.then(() => {
+
+    mostrarToast("✅ Copiado al portapapeles");
+
+    if (boton) {
+        const textoOriginal = boton.innerHTML;
+
+        boton.innerHTML = "✅ Copiado";
+        boton.style.background = "#39ff14";
+        boton.style.color = "#111";
+        boton.style.fontWeight = "bold";
+
+        setTimeout(() => {
+            boton.innerHTML = textoOriginal;
+            boton.style.background = "";
+            boton.style.color = "";
+            boton.style.fontWeight = "";
+        }, 2000);
+    }
+
+})
+.catch(() => {
+    mostrarToast("❌ No se pudo copiar");
+});
 }	
 
 // 🔥 CARGAR BOLETOS
