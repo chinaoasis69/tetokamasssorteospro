@@ -2605,18 +2605,18 @@ if (RIFA_ID) {
     org?.nombre_publico ||
     org?.nombre ||
     org?.nombre_empresa ||
-    clienteActual?.nombre ||
-    clienteActual?.nombre_publico ||
-    clienteActual?.nombre_empresa ||
+    mapaOrganizadores?.[orgId]?.nombre ||
+    mapaOrganizadores?.[orgId]?.nombre_publico ||
+    mapaOrganizadores?.[orgId]?.nombre_empresa ||
     "Organizador";
     }
 }
 
-if (nombreOrganizador === "Organizador" && clienteActual) {
+if (nombreOrganizador === "Organizador" && mapaOrganizadores?.[orgId]) {
     nombreOrganizador =
-        clienteActual.nombre ||
-        clienteActual.nombre_publico ||
-        clienteActual.nombre_empresa ||
+        mapaOrganizadores[orgId].nombre ||
+        mapaOrganizadores[orgId].nombre_publico ||
+        mapaOrganizadores[orgId].nombre_empresa ||
         "Organizador";
 }	
 	
