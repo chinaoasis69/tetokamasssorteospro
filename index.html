@@ -2577,7 +2577,11 @@ console.log("ID ORGANIZADOR:", rifaActual?.organizador_id);
       .single();
 	  console.log("ORGANIZADOR:", org);
 
-    nombreOrganizador = org?.nombre || "Organizador";
+    nombreOrganizador =
+    org?.nombre_publico ||
+    org?.nombre ||
+    org?.nombre_empresa ||
+    "Organizador";
   }
 }	
 	
