@@ -3657,8 +3657,16 @@ console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
 console.log("PREMIOS ENCONTRADOS:", premiosLucky);
 
 if (!premiosLucky || premiosLucky.length === 0) {
-  alert("No hay premios activos en MASS LUCKY SPIN");
-  return;
+    premiosLucky = [];
+
+    for (let i = 0; i < 100; i++) {
+        premiosLucky.push({
+            nombre: "Sigue participando",
+            descripcion: "No ganaste premio esta vez",
+            codigo: "N/A",
+            esNada: true
+        });
+    }
 }
 
 let bolsaPremios = [];
