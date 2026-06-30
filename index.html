@@ -3781,7 +3781,7 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
   return `
     <div style="border:1px solid #38b000;border-radius:10px;padding:15px;margin:10px 0;text-align:center;">
       <h3>🎁 ${nombre}</h3>
-      <p>Boletos comprados: <b>${lista.length}</b></p>
+      <p>Boletos: <b>${lista.length}</b></p>
 
       <button onclick="
         const box = document.getElementById('${idBox}');
@@ -3791,10 +3791,17 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
       <div id="${idBox}" style="display:none;margin-top:10px;">
         ${lista.map(t => `
           <div style="margin:8px 0;">
-            🎟️ Boleto: <b>${t.numero}</b><br>
-           ${t.giro_usado
- ? "❌ Giro usado"
- : rifaActiva
+            ${t.estado === "apartado"
+ ? "🟡 Reservado: <b>" + t.numero + "</b><br>"
+ : "🎟️ Comprado: <b>" + t.numero + "</b><br>"}
+           ${t.estado === "apartado"
+ ? "⏳ Pendiente de compra"
+ : t.giro_usado
+    ? "❌ Giro usado"
+    : rifaActiva
+       ? `<button onclick="usarGiro('${t.numero}','${rifaId}')">🎰 Girar Lucky Spin</button>`
+       : "🏁 Rifa finalizada"
+}
     ? `<button onclick="usarGiro('${t.numero}','${rifaId}')">🎟️ Girar Lucky Spin</button>`
     : "⏳ Rifa finalizada"
 } 
