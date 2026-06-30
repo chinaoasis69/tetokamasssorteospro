@@ -3211,10 +3211,10 @@ await cargarSaldo();
 const org = mapaOrganizadores[rifa.organizador_id];
 
 if(org){
-  document.getElementById("pagoZelle").textContent = org.zelle || "--";
-  document.getElementById("pagoCashapp").textContent = org.cashapp || "--";
-  document.getElementById("pagoApplePay").textContent = org.apple_pay || "--";
-  document.getElementById("pagoPaypal").textContent = org.paypal || "--";
+  pintarMetodoPago("pagoZelle", org.zelle);
+pintarMetodoPago("pagoCashapp", org.cashapp);
+pintarMetodoPago("pagoApplePay", org.apple_pay);
+pintarMetodoPago("pagoPaypal", org.paypal);
 }
 
 document.getElementById("nombreOrganizadorSorteo").innerText =
@@ -3344,6 +3344,21 @@ background:#111;
         behavior: "smooth",
         block: "start"
     });
+}
+
+function pintarMetodoPago(id, valor) {
+  const span = document.getElementById(id);
+  if (!span) return;
+
+  const fila = span.closest("p");
+  if (!fila) return;
+
+  if (valor && valor.trim() !== "") {
+    span.textContent = valor;
+    fila.style.display = "block";
+  } else {
+    fila.style.display = "none";
+  }
 }	
 
 // 🔥 CARGAR BOLETOS
