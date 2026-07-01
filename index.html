@@ -1579,6 +1579,15 @@ async function mostrarGanadoresAdmin() {
             <label>💬 Comentario</label><br>
             <input id="ganadorComentario" placeholder="Ejemplo: Premio entregado correctamente">
 
+			<div style="margin-top:12px;">
+    <label>📸 Foto del ganador o premio</label><br>
+    <input
+        type="file"
+        id="imagenGanador"
+        accept="image/*"
+        style="width:100%;padding:8px;border-radius:8px;">
+</div>
+
             <button onclick="publicarGanador()">
                 🏆 Publicar ganador
             </button>
