@@ -1471,16 +1471,42 @@ style="background:#a30000;color:white;">
     `;
 }
 
-function mostrarGanadoresAdmin() {
+async function mostrarGanadoresAdmin() {
 
-    document.getElementById("adminContenido").innerHTML = `
+    const cont = document.getElementById("adminContenido");
+
+    cont.innerHTML = `
         <div class="card">
             <h2>🏆 Publicar ganador</h2>
 
-            <p>
-                Próximamente aquí podrás registrar los ganadores
-                de todos los premios del sorteo.
-            </p>
+            <label>🎯 Sorteo</label><br>
+            <select id="ganadorRifa" onchange="cargarPremiosParaGanador()" style="width:100%;padding:12px;margin:8px 0;">
+                <option value="">Selecciona un sorteo</option>
+            </select>
+
+            <label>🎁 Premio</label><br>
+            <select id="ganadorPremio" style="width:100%;padding:12px;margin:8px 0;">
+                <option value="">Primero selecciona un sorteo</option>
+            </select>
+
+            <label>🎫 Número ganador</label><br>
+            <input id="ganadorNumero" placeholder="Ejemplo: 0099">
+
+            <label>👤 Alias del ganador</label><br>
+            <input id="ganadorAlias" placeholder="Ejemplo: Juan P.">
+
+            <label>📍 Estado</label><br>
+            <select id="ganadorEstado" style="width:100%;padding:12px;margin:8px 0;">
+                <option value="pendiente">Pendiente</option>
+                <option value="entregado">Entregado</option>
+            </select>
+
+            <label>💬 Comentario</label><br>
+            <input id="ganadorComentario" placeholder="Ejemplo: Premio entregado correctamente">
+
+            <button onclick="publicarGanador()">
+                🏆 Publicar ganador
+            </button>
         </div>
     `;
 
