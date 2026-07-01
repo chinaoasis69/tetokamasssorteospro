@@ -751,6 +751,11 @@ async function cargarGanadores(){
                 ${g.estado_entrega}
             </p>
 
+			<p>
+    📅 <b>Publicado:</b><br>
+    ${new Date(g.creado_en).toLocaleDateString("es-MX")}
+</p>
+
             ${g.comentario ? `<p>💬 ${g.comentario}</p>` : ""}
         </div>
     `;
