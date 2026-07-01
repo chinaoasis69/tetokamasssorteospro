@@ -1471,6 +1471,21 @@ style="background:#a30000;color:white;">
     `;
 }
 
+function mostrarGanadoresAdmin() {
+
+    document.getElementById("adminContenido").innerHTML = `
+        <div class="card">
+            <h2>🏆 Publicar ganador</h2>
+
+            <p>
+                Próximamente aquí podrás registrar los ganadores
+                de todos los premios del sorteo.
+            </p>
+        </div>
+    `;
+
+}	
+
 async function administrarPremiosRifa(rifaId){
   document.getElementById("adminContenido").innerHTML =
     "<h3>🏆 Premios de la rifa</h3><p>Cargando premios...</p>";
