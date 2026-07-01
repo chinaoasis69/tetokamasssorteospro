@@ -1527,8 +1527,7 @@ async function cargarSorteosGanador(){
     const { data, error } = await supabaseClient
         .from("rifas")
         .select("id,titulo")
-        .eq("organizador_id", organizadorId)
-        .order("creado_en", { ascending:false });
+        .eq("organizador_id", organizadorId);
 
 	console.log("organizadorId:", organizadorId);
     console.log("rifas ganador:", data);
