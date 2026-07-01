@@ -4908,6 +4908,58 @@ function mostrarToast(mensaje){
         },300);
 
     },1800);
+}
+
+function mostrarNotificacion(tipo, titulo, mensaje, duracion = 5000) {
+
+    const box = document.getElementById("massNotificacion");
+    if (!box) return;
+
+    let color = "#39ff14";
+    let icono = "✅";
+
+    if (tipo === "warning") {
+        color = "#ffc107";
+        icono = "⚠️";
+    }
+
+    if (tipo === "error") {
+        color = "#ff4d4f";
+        icono = "❌";
+    }
+
+    if (tipo === "info") {
+        color = "#00bfff";
+        icono = "ℹ️";
+    }
+
+    box.style.borderColor = color;
+
+    box.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+                <div style="font-size:22px;font-weight:bold;">
+                    ${icono} ${titulo}
+                </div>
+
+                <div style="margin-top:8px;font-size:16px;">
+                    ${mensaje}
+                </div>
+            </div>
+
+            <div
+                style="cursor:pointer;font-size:22px;font-weight:bold;"
+                onclick="document.getElementById('massNotificacion').style.display='none'">
+                ✖
+            </div>
+        </div>
+    `;
+
+    box.style.display = "block";
+
+    setTimeout(() => {
+        box.style.display = "none";
+    }, duracion);
 }	
 
 </script>
