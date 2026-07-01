@@ -1548,6 +1548,41 @@ async function cargarSorteosGanador(){
 
     });
 
+}
+
+async function cargarPremiosParaGanador(){
+
+    const rifaId = document.getElementById("ganadorRifa").value;
+    const select = document.getElementById("ganadorPremio");
+
+    select.innerHTML = `<option value="">Cargando premios...</option>`;
+
+    if(!rifaId){
+        select.innerHTML = `<option value="">Primero selecciona un sorteo</option>`;
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("premios_rifa")
+        .select("id,lugar,nombre")
+        .eq("rifa_id", rifaId)
+        .order("lugar", { ascending: true });
+
+    if(error){
+        console.error("error premios ganador:", error);
+        select.innerHTML = `<option value="">Error al cargar premios</option>`;
+        return;
+    }
+
+    select.innerHTML = `<option value="">Selecciona un premio</option>`;
+
+    data.forEach(premio => {
+        select.innerHTML += `
+            <option value="${premio.id}">
+                ${premio.lugar}° Premio - ${premio.nombre}
+            </option>
+        `;
+    });
 }	
 
 async function administrarPremiosRifa(rifaId){
