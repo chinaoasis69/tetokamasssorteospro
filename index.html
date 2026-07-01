@@ -732,20 +732,19 @@ async function cargarGanadores(){
             <h2>🏆 GANADOR OFICIAL</h2>
 
 			${g.imagen_url ? `
-    <img src="${g.imagen_url}" style="
-style="
-width:80%;
-max-width:260px;
-height:160px;
-object-fit:contain;
-background:#111;
-display:block;
-margin:15px auto;
-padding:8px;
-border-radius:18px;
-border:2px solid #39ff14;
-box-shadow:0 0 10px #39ff14;
-">
+    <img
+    src="${g.imagen_url}"
+    style="
+        display:block;
+        width:250px;
+        height:180px;
+        object-fit:contain;
+        margin:15px auto;
+        background:#111;
+        border-radius:15px;
+        border:2px solid #39ff14;
+        padding:8px;
+    ">
 ` : ""}
 
             <h3>${g.lugar_premio}</h3>
