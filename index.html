@@ -702,11 +702,14 @@ async function cargarGanadores(){
     }
 
     const { data, error } = await supabaseClient
-        .from("ganadores")
-        .select("*")
-        .eq("rifa_id", RIFA_ID)
-        .eq("autorizado_publicar", true)
-        .order("lugar_premio", { ascending:true });
+    .from("ganadores")
+    .select(`
+        *,
+        premios_rifa (
+            imagen_url
+        )
+    `)
+    .order("lugar_premio", { ascending: true });
 
     if(error){
         console.error("Error cargando ganadores:", error);
