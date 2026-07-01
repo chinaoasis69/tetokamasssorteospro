@@ -1528,7 +1528,11 @@ async function cargarSorteosGanador(){
         .from("rifas")
         .select("id,titulo")
         .eq("organizador_id", organizadorId)
-        .order("created_at", { ascending:false });
+        .order("creado_en", { ascending:false });
+
+	console.log("organizadorId:", organizadorId);
+    console.log("rifas ganador:", data);
+    console.log("error rifas ganador:", error);
 
     if(error){
         console.error(error);
