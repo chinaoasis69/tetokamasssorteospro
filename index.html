@@ -2736,7 +2736,10 @@ console.log("organizadorId:", organizadorId);
     return;
   }
 
-document.getElementById("comprobante").value = "";	
+document.getElementById("comprobante").value = "";
+if (nombreComprobanteBox) {
+  nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
+}	
 
   alert("Recarga enviada ✅ Espera aprobación del organizador.");
 }  
