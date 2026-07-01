@@ -1554,49 +1554,56 @@ async function mostrarGanadoresAdmin() {
 
     const cont = document.getElementById("adminContenido");
 
-    cont.innerHTML = `
-        <div class="card">
-            <h2>🏆 Publicar ganador</h2>
+   cont.innerHTML = `
+  <div class="card ganador-form">
+    <h2>🏆 Publicar ganador</h2>
+    <p style="color:#aaa;margin-top:-5px;">Registra y publica los ganadores del sorteo</p>
 
-            <label>🎯 Sorteo</label><br>
-            <select id="ganadorRifa" onchange="cargarPremiosParaGanador()" style="width:100%;padding:12px;margin:8px 0;">
-                <option value="">Selecciona un sorteo</option>
-            </select>
+    <div class="form-section">
+      <label>🎯 Sorteo</label>
+      <select id="ganadorRifa" onchange="cargarPremiosParaGanador()">
+        <option value="">Selecciona un sorteo</option>
+      </select>
+    </div>
 
-            <label>🎁 Premio</label><br>
-            <select id="ganadorPremio" style="width:100%;padding:12px;margin:8px 0;">
-                <option value="">Primero selecciona un sorteo</option>
-            </select>
+    <div class="form-section">
+      <label>🎁 Premio</label>
+      <select id="ganadorPremio">
+        <option value="">Primero selecciona un sorteo</option>
+      </select>
+    </div>
 
-            <label>🎫 Número ganador</label><br>
-            <input id="ganadorNumero" placeholder="Ejemplo: 0099">
+    <div class="form-section">
+      <h3>🎟️ Información del ganador</h3>
 
-            <label>👤 Alias del ganador</label><br>
-            <input id="ganadorAlias" placeholder="Ejemplo: Juan P.">
+      <label>🎫 Número ganador</label>
+      <input id="ganadorNumero" placeholder="Ejemplo: 0099">
 
-            <label>📍 Estado</label><br>
-            <select id="ganadorEstado" style="width:100%;padding:12px;margin:8px 0;">
-                <option value="pendiente">Pendiente</option>
-                <option value="entregado">Entregado</option>
-            </select>
+      <label>👤 Alias del ganador</label>
+      <input id="ganadorAlias" placeholder="Ejemplo: Juan P.">
 
-            <label>💬 Comentario</label><br>
-            <input id="ganadorComentario" placeholder="Ejemplo: Premio entregado correctamente">
+      <label>📍 Estado</label>
+      <select id="ganadorEstado">
+        <option value="pendiente">Pendiente</option>
+        <option value="entregado">Entregado</option>
+      </select>
+    </div>
 
-			<div style="margin-top:12px;">
-    <label>📸 Foto del ganador o premio</label><br>
-    <input
-        type="file"
-        id="imagenGanador"
-        accept="image/*"
-        style="width:100%;padding:8px;border-radius:8px;">
-</div>
+    <div class="form-section">
+      <label>💬 Comentario</label>
+      <input id="ganadorComentario" placeholder="Ejemplo: Premio entregado correctamente">
+    </div>
 
-            <button onclick="publicarGanador()">
-                🏆 Publicar ganador
-            </button>
-        </div>
-    `;
+    <div class="form-section">
+      <label>📸 Foto del ganador o premio</label>
+      <input type="file" id="imagenGanador" accept="image/*">
+    </div>
+
+    <button class="btn-publicar" onclick="publicarGanador()">
+      🏆 Publicar ganador
+    </button>
+  </div>
+`;
 
 await cargarSorteosGanador();
 
