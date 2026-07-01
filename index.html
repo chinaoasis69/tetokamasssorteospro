@@ -703,12 +703,9 @@ async function cargarGanadores(){
 
     const { data, error } = await supabaseClient
     .from("ganadores")
-    .select(`
-        *,
-        premios_rifa (
-            imagen_url
-        )
-    `)
+    .select("*")
+    .eq("rifa_id", RIFA_ID)
+    .eq("autorizado_publicar", true)
     .order("lugar_premio", { ascending: true });
 
 	console.log("GANADORES CON IMAGEN:", data);
