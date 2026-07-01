@@ -1729,6 +1729,32 @@ if (ganadorExistente) {
     return;
 }
 
+let imagenUrl = null;
+
+const archivoImagen = document.getElementById("imagenGanador")?.files[0];
+
+if (archivoImagen) {
+    const nombreArchivo = `ganadores/${Date.now()}_${archivoImagen.name}`;
+
+    const { error: uploadError } = await supabaseClient
+        .storage
+        .from("premios")
+        .upload(nombreArchivo, archivoImagen);
+
+    if (uploadError) {
+        console.error("Error subiendo imagen:", uploadError);
+        alert("Error al subir imagen ❌");
+        return;
+    }
+
+    const { data: publicData } = supabaseClient
+        .storage
+        .from("premios")
+        .getPublicUrl(nombreArchivo);
+
+    imagenUrl = publicData.publicUrl;
+}	
+
     const { error } = await supabaseClient
         .from("ganadores")
         .insert({
