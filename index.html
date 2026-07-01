@@ -711,6 +711,9 @@ async function cargarGanadores(){
     `)
     .order("lugar_premio", { ascending: true });
 
+	console.log("GANADORES CON IMAGEN:", data);
+    console.log("ERROR GANADORES:", error);
+
     if(error){
         console.error("Error cargando ganadores:", error);
         cont.innerHTML = "Error al cargar ganadores.";
