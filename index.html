@@ -723,18 +723,38 @@ async function cargarGanadores(){
 
     cont.innerHTML = "";
 
-    data.forEach(g => {
-        cont.innerHTML += `
-            <div class="card" style="margin:12px 0;">
-                <h3>🏆 ${g.lugar_premio}</h3>
-                <p><b>🎁 Premio:</b> ${g.premio}</p>
-                <p><b>🎟️ Número ganador:</b> ${g.numero_ganador}</p>
-                <p><b>👤 Ganador:</b> ${g.alias_ganador}</p>
-                <p><b>📍 Estado:</b> ${g.estado_entrega}</p>
-                <p>${g.comentario || ""}</p>
-            </div>
-        `;
-    });
+   data.forEach(g => {
+    cont.innerHTML += `
+        <div class="card" style="margin:14px 0;text-align:center;">
+            <h2>🏆 GANADOR OFICIAL</h2>
+
+            <h3>${g.lugar_premio}</h3>
+
+            <p style="font-size:20px;font-weight:bold;">
+                🎁 ${g.premio}
+            </p>
+
+            <p>
+                🎟️ <b>Boleto ganador:</b><br>
+                <span style="font-size:24px;color:#39ff14;font-weight:bold;">
+                    ${g.numero_ganador}
+                </span>
+            </p>
+
+            <p>
+                👤 <b>Ganador:</b><br>
+                ${g.alias_ganador}
+            </p>
+
+            <p>
+                📍 <b>Estado:</b><br>
+                ${g.estado_entrega}
+            </p>
+
+            ${g.comentario ? `<p>💬 ${g.comentario}</p>` : ""}
+        </div>
+    `;
+}); 
 }	
 
 let tapsAdmin = 0;
