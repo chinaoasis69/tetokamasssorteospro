@@ -1512,6 +1512,39 @@ async function mostrarGanadoresAdmin() {
 
 await cargarSorteosGanador();
 
+}
+
+async function cargarSorteosGanador(){
+
+    const select = document.getElementById("ganadorRifa");
+
+    select.innerHTML = `
+        <option value="">Selecciona un sorteo</option>
+    `;
+
+    const organizadorId = localStorage.getItem("organizador_admin_id");
+
+    const { data, error } = await supabase
+        .from("rifas")
+        .select("id,titulo")
+        .eq("organizador_id", organizadorId)
+        .order("created_at", { ascending:false });
+
+    if(error){
+        console.error(error);
+        return;
+    }
+
+    data.forEach(rifa=>{
+
+        select.innerHTML += `
+            <option value="${rifa.id}">
+                ${rifa.titulo}
+            </option>
+        `;
+
+    });
+
 }	
 
 async function administrarPremiosRifa(rifaId){
