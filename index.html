@@ -2741,7 +2741,11 @@ if (nombreComprobanteBox) {
   nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
 }	
 
-  mostrarToast("✅ Recarga enviada. Espera aprobación del organizador.");
+  mostrarNotificacion(
+    "success",
+    "Recarga enviada",
+    "Espera aprobación del organizador."
+);
 }  
 
 async function cargarSaldo() {
