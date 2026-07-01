@@ -2685,6 +2685,12 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 
   const comprobante = document.getElementById("comprobante").files[0];
 
+const nombreComprobanteBox = document.getElementById("nombreComprobante");
+
+if (nombreComprobanteBox && comprobante) {
+  nombreComprobanteBox.innerHTML = "✅ Archivo listo: " + comprobante.name;
+}	
+
   if (!comprobante) {
     alert("Primero sube tu comprobante de pago");
     return;
