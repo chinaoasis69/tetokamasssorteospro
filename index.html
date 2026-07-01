@@ -1659,6 +1659,19 @@ async function publicarGanador(){
     const lugarPremio = partes[0] || "";
     const premioNombre = partes[1] || premioTexto;
 
+	const { data: ganadorExistente } = await supabaseClient
+    .from("ganadores")
+    .select("id")
+    .eq("rifa_id", rifaId)
+    .eq("lugar_premio", lugarPremio)
+    .eq("numero_ganador", numero)
+    .maybeSingle();
+
+if (ganadorExistente) {
+    alert("Ese ganador ya fue publicado para este premio ⚠️");
+    return;
+}
+
     const { error } = await supabaseClient
         .from("ganadores")
         .insert({
