@@ -2599,6 +2599,12 @@ const patrocinadorBeneficio =
 }
 
 async function recargarSaldo() {
+const comprobante = document.getElementById("comprobante").files[0];	
+const nombreComprobanteBox = document.getElementById("nombreComprobante");
+
+if (nombreComprobanteBox && comprobante) {
+  nombreComprobanteBox.innerHTML = "✅ Archivo listo: " + comprobante.name;
+}	
   let organizadorId = null;
 
 if (RIFA_ID) {
@@ -2681,15 +2687,7 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 ¿Deseas continuar?`
 )) {
     return;
-}	
-
-  const comprobante = document.getElementById("comprobante").files[0];
-
-const nombreComprobanteBox = document.getElementById("nombreComprobante");
-
-if (nombreComprobanteBox && comprobante) {
-  nombreComprobanteBox.innerHTML = "✅ Archivo listo: " + comprobante.name;
-}	
+}		
 
   if (!comprobante) {
     alert("Primero sube tu comprobante de pago");
