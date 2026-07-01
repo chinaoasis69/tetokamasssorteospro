@@ -4983,10 +4983,17 @@ function mostrarNotificacion(tipo, titulo, mensaje, duracion = 5000) {
     `;
 
     box.style.display = "block";
+	box.style.animation = "massNotifEntrada 0.6s ease forwards";
+
+   setTimeout(() => {
+
+    box.style.animation = "massNotifSalida 0.8s ease forwards";
 
     setTimeout(() => {
         box.style.display = "none";
-    }, duracion);
+    }, 800);
+
+}, duracion); 
 }	
 
 </script>
