@@ -1524,7 +1524,7 @@ async function cargarSorteosGanador(){
 
     const organizadorId = localStorage.getItem("organizador_admin_id");
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from("rifas")
         .select("id,titulo")
         .eq("organizador_id", organizadorId)
