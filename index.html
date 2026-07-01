@@ -1687,6 +1687,14 @@ async function publicarGanador(){
     const lugarPremio = partes[0] || "";
     const premioNombre = partes[1] || premioTexto;
 
+	const { data: premioInfo } = await supabaseClient
+    .from("premios_rifa")
+    .select("imagen_url")
+    .eq("id", premioId)
+    .single();
+
+const imagenUrl = premioInfo?.imagen_url || null;
+
 	const { data: ganadorExistente } = await supabaseClient
     .from("ganadores")
     .select("id")
@@ -1711,7 +1719,8 @@ if (ganadorExistente) {
             alias_ganador: alias,
             estado_entrega: estado,
             comentario: comentario,
-            autorizado_publicar: true
+			imagen_url: premioSeleccionado.imagen_url,
+			autorizado_publicar: true
         });
 
     if(error){
