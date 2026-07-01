@@ -659,6 +659,27 @@ window.addEventListener("load", () => {
 
 <script>
 
+function abrirModalGanadores() {
+    document.getElementById("modalGanadores").style.display = "block";
+    cargarGanadores();
+}
+
+function cerrarModalGanadores() {
+    document.getElementById("modalGanadores").style.display = "none";
+}
+
+async function cargarGanadores() {
+
+    const cont = document.getElementById("ganadoresDentroModal");
+
+    cont.innerHTML = `
+        <div style="text-align:center;padding:30px;">
+            🏆 Próximamente podrás ver aquí los ganadores publicados por el organizador.
+        </div>
+    `;
+
+}	
+
 let tapsAdmin = 0;
 let adminTapTimer = null;
 
