@@ -690,16 +690,51 @@ function cerrarModalGanadores() {
     document.getElementById("modalGanadores").style.display = "none";
 }
 
-async function cargarGanadores() {
+async function cargarGanadores(){
 
     const cont = document.getElementById("ganadoresDentroModal");
 
-    cont.innerHTML = `
-        <div style="text-align:center;padding:30px;">
-            🏆 Próximamente podrás ver aquí los ganadores publicados por el organizador.
-        </div>
-    `;
+    cont.innerHTML = "Cargando ganadores...";
 
+    if(!RIFA_ID){
+        cont.innerHTML = "Primero selecciona una dinámica.";
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("ganadores")
+        .select("*")
+        .eq("rifa_id", RIFA_ID)
+        .eq("autorizado_publicar", true)
+        .order("creado_en", { ascending:false });
+
+    if(error){
+        console.error("Error cargando ganadores:", error);
+        cont.innerHTML = "Error al cargar ganadores.";
+        return;
+    }
+
+    if(!data || data.length === 0){
+        cont.innerHTML = `
+            <p>🏆 Aún no hay ganadores publicados para esta dinámica.</p>
+        `;
+        return;
+    }
+
+    cont.innerHTML = "";
+
+    data.forEach(g => {
+        cont.innerHTML += `
+            <div class="card" style="margin:12px 0;">
+                <h3>🏆 ${g.lugar_premio}</h3>
+                <p><b>🎁 Premio:</b> ${g.premio}</p>
+                <p><b>🎟️ Número ganador:</b> ${g.numero_ganador}</p>
+                <p><b>👤 Ganador:</b> ${g.alias_ganador}</p>
+                <p><b>📍 Estado:</b> ${g.estado_entrega}</p>
+                <p>${g.comentario || ""}</p>
+            </div>
+        `;
+    });
 }	
 
 let tapsAdmin = 0;
