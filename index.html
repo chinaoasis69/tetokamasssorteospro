@@ -1714,7 +1714,7 @@ async function publicarGanador(){
     .eq("id", premioId)
     .single();
 
-const imagenUrl = premioInfo?.imagen_url || null;
+let imagenUrl = premioInfo?.imagen_url || null;
 
 	const { data: ganadorExistente } = await supabaseClient
     .from("ganadores")
