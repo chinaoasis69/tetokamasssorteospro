@@ -347,22 +347,7 @@ Cerrar sesión 🚪
 
 <button class="btn-dark" onclick="apartarBoletosInterno()">
   🟡 Reservar boletos
-</button>	  
-
-<br><br>
-
-<input
-  type="file"
-  id="comprobante"
-  accept="image/*,.pdf"
-  style="
-    width:100%;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:10px;
-    margin-top:10px;
-  "
->	  
+</button>	  	  
 
 <button onclick="comprarConSaldo()" style="
   background:#00ff88;
@@ -521,6 +506,21 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 <p class="metodoPago"><b>🔵 PayPal:</b> <span id="pagoPaypal" onclick="copiarPago('pagoPaypal', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
 
 <br>
+
+<br><br>
+
+<input
+  type="file"
+  id="comprobante"
+  accept="image/*,.pdf"
+  style="
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    margin-top:10px;
+  "
+>	  
 
 <p style="color:#39ff14;font-weight:bold;font-size:18px;">
 ✅ Tu saldo MASS estará disponible automáticamente después de que el organizador apruebe tu comprobante.
