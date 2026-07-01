@@ -1830,7 +1830,17 @@ if (archivoImagen) {
         return;
     }
 
-    alert("Ganador publicado correctamente 🏆");
+    const noti = document.getElementById("massNotificacion");
+
+noti.innerHTML = "🏆 Ganador publicado correctamente";
+noti.style.display = "block";
+
+await cargarGanadores();
+
+setTimeout(() => {
+    noti.style.display = "none";
+    cerrarPanelAdmin();
+}, 2500);
 
     document.getElementById("ganadorNumero").value = "";
     document.getElementById("ganadorAlias").value = "";
