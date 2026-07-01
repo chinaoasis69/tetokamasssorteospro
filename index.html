@@ -1583,6 +1583,72 @@ async function cargarPremiosParaGanador(){
             </option>
         `;
     });
+}
+
+async function publicarGanador(){
+
+    const rifaId = document.getElementById("ganadorRifa").value;
+    const premioSelect = document.getElementById("ganadorPremio");
+    const premioId = premioSelect.value;
+
+    const numero = document.getElementById("ganadorNumero").value.trim();
+    const alias = document.getElementById("ganadorAlias").value.trim();
+    const estado = document.getElementById("ganadorEstado").value;
+    const comentario = document.getElementById("ganadorComentario").value.trim();
+
+    const organizadorId = localStorage.getItem("organizador_admin_id");
+
+    if(!rifaId){
+        alert("Selecciona un sorteo");
+        return;
+    }
+
+    if(!premioId){
+        alert("Selecciona un premio");
+        return;
+    }
+
+    if(!numero){
+        alert("Escribe el número ganador");
+        return;
+    }
+
+    if(!alias){
+        alert("Escribe el alias del ganador");
+        return;
+    }
+
+    const premioTexto = premioSelect.options[premioSelect.selectedIndex].text;
+
+    const partes = premioTexto.split(" - ");
+    const lugarPremio = partes[0] || "";
+    const premioNombre = partes[1] || premioTexto;
+
+    const { error } = await supabaseClient
+        .from("ganadores")
+        .insert({
+            rifa_id: rifaId,
+            organizador_id: organizadorId,
+            lugar_premio: lugarPremio,
+            premio: premioNombre,
+            numero_ganador: numero,
+            alias_ganador: alias,
+            estado_entrega: estado,
+            comentario: comentario,
+            autorizado_publicar: true
+        });
+
+    if(error){
+        console.error("Error publicando ganador:", error);
+        alert("Error al publicar ganador ❌");
+        return;
+    }
+
+    alert("Ganador publicado correctamente 🏆");
+
+    document.getElementById("ganadorNumero").value = "";
+    document.getElementById("ganadorAlias").value = "";
+    document.getElementById("ganadorComentario").value = "";
 }	
 
 async function administrarPremiosRifa(rifaId){
