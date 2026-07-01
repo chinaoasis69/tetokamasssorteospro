@@ -4925,13 +4925,14 @@ function mostrarToast(mensaje){
     toast.innerHTML = mensaje;
     toast.style.display = "block";
     toast.style.opacity = "1";
+    toast.style.animation = "massNotifEntrada 0.6s ease forwards";
 
-    setTimeout(()=>{
-        toast.style.opacity = "0";
+    setTimeout(() => {
+        toast.style.animation = "massNotifSalida 0.8s ease forwards";
 
         setTimeout(()=>{
             toast.style.display = "none";
-        },300);
+        },800);
 
     },1800);
 }
