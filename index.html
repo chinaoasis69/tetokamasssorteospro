@@ -706,7 +706,7 @@ async function cargarGanadores(){
         .select("*")
         .eq("rifa_id", RIFA_ID)
         .eq("autorizado_publicar", true)
-        .order("creado_en", { ascending:false });
+        .order("lugar_premio", { ascending:true });
 
     if(error){
         console.error("Error cargando ganadores:", error);
