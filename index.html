@@ -4169,6 +4169,8 @@ const boleto = boletos.find(b => {
 
 });
 
+	console.log("Boleto encontrado:", boleto);
+
     if(boleto){
 
         const estado = (boleto.estado || "disponible").toLowerCase();
