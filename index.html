@@ -4199,6 +4199,21 @@ if(buscar){
     </div>
 `;
 
+if(boleto.estado === "disponible" || !boleto.estado){
+
+    resultado.style.cursor = "pointer";
+
+    resultado.onclick = () => {
+        seleccionarBoleto(boleto);
+    };
+
+}else{
+
+    resultado.style.cursor = "not-allowed";
+    resultado.onclick = null;
+
+}		
+
     }else{
 
         resultado.style.display = "block";
