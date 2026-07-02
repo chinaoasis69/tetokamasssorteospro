@@ -4481,14 +4481,41 @@ function abrirSelectorSuerte(){
         selector.style.display === "none" ? "block" : "none";
 }	
 
-function numeroSuerte(){
-  const disponibles = boletos.filter(b => (b.estado || "disponible") === "disponible");
-  if(disponibles.length === 0){
-    alert("No hay números disponibles");
-    return;
-  }
-  const ganador = disponibles[Math.floor(Math.random() * disponibles.length)];
-  seleccionarBoleto(ganador);
+function numeroSuerte(cantidad = 1){
+
+    document.getElementById("selectorSuerte").style.display = "none";
+
+    const disponibles = boletos.filter(b =>
+        (b.estado || "disponible") === "disponible"
+    );
+
+    if(disponibles.length === 0){
+        alert("No hay números disponibles");
+        return;
+    }
+
+    // Limpiar selección anterior
+    boletosSeleccionados = [];
+
+    // Mezclar aleatoriamente
+    const mezcla = [...disponibles].sort(() => Math.random() - 0.5);
+
+    // Tomar la cantidad solicitada
+    mezcla.slice(0, cantidad).forEach(b => {
+        seleccionarBoleto(b);
+    });
+
+    // Ir al Centro de Compra
+    setTimeout(() => {
+        const centro = document.getElementById("resumenCompra");
+        if(centro){
+            centro.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+    }, 300);
+
 }
 
 function abrirVideoRifa(){
