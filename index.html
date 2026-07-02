@@ -5601,6 +5601,21 @@ setTimeout(() => {
 }, 2500);
 
 }, 3000); 
+}
+
+function toggleWallet() {
+    const contenido = document.getElementById("walletContenido");
+    const flecha = document.getElementById("walletArrow");
+
+    if (!contenido) return;
+
+    if (contenido.style.display === "none") {
+        contenido.style.display = "block";
+        if (flecha) flecha.textContent = "▼";
+    } else {
+        contenido.style.display = "none";
+        if (flecha) flecha.textContent = "▲";
+    }
 }	
 
 </script>
