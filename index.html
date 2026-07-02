@@ -4081,7 +4081,7 @@ function quitarBoletoSeleccionado(id){
 
 function actualizarResumenCompra(){
   const cantidad = boletosSeleccionados.length;
-  const precio = Number(rifaSeleccionada?.precio || 0);
+  const precio = Number(window.precioBoletoActual || 0);
   const total = cantidad * precio;
 
   const cantidadEl = document.getElementById("cantidadBoletos");
