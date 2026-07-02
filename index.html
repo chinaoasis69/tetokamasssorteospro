@@ -5463,20 +5463,27 @@ const { error } = await rechazarQuery;
 
 async function cerrarSesion() {
 
-    if (!confirm("¿Deseas cerrar la sesión actual?")) return;
+    mostrarNotificacion(
+        "warning",
+        "Cerrando sesión",
+        "Espera un momento...",
+        1500
+    );
 
     try {
         await supabaseClient.auth.signOut();
-    } catch(e){}
+    } catch (e) {}
 
     localStorage.removeItem("mass_telefono");
-	localStorage.removeItem("mass_user");
+    localStorage.removeItem("mass_user");
     localStorage.removeItem("admin_rol");
     localStorage.removeItem("organizador_admin_id");
     localStorage.removeItem("clienteActual");
     localStorage.removeItem("userActual");
 
-    location.reload();
+    setTimeout(() => {
+        location.reload();
+    }, 1200);
 }
 
 function mostrarSesionActiva() {
