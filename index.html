@@ -282,6 +282,33 @@ input{
     transform:scale(1.01);
 }
 
+.walletTitulo{
+    animation: walletTituloGlow 2.4s ease-in-out infinite;
+    color:#fff;
+    text-shadow:
+        0 0 6px rgba(57,255,20,.35),
+        0 0 14px rgba(57,255,20,.20);
+}
+
+@keyframes walletTituloGlow{
+    0%{
+        opacity:.72;
+        text-shadow:0 0 4px rgba(57,255,20,.20);
+    }
+
+    50%{
+        opacity:1;
+        text-shadow:
+            0 0 10px rgba(57,255,20,.95),
+            0 0 25px rgba(57,255,20,.55);
+    }
+
+    100%{
+        opacity:.72;
+        text-shadow:0 0 4px rgba(57,255,20,.20);
+    }
+}	
+
 @keyframes walletPulse{
 
     0%{
