@@ -5663,18 +5663,33 @@ setTimeout(() => {
 }
 
 function toggleWallet() {
+
     const contenido = document.getElementById("walletContenido");
     const flecha = document.getElementById("walletArrow");
+    const header = document.querySelector(".wallet-header");
 
     if (!contenido) return;
 
     if (contenido.style.display === "none") {
+
         contenido.style.display = "block";
-        if (flecha) flecha.textContent = "▼";
-    } else {
-        contenido.style.display = "none";
+
         if (flecha) flecha.textContent = "▲";
+
+        if (header)
+            header.style.animation = "none";
+
+    } else {
+
+        contenido.style.display = "none";
+
+        if (flecha) flecha.textContent = "▼";
+
+        if (header)
+            header.style.animation = "walletPulse 3s infinite";
+
     }
+
 }	
 
 </script>
