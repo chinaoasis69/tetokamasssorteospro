@@ -5470,6 +5470,8 @@ async function cerrarSesion() {
     } catch(e){}
 
     localStorage.removeItem("mass_telefono");
+	localStorage.removeItem("mass_user");
+    localStorage.removeItem("admin_rol");
     localStorage.removeItem("organizador_admin_id");
     localStorage.removeItem("clienteActual");
     localStorage.removeItem("userActual");
