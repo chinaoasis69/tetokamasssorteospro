@@ -2981,7 +2981,11 @@ const organizadorId =
   .maybeSingle();
 
   if (!wallet || wallet.saldo < totalPagar) {
-    mostrarNotificacion("💸 Saldo insuficiente", "error");
+    mostrarNotificacion(
+  "💸 Saldo insuficiente",
+  `Necesitas ${totalPagar} MASS y tienes ${wallet?.saldo || 0} MASS.`,
+  "error"
+);
     comprando = false;
     return;
   }
