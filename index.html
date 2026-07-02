@@ -4214,7 +4214,10 @@ const boleto = boletos.find(b => {
         `;
 
         if(estado === "disponible"){
-            resultado.onclick = () => seleccionarBoleto(boleto);
+            resultado.onclick = () => {
+    seleccionarBoleto(boleto);
+    limpiarBusquedaNumero();
+};
         }else{
             resultado.onclick = null;
         }
