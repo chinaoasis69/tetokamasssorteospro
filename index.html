@@ -479,7 +479,15 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 </button>
 
 <div class="card">
-    <h2>💰 Recarga tu Wallet MASS</h2>
+    <h2
+    onclick="toggleWallet()"
+    style="cursor:pointer;user-select:none;"
+>
+    💰 Recarga tu Wallet MASS
+    <span id="walletArrow">▼</span>
+</h2>
+
+<div id="walletContenido">
 
 <p style="font-size:18px;line-height:1.6;">
 Recarga saldo MASS utilizando cualquiera de los siguientes métodos de pago.
@@ -549,7 +557,8 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 <p style="color:#39ff14;font-weight:bold;font-size:18px;">
 ✅ Tu saldo MASS estará disponible automáticamente después de que el organizador apruebe tu comprobante.
 </p>
-  </div>	  
+  </div>
+  </div>	
 
 <div class="card">
 
