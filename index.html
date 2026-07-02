@@ -3101,14 +3101,13 @@ const patrocinadorBeneficio =
     }))
   );
 
-  alert(
-  "✅ Compra exitosa\n\n" +
-  "🎟️ Boletos: " + boletosSeleccionados.map(b => b.numero).join(", ") +
-  "\n💰 Total pagado: " + totalPagar + " MASS\n\n" +
-
-  (premioLucky
- ? "🎁 Premio Lucky Spin desbloqueado"
- : "🎁 Código de beneficio: " + codigoBeneficio)
+  mostrarNotificacion(
+    "success",
+    "🎉 Compra exitosa",
+    `🎟️ Boletos: ${boletosSeleccionados.map(b => b.numero).join(", ")}<br>
+     💰 Total pagado: ${totalPagar} MASS<br>
+     🎡 Tu giro quedó desbloqueado. Ve a MASS LUCKY SPIN.`,
+    4000
 );
 
   if (premioLucky) {
