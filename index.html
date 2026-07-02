@@ -5457,6 +5457,22 @@ const { error } = await rechazarQuery;
   mostrarRecargasMassAdmin();
 }
 
+async function cerrarSesion() {
+
+    if (!confirm("¿Deseas cerrar la sesión actual?")) return;
+
+    try {
+        await supabaseClient.auth.signOut();
+    } catch(e){}
+
+    localStorage.removeItem("mass_telefono");
+    localStorage.removeItem("organizador_admin_id");
+    localStorage.removeItem("clienteActual");
+    localStorage.removeItem("userActual");
+
+    location.reload();
+}	
+
 function mostrarToast(mensaje){
     const toast = document.getElementById("toast");
     if(!toast) return;
