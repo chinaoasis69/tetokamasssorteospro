@@ -2989,9 +2989,10 @@ const organizadorId =
 
   if (!wallet || wallet.saldo < totalPagar) {
     mostrarNotificacion(
-  `💸 <b>Saldo insuficiente</b><br>
-  Necesitas <b>${totalPagar} MASS</b> y tienes <b>${wallet?.saldo || 0} MASS</b>.`,
-  "error"
+  "error",
+  "💸 Saldo insuficiente",
+  `Necesitas ${totalPagar} MASS y tienes ${wallet?.saldo || 0} MASS.`,
+  3000
 );
     comprando = false;
     return;
