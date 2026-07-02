@@ -4182,13 +4182,22 @@ if(buscar){
         resultado.style.borderColor = color;
 
         resultado.innerHTML = `
-            <div style="font-size:22px;font-weight:bold;">
-                ${buscarNormal}
-            </div>
-            <div style="margin-top:8px;color:${color};font-size:18px;">
-                ${texto}
-            </div>
-        `;
+    <div style="font-size:26px;font-weight:bold;">
+        ${buscarNormal}
+    </div>
+
+    <div style="margin-top:8px;color:${color};font-size:20px;font-weight:bold;">
+        ${texto}
+    </div>
+
+    <div style="margin-top:10px;color:#ddd;font-size:15px;">
+        💰 ${sorteoActivo?.precio || 0} MASS
+    </div>
+
+    <div style="margin-top:8px;color:#aaa;font-size:13px;">
+        👇 Toca el número para seleccionarlo
+    </div>
+`;
 
     }else{
 
