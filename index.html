@@ -4157,11 +4157,17 @@ const resultado = document.getElementById("resultadoBusqueda");
 
 if(buscar){
 
-    const buscarNormal = buscar.padStart(4, "0");
+    const buscarNormal = buscar.replace(/\D/g, "").padStart(4, "0");
 
-    const boleto = boletos.find(b =>
-        String(b.numero).padStart(4, "0") === buscarNormal
-    );
+const boleto = boletos.find(b => {
+
+    const numeroBoleto = String(b.numero)
+        .replace(/\D/g, "")
+        .padStart(4, "0");
+
+    return numeroBoleto === buscarNormal;
+
+});
 
     if(boleto){
 
