@@ -4469,14 +4469,28 @@ function limpiarBusquedaNumero(){
 
 }	
 
+function bajarAListaBoletos(){
+    setTimeout(() => {
+        const grid = document.getElementById("grid");
+        if(grid){
+            grid.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }, 200);
+}
+
 function mostrarSoloDisponibles(){
-  soloDisponibles = true;
-  aplicarFiltros();
+    soloDisponibles = true;
+    aplicarFiltros();
+    bajarAListaBoletos();
 }
 
 function mostrarTodos(){
-  soloDisponibles = false;
-  aplicarFiltros();
+    soloDisponibles = false;
+    aplicarFiltros();
+    bajarAListaBoletos();
 }
 
 function abrirSelectorSuerte(){
