@@ -2994,7 +2994,12 @@ async function comprarConSaldo() {
   comprando = true;
 
   if (!boletosSeleccionados || boletosSeleccionados.length === 0) {
-    alert("Selecciona uno o más números primero");
+    mostrarNotificacion(
+  "warning",
+  "Selecciona boletos",
+  "Primero elige uno o más números disponibles.",
+  3000
+);
     comprando = false;
     return;
   }
