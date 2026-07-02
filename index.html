@@ -3762,6 +3762,9 @@ if (logoOrg) {
         document.getElementById("precioRifa").innerText =
             `💰 $${rifa.precio_boleto || 0} por número`;
 
+		window.precioBoletoActual = Number(rifa.precio_boleto || 0);
+        window.rifaSeleccionada = rifa;
+
         document.getElementById("fechaRifa").innerText =
             `📅 Sorteo: ${rifa.fecha_sorteo || "--"}`;
 
