@@ -479,6 +479,79 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 </button>
 
 <div class="card">
+    <h2>💰 Recarga tu Wallet MASS</h2>
+
+<p style="font-size:18px;line-height:1.6;">
+Recarga saldo MASS utilizando cualquiera de los siguientes métodos de pago.
+</p>
+
+<p style="font-size:18px;line-height:1.6;">
+Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el organizador apruebe tu recarga.
+</p>
+
+<p style="color:#39ff14;font-size:16px;font-weight:bold;margin:18px 0;">
+👆 Toca cualquier método de pago para copiarlo automáticamente.
+</p>	  
+
+<br>
+
+<p class="metodoPago"><b>💜 Zelle:</b> <span id="pagoZelle" onclick="copiarPago('pagoZelle', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+
+<p class="metodoPago"><b>🟢 Cash App:</b> <span id="pagoCashapp" onclick="copiarPago('pagoCashapp', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+
+<p class="metodoPago"><b>🍎 Apple Pay:</b> <span id="pagoApplePay" onclick="copiarPago('pagoApplePay', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+
+<p class="metodoPago"><b>🔵 PayPal:</b> <span id="pagoPaypal" onclick="copiarPago('pagoPaypal', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+
+<br>
+
+<br><br>
+
+<div onclick="document.getElementById('comprobante').click()"
+     style="
+        border:2px dashed #39ff14;
+        border-radius:16px;
+        padding:18px;
+        margin-top:18px;
+        cursor:pointer;
+        background:#111;
+        color:white;
+        box-shadow:0 0 12px #39ff14;
+     ">
+
+  <h3 style="margin:0 0 8px 0;">📎 Subir comprobante</h3>
+
+  <p style="margin:0;color:#ccc;">
+    Toca aquí para seleccionar imagen o PDF
+  </p>
+
+  <p id="nombreComprobante" style="margin-top:10px;color:#39ff14;font-weight:bold;">
+    Ningún archivo seleccionado
+  </p>
+
+</div>	  
+
+<input
+  type="file"
+  id="comprobante"
+  hidden
+  onchange="recargarSaldo()"
+  accept="image/*,.pdf"
+  style="
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:10px;
+    margin-top:10px;
+  "
+>	  
+
+<p style="color:#39ff14;font-weight:bold;font-size:18px;">
+✅ Tu saldo MASS estará disponible automáticamente después de que el organizador apruebe tu comprobante.
+</p>
+  </div>	  
+
+<div class="card">
 
     <h2>🏆 Ganadores</h2>
 
@@ -629,79 +702,6 @@ Cargando historial...
   </button>
 </div>	
 </div>	
-
-  <div class="card">
-    <h2>💰 Recarga tu Wallet MASS</h2>
-
-<p style="font-size:18px;line-height:1.6;">
-Recarga saldo MASS utilizando cualquiera de los siguientes métodos de pago.
-</p>
-
-<p style="font-size:18px;line-height:1.6;">
-Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el organizador apruebe tu recarga.
-</p>
-
-<p style="color:#39ff14;font-size:16px;font-weight:bold;margin:18px 0;">
-👆 Toca cualquier método de pago para copiarlo automáticamente.
-</p>	  
-
-<br>
-
-<p class="metodoPago"><b>💜 Zelle:</b> <span id="pagoZelle" onclick="copiarPago('pagoZelle', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<p class="metodoPago"><b>🟢 Cash App:</b> <span id="pagoCashapp" onclick="copiarPago('pagoCashapp', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<p class="metodoPago"><b>🍎 Apple Pay:</b> <span id="pagoApplePay" onclick="copiarPago('pagoApplePay', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<p class="metodoPago"><b>🔵 PayPal:</b> <span id="pagoPaypal" onclick="copiarPago('pagoPaypal', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<br>
-
-<br><br>
-
-<div onclick="document.getElementById('comprobante').click()"
-     style="
-        border:2px dashed #39ff14;
-        border-radius:16px;
-        padding:18px;
-        margin-top:18px;
-        cursor:pointer;
-        background:#111;
-        color:white;
-        box-shadow:0 0 12px #39ff14;
-     ">
-
-  <h3 style="margin:0 0 8px 0;">📎 Subir comprobante</h3>
-
-  <p style="margin:0;color:#ccc;">
-    Toca aquí para seleccionar imagen o PDF
-  </p>
-
-  <p id="nombreComprobante" style="margin-top:10px;color:#39ff14;font-weight:bold;">
-    Ningún archivo seleccionado
-  </p>
-
-</div>	  
-
-<input
-  type="file"
-  id="comprobante"
-  hidden
-  onchange="recargarSaldo()"
-  accept="image/*,.pdf"
-  style="
-    width:100%;
-    padding:10px;
-    border:1px solid #ccc;
-    border-radius:10px;
-    margin-top:10px;
-  "
->	  
-
-<p style="color:#39ff14;font-weight:bold;font-size:18px;">
-✅ Tu saldo MASS estará disponible automáticamente después de que el organizador apruebe tu comprobante.
-</p>
-  </div>
 
   <div class="card small">
     <p>
