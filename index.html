@@ -4157,67 +4157,66 @@ const resultado = document.getElementById("resultadoBusqueda");
 
 if(buscar){
 
-    const buscarNormal = buscar.padStart(4,"0");
+    const buscarNormal = buscar.padStart(4, "0");
 
     const boleto = boletos.find(b =>
-        String(b.numero).padStart(4,"0") === buscarNormal
+        String(b.numero).padStart(4, "0") === buscarNormal
     );
 
     if(boleto){
 
+        const estado = (boleto.estado || "disponible").toLowerCase();
+
         let color = "#39ff14";
         let texto = "🟢 Disponible";
+        let extra = "👇 Toca esta tarjeta para seleccionarlo";
 
-        if(boleto.estado === "apartado"){
+        if(estado === "apartado"){
             color = "orange";
             texto = "🟠 Apartado";
+            extra = "Este número ya está reservado";
         }
 
-        if(boleto.estado === "vendido"){
+        if(estado === "vendido"){
             color = "#888";
             texto = "⚫ Vendido";
+            extra = "Este número ya fue comprado";
         }
 
         resultado.style.display = "block";
         resultado.style.borderColor = color;
+        resultado.style.cursor = estado === "disponible" ? "pointer" : "not-allowed";
 
         resultado.innerHTML = `
-    <div style="font-size:26px;font-weight:bold;">
-        ${buscarNormal}
-    </div>
+            <div style="font-size:28px;font-weight:bold;color:white;">
+                ${buscarNormal}
+            </div>
 
-    <div style="margin-top:8px;color:${color};font-size:20px;font-weight:bold;">
-        ${texto}
-    </div>
+            <div style="margin-top:8px;color:${color};font-size:21px;font-weight:bold;">
+                ${texto}
+            </div>
 
-    <div style="margin-top:10px;color:#ddd;font-size:15px;">
-        💰 ${sorteoActivo?.precio || 0} MASS
-    </div>
+            <div style="margin-top:10px;color:#ddd;font-size:16px;">
+                💰 ${sorteoActivo?.precio || 0} MASS
+            </div>
 
-    <div style="margin-top:8px;color:#aaa;font-size:13px;">
-        👇 Toca el número para seleccionarlo
-    </div>
-`;
+            <div style="margin-top:8px;color:#aaa;font-size:13px;">
+                ${extra}
+            </div>
+        `;
 
-if(boleto.estado === "disponible" || !boleto.estado){
-
-    resultado.style.cursor = "pointer";
-
-    resultado.onclick = () => {
-        seleccionarBoleto(boleto);
-    };
-
-}else{
-
-    resultado.style.cursor = "not-allowed";
-    resultado.onclick = null;
-
-}		
+        if(estado === "disponible"){
+            resultado.onclick = () => seleccionarBoleto(boleto);
+        }else{
+            resultado.onclick = null;
+        }
 
     }else{
 
         resultado.style.display = "block";
         resultado.style.borderColor = "#ff4444";
+        resultado.style.cursor = "not-allowed";
+        resultado.onclick = null;
 
         resultado.innerHTML = `
             <div style="color:#ff4444;font-size:18px;font-weight:bold;">
@@ -4229,6 +4228,7 @@ if(boleto.estado === "disponible" || !boleto.estado){
 }else{
 
     resultado.style.display = "none";
+    resultado.onclick = null;
 
 }	
 
