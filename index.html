@@ -4419,6 +4419,23 @@ function filtrarNumero(){
   aplicarFiltros();
 }
 
+function limpiarBusquedaNumero(){
+
+    const buscar = document.getElementById("buscar");
+    const resultado = document.getElementById("resultadoBusqueda");
+
+    if(buscar) buscar.value = "";
+
+    if(resultado){
+        resultado.style.display = "none";
+        resultado.innerHTML = "";
+        resultado.onclick = null;
+    }
+
+    aplicarFiltros();
+
+}	
+
 function mostrarSoloDisponibles(){
   soloDisponibles = true;
   aplicarFiltros();
