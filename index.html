@@ -5677,7 +5677,7 @@ function toggleWallet() {
         if (flecha) flecha.textContent = "▲";
 
         if (header)
-            header.style.animation = "none";
+            header.classList.remove("wallet-header");
 
     } else {
 
@@ -5686,7 +5686,7 @@ function toggleWallet() {
         if (flecha) flecha.textContent = "▼";
 
         if (header)
-            header.style.animation = "walletPulse 3s infinite";
+            header.classList.add("wallet-header");
 
     }
 
