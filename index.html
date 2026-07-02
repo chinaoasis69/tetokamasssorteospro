@@ -426,6 +426,18 @@ Selecciona una rifa
   <button class="btn-dark" onclick="mostrarTodos()">👁️ Ver todos</button>
 
   <br>
+
+<div id="selectorSuerte" style="display:none; margin:14px auto;">
+    <div style="color:#39ff14;font-weight:bold;margin-bottom:10px;">
+        🎲 ¿Cuántos números quieres?
+    </div>
+
+    <button onclick="numeroSuerte(1)">1</button>
+    <button onclick="numeroSuerte(3)">3</button>
+    <button onclick="numeroSuerte(5)">5</button>
+    <button onclick="numeroSuerte(10)">10</button>
+</div>
+	  
   <input id="buscar" placeholder="Buscar número: 0001" oninput="filtrarNumero()" />
 
 <div id="resultadoBusqueda"
