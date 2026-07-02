@@ -4214,10 +4214,20 @@ const boleto = boletos.find(b => {
         `;
 
         if(estado === "disponible"){
-            resultado.onclick = () => {
+     resultado.onclick = () => {
     seleccionarBoleto(boleto);
     limpiarBusquedaNumero();
-};
+
+    setTimeout(() => {
+        const centro = document.getElementById("resumenCompra");
+        if(centro){
+            centro.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+    }, 200);
+};       
         }else{
             resultado.onclick = null;
         }
