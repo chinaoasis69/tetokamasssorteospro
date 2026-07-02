@@ -3765,6 +3765,8 @@ if (logoOrg) {
 		window.precioBoletoActual = Number(rifa.precio_boleto || 0);
         window.rifaSeleccionada = rifa;
 
+		actualizarResumenCompra();
+
         document.getElementById("fechaRifa").innerText =
             `📅 Sorteo: ${rifa.fecha_sorteo || "--"}`;
 
