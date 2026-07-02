@@ -2932,7 +2932,14 @@ function mostrarNotificacion(mensaje, tipo = "ok"){
   const noti = document.getElementById("massNotificacion");
   if(!noti) return;
 
-  noti.innerHTML = mensaje;
+  noti.innerHTML = `
+<div style="font-size:22px;font-weight:bold;margin-bottom:8px;">
+${tipo==="error" ? "❌" : "✅"}
+</div>
+<div style="font-size:17px;line-height:1.5">
+${mensaje}
+</div>
+`;
   noti.style.display = "block";
 
   if(tipo === "error"){
