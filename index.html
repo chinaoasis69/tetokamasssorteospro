@@ -2926,6 +2926,26 @@ async function apartarBoletosInterno() {
 
   await cargarBoletos();
   await cargarMisBoletos();
+}
+
+function mostrarNotificacion(mensaje, tipo = "ok"){
+  const noti = document.getElementById("massNotificacion");
+  if(!noti) return;
+
+  noti.innerHTML = mensaje;
+  noti.style.display = "block";
+
+  if(tipo === "error"){
+    noti.style.border = "2px solid #ff3333";
+    noti.style.boxShadow = "0 0 25px rgba(255,0,0,.7)";
+  } else {
+    noti.style.border = "2px solid #39ff14";
+    noti.style.boxShadow = "0 0 25px rgba(57,255,20,.8)";
+  }
+
+  setTimeout(() => {
+    noti.style.display = "none";
+  }, 2500);
 }	
 
 async function comprarConSaldo() {	
@@ -2961,7 +2981,7 @@ const organizadorId =
   .maybeSingle();
 
   if (!wallet || wallet.saldo < totalPagar) {
-    alert("Saldo insuficiente 💸");
+    mostrarNotificacion("💸 Saldo insuficiente", "error");
     comprando = false;
     return;
   }
