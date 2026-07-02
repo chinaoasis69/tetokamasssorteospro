@@ -4145,8 +4145,13 @@ function aplicarFiltros(){
     }
 
     if(buscar){
-      pasa = pasa && String(b.numero).includes(buscar);
-    }
+
+    const numeroNormal = String(b.numero).padStart(4, "0");
+    const buscarNormal = buscar.padStart(4, "0");
+
+    pasa = pasa && numeroNormal.includes(buscarNormal);
+
+}
 
     return pasa;
   });
