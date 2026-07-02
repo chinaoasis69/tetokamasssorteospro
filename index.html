@@ -5644,6 +5644,36 @@ function toggleWallet() {
         contenido.style.display = "none";
         if (flecha) flecha.textContent = "▲";
     }
+}
+
+/* ===== Wallet MASS Premium ===== */
+
+.wallet-header{
+    animation: walletPulse 3s infinite;
+    border-radius:14px;
+    transition:all .25s ease;
+}
+
+.wallet-header:hover{
+    transform:scale(1.01);
+}
+
+@keyframes walletPulse{
+
+    0%{
+        box-shadow:0 0 0 rgba(57,255,20,0);
+    }
+
+    50%{
+        box-shadow:
+            0 0 10px rgba(57,255,20,.35),
+            0 0 22px rgba(57,255,20,.18);
+    }
+
+    100%{
+        box-shadow:0 0 0 rgba(57,255,20,0);
+    }
+
 }	
 
 </script>
