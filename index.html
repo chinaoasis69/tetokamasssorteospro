@@ -4471,6 +4471,16 @@ function mostrarTodos(){
   aplicarFiltros();
 }
 
+function abrirSelectorSuerte(){
+
+    const selector = document.getElementById("selectorSuerte");
+
+    if(!selector) return;
+
+    selector.style.display =
+        selector.style.display === "none" ? "block" : "none";
+}	
+
 function numeroSuerte(){
   const disponibles = boletos.filter(b => (b.estado || "disponible") === "disponible");
   if(disponibles.length === 0){
