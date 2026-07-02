@@ -4067,10 +4067,15 @@ background:#111;
 
     await cargarBoletos();
 
-    document.getElementById("sorteoSeleccionadoBox").scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-});
+    const box = document.getElementById("sorteoSeleccionadoBox");
+
+if (box) {
+    const y = box.getBoundingClientRect().top + window.pageYOffset - 180;
+
+    window.scrollTo({
+        top: y,
+        behavior: "smooth"
+    });
 }
 
 function pintarMetodoPago(id, valor) {
