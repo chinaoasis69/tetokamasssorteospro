@@ -427,15 +427,23 @@ Selecciona una rifa
 
   <br>
 
-<div id="selectorSuerte" style="display:none; margin:14px auto;">
-    <div style="color:#39ff14;font-weight:bold;margin-bottom:10px;">
-        🎲 ¿Cuántos números quieres?
+<div id="selectorSuerte" style="display:none; margin:16px auto; max-width:420px; padding:18px; border:2px solid #39ff14; border-radius:18px; background:#111; box-shadow:0 0 18px rgba(57,255,20,.35);">
+
+    <div style="color:#39ff14;font-size:20px;font-weight:bold;margin-bottom:6px;">
+        🎲 Elige tus números de la suerte
     </div>
 
-    <button onclick="numeroSuerte(1)">1</button>
-    <button onclick="numeroSuerte(3)">3</button>
-    <button onclick="numeroSuerte(5)">5</button>
-    <button onclick="numeroSuerte(10)">10</button>
+    <div style="color:#ccc;font-size:14px;margin-bottom:14px;">
+        Selecciona boletos disponibles automáticamente
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
+        <button onclick="numeroSuerte(1)">🎟️ 1 número</button>
+        <button onclick="numeroSuerte(3)">🎟️ 3 números</button>
+        <button onclick="numeroSuerte(5)">🎟️ 5 números</button>
+        <button onclick="numeroSuerte(10)">🎟️ 10 números</button>
+    </div>
+
 </div>
 	  
   <input id="buscar" placeholder="Buscar número: 0001" oninput="filtrarNumero()" />
