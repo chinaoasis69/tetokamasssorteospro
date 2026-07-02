@@ -2795,6 +2795,8 @@ if(adminData){
 
   userActual = telefono;
 
+  mostrarSesionActiva();	
+
   alert("✅ ADMIN DETECTADO");
 
 if (adminData.rol === "super_admin") {
@@ -2864,6 +2866,8 @@ localStorage.setItem("mass_user", telefono);
 localStorage.setItem("mass_telefono", telefono);
 
 await validarAdminPorTelefono(telefono);
+
+mostrarSesionActiva();	
 
 alert("✅ Bienvenido a MASS");
 }
