@@ -5497,7 +5497,11 @@ function mostrarSesionActiva() {
 
     telefonoBox.textContent = telefono;
     box.style.display = "block";
-}	
+}
+
+	setTimeout(() => {
+  mostrarSesionActiva();
+}, 800);
 
 function mostrarToast(mensaje){
     const toast = document.getElementById("toast");
