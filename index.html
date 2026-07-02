@@ -4044,6 +4044,8 @@ function seleccionarBoleto(b){
       `).join("")
     : "Selecciona un número disponible";
 
+	actualizarResumenCompra();
+
   document.getElementById("seleccionTexto").scrollIntoView({
     behavior: "smooth",
     block: "center"
@@ -4062,8 +4064,24 @@ function quitarBoletoSeleccionado(id){
           </button>
         `).join("")
       : "Selecciona un número disponible";
+	
+	actualizarResumenCompra();
 
   cargarBoletos();
+}
+
+function actualizarResumenCompra(){
+  const cantidad = boletosSeleccionados.length;
+  const precio = Number(rifaSeleccionada?.precio || 0);
+  const total = cantidad * precio;
+
+  const cantidadEl = document.getElementById("cantidadBoletos");
+  const precioEl = document.getElementById("precioBoleto");
+  const totalEl = document.getElementById("totalCompra");
+
+  if(cantidadEl) cantidadEl.textContent = cantidad;
+  if(precioEl) precioEl.textContent = precio;
+  if(totalEl) totalEl.textContent = total + " MASS";
 }	
 
 // 🔥 WHATSAPP
