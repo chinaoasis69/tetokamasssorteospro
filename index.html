@@ -3067,7 +3067,7 @@ const patrocinadorBeneficio =
       estado: "vendido",
       pin_giro: pinGiro,
       giro_usado: false,
-      nombre: document.querySelector('input[placeholder="Tu nombre"]').value.trim(),
+      nombre: localStorage.getItem("mass_telefono") || userActual || "",
       telefono: localStorage.getItem("mass_telefono") || userActual,
       rifa_id: RIFA_ID
     })
