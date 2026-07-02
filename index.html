@@ -4153,6 +4153,61 @@ aplicarFiltros();
 function aplicarFiltros(){
   const buscar = document.getElementById("buscar").value.trim();
 
+const resultado = document.getElementById("resultadoBusqueda");
+
+if(buscar){
+
+    const buscarNormal = buscar.padStart(4,"0");
+
+    const boleto = boletos.find(b =>
+        String(b.numero).padStart(4,"0") === buscarNormal
+    );
+
+    if(boleto){
+
+        let color = "#39ff14";
+        let texto = "🟢 Disponible";
+
+        if(boleto.estado === "apartado"){
+            color = "orange";
+            texto = "🟠 Apartado";
+        }
+
+        if(boleto.estado === "vendido"){
+            color = "#888";
+            texto = "⚫ Vendido";
+        }
+
+        resultado.style.display = "block";
+        resultado.style.borderColor = color;
+
+        resultado.innerHTML = `
+            <div style="font-size:22px;font-weight:bold;">
+                ${buscarNormal}
+            </div>
+            <div style="margin-top:8px;color:${color};font-size:18px;">
+                ${texto}
+            </div>
+        `;
+
+    }else{
+
+        resultado.style.display = "block";
+        resultado.style.borderColor = "#ff4444";
+
+        resultado.innerHTML = `
+            <div style="color:#ff4444;font-size:18px;font-weight:bold;">
+                ❌ Número no existe
+            </div>
+        `;
+    }
+
+}else{
+
+    resultado.style.display = "none";
+
+}	
+
   filtrados = boletos.filter(b => {
     let pasa = true;
 
