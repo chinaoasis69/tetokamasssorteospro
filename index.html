@@ -6124,6 +6124,7 @@ const idsRifas = (rifasDash || []).map(r => r.id);
 let boletosVendidosDash = 0;
 let totalBoletosDash = 0;
 let porcentajeVendidoDash = 0;
+let ventasGeneradasDash = 0;	
 
 if(idsRifas.length > 0){
 
@@ -6143,9 +6144,7 @@ if(idsRifas.length > 0){
         ? ((boletosVendidosDash / totalBoletosDash) * 100).toFixed(1)
         : 0;
 
-	let ventasGeneradasDash = 0;
-
-if ((rifasDash || []).length > 0) {
+	if ((rifasDash || []).length > 0) {
 
     const precioBoleto =
     Number(rifasDash[0].precio_boleto || 0);
