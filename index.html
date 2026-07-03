@@ -941,7 +941,33 @@ Cargando historial...
 
         <input id="cantidadDepositoMass" type="number" placeholder="Cantidad a depositar" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;">
 
-        <input id="tipoCambioMass" type="number" placeholder="Tipo de cambio ejemplo: 16.70" value="16.70" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;">
+        <div id="tipoCambioCard"
+style="
+background:#111;
+border:1px solid #39ff14;
+border-radius:12px;
+padding:12px;
+margin-top:10px;
+text-align:center;
+color:#39ff14;
+font-weight:bold;
+">
+
+🟢 Tipo de cambio (Tiempo real)
+
+<br><br>
+
+<span id="textoTipoCambio">
+1 USD = 16.70 MXN
+</span>
+
+<br><br>
+
+<small style="color:#bbb;">
+Actualizado automáticamente
+</small>
+
+</div>
 
         <div id="resultadoConvertidorMass" style="margin:18px 0;font-size:28px;font-weight:bold;color:#39ff14;">
             0 MASS
