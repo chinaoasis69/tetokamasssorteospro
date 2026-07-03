@@ -898,9 +898,18 @@ Cargando historial...
 
 <script>
 window.addEventListener("load", () => {
-  if(localStorage.getItem("admin_rol") !== "super_admin"){
-    document.getElementById("btnConfigAdmin")?.remove();
-  }
+    const btn = document.getElementById("btnConfigAdmin");
+    const rol = localStorage.getItem("admin_rol");
+
+    if(!btn) return;
+
+    if(rol === "super_admin"){
+        btn.innerHTML = "⚙️ Configuración";
+        btn.onclick = mostrarConfigAdmin;
+    }else{
+        btn.innerHTML = "⚙️ Mi Perfil";
+        btn.onclick = abrirMiPerfil;
+    }
 });
 </script>	
 	
