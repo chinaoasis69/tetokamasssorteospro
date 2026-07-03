@@ -6188,31 +6188,27 @@ function toggleWallet() {
 
     if (!contenido) return;
 
-    if (contenido.style.display === "none") {
+    if (contenido.style.display === "none" || contenido.style.display === "") {
 
         contenido.style.display = "block";
 
         if (flecha) flecha.textContent = "▲";
 
-        if (header)
+        if (header) {
             header.classList.remove("wallet-header");
+        }
 
-     if (contenido.style.display === "none") {
+        // Espera a que se expanda el contenido y luego hace scroll
+        setTimeout(() => {
 
-    contenido.style.display = "block";
+            const y = contenido.offsetTop + 420;
 
-    if (flecha) flecha.textContent = "▲";
+            window.scrollTo({
+                top: y,
+                behavior: "smooth"
+            });
 
-    if (header)
-        header.classList.remove("wallet-header");
-
-    setTimeout(() => {
-        const y = contenido.offsetTop + 420;
-        window.scrollTo({
-            top: y,
-            behavior: "smooth"
-        });
-    }, 500);		
+        }, 500);
 
     } else {
 
@@ -6220,8 +6216,9 @@ function toggleWallet() {
 
         if (flecha) flecha.textContent = "▼";
 
-        if (header)
+        if (header) {
             header.classList.add("wallet-header");
+        }
 
     }
 
