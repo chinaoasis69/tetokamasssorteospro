@@ -6211,6 +6211,32 @@ function toggleWallet() {
             header.classList.remove("wallet-header");
         }
 
+        setTimeout(() => {
+            const destino = contenido.offsetTop + contenido.scrollHeight - 650;
+            const inicio = window.pageYOffset;
+            const distancia = destino - inicio;
+            const duracion = 2200;
+            let tiempoInicio = null;
+
+            function animarScroll(tiempoActual) {
+                if (!tiempoInicio) tiempoInicio = tiempoActual;
+
+                const progreso = Math.min((tiempoActual - tiempoInicio) / duracion, 1);
+
+                const suavizado = progreso < 0.5
+                    ? 2 * progreso * progreso
+                    : 1 - Math.pow(-2 * progreso + 2, 2) / 2;
+
+                window.scrollTo(0, inicio + distancia * suavizado);
+
+                if (progreso < 1) {
+                    requestAnimationFrame(animarScroll);
+                }
+            }
+
+            requestAnimationFrame(animarScroll);
+        }, 700);
+
     } else {
 
         contenido.style.maxHeight = "0";
