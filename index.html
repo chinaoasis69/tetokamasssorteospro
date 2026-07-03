@@ -3760,6 +3760,31 @@ if (typeof aplicarFiltros === "function") {
         : "none";
 }
 
+function filtrarOrganizadoresActivos(){
+
+    const input = document.getElementById("buscarOrganizador");
+    const lista = document.getElementById("listaOrganizadoresActivos");
+
+    if(!input || !lista) return;
+
+    const texto = input.value.toLowerCase().trim();
+
+    const cards = lista.querySelectorAll(".card");
+
+    cards.forEach(card => {
+
+        const nombre = card.innerText.toLowerCase();
+
+        if(nombre.includes(texto)){
+            card.style.display = "block";
+        }else{
+            card.style.display = "none";
+        }
+
+    });
+
+}	
+
 function verSorteosDeOrganizador(orgId){
 
     localStorage.setItem("organizador_publico_id", orgId);
