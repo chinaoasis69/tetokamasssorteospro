@@ -6110,7 +6110,7 @@ if(!organizadorId){
 
 	const { data: rifasDash, error: errorRifasDash } = await supabaseClient
     .from("rifas")
-    .select("id, estado, organizador_id")
+    .select("id, estado, organizador_id, precio_boleto")
     .eq("organizador_id", organizadorId);
 
 if(errorRifasDash){
