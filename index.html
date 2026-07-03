@@ -6052,6 +6052,35 @@ function toggleWallet() {
 
     }
 
+}
+
+async function abrirMiPerfil(){
+
+    const rol = localStorage.getItem("admin_rol");
+    const organizadorId = localStorage.getItem("admin_organizador_id");
+
+    if(rol === "super_admin"){
+        mostrarConfigAdmin();
+        return;
+    }
+
+    if(!organizadorId){
+        alert("No se encontró tu organizador.");
+        return;
+    }
+
+    localStorage.setItem("organizador_admin_id", organizadorId);
+
+    await cargarClientePorId(organizadorId);
+
+    mostrarConfigAdmin();
+
+    setTimeout(() => {
+        document.getElementById("adminContenido")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }, 300);
 }	
 
 </script>
