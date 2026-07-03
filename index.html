@@ -609,7 +609,14 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 
 </div>
 
-<div id="walletContenido" style="display:none;">
+<div id="walletContenido"
+style="
+max-height:0;
+overflow:hidden;
+opacity:0;
+transition:max-height .75s ease, opacity .55s ease;
+display:block;
+">
 
 <p style="font-size:18px;line-height:1.6;">
 Recarga saldo MASS utilizando cualquiera de los siguientes métodos de pago.
