@@ -6119,6 +6119,24 @@ if(errorRifasDash){
 
 const rifasActivas = (rifasDash || []).filter(r => r.estado === "activa").length;
 
+const idsRifas = (rifasDash || []).map(r => r.id);
+
+let boletosVendidosDash = 0;
+
+if(idsRifas.length > 0){
+    const { data: boletosDash, error: errorBoletosDash } = await supabaseClient
+        .from("boletos")
+        .select("id, estado, rifa_id")
+        .in("rifa_id", idsRifas)
+        .eq("estado", "vendido");
+
+    if(errorBoletosDash){
+        console.error("Error cargando boletos dashboard:", errorBoletosDash);
+    }
+
+    boletosVendidosDash = (boletosDash || []).length;
+}	
+
     cont.innerHTML = `
         <h2>📊 Dashboard</h2>
 
