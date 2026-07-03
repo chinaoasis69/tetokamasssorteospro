@@ -3789,20 +3789,24 @@ function renderOrganizadoresPaginados(){
     }).join("");
 
     listaOrg.innerHTML += `
-        <div style="text-align:center; margin:18px 0;">
-            <button onclick="paginaOrganizadores--; renderOrganizadoresPaginados()" ${paginaOrganizadores <= 1 ? "disabled" : ""}>
-                ⬅️ Anterior
-            </button>
+    <div style="text-align:center; margin:18px 0; color:#39ff14; font-weight:bold;">
+        Mostrando ${mostrandoInicio}-${mostrandoFin} de ${organizadoresActivosCache.length} organizadores
+    </div>
 
-            <span style="margin:0 12px; color:#39ff14; font-weight:bold;">
-                Página ${paginaOrganizadores}
-            </span>
+    <div style="text-align:center; margin:18px 0;">
+        <button onclick="cambiarPaginaOrganizadores(${paginaOrganizadores - 1})" ${paginaOrganizadores <= 1 ? "disabled" : ""}>
+            ⬅️
+        </button>
 
-            <button onclick="paginaOrganizadores++; renderOrganizadoresPaginados()" ${fin >= organizadoresActivosCache.length ? "disabled" : ""}>
-                Siguiente ➡️
-            </button>
-        </div>
-    `;
+        <span style="margin:0 12px; color:#39ff14; font-weight:bold;">
+            Página ${paginaOrganizadores} de ${totalPaginas}
+        </span>
+
+        <button onclick="cambiarPaginaOrganizadores(${paginaOrganizadores + 1})" ${paginaOrganizadores >= totalPaginas ? "disabled" : ""}>
+            ➡️
+        </button>
+    </div>
+`;
 }	
 
 function filtrarOrganizadoresActivos(){
