@@ -2714,6 +2714,69 @@ async function editarRifaAdmin(id){
 
     alert("✅ Rifa actualizada");
     mostrarSorteosAdmin();
+}
+
+let tipoCambioMass = 16.70;
+
+async function actualizarTipoCambioMass() {
+    const texto = document.getElementById("textoTipoCambio");
+
+    try {
+        const respuesta = await fetch("https://open.er-api.com/v6/latest/USD");
+        const datos = await respuesta.json();
+
+        if (datos && datos.rates && datos.rates.MXN) {
+            tipoCambioMass = datos.rates.MXN;
+            localStorage.setItem("tipoCambioMass", tipoCambioMass);
+        }
+
+    } catch (error) {
+        const guardado = localStorage.getItem("tipoCambioMass");
+        if (guardado) tipoCambioMass = Number(guardado);
+    }
+
+    if (texto) {
+        texto.innerHTML = `1 USD = ${tipoCambioMass.toFixed(2)} MXN`;
+    }
+}
+
+function calcularConvertidorMass() {
+    const moneda = document.getElementById("monedaDepositoMass").value;
+    const cantidad = Number(document.getElementById("cantidadDepositoMass").value || 0);
+    const resultado = document.getElementById("resultadoConvertidorMass");
+
+    let mass = 0;
+
+    if (moneda === "USD") {
+        mass = cantidad * tipoCambioMass;
+    } else if (moneda === "MXN") {
+        mass = cantidad;
+    }
+
+    if (resultado) {
+        resultado.innerHTML = `${Math.round(mass)} MASS`;
+    }
+}
+
+function usarCantidadConvertidorMass() {
+    calcularConvertidorMass();
+
+    const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
+    const cantidadMass = resultadoTexto.replace("MASS", "").trim();
+
+    alert("✅ Solicita esta recarga: " + cantidadMass + " MASS");
+}
+
+function abrirConvertidorMass() {
+    const modal = document.getElementById("modalConvertidorMass");
+    if (modal) modal.style.display = "block";
+
+    actualizarTipoCambioMass();
+}
+
+function cerrarConvertidorMass() {
+    const modal = document.getElementById("modalConvertidorMass");
+    if (modal) modal.style.display = "none";
 }	
 
 async function mostrarConfigAdmin(){
