@@ -6209,12 +6209,12 @@ function toggleWallet() {
 		setTimeout(() => {
     const convertidor = document.getElementById("tarjetaConvertidorMass");
     if (convertidor) {
-        convertidor.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
+        window.scrollTo({
+            top: convertidor.getBoundingClientRect().top + window.pageYOffset - 180,
+            behavior: "smooth"
         });
     }
-}, 300);
+}, 600);
 
     }
 
