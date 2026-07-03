@@ -6099,6 +6099,15 @@ async function mostrarDashboardOrganizador(){
     const cont = document.getElementById("adminContenido");
     if(!cont) return;
 
+	const organizadorId =
+    localStorage.getItem("admin_organizador_id") ||
+    localStorage.getItem("organizador_id");
+
+if(!organizadorId){
+    alert("No se encontró el organizador.");
+    return;
+}
+
     cont.innerHTML = `
         <h2>📊 Dashboard</h2>
 
