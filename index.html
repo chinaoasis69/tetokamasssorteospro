@@ -6206,6 +6206,16 @@ function toggleWallet() {
         if (header)
             header.classList.add("wallet-header");
 
+		setTimeout(() => {
+    const convertidor = document.getElementById("tarjetaConvertidorMass");
+    if (convertidor) {
+        convertidor.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+}, 300);
+
     }
 
 }
