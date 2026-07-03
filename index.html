@@ -919,6 +919,40 @@ Cargando historial...
   </div>
 </div>
 
+<div id="modalConvertidorMass" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:99999; padding:20px;">
+    <div style="
+        max-width:420px;
+        margin:60px auto;
+        background:#111;
+        border:2px solid #39ff14;
+        border-radius:18px;
+        padding:22px;
+        color:white;
+        text-align:center;
+        box-shadow:0 0 25px #39ff14;
+    ">
+        <h2>💱 Calculadora MASS</h2>
+        <p style="color:#ccc;">Calcula cuántos MASS debes solicitar.</p>
+
+        <select id="monedaDepositoMass" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;">
+            <option value="USD">🇺🇸 Dólar USA</option>
+            <option value="MXN">🇲🇽 Peso Mexicano</option>
+        </select>
+
+        <input id="cantidadDepositoMass" type="number" placeholder="Cantidad depositada" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;">
+
+        <input id="tipoCambioMass" type="number" placeholder="Tipo de cambio ejemplo: 16.70" value="16.70" style="width:100%;padding:12px;margin:8px 0;border-radius:10px;">
+
+        <div id="resultadoConvertidorMass" style="margin:18px 0;font-size:28px;font-weight:bold;color:#39ff14;">
+            0 MASS
+        </div>
+
+        <button onclick="calcularConvertidorMass()">🧮 Calcular</button>
+        <button onclick="usarCantidadConvertidorMass()">✅ Usar esta cantidad</button>
+        <button onclick="cerrarConvertidorMass()">❌ Cerrar</button>
+    </div>
+</div>	
+
 <script>
 window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
