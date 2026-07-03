@@ -2620,9 +2620,11 @@ const cfg = clienteActual || {};
 
 <br><br>
 
+${localStorage.getItem("admin_rol")==="super_admin" ? `
 <button onclick="mostrarOrganizadoresAdmin()">
-  👤 Organizadores
+    👤 Organizadores
 </button>
+` : ""}
 `;
 
 document.getElementById("cfgNombre").value = cfg.nombre_publico || "";
