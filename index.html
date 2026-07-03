@@ -3807,6 +3807,25 @@ function renderOrganizadoresPaginados(){
         </button>
     </div>
 `;
+}
+
+function cambiarPaginaOrganizadores(nuevaPagina){
+
+    const totalPaginas = Math.ceil(organizadoresActivosCache.length / organizadoresPorPagina) || 1;
+
+    if(nuevaPagina < 1) nuevaPagina = 1;
+    if(nuevaPagina > totalPaginas) nuevaPagina = totalPaginas;
+
+    paginaOrganizadores = nuevaPagina;
+
+    renderOrganizadoresPaginados();
+
+    setTimeout(() => {
+        document.getElementById("organizadoresActivosBox")?.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }, 100);
 }	
 
 function filtrarOrganizadoresActivos(){
