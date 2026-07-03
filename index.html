@@ -3766,6 +3766,10 @@ function renderOrganizadoresPaginados(){
     const fin = inicio + organizadoresPorPagina;
     const pagina = organizadoresActivosCache.slice(inicio, fin);
 
+	const totalPaginas = Math.ceil(organizadoresActivosCache.length / organizadoresPorPagina) || 1;
+    const mostrandoInicio = organizadoresActivosCache.length === 0 ? 0 : inicio + 1;
+    const mostrandoFin = Math.min(fin, organizadoresActivosCache.length);
+
     listaOrg.innerHTML = pagina.map(org => {
 
         const total = rifas.filter(r =>
