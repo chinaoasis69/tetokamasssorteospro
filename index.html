@@ -2691,6 +2691,11 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
 
 async function mostrarOrganizadoresAdmin(){
 
+	if(localStorage.getItem("admin_rol") !== "super_admin"){
+    alert("Esta sección es solo para el administrador principal.");
+    return;
+}
+
   document.getElementById("adminContenido").innerHTML =
     "<p>Cargando organizadores...</p>";
 
