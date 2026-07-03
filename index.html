@@ -3687,27 +3687,21 @@ ${rifas.map(r => `
 const listaOrg = document.getElementById("listaOrganizadoresActivos");
 
 if (listaOrg) {
-	
-  const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
-  listaOrg.innerHTML = Object.values(mapaOrganizadores)
-.filter(org => {
-    const total = rifas.filter(r =>
-        String(r.organizador_id) === String(org.id)
-    ).length;
 
-    return modoOrganizadores === "todos" ? true : total > 0;
-})
-.map(org => {
+    const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
 
-    const total = rifas.filter(r => r.organizador_id === org.id).length;
-    const nombre = org.nombre_publico || org.nombre || "Organizador";
+    organizadoresActivosCache = Object.values(mapaOrganizadores)
+        .filter(org => {
+            const total = rifas.filter(r =>
+                String(r.organizador_id) === String(org.id)
+            ).length;
 
-    return `<div class="card" style="margin:10px 0">` +
-        `<h3>👥 ` + nombre + `</h3>` +
-        `<p>` + total + ` sorteo(s) activo(s)</p>` +
-        `<button onclick="verSorteosDeOrganizador(\'` + org.id + `\')">🎯 Ver sorteos</button>` +
-        `</div>`;
-}).join("");
+            return modoOrganizadores === "todos" ? true : total > 0;
+        });
+
+    paginaOrganizadores = 1;
+    renderOrganizadoresPaginados();
+}
 }
 
   await cargarPatrocinadoresPublicos();
