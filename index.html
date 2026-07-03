@@ -857,6 +857,10 @@ Cargando historial...
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
+<button onclick="mostrarDashboardOrganizador()">
+    📊 Dashboard
+</button>	
+
  <button onclick="cargarPagosPendientes()">
   💳 Pagos pendientes
 </button>
@@ -6088,6 +6092,36 @@ async function abrirMiPerfil(){
             block: "start"
         });
     }, 300);
+}
+
+async function mostrarDashboardOrganizador(){
+
+    const cont = document.getElementById("adminContenido");
+    if(!cont) return;
+
+    cont.innerHTML = `
+        <h2>📊 Dashboard</h2>
+
+        <div class="card">
+            <h3>👋 Bienvenido</h3>
+            <p>Resumen rápido de tu organización</p>
+        </div>
+
+        <div class="card">
+            <h3>🎯 Rifas activas</h3>
+            <div style="font-size:32px;font-weight:bold;color:#39ff14;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>🎟️ Boletos vendidos</h3>
+            <div style="font-size:32px;font-weight:bold;color:#39ff14;">0</div>
+        </div>
+
+        <div class="card">
+            <h3>💰 Recargas pendientes</h3>
+            <div style="font-size:32px;font-weight:bold;color:#39ff14;">0 MASS</div>
+        </div>
+    `;
 }	
 
 </script>
