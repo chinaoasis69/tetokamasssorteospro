@@ -3804,26 +3804,27 @@ function renderOrganizadoresPaginados(){
 function filtrarOrganizadoresActivos(){
 
     const input = document.getElementById("buscarOrganizador");
-    const lista = document.getElementById("listaOrganizadoresActivos");
-
-    if(!input || !lista) return;
+    if(!input) return;
 
     const texto = input.value.toLowerCase().trim();
+    const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
 
-    const cards = lista.querySelectorAll(".card");
+    organizadoresActivosCache = Object.values(mapaOrganizadores)
+        .filter(org => {
+            const total = rifas.filter(r =>
+                String(r.organizador_id) === String(org.id)
+            ).length;
 
-    cards.forEach(card => {
+            const nombre = (org.nombre_publico || org.nombre || "Organizador").toLowerCase();
 
-        const nombre = card.innerText.toLowerCase();
+            const coincideNombre = nombre.includes(texto);
+            const coincideModo = modoOrganizadores === "todos" ? true : total > 0;
 
-        if(nombre.includes(texto)){
-            card.style.display = "block";
-        }else{
-            card.style.display = "none";
-        }
+            return coincideNombre && coincideModo;
+        });
 
-    });
-
+    paginaOrganizadores = 1;
+    renderOrganizadoresPaginados();
 }	
 
 function verSorteosDeOrganizador(orgId){
