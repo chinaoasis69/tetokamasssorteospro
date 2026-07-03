@@ -3505,7 +3505,11 @@ if (nombreComprobanteBox) {
 }
 
 function abrirConvertidorMass(){
-    alert("🚧 Próximamente: Convertidor MASS en tiempo real.");
+    document.getElementById("modalConvertidorMass").style.display = "block";
+}
+
+function cerrarConvertidorMass(){
+    document.getElementById("modalConvertidorMass").style.display = "none";
 }	
 
 async function cargarSaldo() {
