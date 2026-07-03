@@ -6108,6 +6108,17 @@ if(!organizadorId){
     return;
 }
 
+	const { data: rifasDash, error: errorRifasDash } = await supabaseClient
+    .from("rifas")
+    .select("id, estado, organizador_id")
+    .eq("organizador_id", organizadorId);
+
+if(errorRifasDash){
+    console.error("Error cargando rifas dashboard:", errorRifasDash);
+}
+
+const rifasActivas = (rifasDash || []).filter(r => r.estado === "activa").length;
+
     cont.innerHTML = `
         <h2>📊 Dashboard</h2>
 
