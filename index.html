@@ -6142,6 +6142,16 @@ if(idsRifas.length > 0){
     porcentajeVendidoDash = totalBoletosDash > 0
         ? ((boletosVendidosDash / totalBoletosDash) * 100).toFixed(1)
         : 0;
+
+	let ventasGeneradasDash = 0;
+
+if ((rifasDash || []).length > 0) {
+
+    const precioBoleto =
+        Number(rifasDash[0].precio || rifasDash[0].precio_boleto || 0);
+
+    ventasGeneradasDash = boletosVendidosDash * precioBoleto;
+}
 }	
 
     cont.innerHTML = `
