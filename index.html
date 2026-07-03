@@ -3757,6 +3757,50 @@ if (typeof aplicarFiltros === "function") {
         : "none";
 }
 
+function renderOrganizadoresPaginados(){
+
+    const listaOrg = document.getElementById("listaOrganizadoresActivos");
+    if(!listaOrg) return;
+
+    const inicio = (paginaOrganizadores - 1) * organizadoresPorPagina;
+    const fin = inicio + organizadoresPorPagina;
+    const pagina = organizadoresActivosCache.slice(inicio, fin);
+
+    listaOrg.innerHTML = pagina.map(org => {
+
+        const total = rifas.filter(r =>
+            String(r.organizador_id) === String(org.id)
+        ).length;
+
+        const nombre = org.nombre_publico || org.nombre || "Organizador";
+
+        return `
+            <div class="card" style="margin:10px 0;">
+                <h3>👥 ${nombre}</h3>
+                <p>${total} sorteo(s) activo(s)</p>
+                <button onclick="verSorteosDeOrganizador('${org.id}')">🎯 Ver sorteos</button>
+            </div>
+        `;
+
+    }).join("");
+
+    listaOrg.innerHTML += `
+        <div style="text-align:center; margin:18px 0;">
+            <button onclick="paginaOrganizadores--; renderOrganizadoresPaginados()" ${paginaOrganizadores <= 1 ? "disabled" : ""}>
+                ⬅️ Anterior
+            </button>
+
+            <span style="margin:0 12px; color:#39ff14; font-weight:bold;">
+                Página ${paginaOrganizadores}
+            </span>
+
+            <button onclick="paginaOrganizadores++; renderOrganizadoresPaginados()" ${fin >= organizadoresActivosCache.length ? "disabled" : ""}>
+                Siguiente ➡️
+            </button>
+        </div>
+    `;
+}	
+
 function filtrarOrganizadoresActivos(){
 
     const input = document.getElementById("buscarOrganizador");
