@@ -3784,6 +3784,8 @@ if (Date.now() > conversion.expira_en) {
     return;
   }
 
+sessionStorage.removeItem("conversion_mass_temporal");
+
 document.getElementById("comprobante").value = "";
 if (nombreComprobanteBox) {
   nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
