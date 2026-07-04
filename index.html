@@ -2930,7 +2930,8 @@ if (resumen) {
 }
 
 if (tarjeta) tarjeta.style.display = "block";
-if (boxGrande) boxGrande.style.display = "none";	
+if (boxGrande) boxGrande.style.display = "none";
+if (boxGrande) boxGrande.style.visibility = "hidden";
 
     // Llenar automáticamente el campo de la recarga
     const campo = document.getElementById("cantidadMass");
@@ -2991,7 +2992,10 @@ function cancelarRecargaPreparadaMass() {
     const cantidad = document.getElementById("cantidadDepositoMass");
 
     if (tarjeta) tarjeta.style.display = "none";
-    if (boxGrande) boxGrande.style.display = "block";
+    if (boxGrande) {
+    boxGrande.style.display = "block";
+    boxGrande.style.visibility = "visible";
+}
     if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
 
     if (btnUsarCantidad) {
