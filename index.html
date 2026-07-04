@@ -2725,6 +2725,8 @@ async function actualizarTipoCambioMass() {
         const respuesta = await fetch("https://open.er-api.com/v6/latest/USD");
         const datos = await respuesta.json();
 
+		console.log("TIPO CAMBIO API:", datos);
+
         if (datos && datos.rates && datos.rates.MXN) {
             tipoCambioMass = datos.rates.MXN;
             localStorage.setItem("tipoCambioMass", tipoCambioMass);
