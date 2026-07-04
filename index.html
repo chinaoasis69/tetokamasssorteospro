@@ -2728,7 +2728,7 @@ async function actualizarTipoCambioMass() {
 		console.log("TIPO CAMBIO API:", datos);
 
         if (datos && datos.rates && datos.rates.MXN) {
-            tipoCambioMass = datos.rates.MXN;
+            tipoCambioMass = Math.max(0, datos.rates.MXN - 0.20);
             localStorage.setItem("tipoCambioMass", tipoCambioMass);
         }
 
