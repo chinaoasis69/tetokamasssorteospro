@@ -2763,12 +2763,36 @@ function calcularConvertidorMass() {
 }
 
 function usarCantidadConvertidorMass() {
+
     calcularConvertidorMass();
 
     const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
-    const cantidadMass = resultadoTexto.replace("MASS", "").trim();
+    const cantidadMass = resultadoTexto.replace("MASS","").trim();
 
-    alert("✅ Solicita esta recarga: " + cantidadMass + " MASS");
+    // Llenar automáticamente el campo de la recarga
+    const campo = document.getElementById("cantidadMass");
+    if (campo) {
+        campo.value = cantidadMass;
+    }
+
+    // Cerrar la calculadora
+    cerrarConvertidorMass();
+
+    // Ir al formulario de recarga
+    if (campo) {
+        campo.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+        campo.focus();
+    }
+
+    mostrarNotificacion(
+        "success",
+        "Cantidad lista",
+        "Se preparó una recarga de " + cantidadMass + " MASS. Ahora sube tu comprobante para enviarla al organizador."
+    );
+
 }
 
 async function abrirConvertidorMass() {
