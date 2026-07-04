@@ -2736,8 +2736,10 @@ async function actualizarTipoCambioMass() {
     }
 
     if (texto) {
-        texto.innerHTML = `1 USD = ${tipoCambioMass.toFixed(2)} MXN`;
-    }
+    texto.textContent = "1 USD = " + tipoCambioMass.toFixed(2) + " MXN";
+}
+
+calcularConvertidorMass();
 }
 
 function calcularConvertidorMass() {
