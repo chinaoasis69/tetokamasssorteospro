@@ -2769,11 +2769,12 @@ function usarCantidadConvertidorMass() {
     alert("✅ Solicita esta recarga: " + cantidadMass + " MASS");
 }
 
-function abrirConvertidorMass() {
+async function abrirConvertidorMass() {
     const modal = document.getElementById("modalConvertidorMass");
     if (modal) modal.style.display = "block";
 
-    actualizarTipoCambioMass();
+    await actualizarTipoCambioMass();
+    calcularConvertidorMass();
 }
 
 function cerrarConvertidorMass() {
