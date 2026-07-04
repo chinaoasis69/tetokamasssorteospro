@@ -2807,6 +2807,26 @@ if (!RIFA_ID) {
     const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
     const cantidadMass = resultadoTexto.replace("MASS","").trim();
 
+	if (!cantidadMass || isNaN(cantidadMass) || Number(cantidadMass) <= 0) {
+    mostrarNotificacion(
+        "error",
+        "Cantidad inválida",
+        "Primero escribe una cantidad y calcula tu recarga MASS."
+    );
+    return;
+}
+
+	const conversionPendiente = sessionStorage.getItem("conversion_mass_temporal");
+
+    if (conversionPendiente) {
+    mostrarNotificacion(
+        "error",
+        "Recarga pendiente",
+        "Ya preparaste una recarga MASS. Primero sube tu comprobante o cierra/cancela para calcular otra."
+    );
+    return;
+}
+
 	const monedaOrigen = document.getElementById("monedaDepositoMass")?.value || "";
     const cantidadOrigen = document.getElementById("cantidadDepositoMass")?.value || "";
 
@@ -2824,6 +2844,14 @@ sessionStorage.setItem(
     "conversion_mass_temporal",
     JSON.stringify(conversionMassTemporal)
 );
+
+	const btnUsarCantidad = document.getElementById("btnUsarCantidadMass");
+
+if (btnUsarCantidad) {
+    btnUsarCantidad.disabled = true;
+    btnUsarCantidad.innerHTML = "✅ Cantidad preparada";
+    btnUsarCantidad.style.opacity = "0.6";
+}
 
     // Llenar automáticamente el campo de la recarga
     const campo = document.getElementById("cantidadMass");
