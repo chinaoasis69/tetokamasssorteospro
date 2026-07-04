@@ -2807,6 +2807,20 @@ if (!RIFA_ID) {
     const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
     const cantidadMass = resultadoTexto.replace("MASS","").trim();
 
+	const monedaOrigen = document.getElementById("monedaDepositoMass")?.value || "";
+    const cantidadOrigen = document.getElementById("cantidadDepositoMass")?.value || "";
+
+   const conversionMassTemporal = {
+    moneda_origen: monedaOrigen,
+    cantidad_origen: cantidadOrigen,
+    tipo_cambio_usado: tipoCambioMass,
+    ajuste_organizador: 0.20,
+    mass_calculado: cantidadMass,
+    fecha_conversion: new Date().toISOString()
+};
+
+localStorage.setItem("conversion_mass_temporal", JSON.stringify(conversionMassTemporal));
+
     // Llenar automáticamente el campo de la recarga
     const campo = document.getElementById("cantidadMass");
     if (campo) {
