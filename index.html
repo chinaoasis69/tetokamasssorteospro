@@ -2763,8 +2763,25 @@ function calcularConvertidorMass() {
 }
 
 function usarCantidadConvertidorMass() {
-
     calcularConvertidorMass();
+
+	if (!clienteActual || !clienteActual.id) {
+    mostrarNotificacion(
+        "error",
+        "Selecciona un organizador",
+        "Primero elige un organizador con dinámica activa antes de preparar una recarga."
+    );
+    return;
+}
+
+if (!RIFA_ID) {
+    mostrarNotificacion(
+        "error",
+        "Selecciona una dinámica",
+        "Primero selecciona una dinámica activa antes de preparar una recarga."
+    );
+    return;
+}
 
     const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
     const cantidadMass = resultadoTexto.replace("MASS","").trim();
