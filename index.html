@@ -2782,19 +2782,27 @@ if (!RIFA_ID) {
     );
 
     setTimeout(() => {
-        cerrarConvertidorMass();
+    cerrarConvertidorMass();
 
-        const orgs = document.getElementById("organizadoresActivos")
-                  || document.getElementById("listaOrganizadores")
-                  || document.getElementById("contenedorOrganizadores");
+    const orgs =
+        document.querySelector("#organizadoresContainer") ||
+        document.querySelector("#listaOrganizadoresActivos") ||
+        document.querySelector("#organizadoresActivos") ||
+        document.querySelector("#organizadores") ||
+        document.querySelector('[id*="organizador"]');
 
-        if (orgs) {
-            orgs.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-    }, 2200);
+    if (orgs) {
+        orgs.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    } else {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+}, 2200);
 
     return;
 }
