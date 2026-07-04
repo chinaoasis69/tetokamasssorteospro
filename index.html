@@ -2809,6 +2809,18 @@ async function abrirConvertidorMass() {
 function cerrarConvertidorMass() {
     const modal = document.getElementById("modalConvertidorMass");
     if (modal) modal.style.display = "none";
+
+    limpiarConvertidorMass();
+}
+
+function limpiarConvertidorMass() {
+    const cantidad = document.getElementById("cantidadDepositoMass");
+    const resultado = document.getElementById("resultadoConvertidorMass");
+    const texto = document.getElementById("textoTipoCambio");
+
+    if (cantidad) cantidad.value = "";
+    if (resultado) resultado.innerText = "0 MASS";
+    if (texto) texto.textContent = "⏳ Actualizando tipo de cambio...";
 }	
 
 async function mostrarConfigAdmin(){
