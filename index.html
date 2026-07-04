@@ -3951,6 +3951,12 @@ if (boxGrande) {
 document.getElementById("comprobante").value = "";
 if (nombreComprobanteBox) {
   nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
+}
+
+const mensajeSaldo = document.getElementById("mensajeSaldoDisponibleMass");
+
+if (mensajeSaldo) {
+    mensajeSaldo.style.display = "block";
 }	
 
   mostrarNotificacion(
