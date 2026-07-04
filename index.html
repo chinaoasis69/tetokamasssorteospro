@@ -644,29 +644,38 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 
 <br><br>
 
-<div id="tarjetaRecargaPreparada" style="display:none; background:#e8f5e9; border:2px solid #4CAF50; border-radius:12px; padding:15px; margin:15px 0;">
+<div id="tarjetaRecargaPreparada" style="display:none; background:#111; border:2px solid #39ff14; border-radius:18px; padding:18px; margin:18px 0; color:white; box-shadow:0 0 18px #39ff14; text-align:center;">
 
-    <h3 style="margin-top:0;">✅ Recarga preparada</h3>
+  <h3 style="margin:0 0 8px 0; color:#39ff14;">
+    🪙 RECARGA PREPARADA
+  </h3>
 
-    <div id="resumenRecargaMass"></div>
+  <p style="margin:0 0 12px 0; color:#ccc; font-size:14px;">
+    Esta cantidad permanecerá lista durante 1 hora.
+  </p>
 
-    <div style="display:flex; gap:10px; margin-top:15px;">
+  <div id="resumenRecargaMass" style="margin:12px 0;"></div>
 
-        <button
-            id="btnSubirComprobanteMass"
-            class="btn btn-success"
-            onclick="document.getElementById('comprobante').click();">
-            📎 Subir comprobante
-        </button>
+  <button
+    id="btnSubirComprobanteMass"
+    onclick="document.getElementById('comprobante').click();"
+    style="width:100%; padding:14px; margin-top:10px; border-radius:14px; border:none; background:#39ff14; color:#000; font-weight:bold; font-size:16px;">
+    📎 Subir comprobante
+  </button>
 
-        <button
-            id="btnCancelarRecargaMass"
-            class="btn btn-danger"
-            onclick="cancelarRecargaPreparadaMass();">
-            🔄 Cancelar
-        </button>
+  <button
+    id="btnCambiarCantidadMass"
+    onclick="cancelarRecargaPreparadaMass();"
+    style="width:100%; padding:12px; margin-top:10px; border-radius:14px; border:1px solid #39ff14; background:#1b1b1b; color:#39ff14; font-weight:bold;">
+    ↺ Cambiar cantidad
+  </button>
 
-    </div>
+  <button
+    id="btnCancelarRecargaMass"
+    onclick="cancelarRecargaPreparadaMass();"
+    style="width:100%; padding:12px; margin-top:10px; border-radius:14px; border:1px solid #ff4444; background:#1b1b1b; color:#ff4444; font-weight:bold;">
+    ✖ Cancelar
+  </button>
 
 </div>	
 
