@@ -2780,6 +2780,22 @@ if (!RIFA_ID) {
         "Selecciona una dinámica",
         "Primero selecciona una dinámica activa antes de preparar una recarga."
     );
+
+    setTimeout(() => {
+        cerrarConvertidorMass();
+
+        const orgs = document.getElementById("organizadoresActivos")
+                  || document.getElementById("listaOrganizadores")
+                  || document.getElementById("contenedorOrganizadores");
+
+        if (orgs) {
+            orgs.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }, 2200);
+
     return;
 }
 
