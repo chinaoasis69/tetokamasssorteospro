@@ -3632,10 +3632,27 @@ if (!organizadorId) {
     return;
 }
 
-const cantidad = prompt("¿Cuánto quieres recargar?");
-if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
-    alert("Cantidad inválida");
-    return;
+let cantidad = null;
+
+const conversionGuardada = sessionStorage.getItem("conversion_mass_temporal");
+const conversion = conversionGuardada ? JSON.parse(conversionGuardada) : null;
+
+if (conversion && conversion.mass_calculado) {
+    cantidad = Number(conversion.mass_calculado);
+
+    alert(
+        "✅ Se cargará a tu Wallet MASS la cantidad convertida por la Calculadora MASS:\n\n" +
+        cantidad + " MASS"
+    );
+} else {
+    cantidad = prompt("¿Cuánto quieres recargar?");
+
+    if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
+        alert("Cantidad inválida");
+        return;
+    }
+
+    cantidad = Number(cantidad);
 }
 
 let nombreOrganizador = "Organizador";
@@ -3764,7 +3781,7 @@ if (Date.now() > conversion.expira_en) {
     user_id: telefono,
     telefono: telefono,
 
-    monto: Number(conversion.mass_calculado),
+    monto: Number(cantidad),
 
     comprobante_url: urlData.publicUrl,
     estado: "pendiente",
