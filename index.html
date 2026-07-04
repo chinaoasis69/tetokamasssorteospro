@@ -2951,6 +2951,34 @@ function cerrarConvertidorMass() {
     limpiarConvertidorMass();
 }
 
+function cancelarRecargaPreparadaMass() {
+    if (!confirm("¿Deseas cancelar esta recarga preparada? Tendrás que volver a calcular el monto.")) {
+        return;
+    }
+
+    sessionStorage.removeItem("conversion_mass_temporal");
+
+    const tarjeta = document.getElementById("tarjetaRecargaPreparada");
+    const boxGrande = document.getElementById("boxSubirComprobanteMass");
+    const tarjetaConvertidor = document.getElementById("tarjetaConvertidorMass");
+    const btnUsarCantidad = document.getElementById("btnUsarCantidadMass");
+    const resultado = document.getElementById("resultadoConvertidorMass");
+    const cantidad = document.getElementById("cantidadDepositoMass");
+
+    if (tarjeta) tarjeta.style.display = "none";
+    if (boxGrande) boxGrande.style.display = "block";
+    if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
+
+    if (btnUsarCantidad) {
+        btnUsarCantidad.disabled = false;
+        btnUsarCantidad.innerHTML = "✅ Usar esta cantidad";
+        btnUsarCantidad.style.opacity = "1";
+    }
+
+    if (resultado) resultado.innerHTML = "0 MASS";
+    if (cantidad) cantidad.value = "";
+}	
+
 function limpiarConvertidorMass() {
     const cantidad = document.getElementById("cantidadDepositoMass");
     const resultado = document.getElementById("resultadoConvertidorMass");
