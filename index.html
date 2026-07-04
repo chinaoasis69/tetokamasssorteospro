@@ -2881,6 +2881,26 @@ if (btnUsarCantidad) {
     btnUsarCantidad.style.opacity = "0.6";
 }
 
+const tarjeta = document.getElementById("tarjetaRecargaPreparada");
+const resumen = document.getElementById("resumenRecargaMass");
+const boxGrande = document.getElementById("boxSubirComprobanteMass");
+
+if (resumen) {
+    resumen.innerHTML = `
+        <div>💱 Moneda: <b>${monedaOrigen}</b></div>
+        <div>💵 Cantidad: <b>${cantidadOrigen}</b></div>
+        <div style="font-size:26px;color:#39ff14;margin-top:8px;">
+            Recibirás: <b>${cantidadMass} MASS</b>
+        </div>
+        <div style="font-size:13px;color:#bbb;margin-top:6px;">
+            Sube tu comprobante para enviar la recarga al organizador.
+        </div>
+    `;
+}
+
+if (tarjeta) tarjeta.style.display = "block";
+if (boxGrande) boxGrande.style.display = "none";	
+
     // Llenar automáticamente el campo de la recarga
     const campo = document.getElementById("cantidadMass");
     if (campo) {
