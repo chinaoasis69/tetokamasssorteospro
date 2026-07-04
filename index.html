@@ -3803,6 +3803,14 @@ conversion_expira_en: conversion ? new Date(conversion.expira_en).toISOString() 
 
 sessionStorage.removeItem("conversion_mass_temporal");
 
+const btnUsarCantidad = document.getElementById("btnUsarCantidadMass");
+
+if (btnUsarCantidad) {
+    btnUsarCantidad.disabled = false;
+    btnUsarCantidad.innerHTML = "✅ Usar esta cantidad";
+    btnUsarCantidad.style.opacity = "1";
+}	
+
 document.getElementById("comprobante").value = "";
 if (nombreComprobanteBox) {
   nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
