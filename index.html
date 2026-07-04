@@ -1015,7 +1015,7 @@ font-weight:bold;
 <br><br>
 
 <span id="textoTipoCambio">
-1 USD = 16.70 MXN
+⏳ Actualizando tipo de cambio...
 </span>
 
 <br><br>
@@ -2772,6 +2772,9 @@ function usarCantidadConvertidorMass() {
 async function abrirConvertidorMass() {
     const modal = document.getElementById("modalConvertidorMass");
     if (modal) modal.style.display = "block";
+
+    const texto = document.getElementById("textoTipoCambio");
+    if (texto) texto.textContent = "⏳ Actualizando tipo de cambio...";
 
     await actualizarTipoCambioMass();
     calcularConvertidorMass();
