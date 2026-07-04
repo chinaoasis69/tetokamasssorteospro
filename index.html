@@ -3756,7 +3756,22 @@ if (!conversion.expira_en || Date.now() > conversion.expira_en) {
 
 console.log("RIFA_ID:", RIFA_ID);
 console.log("clienteActual:", clienteActual);
-console.log("organizadorId:", organizadorId);	
+console.log("organizadorId:", organizadorId);
+
+const conversion = JSON.parse(
+    sessionStorage.getItem("conversion_mass_temporal") || "null"
+);
+
+if (!conversion) {
+    alert("⚠️ Primero utiliza la Calculadora MASS.");
+    return;
+}
+
+if (Date.now() > conversion.expira_en) {
+    sessionStorage.removeItem("conversion_mass_temporal");
+    alert("⏰ La conversión expiró. Calcula nuevamente tu recarga.");
+    return;
+}	
 
   const { error } = await supabaseClient
     .from("recargas_mass")
