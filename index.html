@@ -3003,6 +3003,12 @@ function cancelarRecargaPreparadaMass() {
     if (tarjeta) tarjeta.style.display = "none";
     if (boxGrande) {
     boxGrande.style.display = "block";
+
+	const mensajeSaldo = document.getElementById("mensajeSaldoDisponibleMass");
+
+if (mensajeSaldo) {
+    mensajeSaldo.style.display = "block";
+}	
     boxGrande.style.visibility = "visible";
 }
     if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
