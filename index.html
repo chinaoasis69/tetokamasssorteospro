@@ -2902,13 +2902,25 @@ const boxGrande = document.getElementById("boxSubirComprobanteMass");
 
 if (resumen) {
     resumen.innerHTML = `
-        <div>💱 Moneda: <b>${monedaOrigen}</b></div>
-        <div>💵 Cantidad: <b>${cantidadOrigen}</b></div>
-        <div style="font-size:26px;color:#39ff14;margin-top:8px;">
-            Recibirás: <b>${cantidadMass} MASS</b>
+        <div style="font-size:14px;color:#aaa;">💱 Moneda</div>
+        <div style="font-size:20px;font-weight:bold;color:white;margin-bottom:8px;">
+            ${monedaOrigen}
         </div>
-        <div style="font-size:13px;color:#bbb;margin-top:6px;">
-            Sube tu comprobante para enviar la recarga al organizador.
+
+        <div style="font-size:14px;color:#aaa;">💵 Cantidad depositada</div>
+        <div style="font-size:20px;font-weight:bold;color:white;margin-bottom:12px;">
+            ${cantidadOrigen}
+        </div>
+
+        <div style="height:1px;background:#39ff14;margin:12px 0;"></div>
+
+        <div style="font-size:15px;color:#ccc;">Recibirás</div>
+        <div style="font-size:34px;font-weight:900;color:#39ff14;margin:6px 0;">
+            ${cantidadMass} MASS
+        </div>
+
+        <div style="font-size:13px;color:#aaa;margin-top:8px;">
+            ⏳ Esperando comprobante
         </div>
     `;
 }
