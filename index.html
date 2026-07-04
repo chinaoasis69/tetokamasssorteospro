@@ -3722,21 +3722,6 @@ if (!conversionGuardada) {
     );
     abrirConvertidorMass();
     return;
-}
-
-const conversion = JSON.parse(conversionGuardada);
-
-if (!conversion.expira_en || Date.now() > conversion.expira_en) {
-    sessionStorage.removeItem("conversion_mass_temporal");
-
-    mostrarNotificacion(
-        "error",
-        "Conversión vencida",
-        "La conversión ya expiró. Vuelve a calcular tu recarga MASS."
-    );
-
-    abrirConvertidorMass();
-    return;
 }	
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
