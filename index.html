@@ -3726,19 +3726,6 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
   if (!telefono) {
   alert("Inicia sesión primero");
   return;
-}
-
-// Validar conversión temporal
-const conversionGuardada = sessionStorage.getItem("conversion_mass_temporal");
-
-if (!conversionGuardada) {
-    mostrarNotificacion(
-        "error",
-        "Calcula tu recarga",
-        "Primero utiliza la Calculadora MASS antes de subir tu comprobante."
-    );
-    abrirConvertidorMass();
-    return;
 }	
 
   const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
