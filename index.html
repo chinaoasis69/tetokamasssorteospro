@@ -3761,13 +3761,23 @@ if (Date.now() > conversion.expira_en) {
   const { error } = await supabaseClient
     .from("recargas_mass")
     .insert({
-      user_id: telefono,
-      telefono: telefono,
-      monto: Number(cantidad),
-      comprobante_url: urlData.publicUrl,
-      estado: "pendiente",
-      organizador_id: organizadorId
-    });
+    user_id: telefono,
+    telefono: telefono,
+
+    monto: Number(conversion.mass_calculado),
+
+    comprobante_url: urlData.publicUrl,
+    estado: "pendiente",
+    organizador_id: organizadorId,
+
+    moneda_origen: conversion.moneda_origen,
+    cantidad_origen: conversion.cantidad_origen,
+    tipo_cambio_usado: conversion.tipo_cambio_usado,
+    ajuste_organizador: conversion.ajuste_organizador,
+    mass_calculado: conversion.mass_calculado,
+    conversion_creada_en: new Date(conversion.creada_en).toISOString(),
+    conversion_expira_en: new Date(conversion.expira_en).toISOString()
+});
 
   if (error) {
     alert("Error al registrar recarga ❌");
