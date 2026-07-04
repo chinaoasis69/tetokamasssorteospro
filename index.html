@@ -2985,10 +2985,16 @@ function cerrarConvertidorMass() {
     limpiarConvertidorMass();
 }
 
-function cancelarRecargaPreparadaMass() {
-    if (!confirm("¿Deseas cancelar esta recarga preparada? Tendrás que volver a calcular el monto.")) {
-        return;
+function cancelarRecargaPreparadaMassConfirmada() {
+    mostrarConfirmacionMass(
+    "⚠️ Cancelar recarga",
+    "¿Deseas cancelar esta recarga preparada? Tendrás que volver a calcular el monto.",
+    () => {
+        cancelarRecargaPreparadaMassConfirmada();
     }
+);
+
+return;
 
     sessionStorage.removeItem("conversion_mass_temporal");
 
@@ -3602,6 +3608,50 @@ ${mensaje}
   setTimeout(() => {
     noti.style.display = "none";
   }, 2500);
+}
+
+function mostrarConfirmacionMass(titulo, mensaje, onConfirmar) {
+    const modalViejo = document.getElementById("modalConfirmacionMass");
+    if (modalViejo) modalViejo.remove();
+
+    const modal = document.createElement("div");
+    modal.id = "modalConfirmacionMass";
+    modal.style = `
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.75);
+        z-index:999999;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+    `;
+
+    modal.innerHTML = `
+        <div style="background:#111;border:2px solid #39ff14;border-radius:18px;padding:20px;max-width:420px;width:100%;color:white;text-align:center;box-shadow:0 0 25px #39ff14;">
+            <h2 style="color:#39ff14;margin:0 0 12px;">${titulo}</h2>
+            <p style="font-size:15px;color:#ddd;line-height:1.5;">${mensaje}</p>
+
+            <button id="btnConfirmarMass" style="width:100%;padding:13px;margin-top:14px;border:none;border-radius:14px;background:#ff4444;color:white;font-weight:bold;font-size:16px;">
+                ✖ Sí, cancelar
+            </button>
+
+            <button id="btnCerrarConfirmacionMass" style="width:100%;padding:13px;margin-top:10px;border:1px solid #39ff14;border-radius:14px;background:#111;color:#39ff14;font-weight:bold;font-size:16px;">
+                ↩ No, regresar
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById("btnConfirmarMass").onclick = () => {
+        modal.remove();
+        onConfirmar();
+    };
+
+    document.getElementById("btnCerrarConfirmacionMass").onclick = () => {
+        modal.remove();
+    };
 }	
 
 async function comprarConSaldo() {	
