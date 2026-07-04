@@ -3863,7 +3863,15 @@ if (btnUsarCantidad) {
     btnUsarCantidad.disabled = false;
     btnUsarCantidad.innerHTML = "✅ Usar esta cantidad";
     btnUsarCantidad.style.opacity = "1";
-}	
+}
+
+const tarjetaConvertidor = document.getElementById("tarjetaConvertidorMass");
+const tarjetaPreparada = document.getElementById("tarjetaRecargaPreparada");
+const boxGrande = document.getElementById("boxSubirComprobanteMass");
+
+if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
+if (tarjetaPreparada) tarjetaPreparada.style.display = "none";
+if (boxGrande) boxGrande.style.display = "block";	
 
 document.getElementById("comprobante").value = "";
 if (nombreComprobanteBox) {
