@@ -2812,14 +2812,18 @@ if (!RIFA_ID) {
 
    const conversionMassTemporal = {
     moneda_origen: monedaOrigen,
-    cantidad_origen: cantidadOrigen,
-    tipo_cambio_usado: tipoCambioMass,
+    cantidad_origen: Number(cantidadOrigen),
+    tipo_cambio_usado: Number(tipoCambioMass.toFixed(2)),
     ajuste_organizador: 0.20,
-    mass_calculado: cantidadMass,
-    fecha_conversion: new Date().toISOString()
+    mass_calculado: Number(cantidadMass),
+    creada_en: Date.now(),
+    expira_en: Date.now() + (60 * 60 * 1000) // 1 hora
 };
 
-localStorage.setItem("conversion_mass_temporal", JSON.stringify(conversionMassTemporal));
+sessionStorage.setItem(
+    "conversion_mass_temporal",
+    JSON.stringify(conversionMassTemporal)
+);
 
     // Llenar automáticamente el campo de la recarga
     const campo = document.getElementById("cantidadMass");
