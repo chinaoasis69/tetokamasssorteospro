@@ -3371,7 +3371,22 @@ let userActual = localStorage.getItem("mass_user");
 let rifaActual = null;
 let clienteActual = null;
 let CLIENTE_SLUG = "china-nl";
-let mapaOrganizadores = {};	
+let mapaOrganizadores = {};
+
+const DIVISAS_MASS = [
+  { codigo: "MX", nombre: "MASS MX", moneda: "MXN", bandera: "🇲🇽" },
+  { codigo: "US", nombre: "MASS US", moneda: "USD", bandera: "🇺🇸" },
+  { codigo: "EUR", nombre: "MASS EUR", moneda: "EUR", bandera: "🇪🇺" },
+  { codigo: "GBP", nombre: "MASS GBP", moneda: "GBP", bandera: "🇬🇧" },
+  { codigo: "CAD", nombre: "MASS CAD", moneda: "CAD", bandera: "🇨🇦" },
+  { codigo: "BOB", nombre: "MASS BOB", moneda: "BOB", bandera: "🇧🇴" },
+  { codigo: "COP", nombre: "MASS COP", moneda: "COP", bandera: "🇨🇴" },
+  { codigo: "ARS", nombre: "MASS ARS", moneda: "ARS", bandera: "🇦🇷" },
+  { codigo: "BRL", nombre: "MASS BRL", moneda: "BRL", bandera: "🇧🇷" },
+  { codigo: "CLP", nombre: "MASS CLP", moneda: "CLP", bandera: "🇨🇱" },
+  { codigo: "PEN", nombre: "MASS PEN", moneda: "PEN", bandera: "🇵🇪" },
+  { codigo: "VES", nombre: "MASS VES", moneda: "VES", bandera: "🇻🇪" }
+];	
 	
 async function loginMASS(){
 
