@@ -5072,14 +5072,15 @@ function actualizarResumenCompra(){
   const cantidad = boletosSeleccionados.length;
   const precio = Number(window.precioBoletoActual || 0);
   const total = cantidad * precio;
+  const unidadMassActual = window.unidadMassActual || "MX";
 
   const cantidadEl = document.getElementById("cantidadBoletos");
   const precioEl = document.getElementById("precioBoleto");
   const totalEl = document.getElementById("totalCompra");
 
   if(cantidadEl) cantidadEl.textContent = cantidad;
-  if(precioEl) precioEl.textContent = precio;
-  if(totalEl) totalEl.textContent = total + " MASS";
+  if(precioEl) precioEl.textContent = precio + " MASS " + unidadMassActual;
+  if(totalEl) totalEl.textContent = total + " MASS " + unidadMassActual;
 }	
 
 // 🔥 WHATSAPP
