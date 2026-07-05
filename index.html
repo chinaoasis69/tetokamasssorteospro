@@ -3373,19 +3373,19 @@ let clienteActual = null;
 let CLIENTE_SLUG = "china-nl";
 let mapaOrganizadores = {};
 
-const DIVISAS_MASS = [
-  { codigo: "MX", nombre: "MASS MX", moneda: "MXN", bandera: "🇲🇽" },
-  { codigo: "US", nombre: "MASS US", moneda: "USD", bandera: "🇺🇸" },
-  { codigo: "EUR", nombre: "MASS EUR", moneda: "EUR", bandera: "🇪🇺" },
-  { codigo: "GBP", nombre: "MASS GBP", moneda: "GBP", bandera: "🇬🇧" },
-  { codigo: "CAD", nombre: "MASS CAD", moneda: "CAD", bandera: "🇨🇦" },
-  { codigo: "BOB", nombre: "MASS BOB", moneda: "BOB", bandera: "🇧🇴" },
-  { codigo: "COP", nombre: "MASS COP", moneda: "COP", bandera: "🇨🇴" },
-  { codigo: "ARS", nombre: "MASS ARS", moneda: "ARS", bandera: "🇦🇷" },
-  { codigo: "BRL", nombre: "MASS BRL", moneda: "BRL", bandera: "🇧🇷" },
-  { codigo: "CLP", nombre: "MASS CLP", moneda: "CLP", bandera: "🇨🇱" },
-  { codigo: "PEN", nombre: "MASS PEN", moneda: "PEN", bandera: "🇵🇪" },
-  { codigo: "VES", nombre: "MASS VES", moneda: "VES", bandera: "🇻🇪" }
+const MASS_UNIDADES = [
+  { codigo: "MX", nombre: "MASS MX", moneda: "MXN", pais: "México", bandera: "🇲🇽", valor: 1 },
+  { codigo: "US", nombre: "MASS US", moneda: "USD", pais: "Estados Unidos", bandera: "🇺🇸", valor: 1 },
+  { codigo: "EUR", nombre: "MASS EUR", moneda: "EUR", pais: "Europa", bandera: "🇪🇺", valor: 1 },
+  { codigo: "GBP", nombre: "MASS GBP", moneda: "GBP", pais: "Reino Unido", bandera: "🇬🇧", valor: 1 },
+  { codigo: "CAD", nombre: "MASS CAD", moneda: "CAD", pais: "Canadá", bandera: "🇨🇦", valor: 1 },
+  { codigo: "BOB", nombre: "MASS BOB", moneda: "BOB", pais: "Bolivia", bandera: "🇧🇴", valor: 1 },
+  { codigo: "COP", nombre: "MASS COP", moneda: "COP", pais: "Colombia", bandera: "🇨🇴", valor: 1 },
+  { codigo: "ARS", nombre: "MASS ARS", moneda: "ARS", pais: "Argentina", bandera: "🇦🇷", valor: 1 },
+  { codigo: "BRL", nombre: "MASS BRL", moneda: "BRL", pais: "Brasil", bandera: "🇧🇷", valor: 1 },
+  { codigo: "CLP", nombre: "MASS CLP", moneda: "CLP", pais: "Chile", bandera: "🇨🇱", valor: 1 },
+  { codigo: "PEN", nombre: "MASS PEN", moneda: "PEN", pais: "Perú", bandera: "🇵🇪", valor: 1 },
+  { codigo: "VES", nombre: "MASS VES", moneda: "VES", pais: "Venezuela", bandera: "🇻🇪", valor: 1 }
 ];	
 	
 async function loginMASS(){
