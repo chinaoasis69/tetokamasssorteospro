@@ -4625,8 +4625,15 @@ if (logoOrg) {
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
-        document.getElementById("precioRifa").innerText =
-            `💰 $${rifa.precio_boleto || 0} por número`;
+        const unidadMass = Array.isArray(rifa.mass_unidades_aceptadas)
+    ? rifa.mass_unidades_aceptadas[0]
+    : "MX";
+
+const preciosMass = rifa.precios_mass_unidad || {};
+const precioMass = preciosMass[unidadMass] || rifa.precio_boleto || 0;
+
+document.getElementById("precioRifa").innerText =
+`💰 ${precioMass} MASS ${unidadMass} por número`;
 
 		window.precioBoletoActual = Number(rifa.precio_boleto || 0);
         window.rifaSeleccionada = rifa;
