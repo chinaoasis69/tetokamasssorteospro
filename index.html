@@ -6808,6 +6808,49 @@ serviceWorkerUpdaterPath: "onesignalsdkupdaterworker.js",
 });
 </script>
 
+<!-- ===== EDITOR RIFA V2 ===== -->
+<div id="editorRifaV2" class="card"
+style="
+display:none;
+max-width:700px;
+margin:20px auto;
+border:2px solid #39ff14;
+border-radius:20px;
+padding:20px;
+box-shadow:0 0 20px rgba(57,255,20,.35);
+">
+
+<h2 style="color:#39ff14;margin-bottom:15px;">
+✏️ Editor de Sorteo V2
+</h2>
+
+<div id="editorRifaContenido">
+
+<!-- Aquí irán los campos en el Paso 2 -->
+
+</div>
+
+<div style="display:flex;gap:10px;margin-top:20px;">
+
+<button
+class="btn-main"
+style="flex:1;"
+onclick="guardarEditorRifaV2()">
+💾 Guardar
+</button>
+
+<button
+class="btn-dark"
+style="flex:1;"
+onclick="cerrarEditorRifaV2()">
+❌ Cancelar
+</button>
+
+</div>
+
+</div>
+<!-- ===== FIN EDITOR ===== -->	  
+
 <div id="toast"
 style="
 position:fixed;
