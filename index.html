@@ -4635,7 +4635,10 @@ const precioMass = preciosMass[unidadMass] || rifa.precio_boleto || 0;
 document.getElementById("precioRifa").innerText =
 `💰 ${precioMass} MASS ${unidadMass} por número`;
 
-		window.precioBoletoActual = Number(rifa.precio_boleto || 0);
+		window.precioBoletoActual = Number(precioMass);
+
+        window.unidadMassActual = unidadMass;
+
         window.rifaSeleccionada = rifa;
 
 		actualizarResumenCompra();
