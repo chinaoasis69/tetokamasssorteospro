@@ -665,7 +665,10 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 
   <button
     id="btnCambiarCambiarMass"
-    onclick="if(confirm('¿Deseas cambiar esta recarga preparada? Tendrás que volver a calcular el monto.')){ cancelarRecargaPreparadaMassConfirmada(); abrirConvertidorMass(); }"
+    onclick="if(confirm('¿Deseas cambiar esta recarga preparada? Tendrás que volver a calcular el monto.')){ sessionStorage.removeItem('conversion_mass_temporal');
+	document.getElementById('tarjetaRecargaPreparada').style.display='none'; 
+    document.getElementById('boxSubirComprobanteMass').style.display='block';
+	document.getElementById('boxSubirComprobanteMass').style.visibility='visible'; abrirConvertidorMass(); }"
     style="flex:1; padding:10px; border-radius:12px; border:1px solid #39ff14; background:#111; color:#39ff14; font-weight:bold;">
     ↺ Cambiar
   </button>
