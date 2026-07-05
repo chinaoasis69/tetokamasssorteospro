@@ -6615,6 +6615,28 @@ function toggleWallet() {
     }
 }
 
+function abrirRecargaWalletDesdeRifa() {
+    const contenido = document.getElementById("walletContenido");
+    const flecha = document.getElementById("walletArrow");
+    const header = document.querySelector(".wallet-header");
+
+    if (contenido) {
+        contenido.style.maxHeight = contenido.scrollHeight + "px";
+        contenido.style.opacity = "1";
+    }
+
+    if (flecha) flecha.textContent = "▲";
+
+    setTimeout(() => {
+        if (header) {
+            header.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+    }, 300);
+}	
+
 async function abrirMiPerfil(){
 
     const rol = localStorage.getItem("admin_rol");
