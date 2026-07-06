@@ -4715,6 +4715,16 @@ if (logoOrg) {
 		
 		document.getElementById("sorteoSeleccionadoBox").style.display = "block";
 		document.getElementById("zonaRifaActiva").style.display = "block";
+
+		const btnCambiar = document.getElementById("btnCambiarSorteo");
+
+const rifasDelOrg = (rifas || []).filter(r =>
+  String(r.organizador_id) === String(rifa.organizador_id)
+);
+
+if (btnCambiar) {
+  btnCambiar.style.display = rifasDelOrg.length > 1 ? "inline-block" : "none";
+}
 		
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
