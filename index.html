@@ -3599,6 +3599,8 @@ async function apartarBoletosInterno() {
     return;
   }
 
+  await guardarActividadSorteo("apartado", boletosSeleccionados);	
+
   alert("🟡 Boletos reservados correctamente");
 
   boletosSeleccionados = [];
