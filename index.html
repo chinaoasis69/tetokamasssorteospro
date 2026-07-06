@@ -4846,7 +4846,11 @@ const vendidos = boletos.filter(b =>
   (b.estado || "").toLowerCase() === "vendido"
 ).length;
 const total = boletos.length;
-const disponibles = total - vendidos;	
+const reservados = boletos.filter(b =>
+  (b.estado || "").toLowerCase() === "apartado"
+).length;
+
+const disponibles = total - vendidos - reservados;	
 
 const porcentaje = total > 0
   ? ((vendidos / total) * 100).toFixed(1)
