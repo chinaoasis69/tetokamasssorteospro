@@ -4454,6 +4454,13 @@ console.log(
             : "<p>No hay sorteos activos de este organizador.</p>"
         }
     `;
+
+setTimeout(() => {
+  box.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}, 200);	
 }	
 
 async function cargarPatrocinadoresPublicos(){
