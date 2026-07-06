@@ -3758,6 +3758,8 @@ const patrocinadorBeneficio =
     return;
   }
 
+  await guardarActividadSorteo("vendido", boletosSeleccionados);
+
   const nuevoSaldo = wallet.saldo - totalPagar;
 
  await supabaseClient
