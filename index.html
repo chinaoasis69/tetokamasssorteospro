@@ -4014,12 +4014,12 @@ console.log("ORGANIZADOR BUSCADO:", organizadorId);
 
   if (!data) {
     document.getElementById("saldoBox").innerText =
-      "💰 Saldo disponible con este organizador: 0 MASS";
+      "💰 Saldo disponible con este organizador: 0 MASS " + (window.unidadMassActual || "MX");
     return;
   }
 
   document.getElementById("saldoBox").innerText =
-    "💰 Saldo disponible con este organizador: " + data.saldo + " MASS";
+    "💰 Saldo disponible con este organizador: " + data.saldo + " MASS " + (window.unidadMassActual || "MX");
 }
 
 function limpiarMetodosPago() {
