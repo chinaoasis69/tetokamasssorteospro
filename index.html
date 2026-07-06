@@ -4746,8 +4746,15 @@ document.getElementById("precioRifa").innerText =
 
 		const btnCambiar = document.getElementById("btnCambiarSorteo");
 
+const orgIdActual = rifa.organizador_id;
+const rifasDelOrg = (rifas || []).filter(r =>
+    String(r.organizador_id) === String(orgIdActual)
+);
+
 if (btnCambiar) {
-  btnCambiar.style.display = "inline-block";
+    btnCambiar.style.display = rifasDelOrg.length > 1
+        ? "inline-block"
+        : "none";
 }
 
 		document.getElementById("stats").innerHTML = `
