@@ -4682,25 +4682,7 @@ document.getElementById("precioRifa").innerText =
         document.getElementById("premioActual").innerText =
             rifa.premio || rifa.titulo || "";
 
-		document.getElementById("stats").innerHTML = `
-  <div style="
-    border:2px solid #39ff14;
-    border-radius:14px;
-    padding:12px;
-    margin:15px auto;
-    max-width:520px;
-    text-align:center;
-    color:white;
-    background:#111;
-  ">
-    <h3 style="color:#7CFF00;margin:0 0 8px 0;">
-      🎯 Números de esta rifa
-    </h3>
-    <b>${rifa.titulo || rifa.premio || "Sorteo seleccionado"}</b><br>
-    💰 $${rifa.precio_boleto || 0} por número<br>
-    🎟️ ${rifa.total_numeros || ""} números
-  </div>
-`;
+		document.getElementById("stats").innerHTML = "";
 
 		const galeria = document.getElementById("galeriaRifa");
 galeria.innerHTML = "";
