@@ -6080,6 +6080,30 @@ function cerrarSesion(){
 
 }
 
+let actividadRealtime = [];
+
+function mostrarActividadRealtime(info) {
+  const numero = info.numero || "----";
+  const estado = (info.estado || "").toLowerCase();
+  const telefono = info.telefono || "----";
+
+  const accion = estado === "vendido" ? "compró" : "reservó";
+  const icono = estado === "vendido" ? "🟢" : "🟡";
+
+  actividadRealtime.unshift(
+    `${icono} Usuario ****${telefono} ${accion} el boleto ${numero}`
+  );
+
+  actividadRealtime = actividadRealtime.slice(0, 5);
+
+  const box = document.getElementById("actividadLive");
+  if (box) {
+    box.innerHTML = actividadRealtime
+      .map(x => `<div style="margin:6px 0;">${x}</div>`)
+      .join("");
+  }
+}	
+
 let canalRealtimeBoletos = null;
 
 function iniciarRealtime() {
