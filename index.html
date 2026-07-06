@@ -6099,6 +6099,20 @@ function iniciarRealtime() {
       async (payload) => {
         console.log("🔥 Cambio realtime boletos:", payload);
 
+		  const b = payload.new;
+
+if (b && (b.estado === "vendido" || b.estado === "apartado")) {
+
+    const ultimos4 = (b.telefono || "").slice(-4);
+
+    mostrarActividadRealtime({
+        numero: b.numero,
+        telefono: ultimos4,
+        estado: b.estado
+    });
+
+}
+
         if (RIFA_ID) {
   await cargarBoletos();
 }
