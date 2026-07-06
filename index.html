@@ -4506,8 +4506,6 @@ console.log(
   )
 );
 
-	box.id = "listaSorteosOrganizador";
-
     box.innerHTML = `
         <h2>🎯 Sorteos de este organizador</h2>
 
@@ -4660,7 +4658,7 @@ async function cargarClientePorId(clienteId){
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
-	const lista = document.getElementById("listaSorteosOrganizador");
+	const lista = document.getElementById("sorteosActivosBox");
 
 if (lista) {
     lista.style.display = "none";
@@ -4839,7 +4837,7 @@ if (box) {
 
 async function mostrarListaSorteosOrganizador(){
 
-    const lista = document.getElementById("listaSorteosOrganizador");
+    const lista = document.getElementById("sorteosActivosBox");
     if(lista){
         lista.style.display = "block";
     }
