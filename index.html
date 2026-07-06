@@ -4856,18 +4856,7 @@ document.getElementById("avanceRifa").innerText =
     `📊 ${porcentaje}% vendido`;	
 
 document.getElementById("porcentajeRifa").innerText =
-`📊 Vendidos: ${vendidos} | Disponibles: ${disponibles} | ${porcentaje}%`;
-
-const ultimoVendido = boletos.find(b =>
-  (b.estado || "").toLowerCase() === "vendido"
-);
-
-const actividad = document.getElementById("actividadRifa");
-if (actividad) {
-  actividad.innerText = ultimoVendido
-    ? `🔥 Último boleto vendido: ${ultimoVendido.numero}`
-    : `🔥 Sé el primero en comprar un boleto`;
-}	
+`📊 Vendidos: ${vendidos} | Disponibles: ${disponibles} | ${porcentaje}%`;	
 
 document.getElementById("barraPorcentaje").style.width = porcentaje + "%";	
 
