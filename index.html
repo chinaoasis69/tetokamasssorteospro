@@ -6076,6 +6076,37 @@ function cerrarSesion(){
 
 }
 
+let canalRealtimeBoletos = null;
+
+function iniciarRealtime() {
+  if (canalRealtimeBoletos) {
+    supabaseClient.removeChannel(canalRealtimeBoletos);
+  }
+
+  canalRealtimeBoletos = supabaseClient
+    .channel("realtime_boletos")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "boletos"
+      },
+      async (payload) => {
+        console.log("🔥 Cambio realtime boletos:", payload);
+
+        if (RIFA_ID) {
+          await cargarBoletos();
+        }
+
+        cargarMisBoletos();
+      }
+    )
+    .subscribe((status) => {
+      console.log("📡 Realtime boletos:", status);
+    });
+}	
+
 // Realtime
 loginMASS().then(async () => {
 
