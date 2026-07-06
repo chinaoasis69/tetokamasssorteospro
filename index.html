@@ -4424,6 +4424,16 @@ async function verSorteosDeOrganizador(orgId){
   String(r.organizador_id) === String(orgId)
 );
 
+for (const r of rifasOrg) {
+  const { count, error } = await supabaseClient
+    .from("boletos")
+    .select("*", { count: "exact", head: true })
+    .eq("rifa_id", r.id)
+    .eq("estado", "vendido");
+
+  r.vendidos = error ? 0 : (count || 0);
+}	
+
 if (rifasOrg.length === 1) {
   abrirRifa(rifasOrg[0].id);
 }
