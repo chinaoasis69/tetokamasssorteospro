@@ -4752,9 +4752,13 @@ const rifasDelOrg = (rifas || []).filter(r =>
 );
 
 if (btnCambiar) {
-    btnCambiar.style.display = rifasDelOrg.length > 1
-        ? "inline-block"
-        : "none";
+    if (rifasDelOrg.length > 1) {
+        btnCambiar.style.display = "inline-block";
+    } else {
+        btnCambiar.style.display = "none";
+        btnCambiar.removeAttribute("style");
+        btnCambiar.style.display = "none";
+    }
 }
 
 		document.getElementById("stats").innerHTML = `
