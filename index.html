@@ -6096,10 +6096,17 @@ function iniciarRealtime() {
         console.log("🔥 Cambio realtime boletos:", payload);
 
         if (RIFA_ID) {
-          await cargarBoletos();
-        }
+  await cargarBoletos();
+}
 
-        cargarMisBoletos();
+await cargarRifasPublicas();
+
+const orgIdActual = localStorage.getItem("organizador_publico_id");
+if (orgIdActual) {
+  await verSorteosDeOrganizador(orgIdActual);
+}
+
+cargarMisBoletos();
       }
     )
     .subscribe((status) => {
