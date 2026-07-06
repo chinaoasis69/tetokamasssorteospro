@@ -4625,6 +4625,13 @@ async function cargarClientePorId(clienteId){
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
+	actividadRealtime = [];
+
+const actividadBox = document.getElementById("actividadLive");
+if (actividadBox) {
+  actividadBox.innerHTML = "Esperando movimientos...";
+}
+
     const { data: rifa, error } = await supabaseClient
         .from("rifas")
         .select("*")
