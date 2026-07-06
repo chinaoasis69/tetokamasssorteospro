@@ -4850,31 +4850,8 @@ async function mostrarListaSorteosOrganizador(){
     const zonaRifa = document.getElementById("zonaRifaActiva");
     if(zonaRifa) zonaRifa.style.display = "none";
 
-    const grid1 = document.getElementById("gridBoletos");
-    if(grid1){
-        grid1.innerHTML = "";
-        grid1.style.display = "none";
-    }
-
-    const grid2 = document.getElementById("boletosGrid");
-    if(grid2){
-        grid2.innerHTML = "";
-        grid2.style.display = "none";
-    }
-
-    const tituloNumeros = document.getElementById("tituloNumeros");
-    if(tituloNumeros){
-        tituloNumeros.innerHTML = "";
-        tituloNumeros.style.display = "none";
-    }
-
     RIFA_ID = null;
-    boletos = [];
-    boletosSeleccionados = [];
-    boletoSeleccionado = null;
     window.rifaSeleccionada = null;
-
-    actualizarResumenCompra();
 
     window.scrollTo({
         top: 0,
