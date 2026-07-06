@@ -4467,7 +4467,7 @@ console.log(
                     <h3>🎯 ${r.titulo || "Sorteo activo"}</h3>
                     <p>🪙 ${r.precio_boleto || 0} MASS MX por número</p>
                     <p>🎟️ ${r.total_numeros || 0} números</p>
-                    <p>📊 ${(r.vendidos || 0)} vendidos • ${((r.total_numeros || 0) - (r.vendidos || 0))} disponibles</p>
+                    <p>📊 ${(r.vendidos || 0)} vendidos • ${(r.reservados || 0)} reservados • ${((r.total_numeros || 0) - (r.vendidos || 0) - (r.reservados || 0))} disponibles</p>
 
                     <button onclick="abrirRifa('${r.id}')">
                         🎁 Ver este sorteo
