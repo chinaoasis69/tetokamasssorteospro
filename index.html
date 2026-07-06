@@ -4740,6 +4740,12 @@ document.getElementById("precioRifa").innerText =
         document.getElementById("premioActual").innerText =
             rifa.premio || rifa.titulo || "";
 
+		const btnCambiar = document.getElementById("btnCambiarSorteo");
+
+if (btnCambiar) {
+  btnCambiar.style.display = "inline-block";
+}
+
 		document.getElementById("stats").innerHTML = `
 	<div style="
 border:2px solid #39ff14;
