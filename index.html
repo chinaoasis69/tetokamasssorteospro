@@ -6141,7 +6141,12 @@ function iniciarRealtime() {
 
 		  const b = payload.new;
 
-if (b && (b.estado === "vendido" || b.estado === "apartado")) {
+// Solo mostrar actividad si el boleto pertenece a la rifa abierta
+if (!b || String(b.rifa_id) !== String(RIFA_ID)) {
+  return;
+}
+
+if (b.estado === "vendido" || b.estado === "apartado") {
 
     const ultimos4 = (b.telefono || "").slice(-4);
 
