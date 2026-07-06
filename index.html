@@ -4840,9 +4840,14 @@ if (box) {
 async function mostrarListaSorteosOrganizador(){
 
     const lista = document.getElementById("listaSorteosOrganizador");
-    if(lista){
-        lista.style.display = "block";
-    }
+if(lista){
+    lista.style.display = "block";
+}
+
+if(window.rifaSeleccionada){
+    RIFA_ID = null;
+    window.rifaSeleccionada = null;
+}
 
     document.getElementById("sorteoSeleccionadoBox").style.display = "none";
 
