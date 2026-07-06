@@ -3572,6 +3572,27 @@ async function asegurarWallet() {
   }
 }
 
+async function guardarActividadSorteo(accion, listaBoletos) {
+  const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
+  const ult4 = tel.slice(-4);
+
+  const registros = listaBoletos.map(b => ({
+    rifa_id: RIFA_ID,
+    telefono: tel,
+    telefono_ult4: ult4,
+    numero: b.numero,
+    accion: accion
+  }));
+
+  const { error } = await supabaseClient
+    .from("actividad_sorteo")
+    .insert(registros);
+
+  if (error) {
+    console.error("Error guardando actividad:", error);
+  }
+}	
+
 let comprando = false;
 
 async function apartarBoletosInterno() {
