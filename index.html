@@ -3630,6 +3630,8 @@ async function apartarBoletosInterno() {
   document.getElementById("seleccionTexto").innerHTML =
     "Selecciona un número disponible";
 
+	actualizarResumenCompra();
+
   await cargarBoletos();
   await cargarMisBoletos();
 }
