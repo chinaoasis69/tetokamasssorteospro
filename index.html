@@ -4835,6 +4835,24 @@ if (box) {
 }
 }
 
+async function mostrarListaSorteosOrganizador(){
+
+    const lista = document.getElementById("listaSorteosOrganizador");
+    if(lista){
+        lista.style.display = "block";
+    }
+
+    document.getElementById("sorteoSeleccionadoBox").style.display = "none";
+
+    document.getElementById("zonaRifaActiva").style.display = "none";
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}	
+
 function pintarMetodoPago(id, valor) {
   const span = document.getElementById(id);
   if (!span) return;
