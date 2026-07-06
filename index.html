@@ -4857,10 +4857,10 @@ const porcentaje = total > 0
   : 0;
 
 document.getElementById("avanceRifa").innerText =
-    `📊 ${porcentaje}% vendido`;	
+`📊 ${vendidos} vendidos • ${reservados} reservados • ${disponibles} disponibles`;	
 
 document.getElementById("porcentajeRifa").innerText =
-`📊 Vendidos: ${vendidos} | Disponibles: ${disponibles} | ${porcentaje}%`;	
+`📊 Vendidos: ${vendidos} | Reservados: ${reservados} | Disponibles: ${disponibles} | ${porcentaje}%`;	
 
 document.getElementById("barraPorcentaje").style.width = porcentaje + "%";	
 
