@@ -4910,6 +4910,11 @@ async function mostrarListaSorteosOrganizador(){
         lista.style.display = "block";
     }
 
+	const cardPatro = document.getElementById("patrocinadoresPlataformaCard");
+if (cardPatro) {
+  cardPatro.style.display = "none";
+}
+
     const sorteoBox = document.getElementById("sorteoSeleccionadoBox");
     if(sorteoBox) sorteoBox.style.display = "none";
 
