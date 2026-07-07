@@ -1675,9 +1675,23 @@ async function mostrarPatrocinadoresAdmin(){
 
 async function nuevoPatrocinador(){
 
-  const tipo = prompt(
-    "¿Dónde pertenece este patrocinador?\n\n1 = Plataforma\n2 = Organizador\n3 = Sorteo"
-  );
+  const adminRol = localStorage.getItem("admin_rol");
+
+let mensajeTipo = "¿Dónde pertenece este patrocinador?\n\n";
+
+if (adminRol === "super_admin") {
+  mensajeTipo += "1 = Plataforma\n";
+}
+
+mensajeTipo += "2 = Organizador\n3 = Sorteo";
+
+const tipo = prompt(mensajeTipo);
+if(!tipo) return;
+
+if (tipo === "1" && adminRol !== "super_admin") {
+  alert("❌ Solo el Súper Admin puede agregar patrocinadores de plataforma.");
+  return;
+}
 
   if(!tipo) return;
 
