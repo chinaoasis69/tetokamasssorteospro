@@ -1823,15 +1823,7 @@ if (tipo === "1" && adminRol !== "super_admin") {
 
 async function editarPatrocinador(p){
 
-	if(!puedeEditarPatrocinador(p)) return;
-
-const adminRol = localStorage.getItem("admin_rol");
-const adminOrgId = localStorage.getItem("admin_organizador_id");
-
-if (adminRol === "organizador" && String(p.organizador_id) !== String(adminOrgId)) {
-    alert("No puedes modificar patrocinadores de otro organizador");
-    return;
-}	
+	if(!puedeEditarPatrocinador(p)) return;	
 
 const nombre = prompt("Nuevo nombre", p.nombre || "");
 if(!nombre) return;
