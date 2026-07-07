@@ -4579,34 +4579,28 @@ async function cargarPatrocinadoresPlataforma() {
   `;
 }	
 
-async function cargarPatrocinadoresPublicos(){
+async function cargarPatrocinadoresPublicos(tipo = "organizador", id = null){
 
-const box = document.getElementById("patrocinadoresBox");
-if(!box) return;
+  const box = document.getElementById("patrocinadoresBox");
+  if(!box) return;
 
-let organizadorPatrocinadoresId = null;
+  let query = supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .eq("activo", true);
 
-if (!organizadorPatrocinadoresId) {
-  const { data: principal, error: errorPrincipal } = await supabaseClient
-    .from("organizadores")
-    .select("id")
-    .eq("es_principal", true)
-    .single();
-
-  if (errorPrincipal || !principal) {
-    box.innerHTML = "Próximamente...";
-    return;
+  if(tipo === "organizador"){
+    query = query
+      .eq("organizador_id", id || clienteActual?.id)
+      .is("rifa_id", null);
   }
 
-  organizadorPatrocinadoresId = principal.id;
-}
+  if(tipo === "rifa"){
+    query = query
+      .eq("rifa_id", id);
+  }
 
-const { data, error } = await supabaseClient
-.from("patrocinadores")
-.select("*")
-.eq("activo", true)
-.eq("organizador_id", organizadorPatrocinadoresId)
-.order("created_at", { ascending: false });
+  const { data, error } = await query.order("created_at", { ascending:false });
 
   if(error){
     console.error(error);
@@ -4618,6 +4612,19 @@ const { data, error } = await supabaseClient
     box.innerHTML = "Próximamente...";
     return;
   }
+
+  box.innerHTML = data.map(p => `
+    <div class="card" style="margin:10px 0;text-align:center;">
+      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:140px;border-radius:12px;"><br>` : ""}
+      <b>${p.nombre || ""}</b><br>
+      ${p.descripcion || ""}<br>
+      <span style="color:#7CFF00;font-weight:bold;">
+        ${p.promocion || ""}
+      </span><br><br>
+      ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}','_blank')">📲 Contactar</button>` : ""}
+    </div>
+  `).join("");
+}
 
   let patrocinadorIndex = 0;
 
