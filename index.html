@@ -4710,6 +4710,17 @@ async function cargarClientePorId(clienteId){
   document.getElementById("pagoCashapp").textContent = data.cashapp || "--";
   document.getElementById("pagoApplePay").textContent = data.apple_pay || "--";
   document.getElementById("pagoPaypal").textContent = data.paypal || "--";
+}
+
+function mostrarPatrocinadorPlataforma(mostrar = true) {
+  const card = document.getElementById("patrocinadoresPlataformaCard");
+  if (!card) return;
+
+  card.style.display = mostrar ? "block" : "none";
+
+  if (mostrar && typeof cargarPatrocinadoresPlataforma === "function") {
+    cargarPatrocinadoresPlataforma();
+  }
 }	
 
 async function abrirRifa(rifaId){
