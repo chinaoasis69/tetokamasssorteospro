@@ -1669,6 +1669,12 @@ async function mostrarPatrocinadoresAdmin(){
 
 async function nuevoPatrocinador(){
 
+  const tipo = prompt(
+    "¿Dónde pertenece este patrocinador?\n\n1 = Plataforma\n2 = Organizador\n3 = Sorteo"
+  );
+
+  if(!tipo) return;
+
   const nombre = prompt("Nombre del patrocinador");
   if(!nombre) return;
 
@@ -1677,24 +1683,76 @@ async function nuevoPatrocinador(){
   const logo_url = prompt("URL del logo opcional") || "";
   const whatsapp = prompt("WhatsApp del patrocinador") || "";
 
-if(!clienteActual?.id){
-   alert("No se encontró el organizador. Cierra y abre el panel admin otra vez.");
-   return;
-}
+  let organizador_id = null;
+  let rifa_id = null;
 
-const { error } = await supabaseClient
-.from("patrocinadores")
-.insert({
+  if(tipo === "1"){
+    const { data: principal, error } = await supabaseClient
+      .from("organizadores")
+      .select("id")
+      .eq("es_principal", true)
+      .single();
 
-   organizador_id: localStorage.getItem("admin_organizador_id") || clienteActual.id,
-   nombre,
-   descripcion,
-   promocion,
-   logo_url,
-   whatsapp,
-   activo: true
+    if(error || !principal){
+      alert("❌ No se encontró el organizador principal");
+      return;
+    }
 
-});
+    organizador_id = principal.id;
+    rifa_id = null;
+  }
+
+  if(tipo === "2"){
+    organizador_id = localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+    rifa_id = null;
+  }
+
+  if(tipo === "3"){
+    organizador_id = localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+
+    const { data: rifasOrg, error } = await supabaseClient
+      .from("rifas")
+      .select("id, titulo, premio")
+      .eq("organizador_id", organizador_id)
+      .order("created_at", { ascending:false });
+
+    if(error || !rifasOrg || rifasOrg.length === 0){
+      alert("❌ Este organizador no tiene sorteos");
+      return;
+    }
+
+    const lista = rifasOrg.map((r, i) =>
+      `${i + 1}. ${r.titulo || r.premio || "Sorteo sin título"}`
+    ).join("\n");
+
+    const elegido = prompt("Elige el sorteo:\n\n" + lista);
+    const index = Number(elegido) - 1;
+
+    if(!rifasOrg[index]){
+      alert("❌ Sorteo inválido");
+      return;
+    }
+
+    rifa_id = rifasOrg[index].id;
+  }
+
+  if(!organizador_id){
+    alert("❌ No se encontró organizador");
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("patrocinadores")
+    .insert({
+      organizador_id,
+      rifa_id,
+      nombre,
+      descripcion,
+      promocion,
+      logo_url,
+      whatsapp,
+      activo: true
+    });
 
   if(error){
     console.error(error);
