@@ -4728,11 +4728,6 @@ async function abrirRifa(rifaId){
 
 	mostrarPatrocinadorPlataforma(false);
 
-	const cardPatro = document.getElementById("patrocinadoresPlataformaCard");
-if (cardPatro) {
-  cardPatro.style.display = "none";
-}
-
 	const lista = document.getElementById("sorteosActivosBox");
 
 if (lista) {
@@ -4923,16 +4918,12 @@ if (box) {
 
 async function mostrarListaSorteosOrganizador(){
 
+	mostrarPatrocinadorPlataforma(true);
+
     const lista = document.getElementById("sorteosActivosBox");
     if(lista){
         lista.style.display = "block";
     }
-
-	const cardPatro = document.getElementById("patrocinadoresPlataformaCard");
-if (cardPatro) {
-  cardPatro.style.display = "block";
-  cargarPatrocinadoresPlataforma();	
-}
 
     const sorteoBox = document.getElementById("sorteoSeleccionadoBox");
     if(sorteoBox) sorteoBox.style.display = "none";
