@@ -4715,6 +4715,11 @@ async function cargarClientePorId(clienteId){
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
+	const cardPatro = document.getElementById("patrocinadoresPlataformaCard");
+if (cardPatro) {
+  cardPatro.style.display = "none";
+}
+
 	const lista = document.getElementById("sorteosActivosBox");
 
 if (lista) {
