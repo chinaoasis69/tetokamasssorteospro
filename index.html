@@ -1784,6 +1784,32 @@ if (tipo === "1" && adminRol !== "super_admin") {
   mostrarPatrocinadoresAdmin();
 }
 
+	function puedeEditarPatrocinador(p){
+
+  const adminRol = localStorage.getItem("admin_rol");
+  const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+  if(!p){
+    alert("❌ Patrocinador no encontrado.");
+    return false;
+  }
+
+  if(p.rifa_id == null && adminRol !== "super_admin"){
+    alert("❌ Solo el Súper Admin puede modificar patrocinadores de Plataforma.");
+    return false;
+  }
+
+  if(
+    adminRol === "organizador" &&
+    String(p.organizador_id) !== String(adminOrgId)
+  ){
+    alert("❌ Este patrocinador pertenece a otro organizador.");
+    return false;
+  }
+
+  return true;
+}
+
 async function editarPatrocinador(p){
 
 const adminRol = localStorage.getItem("admin_rol");
