@@ -1923,27 +1923,34 @@ if (adminRol === "organizador") {
 
 async function eliminarPatrocinador(id){
 
+  const { data: p, error: errorBuscar } = await supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if(errorBuscar || !p){
+    alert("❌ No se encontró el patrocinador.");
+    return;
+  }
+
+  if(!puedeEditarPatrocinador(p)) return;
+
   const confirmar = confirm("¿Eliminar este patrocinador?");
   if(!confirmar) return;
 
-  const { data, error } = await supabaseClient
+  const { error } = await supabaseClient
     .from("patrocinadores")
     .delete()
-    .eq("id", id)
-    .select();
+    .eq("id", id);
 
   if(error){
     console.error(error);
-    alert("Error eliminando patrocinador");
+    alert("❌ Error eliminando patrocinador");
     return;
   }
 
-  if(!data || data.length === 0){
-    alert("No se eliminó. Ese patrocinador no pertenece a este organizador o no se encontró.");
-    return;
-  }
-
-  alert("Patrocinador eliminado");
+  alert("✅ Patrocinador eliminado");
   mostrarPatrocinadoresAdmin();
   cargarPatrocinadoresPublicos();
 }	
