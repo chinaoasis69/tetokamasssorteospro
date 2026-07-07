@@ -1861,6 +1861,19 @@ async function subirLogoPatrocinador(event, patrocinadorId){
   const file = event.target.files[0];
   if(!file) return;
 
+const { data: p, error: errorBuscar } = await supabaseClient
+  .from("patrocinadores")
+  .select("*")
+  .eq("id", patrocinadorId)
+  .single();
+
+if(errorBuscar || !p){
+  alert("❌ No se encontró el patrocinador.");
+  return;
+}
+
+if(!puedeEditarPatrocinador(p)) return;	
+
 const adminRol = localStorage.getItem("admin_rol");
 const adminOrgId = localStorage.getItem("admin_organizador_id");
 
