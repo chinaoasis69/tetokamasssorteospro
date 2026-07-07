@@ -4864,8 +4864,6 @@ async function mostrarListaSorteosOrganizador(){
     RIFA_ID = null;
     window.rifaSeleccionada = null;
 
-    const lista = document.getElementById("sorteosActivosBox");
-
 if (lista) {
   setTimeout(() => {
     lista.scrollIntoView({
@@ -4873,7 +4871,8 @@ if (lista) {
       block: "start"
     });
   }, 150);
-}	
+}
+}
 
 function pintarMetodoPago(id, valor) {
   const span = document.getElementById(id);
