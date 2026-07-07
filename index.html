@@ -4542,7 +4542,7 @@ async function cargarPatrocinadoresPublicos(){
 const box = document.getElementById("patrocinadoresBox");
 if(!box) return;
 
-let organizadorPatrocinadoresId = clienteActual?.id || null;
+let organizadorPatrocinadoresId = null;
 
 if (!organizadorPatrocinadoresId) {
   const { data: principal, error: errorPrincipal } = await supabaseClient
