@@ -4873,6 +4873,24 @@ if (logoOrg) {
         document.getElementById("nombreRifa").innerText =
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
+	document.getElementById("nombreRifa").innerHTML = `
+  <div style="font-size:28px;font-weight:bold;">
+    ${rifa.titulo || "Sorteo seleccionado"}
+  </div>
+
+  <div style="font-size:20px;margin-top:6px;color:white;">
+    🎁 Premio: ${rifa.premio || ""}
+  </div>
+
+  <div style="font-size:16px;margin-top:6px;color:#ccc;">
+    📢 ${rifa.aviso || ""}
+  </div>
+
+  <div style="font-size:16px;margin-top:6px;color:#7CFF00;">
+    📊 Mínimo para sortear: ${rifa.minimo_sorteo || rifa.minimo_porcentaje || 0}%
+  </div>
+`;
+
         const unidadMass = Array.isArray(rifa.mass_unidades_aceptadas)
     ? rifa.mass_unidades_aceptadas[0]
     : "MX";
