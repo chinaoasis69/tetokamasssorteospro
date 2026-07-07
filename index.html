@@ -4212,7 +4212,7 @@ mapaOrganizadores = {};
 
     <div class="card" style="text-align:center; margin-bottom:25px;">
       <h2>🤝 Negocios Patrocinadores</h2>
-      <div id="patrocinadoresBox">
+      <div id="patrocinadoresPlataformaBox">
         Próximamente...
       </div>
     </div>
@@ -4535,6 +4535,48 @@ setTimeout(() => {
     block: "start"
   });
 }, 200);	
+}
+
+async function cargarPatrocinadoresPlataforma() {
+  const box = document.getElementById("patrocinadoresPlataformaBox");
+  if (!box) return;
+
+  const { data: principal, error: errorPrincipal } = await supabaseClient
+    .from("organizadores")
+    .select("id")
+    .eq("es_principal", true)
+    .single();
+
+  if (errorPrincipal || !principal) {
+    box.innerHTML = "Próximamente...";
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .eq("activo", true)
+    .eq("organizador_id", principal.id)
+    .order("created_at", { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    box.innerHTML = "Próximamente...";
+    return;
+  }
+
+  const p = data[0];
+
+  box.innerHTML = `
+    <div class="card" style="margin:10px 0;text-align:center;">
+      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:140px;border-radius:14px;"><br>` : ""}
+      <b>${p.nombre || ""}</b><br>
+      ${p.descripcion || ""}<br>
+      <span style="color:#7CFF00;font-weight:bold;">
+        ${p.promocion || ""}
+      </span><br><br>
+      ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}', '_blank')">📞 Contactar</button>` : ""}
+    </div>
+  `;
 }	
 
 async function cargarPatrocinadoresPublicos(){
