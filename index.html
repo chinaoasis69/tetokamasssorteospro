@@ -1723,9 +1723,15 @@ if (tipo === "1" && adminRol !== "super_admin") {
   }
 
   if(tipo === "2"){
-    organizador_id = localStorage.getItem("admin_organizador_id") || clienteActual?.id;
-    rifa_id = null;
+  organizador_id = localStorage.getItem("admin_organizador_id");
+
+  if(!organizador_id){
+    alert("❌ No se encontró el organizador de esta sesión.");
+    return;
   }
+
+  rifa_id = null;
+}
 
   if(tipo === "3"){
     organizador_id = localStorage.getItem("admin_organizador_id") || clienteActual?.id;
