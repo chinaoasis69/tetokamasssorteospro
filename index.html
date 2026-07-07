@@ -4866,7 +4866,7 @@ async function mostrarListaSorteosOrganizador(){
 
 if (lista) {
   setTimeout(() => {
-    const y = lista.getBoundingClientRect().top + window.pageYOffset + 10;
+    const y = lista.getBoundingClientRect().top + window.pageYOffset - 20;
 
 window.scrollTo({
   top: y,
