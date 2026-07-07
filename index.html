@@ -506,7 +506,7 @@ Selecciona una rifa
 </div>
 	  
 </div>
-<div id="patrocinadoresSorteoCard" class="card" style="text-align:center; margin:18px auto;">
+<div id="patrocinadoresSorteoCard" class="card" style="text-align:center;margin:20px auto;display:none !important;">
   <h3>🤝 Patrocinadores del sorteo</h3>
   <div id="patrocinadoresBox">
     Próximamente...
@@ -4741,6 +4741,12 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
+	const cardSorteo = document.getElementById("patrocinadoresSorteoCard");
+if (cardSorteo) {
+  cardSorteo.style.setProperty("display", "block", "important");
+}
+await cargarPatrocinadoresPublicos("rifa", rifaId);
+
 	mostrarPatrocinadorPlataforma(false);
 
 	const lista = document.getElementById("sorteosActivosBox");
@@ -4932,6 +4938,11 @@ if (box) {
 }
 
 async function mostrarListaSorteosOrganizador(){
+
+	const cardSorteo = document.getElementById("patrocinadoresSorteoCard");
+if (cardSorteo) {
+  cardSorteo.style.setProperty("display", "none", "important");
+}
 
 	mostrarPatrocinadorPlataforma(true);
 
