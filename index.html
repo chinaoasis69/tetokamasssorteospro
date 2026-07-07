@@ -4726,6 +4726,8 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 
+	mostrarPatrocinadorPlataforma(false);
+
 	const cardPatro = document.getElementById("patrocinadoresPlataformaCard");
 if (cardPatro) {
   cardPatro.style.display = "none";
