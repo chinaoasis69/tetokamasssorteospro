@@ -4866,10 +4866,12 @@ async function mostrarListaSorteosOrganizador(){
 
 if (lista) {
   setTimeout(() => {
-    lista.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    const y = lista.getBoundingClientRect().top + window.pageYOffset + 140;
+
+window.scrollTo({
+  top: y,
+  behavior: "smooth"
+});
   }, 150);
 }
 }
