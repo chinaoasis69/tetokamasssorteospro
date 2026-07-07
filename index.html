@@ -4542,15 +4542,28 @@ async function cargarPatrocinadoresPublicos(){
 const box = document.getElementById("patrocinadoresBox");
 if(!box) return;
 
-if(!clienteActual || !clienteActual.id){
-   return;
+let organizadorPatrocinadoresId = clienteActual?.id || null;
+
+if (!organizadorPatrocinadoresId) {
+  const { data: principal, error: errorPrincipal } = await supabaseClient
+    .from("organizadores")
+    .select("id")
+    .eq("es_principal", true)
+    .single();
+
+  if (errorPrincipal || !principal) {
+    box.innerHTML = "Próximamente...";
+    return;
+  }
+
+  organizadorPatrocinadoresId = principal.id;
 }
 
 const { data, error } = await supabaseClient
 .from("patrocinadores")
 .select("*")
 .eq("activo", true)
-.eq("organizador_id", clienteActual.id)
+.eq("organizador_id", organizadorPatrocinadoresId)
 .order("created_at", { ascending: false });
 
   if(error){
