@@ -2001,7 +2001,7 @@ const { data, error } = await query;
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
 
-        <button onclick="abrirModalRifa()">➕ Nueva dinámica</button>
+        <button onclick="abrirModalRifa()">➕ Nueva rifa</button>
 
         <br><br>
 
@@ -2012,7 +2012,7 @@ const { data, error } = await query;
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
-		<button onclick="abrirModalRifa()">➕ Nueva dinámica</button>
+		<button onclick="abrirModalRifa()">➕ Nueva rifa</button>
         <br><br>
 
         ${data.map(r => `
@@ -2714,7 +2714,7 @@ function abrirModalRifa(datos = null) {
     document.getElementById("modalRifa").style.display = "block";
 
     document.getElementById("tituloModalRifa").innerText =
-        datos ? "✏️ Editar dinámica" : "🎯 Nueva dinámica";
+        datos ? "✏️ Editar rifa" : "🎯 Nueva rifa";
 
     document.getElementById("formRifaId").value = datos?.id || "";
     document.getElementById("formTitulo").value = datos?.titulo || "";
@@ -7410,7 +7410,7 @@ font-family:Arial, sans-serif;">
     resize:vertical;
 }
 </style>  
-    <h2 id="tituloModalRifa">🎯 Nueva dinámica</h2>
+    <h2 id="tituloModalRifa">🎯 Nueva rifa</h2>
 
     <input id="formRifaId" type="hidden">
 
