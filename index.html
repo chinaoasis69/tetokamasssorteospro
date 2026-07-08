@@ -2954,7 +2954,12 @@ async function activarRifaAdmin(id){
 
     alert("✅ Rifa activada");
 
-    mostrarSorteosAdmin();
+mostrarSorteosAdmin();
+await cargarRifasPublicas();
+
+if (typeof mostrarOrganizadoresActivos === "function") {
+    mostrarOrganizadoresActivos();
+}
 }
 
 async function editarRifaAdmin(id){
