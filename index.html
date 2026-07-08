@@ -2801,14 +2801,20 @@ async function guardarRifaFormulario() {
 
   if (error) {
     console.error(error);
-    alert("❌ Error guardando dinámica");
+    alert("❌ Error guardando Rifa");
     return;
   }
 
-  alert(id ? "✅ Dinámica actualizada" : "✅ Dinámica creada");
+  alert(id ? "✅ Rifa actualizada" : "✅ Rifa creada");
 
-  cerrarModalRifa();
-  mostrarSorteosAdmin();
+cerrarModalRifa();
+
+await mostrarSorteosAdmin();
+await cargarRifasPublicas();
+
+if (typeof mostrarOrganizadoresActivos === "function") {
+    await mostrarOrganizadoresActivos();
+}
 }	
 
 async function crearRifaAdmin(){
