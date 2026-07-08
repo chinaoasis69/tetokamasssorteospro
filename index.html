@@ -2723,7 +2723,15 @@ async function crearRifaAdmin(){
     const total = prompt("Cantidad de números");
     if(!total) return;
 
-    const fecha = prompt("Fecha sorteo (2026-07-01)");
+    const fecha = prompt(
+`📅 Fecha del sorteo
+
+Formato:
+AAAA-MM-DD
+
+Ejemplo:
+2026-12-24`
+);
     if(!fecha) return;
 
 	const metodo = prompt(
