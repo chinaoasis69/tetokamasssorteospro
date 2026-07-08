@@ -2730,10 +2730,84 @@ function abrirModalRifa(datos = null) {
 }
 
 async function guardarRifaFormulario() {
-    alert("✅ Prueba correcta. Cerrando formulario...");
+  const id = document.getElementById("formRifaId").value;
 
-    cerrarModalRifa();
-    mostrarSorteosAdmin();
+  const titulo = document.getElementById("formTitulo").value.trim();
+  const premio = document.getElementById("formPremio").value.trim();
+  const precio = document.getElementById("formPrecio").value;
+  const total = document.getElementById("formTotal").value;
+  const fecha = document.getElementById("formFecha").value;
+  const metodo = document.getElementById("formMetodo").value.trim();
+  const cifras = document.getElementById("formCifras").value;
+  const imagen = document.getElementById("formImagen").value.trim();
+  const aviso = document.getElementById("formAviso").value.trim();
+  const porcentaje = document.getElementById("formPorcentaje").value || 80;
+
+  if (!titulo || !premio || !precio || !total || !fecha || !metodo || !cifras) {
+    alert("❌ Completa los campos obligatorios.");
+    return;
+  }
+
+  const payload = {
+    titulo,
+    premio,
+    precio_boleto: Number(precio),
+    total_numeros: Number(total),
+    fecha_sorteo: fecha,
+    metodo_sorteo: metodo,
+    cifras_sorteo: Number(cifras),
+    imagen_url: imagen,
+    aviso,
+    porcentaje_minimo: Number(porcentaje)
+  };
+
+  let error;
+  let nuevaRifa;
+
+  if (id) {
+    const res = await supabaseClient
+      .from("rifas")
+      .update(payload)
+      .eq("id", id);
+
+    error = res.error;
+  } else {
+    payload.estado = "programada";
+    payload.organizador_id =
+      localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+
+    const res = await supabaseClient
+      .from("rifas")
+      .insert([payload])
+      .select()
+      .single();
+
+    error = res.error;
+    nuevaRifa = res.data;
+
+    if (!error && nuevaRifa) {
+      await generarBoletosParaRifa(nuevaRifa.id, Number(total));
+
+      await supabaseClient.from("premios_rifa").insert([{
+        rifa_id: nuevaRifa.id,
+        lugar: 1,
+        nombre: premio,
+        descripcion: "Premio principal",
+        imagen_url: imagen
+      }]);
+    }
+  }
+
+  if (error) {
+    console.error(error);
+    alert("❌ Error guardando dinámica");
+    return;
+  }
+
+  alert(id ? "✅ Dinámica actualizada" : "✅ Dinámica creada");
+
+  cerrarModalRifa();
+  mostrarSorteosAdmin();
 }	
 
 async function crearRifaAdmin(){
