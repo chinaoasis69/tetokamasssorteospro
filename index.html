@@ -4801,7 +4801,23 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
   if (mostrar && typeof cargarPatrocinadoresPlataforma === "function") {
     cargarPatrocinadoresPlataforma();
   }
-}	
+}
+
+	function formatearFechaCorta(fecha){
+  if(!fecha) return "--";
+
+  const meses = ["Ene.", "Feb.", "Mar.", "Abr.", "May.", "Jun.", "Jul.", "Ago.", "Sep.", "Oct.", "Nov.", "Dic."];
+  const limpia = String(fecha).split("T")[0];
+  const partes = limpia.split("-");
+
+  if(partes.length < 3) return fecha;
+
+  const año = partes[0];
+  const mes = meses[Number(partes[1]) - 1] || partes[1];
+  const dia = Number(partes[2]);
+
+  return `${dia} ${mes} ${año}`;
+}
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
@@ -4913,7 +4929,7 @@ document.getElementById("precioRifa").innerText =
 		actualizarResumenCompra();
 
         document.getElementById("fechaRifa").innerText =
-            `📅 Sorteo: ${rifa.fecha_sorteo || "--"}`;
+            `📅 Sorteo: ${formatearFechaCorta(rifa.fecha_sorteo || rifa.fecha || "")}`;
 
         document.getElementById("premioActual").innerText =
             rifa.premio || rifa.titulo || "";
