@@ -7390,6 +7390,55 @@ if(idsRifas.length > 0){
 
 </script>
 
+async function mostrarDashboardGlobalSuperAdmin(){
+
+  const cont = document.getElementById("superAdminContenido");
+  if(!cont) return;
+
+  cont.innerHTML = "<p>Cargando Dashboard Global...</p>";
+
+  const { data: organizadores } = await supabaseClient
+    .from("organizadores")
+    .select("id");
+
+  const { data: rifas } = await supabaseClient
+    .from("rifas")
+    .select("id, estado");
+
+  const { data: boletos } = await supabaseClient
+    .from("boletos")
+    .select("id, estado");
+
+  const totalOrganizadores = organizadores?.length || 0;
+  const totalRifas = rifas?.length || 0;
+  const rifasActivas = (rifas || []).filter(r => r.estado === "activa").length;
+  const boletosVendidos = (boletos || []).filter(b => b.estado === "vendido").length;
+
+  cont.innerHTML = `
+    <h3>📊 Dashboard Global</h3>
+
+    <div class="card">
+      <h3>👥 Organizadores</h3>
+      <div style="font-size:32px;font-weight:bold;color:#39ff14;">${totalOrganizadores}</div>
+    </div>
+
+    <div class="card">
+      <h3>🎯 Sorteos totales</h3>
+      <div style="font-size:32px;font-weight:bold;color:#39ff14;">${totalRifas}</div>
+    </div>
+
+    <div class="card">
+      <h3>✅ Sorteos activos</h3>
+      <div style="font-size:32px;font-weight:bold;color:#39ff14;">${rifasActivas}</div>
+    </div>
+
+    <div class="card">
+      <h3>🎟️ Boletos vendidos</h3>
+      <div style="font-size:32px;font-weight:bold;color:#39ff14;">${boletosVendidos}</div>
+    </div>
+  `;
+}	  
+
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <script>
