@@ -1299,9 +1299,20 @@ async function adminSecreto(){
     }
 
     if(adminData.rol === "super_admin"){
-      abrirAdmin();
-      return;
-    }
+  document.getElementById("panelAdmin").style.display = "none";
+  document.getElementById("panelSuperAdmin").style.display = "block";
+
+  document.getElementById("superAdminContenido").innerHTML = `
+    <button onclick="mostrarDashboardAdmin()">📊 Dashboard global</button>
+    <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+    <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
+    <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
+    <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
+    <button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+    <button onclick="cerrarPanelAdmin()">❌ Cerrar panel</button>
+  `;
+  return;
+}
 
     alert("❌ No tienes permisos de administrador");
     return;
@@ -1324,10 +1335,9 @@ function abrirAdmin(){
 }
 
 function cerrarPanelAdmin(){
-
     document.getElementById("panelAdmin").style.display = "none";
-
-}
+	document.getElementById("panelSuperAdmin").style.display = "none";
+  }
 
 async function cargarPagosPendientes(){
 
