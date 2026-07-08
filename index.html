@@ -2099,8 +2099,8 @@ margin-top:8px;
 🟢 Rifa Activa
 </div>
 
-<button onclick="editarRifaAdmin('${r.id}')">
-✏️ Editar rifa
+<button onclick='abrirModalRifa(${JSON.stringify(r)})'>
+  ✏️ Editar rifa
 </button>
 
 ${r.estado === 'pausada' ? `
