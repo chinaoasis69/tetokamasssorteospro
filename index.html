@@ -7416,6 +7416,14 @@ async function mostrarDashboardGlobalSuperAdmin(){
   const rifasActivas = (rifas || []).filter(r => r.estado === "activa").length;
   const boletosVendidos = (boletos || []).filter(b => b.estado === "vendido").length;
 
+	const ventasGeneradas = (rifas || []).reduce((total, r) => {
+  const vendidosDeRifa = (boletos || []).filter(
+    b => b.rifa_id === r.id && b.estado === "vendido"
+  ).length;
+
+  return total + (vendidosDeRifa * Number(r.precio_boleto || 0));
+}, 0);
+
   cont.innerHTML = `
     <h3>📊 Dashboard Global</h3>
 
