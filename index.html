@@ -990,6 +990,12 @@ Cargando historial...
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
+<button id="btnVolverSuperAdmin"
+        onclick="volverPanelSuperAdmin()"
+        style="display:none;">
+  👑 Volver al Súper Admin
+</button>	
+
 <button onclick="mostrarDashboardOrganizador()">
     📊 Dashboard
 </button>	
@@ -1129,7 +1135,27 @@ font-weight:bold;
         Próximamente...
     </div>
 
-</div>	  
+</div>
+
+<script>
+function volverPanelSuperAdmin(){
+  localStorage.removeItem("admin_organizador_id");
+  localStorage.removeItem("organizador_admin_id");
+
+  document.getElementById("panelAdmin").style.display = "none";
+  document.getElementById("panelSuperAdmin").style.display = "block";
+
+  document.getElementById("superAdminContenido").innerHTML = `
+    <button onclick="mostrarDashboardAdmin()">📊 Dashboard global</button>
+    <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+    <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
+    <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
+    <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
+    <button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+    <button onclick="cerrarPanelAdmin()">❌ Cerrar panel</button>
+  `;
+}
+</script>	  
 
 <script>
 window.addEventListener("load", () => {
