@@ -2808,13 +2808,7 @@ async function guardarRifaFormulario() {
   alert(id ? "✅ Rifa actualizada" : "✅ Rifa creada");
 
 cerrarModalRifa();
-
-await mostrarSorteosAdmin();
-await cargarRifasPublicas();
-
-if (typeof mostrarOrganizadoresActivos === "function") {
-    await mostrarOrganizadoresActivos();
-}
+mostrarSorteosAdmin();
 }	
 
 async function crearRifaAdmin(){
@@ -2959,13 +2953,7 @@ async function activarRifaAdmin(id){
     }
 
     alert("✅ Rifa activada");
-
 mostrarSorteosAdmin();
-await cargarRifasPublicas();
-
-if (typeof mostrarOrganizadoresActivos === "function") {
-    mostrarOrganizadoresActivos();
-}
 }
 
 async function editarRifaAdmin(id){
