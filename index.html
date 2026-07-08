@@ -2726,7 +2726,8 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
     document.getElementById("formImagen").value = datos?.imagen_url || "";
     document.getElementById("formAviso").value = datos?.aviso || "";
-    document.getElementById("formPorcentaje").value = datos?.porcentaje_minimo || 80;
+    document.getElementById("formPorcentaje").value =
+      datos ? (datos.porcentaje_minimo ?? "") : "";
 }
 
 async function guardarRifaFormulario() {
@@ -7425,7 +7426,7 @@ font-family:Arial, sans-serif;">
     <input id="formCifras" type="number" placeholder="Últimas cifras: 2, 3 o 4">
     <input id="formImagen" placeholder="URL imagen premio">
     <textarea id="formAviso" placeholder="Aviso del sorteo"></textarea>
-    <input id="formPorcentaje" type="number" placeholder="Mínimo para sortear %">
+    <input id="formPorcentaje" type="number" min="1" max="100" placeholder="Mínimo para sortear %">
 
     <br><br>
 
