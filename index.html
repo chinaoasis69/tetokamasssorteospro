@@ -2052,7 +2052,7 @@ year: "numeric"
 <b>🔢 Cifras:</b> ${r.cifras_sorteo || "Sin cifras"}<br>
 <b>📢 Aviso:</b> ${r.aviso || "El sorteo se realizará al venderse el porcentaje mínimo establecido. Si no se alcanza, podrá ser reprogramado."}<br>
 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
-<b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo || 80}%<br>
+<b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo ?? 80}%<br>
 				<br>
                 ${r.estado !== 'activa' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
