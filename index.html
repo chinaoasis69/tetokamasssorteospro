@@ -3457,7 +3457,7 @@ async function mostrarOrganizadoresAdmin(){
     return;
 }
 
-  document.getElementById("adminContenido").innerHTML =
+  document.getElementById("superAdminContenido").innerHTML =
     "<p>Cargando organizadores...</p>";
 
   const { data, error } = await supabaseClient
@@ -3467,12 +3467,12 @@ async function mostrarOrganizadoresAdmin(){
 
   if(error){
     console.error(error);
-    document.getElementById("adminContenido").innerHTML =
+    document.getElementById("superAdminContenido").innerHTML =
       "<p>❌ Error cargando organizadores.</p>";
     return;
   }
 
-  document.getElementById("adminContenido").innerHTML = `
+  document.getElementById("superAdminContenido").innerHTML = `
     <h3>👤 Organizadores</h3>
 
     <button onclick="crearOrganizadorAdmin()">
