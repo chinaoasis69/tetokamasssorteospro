@@ -2050,7 +2050,7 @@ year: "numeric"
 }<br>
 <b>🎰 Método:</b> ${r.metodo_sorteo || "Sin método"}<br>
 <b>🔢 Cifras:</b> ${r.cifras_sorteo || "Sin cifras"}<br>
-<b>📢 Aviso:</b> ${r.aviso || "El sorteo se realizará al venderse el porcentaje mínimo establecido. Si no se alcanza, podrá ser reprogramado."}<br>
+${r.aviso ? `<b>📢 Aviso:</b> ${r.aviso}<br>` : ""}
 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
 <b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo ?? 80}%<br>
 				<br>
