@@ -4939,8 +4939,7 @@ document.getElementById("precioRifa").innerText =
         document.getElementById("fechaRifa").innerText =
             `📅 Sorteo: ${formatearFechaCorta(rifa.fecha_sorteo || rifa.fecha || "")}`;
 
-        document.getElementById("premioActual").innerText =
-            rifa.premio || rifa.titulo || "";
+        document.getElementById("premioActual").innerText = "";
 
 		const btnCambiar = document.getElementById("btnCambiarSorteo");
 
@@ -5168,8 +5167,7 @@ const porcentaje = total > 0
   ? ((vendidos / total) * 100).toFixed(1)
   : 0;
 
-document.getElementById("avanceRifa").innerText =
-`📊 ${vendidos} vendidos • ${reservados} reservados • ${disponibles} disponibles`;	
+document.getElementById("avanceRifa").innerText = "";	
 
 document.getElementById("porcentajeRifa").innerText =
 `📊 Vendidos: ${vendidos} | Reservados: ${reservados} | Disponibles: ${disponibles} | ${porcentaje}%`;	
