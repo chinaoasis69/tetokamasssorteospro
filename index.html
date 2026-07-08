@@ -3533,11 +3533,15 @@ async function seleccionarOrganizadorAdmin(id){
 clienteActual = data;
 localStorage.setItem("organizador_admin_id", data.id);
 
-await cargarRifasPublicas();	
+await cargarRifasPublicas();
 
-  alert("✅ Organizador seleccionado: " + data.nombre);
+document.getElementById("panelSuperAdmin").style.display = "none";
+document.getElementById("panelAdmin").style.display = "block";
 
-  mostrarSorteosAdmin();
+alert("✅ Entrando al panel de: " + data.nombre);
+
+mostrarDashboardOrganizador();
+	
 }	
 
 async function crearOrganizadorAdmin(){
