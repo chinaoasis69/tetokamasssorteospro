@@ -2010,8 +2010,8 @@ async function mostrarSorteosAdmin(){
 const adminRol = localStorage.getItem("admin_rol");
 const adminOrgId = localStorage.getItem("admin_organizador_id");
 
-if (adminRol === "organizador" && adminOrgId) {
-    query = query.eq("organizador_id", adminOrgId);
+if (adminOrgId) {
+  query = query.eq("organizador_id", adminOrgId);
 }
 
 query = query.order("created_at", { ascending:false });
@@ -3531,6 +3531,7 @@ async function seleccionarOrganizadorAdmin(id){
   }
 
 clienteActual = data;
+localStorage.setItem("admin_organizador_id", data.id);
 localStorage.setItem("organizador_admin_id", data.id);
 
 await cargarRifasPublicas();
