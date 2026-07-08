@@ -7283,7 +7283,34 @@ z-index:999999;
 display:none;
 box-shadow:0 0 25px rgba(57,255,20,.8);
 font-family:Arial, sans-serif;">
-</div>	
+</div>
+
+<div id="modalRifa" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:9999; padding:20px; overflow:auto;">
+  <div class="card" style="max-width:520px; margin:30px auto;">
+    <h2 id="tituloModalRifa">🎯 Nueva dinámica</h2>
+
+    <input id="formRifaId" type="hidden">
+
+    <input id="formTitulo" placeholder="Título de la dinámica">
+    <input id="formPremio" placeholder="Premio principal">
+    <input id="formPrecio" type="number" placeholder="Precio por boleto">
+    <input id="formTotal" type="number" placeholder="Cantidad de números">
+
+    <label>📅 Fecha del sorteo</label>
+    <input id="formFecha" type="date">
+
+    <input id="formMetodo" placeholder="Método: Lotería Nacional, Pick 3, Manual">
+    <input id="formCifras" type="number" placeholder="Últimas cifras: 2, 3 o 4">
+    <input id="formImagen" placeholder="URL imagen premio">
+    <textarea id="formAviso" placeholder="Aviso del sorteo"></textarea>
+    <input id="formPorcentaje" type="number" placeholder="Mínimo para sortear %">
+
+    <br><br>
+
+    <button class="btn-main" onclick="guardarRifaFormulario()">💾 Guardar dinámica</button>
+    <button class="btn-dark" onclick="cerrarModalRifa()">❌ Cancelar</button>
+  </div>
+</div>	  
 
 </body>
 </html>
