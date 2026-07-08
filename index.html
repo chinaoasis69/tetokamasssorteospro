@@ -1813,10 +1813,10 @@ if (tipo === "1" && adminRol !== "super_admin") {
     return false;
   }
 
-  if(p.rifa_id == null && adminRol !== "super_admin"){
-    alert("❌ Solo el Súper Admin puede modificar patrocinadores de Plataforma.");
-    return false;
-  }
+  if(adminRol !== "super_admin" && String(p.organizador_id) !== String(adminOrgId)){
+  alert("❌ Solo puedes modificar patrocinadores de tu organizador.");
+  return false;
+}
 
   if(
     adminRol === "organizador" &&
