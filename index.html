@@ -1622,11 +1622,19 @@ async function mostrarPatrocinadoresAdmin(){
 
   const cont = document.getElementById("adminContenido");
 
-  const { data, error } = await supabaseClient
-.from("patrocinadores")
-.select("*")
-.eq("organizador_id", localStorage.getItem("admin_organizador_id") || clienteActual.id)
-.order("created_at", { ascending: false });
+  const adminRol = localStorage.getItem("admin_rol");
+const adminOrgId = localStorage.getItem("admin_organizador_id");
+
+let query = supabaseClient
+  .from("patrocinadores")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+if (adminRol === "organizador") {
+  query = query.eq("organizador_id", adminOrgId || clienteActual?.id);
+}
+
+const { data, error } = await query;
 
   if(error){
     alert("Error cargando patrocinadores");
