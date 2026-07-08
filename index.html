@@ -2707,7 +2707,31 @@ async function eliminarRifa(id,titulo){
 
   alert("🗑️ Rifa eliminada");
   mostrarSorteosAdmin();
-}	
+}
+
+	function cerrarModalRifa() {
+    document.getElementById("modalRifa").style.display = "none";
+}
+
+function abrirModalRifa(datos = null) {
+
+    document.getElementById("modalRifa").style.display = "block";
+
+    document.getElementById("tituloModalRifa").innerText =
+        datos ? "✏️ Editar dinámica" : "🎯 Nueva dinámica";
+
+    document.getElementById("formRifaId").value = datos?.id || "";
+    document.getElementById("formTitulo").value = datos?.titulo || "";
+    document.getElementById("formPremio").value = datos?.premio || "";
+    document.getElementById("formPrecio").value = datos?.precio_boleto || "";
+    document.getElementById("formTotal").value = datos?.total_numeros || "";
+    document.getElementById("formFecha").value = datos?.fecha_sorteo || "";
+    document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
+    document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
+    document.getElementById("formImagen").value = datos?.imagen_url || "";
+    document.getElementById("formAviso").value = datos?.aviso || "";
+    document.getElementById("formPorcentaje").value = datos?.porcentaje_minimo || 80;
+}
 
 async function crearRifaAdmin(){
 
