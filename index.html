@@ -2729,6 +2729,10 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formPorcentaje").value = datos?.porcentaje_minimo || 80;
 }
 
+async function guardarRifaFormulario() {
+    alert("✅ Botón guardar funcionando. Siguiente paso: conectar con Supabase.");
+}	
+
 async function crearRifaAdmin(){
 
     const titulo = prompt("Título de la rifa");
