@@ -7601,6 +7601,41 @@ function abrirFormularioBilling(){
       </button>
     </div>
   `;
+}
+
+async function guardarSuscripcionBilling(){
+
+  const organizador_id = document.getElementById("billingOrganizadorId").value.trim();
+  const plan = document.getElementById("billingPlan").value;
+  const fecha_vencimiento = document.getElementById("billingFechaVencimiento").value;
+
+  if(!organizador_id || !plan || !fecha_vencimiento){
+    alert("❌ Completa todos los campos.");
+    return;
+  }
+
+  let precio = 29;
+  if(plan === "professional") precio = 79;
+  if(plan === "enterprise") precio = 0;
+
+  const { error } = await supabaseClient
+    .from("billing_suscripciones")
+    .insert({
+      organizador_id,
+      plan,
+      precio_usd: precio,
+      estado: "activo",
+      fecha_vencimiento
+    });
+
+  if(error){
+    console.error(error);
+    alert("❌ Error guardando suscripción.");
+    return;
+  }
+
+  alert("✅ Suscripción guardada.");
+  mostrarBillingSuperAdmin();
 }	
 
 async function nuevoClienteBilling(){
