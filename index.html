@@ -7799,17 +7799,26 @@ async function editarSuscripcionBilling(id){
 
 }
 
+	let formularioEditarBillingAbierto = null;
+
 function abrirFormularioEditarBilling(s){
 
   const cont = document.getElementById(`editarBillingContenedor_${s.id}`);
 if(!cont) return;
 
+	if(
+    formularioEditarBillingAbierto &&
+    formularioEditarBillingAbierto !== s.id
+){
+    cerrarFormularioEditarBilling(formularioEditarBillingAbierto);
+}
+
 if(cont.innerHTML.trim() !== ""){
   cont.scrollIntoView({ behavior:"smooth", block:"center" });
   return;
 }
-
-  cont.innerHTML += `
+	formularioEditarBillingAbierto = s.id;
+    cont.innerHTML += `
     <div class="card">
       <h3>✏️ Editar suscripción</h3>
 
@@ -7867,7 +7876,12 @@ if(cont.innerHTML.trim() !== ""){
 
 	function cerrarFormularioEditarBilling(id){
   const cont = document.getElementById(`editarBillingContenedor_${id}`);
-  if(cont) cont.innerHTML = "";
+  if(cont){
+	  cont.innerHTML = "";
+}
+	if(formularioEditarBillingAbierto === id){
+    formularioEditarBillingAbierto = null;
+  }
 }
 
 async function guardarEdicionBilling(id){
