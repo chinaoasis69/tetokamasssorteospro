@@ -7517,7 +7517,19 @@ const profesionalBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo" && s.plan === "professional").length;
 
 const enterpriseBilling = (suscripcionesBilling || [])
-  .filter(s => s.estado === "activo" && s.plan === "enterprise").length;	
+  .filter(s => s.estado === "activo" && s.plan === "enterprise").length;
+
+const ingresosStarterBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "starter")
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
+const ingresosProfesionalBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "professional")
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
+const ingresosEnterpriseBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "enterprise")
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
@@ -7540,9 +7552,11 @@ const enterpriseBilling = (suscripcionesBilling || [])
 
 <div class="card">
   <h3>📦 Planes</h3>
-  <p>🟢 Starter — US$29/mes (${starterBilling})</p>
-  <p>🔵 Professional — US$79/mes (${profesionalBilling})</p>
-  <p>🟣 Enterprise — Cotización personalizada (${enterpriseBilling})</p>
+  <p>🟢 Starter — ${starterBilling} clientes — US$${ingresosStarterBilling.toFixed(2)}/mes</p>
+
+  <p>🔵 Professional — ${profesionalBilling} clientes — US$${ingresosProfesionalBilling.toFixed(2)}/mes</p>
+
+  <p>🟣 Enterprise — ${enterpriseBilling} clientes — US$${ingresosEnterpriseBilling.toFixed(2)}/mes</p>
 </div>
 
 <div class="card">
