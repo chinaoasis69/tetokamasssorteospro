@@ -7489,6 +7489,12 @@ async function mostrarBillingSuperAdmin(){
     const cont = document.getElementById("superAdminContenido");
     if(!cont) return;
 
+	const { data: organizadoresBilling, error: errorOrgBilling } = await supabaseClient
+  .from("organizadores")
+  .select("id");
+
+   const clientesActivosBilling = organizadoresBilling?.length || 0;
+
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
 
@@ -7519,7 +7525,7 @@ async function mostrarBillingSuperAdmin(){
 <h3>👥 Clientes activos</h3>
 
 <div style="font-size:32px;font-weight:bold;color:#39ff14;">
-${totalOrganizadores}
+${clientesActivosBilling}
 </div>
 
 <p style="color:#bbb;">
