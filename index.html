@@ -7588,7 +7588,12 @@ Organizadores con suscripción activa.
       <p>💵 US$${s.precio_usd}/mes</p>
       <p>🟢 ${s.estado}</p>
       <p>📅 Vence: ${s.fecha_vencimiento || "Sin fecha"}</p>
+
+	<button onclick="editarSuscripcionBilling('${s.id}')">✏️ Editar</button>
+    <button onclick="renovarSuscripcionBilling('${s.id}')">🔄 Renovar</button>
+    <button onclick="suspenderSuscripcionBilling('${s.id}')">🚫 Suspender</button>  
     </div>
+	
   `).join("") || "<p>No hay suscripciones todavía.</p>"}
 </div>	
 
