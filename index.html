@@ -7773,6 +7773,33 @@ function abrirFormularioEditarBilling(s){
       <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
     </div>
   `;
+}
+
+async function guardarEdicionBilling(id){
+
+  const plan = document.getElementById("editBillingPlan").value;
+  const precio_usd = Number(document.getElementById("editBillingPrecio").value || 0);
+  const estado = document.getElementById("editBillingEstado").value;
+  const fecha_vencimiento = document.getElementById("editBillingFechaVencimiento").value;
+
+  const { error } = await supabaseClient
+    .from("billing_suscripciones")
+    .update({
+      plan,
+      precio_usd,
+      estado,
+      fecha_vencimiento
+    })
+    .eq("id", id);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error guardando cambios.");
+    return;
+  }
+
+  alert("✅ Suscripción actualizada.");
+  mostrarBillingSuperAdmin();
 }	
 
 async function renovarSuscripcionBilling(id){
