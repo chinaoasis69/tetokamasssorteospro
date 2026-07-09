@@ -7405,7 +7405,7 @@ async function mostrarDashboardGlobalSuperAdmin(){
 
   const { data: rifas } = await supabaseClient
     .from("rifas")
-    .select("id, estado");
+    .select("id, estado, precio_boleto");
 
   const { data: boletos } = await supabaseClient
     .from("boletos")
@@ -7446,6 +7446,13 @@ async function mostrarDashboardGlobalSuperAdmin(){
       <h3>🎟️ Boletos vendidos</h3>
       <div style="font-size:32px;font-weight:bold;color:#39ff14;">${boletosVendidos}</div>
     </div>
+
+	<div class="card">
+  <h3>💵 Ventas generadas</h3>
+  <div style="font-size:32px;font-weight:bold;color:#39ff14;">
+    ${ventasGeneradas.toLocaleString()} MASS
+  </div>
+</div>
   `;
 
 	document.getElementById("panelSuperAdmin").style.display = "block";
