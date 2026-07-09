@@ -7606,7 +7606,10 @@ Organizadores con suscripción activa.
 </div>
 
 <div class="card">
-  <h3>📋 Suscripciones activas</h3>
+  <details>
+    <summary style="font-size:24px;font-weight:bold;cursor:pointer;">
+      📋 Suscripciones activas (${suscripcionesBilling?.length || 0})
+    </summary>
 
   ${(suscripcionesBilling || []).map(s => `
     <div class="card">
@@ -7627,15 +7630,12 @@ Organizadores con suscripción activa.
 
 <div id="editarBillingContenedor_${s.id}"></div>
 
+  </details>
     </div>
 	
   `).join("") || "<p>No hay suscripciones todavía.</p>"}
 </div>	
 
-<div class="card">
-  <h3>🚧 Estado</h3>
-  <p>Billing Center en construcción.</p>
-</div>
     `;
 }
 
