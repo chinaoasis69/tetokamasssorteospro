@@ -7665,11 +7665,14 @@ if(cont.innerHTML.trim() !== ""){
         ✅ Guardar suscripción
       </button>
 
-      <button onclick="mostrarBillingSuperAdmin()">
-        ❌ Cancelar
-      </button>
+      <button onclick="cerrarFormularioBilling()">❌ Cancelar</button>
     </div>
   `;
+}
+
+	function cerrarFormularioBilling(){
+  const cont = document.getElementById("formularioBillingContenedor");
+  if(cont) cont.innerHTML = "";
 }
 
 async function guardarSuscripcionBilling(){
