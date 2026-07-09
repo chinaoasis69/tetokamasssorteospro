@@ -7647,6 +7647,21 @@ Organizadores con suscripción activa.
 </div>	
 
     `;
+}
+
+function filtrarSuscripcionesBilling(){
+  const q = document.getElementById("buscarBillingInput")?.value.toLowerCase() || "";
+  const detalles = document.getElementById("billingSuscripcionesDetails");
+  const cards = document.querySelectorAll(".billing-suscripcion-card");
+
+  if(detalles && q.length > 0){
+    detalles.open = true;
+  }
+
+  cards.forEach(card => {
+    const texto = card.innerText.toLowerCase();
+    card.style.display = texto.includes(q) ? "block" : "none";
+  });
 }	
 
 function abrirFormularioBilling(){
