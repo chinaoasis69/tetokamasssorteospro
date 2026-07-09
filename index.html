@@ -7495,6 +7495,17 @@ async function mostrarBillingSuperAdmin(){
 
    const clientesActivosBilling = organizadoresBilling?.length || 0;
 
+	const { data: suscripcionesBilling, error: errorSusBilling } = await supabaseClient
+  .from("billing_suscripciones")
+  .select(`
+    *,
+    organizadores (
+      nombre,
+      telefono
+    )
+  `)
+  .order("created_at", { ascending: false });
+
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
 
@@ -7565,6 +7576,21 @@ Organizadores con suscripción activa.
     Próximamente podrás asignar Starter, Professional o Enterprise.
   </p>
 </div>
+
+<div class="card">
+  <h3>📋 Suscripciones activas</h3>
+
+  ${(suscripcionesBilling || []).map(s => `
+    <div class="card">
+      <h4>${s.organizadores?.nombre || "Organizador"}</h4>
+      <p>📞 ${s.organizadores?.telefono || ""}</p>
+      <p>📦 ${s.plan}</p>
+      <p>💵 US$${s.precio_usd}/mes</p>
+      <p>🟢 ${s.estado}</p>
+      <p>📅 Vence: ${s.fecha_vencimiento || "Sin fecha"}</p>
+    </div>
+  `).join("") || "<p>No hay suscripciones todavía.</p>"}
+</div>	
 
 <div class="card">
   <h3>🚧 Estado</h3>
