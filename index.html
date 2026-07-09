@@ -7834,7 +7834,7 @@ if(cont.innerHTML.trim() !== ""){
       <input id="editBillingFechaVencimiento" type="date" value="${s.fecha_vencimiento || ""}" readonly>
 
       <button onclick="guardarEdicionBilling('${s.id}')">💾 Guardar cambios</button>
-      <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
+      <button onclick="cerrarFormularioEditarBilling('${s.id}')">❌ Cancelar</button>
     </div>
   `;
 
@@ -7863,7 +7863,12 @@ if(cont.innerHTML.trim() !== ""){
   inicioInput.addEventListener("input", actualizarFechaVencimiento);
   inicioInput.addEventListener("change", actualizarFechaVencimiento);
   actualizarFechaVencimiento();
-}	
+}
+
+	function cerrarFormularioEditarBilling(id){
+  const cont = document.getElementById(`editarBillingContenedor_${id}`);
+  if(cont) cont.innerHTML = "";
+}
 
 async function guardarEdicionBilling(id){
 
