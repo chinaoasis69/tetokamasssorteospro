@@ -7725,7 +7725,19 @@ async function nuevoClienteBilling(){
 
 async function editarSuscripcionBilling(id){
 
-    alert("✏️ Próximamente podrás editar el plan, fecha de vencimiento y estado de esta suscripción.");
+    const { data: s, error } = await supabaseClient
+        .from("billing_suscripciones")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+    if(error){
+        console.error(error);
+        alert("❌ No se pudo cargar la suscripción.");
+        return;
+    }
+
+    abrirFormularioEditarBilling(s);
 
 }
 
