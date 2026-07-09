@@ -7582,7 +7582,7 @@ function abrirFormularioBilling(){
     <div class="card">
       <h3>➕ Asignar plan a organizador</h3>
 
-      <input id="billingOrganizadorId" placeholder="ID del organizador">
+      <input id="billingTelefono" placeholder="Teléfono del organizador">
       
       <select id="billingPlan">
         <option value="starter">Starter — US$29/mes</option>
@@ -7605,7 +7605,25 @@ function abrirFormularioBilling(){
 
 async function guardarSuscripcionBilling(){
 
-  const organizador_id = document.getElementById("billingOrganizadorId").value.trim();
+  const telefono = document.getElementById("billingTelefono").value.trim();
+
+if(!telefono){
+  alert("❌ Escribe el teléfono del organizador.");
+  return;
+}
+
+const { data: orgBilling, error: errorOrgBilling } = await supabaseClient
+  .from("organizadores")
+  .select("id, nombre")
+  .eq("telefono", telefono)
+  .maybeSingle();
+
+if(errorOrgBilling || !orgBilling){
+  alert("❌ No se encontró organizador con ese teléfono.");
+  return;
+}
+
+const organizador_id = orgBilling.id;
   const plan = document.getElementById("billingPlan").value;
   const fecha_vencimiento = document.getElementById("billingFechaVencimiento").value;
 
