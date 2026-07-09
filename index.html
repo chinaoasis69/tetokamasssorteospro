@@ -7807,6 +7807,22 @@ function abrirFormularioEditarBilling(s){
   `;
 }
 
+const inicioInput = document.getElementById("editBillingFechaInicio");
+const vencInput = document.getElementById("editBillingFechaVencimiento");
+
+function actualizarFechaVencimiento() {
+    if (!inicioInput.value) return;
+
+    const fecha = new Date(inicioInput.value);
+    fecha.setMonth(fecha.getMonth() + 1);
+
+    vencInput.value = fecha.toISOString().split("T")[0];
+}
+
+actualizarFechaVencimiento();
+
+inicioInput.addEventListener("change", actualizarFechaVencimiento);	
+
 async function guardarEdicionBilling(id){
 
   const plan = document.getElementById("editBillingPlan").value;
