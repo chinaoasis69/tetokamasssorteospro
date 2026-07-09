@@ -7688,7 +7688,20 @@ if(errorOrgBilling || !orgBilling){
 
 const organizador_id = orgBilling.id;
   const plan = document.getElementById("billingPlan").value;
-  const fecha_vencimiento = document.getElementById("billingFechaVencimiento").value;
+  const fecha_inicio = document.getElementById("billingFechaInicio").value;
+
+const partes = fecha_inicio.split("-");
+
+const fecha = new Date(
+    Number(partes[0]),
+    Number(partes[1]) - 1,
+    Number(partes[2])
+);
+
+fecha.setMonth(fecha.getMonth() + 1);
+
+const fecha_vencimiento =
+`${fecha.getFullYear()}-${String(fecha.getMonth()+1).padStart(2,"0")}-${String(fecha.getDate()).padStart(2,"0")}`;
 
   if(!telefono || !plan || !fecha_vencimiento){
     alert("❌ Completa todos los campos.");
@@ -7706,6 +7719,7 @@ const organizador_id = orgBilling.id;
       plan,
       precio_usd: precio,
       estado: "activo",
+	  fecha_inicio,	
       fecha_vencimiento
     });
 
