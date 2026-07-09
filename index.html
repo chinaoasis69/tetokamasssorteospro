@@ -7621,6 +7621,7 @@ Organizadores con suscripción activa.
     ${s.estado === "suspendido"
   ? `<button onclick="reactivarSuscripcionBilling('${s.id}')">✅ Reactivar</button>`
   : `<button onclick="suspenderSuscripcionBilling('${s.id}')">🚫 Suspender</button>`
+	 <button onclick="eliminarSuscripcionBilling('${s.id}')">🗑️ Eliminar</button> 
 }  
     </div>
 	
@@ -7906,6 +7907,25 @@ async function reactivarSuscripcionBilling(id){
 
     mostrarBillingSuperAdmin();
 
+}
+
+async function eliminarSuscripcionBilling(id){
+
+    if(!confirm("¿Eliminar definitivamente esta suscripción?")) return;
+
+    const { error } = await supabaseClient
+        .from("billing_suscripciones")
+        .delete()
+        .eq("id", id);
+
+    if(error){
+        alert("❌ Error al eliminar.");
+        console.error(error);
+        return;
+    }
+
+    alert("✅ Suscripción eliminada.");
+    mostrarBillingSuperAdmin();
 }	
 	
 </script>	
