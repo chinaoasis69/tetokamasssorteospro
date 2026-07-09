@@ -7770,6 +7770,37 @@ function abrirFormularioEditarBilling(s){
       <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
     </div>
   `;
+}
+
+function abrirFormularioEditarBilling(s){
+
+  const cont = document.getElementById("superAdminContenido");
+  if(!cont) return;
+
+  cont.innerHTML += `
+    <div class="card">
+      <h3>✏️ Editar suscripción</h3>
+
+      <select id="editBillingPlan">
+        <option value="starter" ${s.plan === "starter" ? "selected" : ""}>Starter — US$29/mes</option>
+        <option value="professional" ${s.plan === "professional" ? "selected" : ""}>Professional — US$79/mes</option>
+        <option value="enterprise" ${s.plan === "enterprise" ? "selected" : ""}>Enterprise — Cotización personalizada</option>
+      </select>
+
+      <input id="editBillingPrecio" type="number" value="${s.precio_usd || 0}" placeholder="Precio USD">
+
+      <select id="editBillingEstado">
+        <option value="activo" ${s.estado === "activo" ? "selected" : ""}>Activo</option>
+        <option value="pendiente" ${s.estado === "pendiente" ? "selected" : ""}>Pendiente</option>
+        <option value="suspendido" ${s.estado === "suspendido" ? "selected" : ""}>Suspendido</option>
+      </select>
+
+      <input id="editBillingFechaVencimiento" type="date" value="${s.fecha_vencimiento || ""}">
+
+      <button onclick="guardarEdicionBilling('${s.id}')">💾 Guardar cambios</button>
+      <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
+    </div>
+  `;
 }	
 
 async function renovarSuscripcionBilling(id){
