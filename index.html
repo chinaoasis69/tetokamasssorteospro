@@ -7795,7 +7795,11 @@ function abrirFormularioEditarBilling(s){
         <option value="suspendido" ${s.estado === "suspendido" ? "selected" : ""}>Suspendido</option>
       </select>
 
-      <input id="editBillingFechaVencimiento" type="date" value="${s.fecha_vencimiento || ""}">
+      <label style="color:#bbb;">Fecha de pago / inicio</label>
+      <input id="editBillingFechaInicio" type="date" value="${s.fecha_inicio || ""}">
+
+      <label style="color:#bbb;">Vence automáticamente</label>
+      <input id="editBillingFechaVencimiento" type="date" value="${s.fecha_vencimiento || ""}" readonly>
 
       <button onclick="guardarEdicionBilling('${s.id}')">💾 Guardar cambios</button>
       <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
