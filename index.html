@@ -7529,20 +7529,7 @@ const ingresosProfesionalBilling = (suscripcionesBilling || [])
 
 const ingresosEnterpriseBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo" && s.plan === "enterprise")
-  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
-
-const textoBuscarBilling = document.getElementById("buscarBillingInput")?.value?.toLowerCase() || "";
-
-const suscripcionesFiltradasBilling = (suscripcionesBilling || []).filter(s => {
-  const texto = `
-    ${s.organizadores?.nombre || ""}
-    ${s.organizadores?.telefono || ""}
-    ${s.plan || ""}
-    ${s.estado || ""}
-  `.toLowerCase();
-
-  return texto.includes(textoBuscarBilling);
-});	
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
@@ -7629,12 +7616,12 @@ Organizadores con suscripción activa.
 </div>
 
 <div class="card">
-  <details>
+   <details id="billingSuscripcionesDetails">
     <summary style="font-size:24px;font-weight:bold;cursor:pointer;">
       📋 Suscripciones activas (${suscripcionesBilling?.length || 0})
     </summary>
 
-  ${(suscripcionesFiltradasBilling || []).map(s => `
+    ${(suscripcionesBilling || []).map(s => `
     <div class="card billing-suscripcion-card">
       <h4>${s.organizadores?.nombre || "Organizador"}</h4>
       <p>📞 ${s.organizadores?.telefono || ""}</p>
