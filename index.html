@@ -7575,21 +7575,38 @@ Organizadores con suscripción activa.
 
 async function nuevoClienteBilling(){
 
-    alert(
-`🚧 Próximamente
+  const organizador_id = prompt("ID del organizador:");
+  if(!organizador_id) return;
 
-Aquí podrás:
+  const plan = prompt("Plan: starter, professional o enterprise", "starter");
+  if(!plan) return;
 
-• Crear un organizador nuevo.
-• Asignarle un plan (Starter, Professional o Enterprise).
-• Definir fecha de inicio.
-• Definir fecha de vencimiento.
-• Activar o suspender la suscripción.
-• Enviar enlace de pago.
+  let precio = 29;
 
-Esta función estará disponible en la siguiente actualización.`
-    );
+  if(plan.toLowerCase() === "professional") precio = 79;
+  if(plan.toLowerCase() === "enterprise") precio = 0;
 
+  const fecha_vencimiento = prompt("Fecha de vencimiento: YYYY-MM-DD");
+  if(!fecha_vencimiento) return;
+
+  const { error } = await supabaseClient
+    .from("billing_suscripciones")
+    .insert({
+      organizador_id,
+      plan: plan.toLowerCase(),
+      precio_usd: precio,
+      estado: "activo",
+      fecha_vencimiento
+    });
+
+  if(error){
+    console.error(error);
+    alert("❌ Error guardando suscripción");
+    return;
+  }
+
+  alert("✅ Suscripción guardada");
+  mostrarBillingSuperAdmin();
 }	
 	
 </script>	
