@@ -7810,24 +7810,34 @@ function abrirFormularioEditarBilling(s){
 const inicioInput = document.getElementById("editBillingFechaInicio");
 const vencInput = document.getElementById("editBillingFechaVencimiento");
 
-function actualizarFechaVencimiento() {
-    if (!inicioInput.value) return;
+function actualizarFechaVencimiento(){
+  if(!inicioInput.value) return;
 
-    const fecha = new Date(inicioInput.value);
-    fecha.setMonth(fecha.getMonth() + 1);
+  const partes = inicioInput.value.split("-");
+  const fecha = new Date(
+    Number(partes[0]),
+    Number(partes[1]) - 1,
+    Number(partes[2])
+  );
 
-    vencInput.value = fecha.toISOString().split("T")[0];
+  fecha.setMonth(fecha.getMonth() + 1);
+
+  const yyyy = fecha.getFullYear();
+  const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dd = String(fecha.getDate()).padStart(2, "0");
+
+  vencInput.value = `${yyyy}-${mm}-${dd}`;
 }
 
-actualizarFechaVencimiento();
-
-inicioInput.addEventListener("change", actualizarFechaVencimiento);	
+inicioInput.onchange = actualizarFechaVencimiento;
+actualizarFechaVencimiento();	
 
 async function guardarEdicionBilling(id){
 
   const plan = document.getElementById("editBillingPlan").value;
   const precio_usd = Number(document.getElementById("editBillingPrecio").value || 0);
   const estado = document.getElementById("editBillingEstado").value;
+  const fecha_inicio = document.getElementById("editBillingFechaInicio").value;
   const fecha_vencimiento = document.getElementById("editBillingFechaVencimiento").value;
 
   const { error } = await supabaseClient
@@ -7836,6 +7846,7 @@ async function guardarEdicionBilling(id){
       plan,
       precio_usd,
       estado,
+	  fecha_inicio,
       fecha_vencimiento
     })
     .eq("id", id);
