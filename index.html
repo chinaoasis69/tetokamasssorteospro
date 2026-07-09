@@ -7573,6 +7573,36 @@ Organizadores con suscripción activa.
     `;
 }
 
+function abrirFormularioBilling(){
+
+  const cont = document.getElementById("superAdminContenido");
+  if(!cont) return;
+
+  cont.innerHTML += `
+    <div class="card">
+      <h3>➕ Asignar plan a organizador</h3>
+
+      <input id="billingOrganizadorId" placeholder="ID del organizador">
+      
+      <select id="billingPlan">
+        <option value="starter">Starter — US$29/mes</option>
+        <option value="professional">Professional — US$79/mes</option>
+        <option value="enterprise">Enterprise — Cotización personalizada</option>
+      </select>
+
+      <input id="billingFechaVencimiento" type="date">
+
+      <button onclick="guardarSuscripcionBilling()">
+        ✅ Guardar suscripción
+      </button>
+
+      <button onclick="mostrarBillingSuperAdmin()">
+        ❌ Cancelar
+      </button>
+    </div>
+  `;
+}	
+
 async function nuevoClienteBilling(){
 
   const organizador_id = prompt("ID del organizador:");
