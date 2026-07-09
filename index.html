@@ -7624,6 +7624,9 @@ Organizadores con suscripción activa.
   : `<button onclick="suspenderSuscripcionBilling('${s.id}')">🚫 Suspender</button>`
  } 
 <button onclick="eliminarSuscripcionBilling('${s.id}')">🗑️ Eliminar</button>
+
+<div id="editarBillingContenedor_${s.id}"></div>
+
     </div>
 	
   `).join("") || "<p>No hay suscripciones todavía.</p>"}
@@ -7798,8 +7801,13 @@ async function editarSuscripcionBilling(id){
 
 function abrirFormularioEditarBilling(s){
 
-  const cont = document.getElementById("superAdminContenido");
-  if(!cont) return;
+  const cont = document.getElementById(`editarBillingContenedor_${s.id}`);
+if(!cont) return;
+
+if(cont.innerHTML.trim() !== ""){
+  cont.scrollIntoView({ behavior:"smooth", block:"center" });
+  return;
+}
 
   cont.innerHTML += `
     <div class="card">
