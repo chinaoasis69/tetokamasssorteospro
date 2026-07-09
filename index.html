@@ -7506,6 +7506,10 @@ async function mostrarBillingSuperAdmin(){
   `)
   .order("created_at", { ascending: false });
 
+const ingresosMensualesBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo")
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
+
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
 
@@ -7520,7 +7524,7 @@ async function mostrarBillingSuperAdmin(){
 <div class="card">
   <h3>💰 Ingresos TE-TO-KA</h3>
   <div style="font-size:32px;font-weight:bold;color:#39ff14;">
-    US$0.00
+    US$${ingresosMensualesBilling.toFixed(2)}
   </div>
   <p style="color:#bbb;">Ingresos reales por planes, renovaciones o comisiones.</p>
 </div>
