@@ -7620,12 +7620,12 @@ Organizadores con suscripción activa.
 
 <div class="card">
   <h3>🔎 Buscar suscripción</h3>
-  <input 
-    id="buscarBillingInput" 
-    type="text" 
-    placeholder="Buscar por nombre, teléfono, plan o estado..."
-    oninput="mostrarBillingSuperAdmin()"
-  >
+  <input
+  id="buscarBillingInput"
+  type="text"
+  placeholder="Buscar por nombre, teléfono, plan o estado..."
+  oninput="filtrarSuscripcionesBilling()"
+>
 </div>
 
 <div class="card">
@@ -7635,7 +7635,7 @@ Organizadores con suscripción activa.
     </summary>
 
   ${(suscripcionesFiltradasBilling || []).map(s => `
-    <div class="card">
+    <div class="card billing-suscripcion-card">
       <h4>${s.organizadores?.nombre || "Organizador"}</h4>
       <p>📞 ${s.organizadores?.telefono || ""}</p>
       <p>📦 ${s.plan}</p>
@@ -7661,6 +7661,16 @@ Organizadores con suscripción activa.
 
     `;
 }
+
+function filtrarSuscripcionesBilling(){
+  const q = document.getElementById("buscarBillingInput").value.toLowerCase();
+  const cards = document.querySelectorAll(".billing-suscripcion-card");
+
+  cards.forEach(card => {
+    const texto = card.innerText.toLowerCase();
+    card.style.display = texto.includes(q) ? "block" : "none";
+  });
+}	
 
 function abrirFormularioBilling(){
 
