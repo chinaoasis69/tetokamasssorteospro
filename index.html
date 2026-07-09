@@ -7483,6 +7483,27 @@ async function mostrarDashboardGlobalSuperAdmin(){
 
 	document.getElementById("panelSuperAdmin").style.display = "block";
 }
+
+async function mostrarBillingSuperAdmin(){
+
+    const cont = document.getElementById("superAdminContenido");
+    if(!cont) return;
+
+    cont.innerHTML = `
+        <h2>💳 Billing / Cobros</h2>
+
+        <div class="card">
+            <h3>🚧 En construcción</h3>
+            <p>
+                Aquí se administrarán los planes,
+                mensualidades, renovaciones,
+                comisiones e ingresos de
+                TE-TO-KA MASS SORTEOS PRO.
+            </p>
+        </div>
+    `;
+}
+	
 </script>	
 
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
