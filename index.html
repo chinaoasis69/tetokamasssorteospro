@@ -7409,7 +7409,7 @@ async function mostrarDashboardGlobalSuperAdmin(){
 
   const { data: boletos } = await supabaseClient
     .from("boletos")
-    .select("id, estado");
+    .select("id, estado, rifa_id");
 
   const totalOrganizadores = organizadores?.length || 0;
   const totalRifas = rifas?.length || 0;
