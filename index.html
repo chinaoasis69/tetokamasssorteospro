@@ -7805,8 +7805,35 @@ function abrirFormularioEditarBilling(s){
 
 async function renovarSuscripcionBilling(id){
 
-    alert("🔄 Próximamente podrás renovar esta suscripción con un solo clic.");
+  if(!confirm("¿Renovar esta suscripción por 1 mes desde hoy?")) return;
 
+  const hoy = new Date();
+
+  const inicio = hoy.toISOString().split("T")[0];
+
+  const vencimiento = new Date(hoy);
+  vencimiento.setMonth(vencimiento.getMonth() + 1);
+
+  const fecha_vencimiento = vencimiento.toISOString().split("T")[0];
+
+  const { error } = await supabaseClient
+    .from("billing_suscripciones")
+    .update({
+      estado: "activo",
+      fecha_inicio: inicio,
+      fecha_vencimiento,
+      ultimo_pago_usd: 0
+    })
+    .eq("id", id);
+
+  if(error){
+    console.error(error);
+    alert("❌ Error renovando suscripción.");
+    return;
+  }
+
+  alert("✅ Suscripción renovada por 1 mes.");
+  mostrarBillingSuperAdmin();
 }
 
 async function suspenderSuscripcionBilling(id){
