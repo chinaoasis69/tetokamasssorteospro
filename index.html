@@ -7529,7 +7529,20 @@ const ingresosProfesionalBilling = (suscripcionesBilling || [])
 
 const ingresosEnterpriseBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo" && s.plan === "enterprise")
-  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
+const textoBuscarBilling = document.getElementById("buscarBillingInput")?.value?.toLowerCase() || "";
+
+const suscripcionesFiltradasBilling = (suscripcionesBilling || []).filter(s => {
+  const texto = `
+    ${s.organizadores?.nombre || ""}
+    ${s.organizadores?.telefono || ""}
+    ${s.plan || ""}
+    ${s.estado || ""}
+  `.toLowerCase();
+
+  return texto.includes(textoBuscarBilling);
+});	
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
@@ -7621,7 +7634,7 @@ Organizadores con suscripción activa.
       📋 Suscripciones activas (${suscripcionesBilling?.length || 0})
     </summary>
 
-  ${(suscripcionesBilling || []).map(s => `
+  ${(suscripcionesFiltradasBilling || []).map(s => `
     <div class="card">
       <h4>${s.organizadores?.nombre || "Organizador"}</h4>
       <p>📞 ${s.organizadores?.telefono || ""}</p>
