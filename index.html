@@ -7621,8 +7621,8 @@ Organizadores con suscripción activa.
     ${s.estado === "suspendido"
   ? `<button onclick="reactivarSuscripcionBilling('${s.id}')">✅ Reactivar</button>`
   : `<button onclick="suspenderSuscripcionBilling('${s.id}')">🚫 Suspender</button>`
-	 <button onclick="eliminarSuscripcionBilling('${s.id}')">🗑️ Eliminar</button> 
-}  
+ } 
+<button onclick="eliminarSuscripcionBilling('${s.id}')">🗑️ Eliminar</button>
     </div>
 	
   `).join("") || "<p>No hay suscripciones todavía.</p>"}
