@@ -7413,6 +7413,14 @@ async function mostrarDashboardGlobalSuperAdmin(){
     .from("boletos")
     .select("id, estado, rifa_id");
 
+	const { data: suscripcionesBilling } = await supabaseClient
+    .from("billing_suscripciones")
+    .select("precio_usd, estado");
+
+  const ingresosMensualesBilling = (suscripcionesBilling || [])
+    .filter(s => s.estado === "activo")
+    .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
   const totalOrganizadores = organizadores?.length || 0;
   const totalRifas = rifas?.length || 0;
   const rifasActivas = (rifas || []).filter(r => r.estado === "activa").length;
@@ -7459,7 +7467,7 @@ async function mostrarDashboardGlobalSuperAdmin(){
 <div class="card">
   <h3>💰 Ingresos mensuales</h3>
   <div style="font-size:32px;font-weight:bold;color:#39ff14;">
-    US$0.00
+    US$${ingresosMensualesBilling.toFixed(2)}
   </div>
   <p style="color:#bbb;">Ingresos recurrentes por suscripciones activas.</p>
 </div>
