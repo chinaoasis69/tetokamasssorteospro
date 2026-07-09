@@ -7820,32 +7820,33 @@ function abrirFormularioEditarBilling(s){
       <button onclick="mostrarBillingSuperAdmin()">❌ Cancelar</button>
     </div>
   `;
-}
 
-const inicioInput = document.getElementById("editBillingFechaInicio");
-const vencInput = document.getElementById("editBillingFechaVencimiento");
+  const inicioInput = document.getElementById("editBillingFechaInicio");
+  const vencInput = document.getElementById("editBillingFechaVencimiento");
 
-function actualizarFechaVencimiento(){
-  if(!inicioInput.value) return;
+  function actualizarFechaVencimiento(){
+    if(!inicioInput.value) return;
 
-  const partes = inicioInput.value.split("-");
-  const fecha = new Date(
-    Number(partes[0]),
-    Number(partes[1]) - 1,
-    Number(partes[2])
-  );
+    const partes = inicioInput.value.split("-");
+    const fecha = new Date(
+      Number(partes[0]),
+      Number(partes[1]) - 1,
+      Number(partes[2])
+    );
 
-  fecha.setMonth(fecha.getMonth() + 1);
+    fecha.setMonth(fecha.getMonth() + 1);
 
-  const yyyy = fecha.getFullYear();
-  const mm = String(fecha.getMonth() + 1).padStart(2, "0");
-  const dd = String(fecha.getDate()).padStart(2, "0");
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dd = String(fecha.getDate()).padStart(2, "0");
 
-  vencInput.value = `${yyyy}-${mm}-${dd}`;
-}
+    vencInput.value = `${yyyy}-${mm}-${dd}`;
+  }
 
-inicioInput.onchange = actualizarFechaVencimiento;
-actualizarFechaVencimiento();	
+  inicioInput.addEventListener("input", actualizarFechaVencimiento);
+  inicioInput.addEventListener("change", actualizarFechaVencimiento);
+  actualizarFechaVencimiento();
+}	
 
 async function guardarEdicionBilling(id){
 
