@@ -7597,6 +7597,12 @@ Organizadores con suscripción activa.
   <h3>📅 Renovaciones próximas</h3>
   <div style="font-size:32px;font-weight:bold;color:#39ff14;">
     ${renovacionesProximasBilling}
+
+	const pagosPendientesBilling = (suscripcionesBilling || [])
+    .filter(s =>
+        s.estado === "pendiente" ||
+        s.estado === "vencido"
+    ).length;
   </div>
   <p style="color:#bbb;">Clientes que renovarán en los próximos 7 días.</p>
 </div>
