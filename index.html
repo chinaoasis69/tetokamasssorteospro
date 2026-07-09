@@ -7860,6 +7860,29 @@ async function suspenderSuscripcionBilling(id){
 
     mostrarBillingSuperAdmin();
 
+}
+
+async function reactivarSuscripcionBilling(id){
+
+    if(!confirm("¿Reactivar esta suscripción?")) return;
+
+    const { error } = await supabaseClient
+        .from("billing_suscripciones")
+        .update({
+            estado: "activo"
+        })
+        .eq("id", id);
+
+    if(error){
+        console.error(error);
+        alert("❌ Error reactivando suscripción.");
+        return;
+    }
+
+    alert("✅ Suscripción reactivada.");
+
+    mostrarBillingSuperAdmin();
+
 }	
 	
 </script>	
