@@ -7721,6 +7721,41 @@ async function nuevoClienteBilling(){
 
   alert("✅ Suscripción guardada");
   mostrarBillingSuperAdmin();
+}
+
+async function editarSuscripcionBilling(id){
+
+    alert("✏️ Próximamente podrás editar el plan, fecha de vencimiento y estado de esta suscripción.");
+
+}
+
+async function renovarSuscripcionBilling(id){
+
+    alert("🔄 Próximamente podrás renovar esta suscripción con un solo clic.");
+
+}
+
+async function suspenderSuscripcionBilling(id){
+
+    if(!confirm("¿Suspender esta suscripción?")) return;
+
+    const { error } = await supabaseClient
+    .from("billing_suscripciones")
+    .update({
+        estado:"suspendido"
+    })
+    .eq("id",id);
+
+    if(error){
+        console.error(error);
+        alert("❌ Error al suspender.");
+        return;
+    }
+
+    alert("✅ Suscripción suspendida.");
+
+    mostrarBillingSuperAdmin();
+
 }	
 	
 </script>	
