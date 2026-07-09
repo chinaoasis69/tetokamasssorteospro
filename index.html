@@ -7606,6 +7606,16 @@ Organizadores con suscripción activa.
 </div>
 
 <div class="card">
+  <h3>🔎 Buscar suscripción</h3>
+  <input 
+    id="buscarBillingInput" 
+    type="text" 
+    placeholder="Buscar por nombre, teléfono, plan o estado..."
+    oninput="mostrarBillingSuperAdmin()"
+  >
+</div>
+
+<div class="card">
   <details>
     <summary style="font-size:24px;font-weight:bold;cursor:pointer;">
       📋 Suscripciones activas (${suscripcionesBilling?.length || 0})
