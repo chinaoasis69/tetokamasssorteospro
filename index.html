@@ -7598,6 +7598,7 @@ Organizadores con suscripción activa.
   <button onclick="abrirFormularioBilling()">
   ➕ Asignar plan a organizador
 </button>
+<div id="formularioBillingContenedor"></div>
 
   <p style="color:#bbb;">
     Próximamente podrás asignar Starter, Professional o Enterprise.
@@ -7637,8 +7638,13 @@ Organizadores con suscripción activa.
 
 function abrirFormularioBilling(){
 
-  const cont = document.getElementById("superAdminContenido");
-  if(!cont) return;
+  const cont = document.getElementById("formularioBillingContenedor");
+if(!cont) return;
+
+if(cont.innerHTML.trim() !== ""){
+  cont.scrollIntoView({ behavior:"smooth", block:"center" });
+  return;
+}
 
   cont.innerHTML += `
     <div class="card">
