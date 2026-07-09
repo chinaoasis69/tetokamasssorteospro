@@ -7508,7 +7508,16 @@ async function mostrarBillingSuperAdmin(){
 
 const ingresosMensualesBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo")
-  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
+const starterBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "starter").length;
+
+const profesionalBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "professional").length;
+
+const enterpriseBilling = (suscripcionesBilling || [])
+  .filter(s => s.estado === "activo" && s.plan === "enterprise").length;	
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
@@ -7531,9 +7540,9 @@ const ingresosMensualesBilling = (suscripcionesBilling || [])
 
 <div class="card">
   <h3>📦 Planes</h3>
-  <p>🟢 Starter — US$29/mes</p>
-  <p>🔵 Professional — US$79/mes</p>
-  <p>🟣 Enterprise — Cotización personalizada</p>
+  <p>🟢 Starter — US$29/mes (${starterBilling})</p>
+  <p>🔵 Professional — US$79/mes (${profesionalBilling})</p>
+  <p>🟣 Enterprise — Cotización personalizada (${enterpriseBilling})</p>
 </div>
 
 <div class="card">
