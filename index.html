@@ -7575,7 +7575,14 @@ const clientesSuspendidosBilling = (suscripcionesBilling || [])
         s.estado === "suspendido" ||
         s.estado === "vencido"
     )
-    .length;	
+    .length;
+
+const pagosPendientesBilling = (suscripcionesBilling || [])
+    .filter(s =>
+        s.estado === "pendiente" ||
+        s.estado === "vencido" ||
+        s.estado === "suspendido"
+    ).length;
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
@@ -7623,13 +7630,7 @@ Organizadores con suscripción activa.
   <div style="font-size:32px;font-weight:bold;color:#39ff14;">
     ${renovacionesProximasBilling}
 
-	const pagosPendientesBilling = (suscripcionesBilling || [])
-    .filter(s =>
-        s.estado === "pendiente" ||
-        s.estado === "vencido" ||
-        s.estado === "suspendido"
-    ).length;
-  </div>
+	 </div>
   <p style="color:#bbb;">Clientes que renovarán en los próximos 7 días.</p>
 </div>
 
