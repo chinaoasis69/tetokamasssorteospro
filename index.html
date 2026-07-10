@@ -7471,10 +7471,11 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
     </div>
 
 	<div class="card">
-  <h3>💵 Volumen procesado</h3>
+  <h3>🚫 Clientes suspendidos</h3>
   <div style="font-size:32px;font-weight:bold;color:#39ff14;">
-    ${ventasGeneradas.toLocaleString()} MASS
+    ${clientesSuspendidosBilling}
   </div>
+  <p style="color:#bbb;">Clientes suspendidos por falta de pago.</p>
 </div>
 
 <div class="card">
@@ -7550,7 +7551,11 @@ const ingresosProfesionalBilling = (suscripcionesBilling || [])
 
 const ingresosEnterpriseBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo" && s.plan === "enterprise")
-  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);	
+  .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
+
+const clientesSuspendidosBilling = (suscripcionesBilling || [])
+    .filter(s => s.estado === "suspendido")
+    .length;	
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
