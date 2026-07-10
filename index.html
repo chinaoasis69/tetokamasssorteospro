@@ -7421,6 +7421,13 @@ async function mostrarDashboardGlobalSuperAdmin(){
     .filter(s => s.estado === "activo")
     .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
 
+	const clientesSuspendidosBilling = (suscripcionesBilling || [])
+    .filter(s =>
+        s.estado === "suspendido" ||
+        s.estado === "vencido"
+    )
+    .length;
+
 	const hoyBilling = new Date();
 const limiteRenovacionBilling = new Date();
 limiteRenovacionBilling.setDate(hoyBilling.getDate() + 7);
