@@ -7742,6 +7742,22 @@ Organizadores con suscripción activa.
     `;
 }
 
+function editarSuscripcionBilling(id){
+    console.log("Editar:", id);
+}
+
+function renovarSuscripcionBilling(id){
+    console.log("Renovar:", id);
+}
+
+function reactivarSuscripcionBilling(id){
+    console.log("Reactivar:", id);
+}
+
+function suspenderSuscripcionBilling(id){
+    console.log("Suspender:", id);
+}	
+
 function filtrarSuscripcionesBilling(){
   const q = document.getElementById("buscarBillingInput")?.value.toLowerCase() || "";
   const detalles = document.getElementById("billingSuscripcionesDetails");
