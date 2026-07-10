@@ -7957,7 +7957,7 @@ if(cont.innerHTML.trim() !== ""){
     <div class="card">
       <h3>✏️ Editar suscripción</h3>
 
-      <select id="editBillingPlan">
+      <select id="editBillingPlan" onchange="actualizarPrecioPlanBilling()">
         <option value="starter" ${s.plan === "starter" ? "selected" : ""}>Starter — US$29/mes</option>
         <option value="professional" ${s.plan === "professional" ? "selected" : ""}>Professional — US$79/mes</option>
         <option value="enterprise" ${s.plan === "enterprise" ? "selected" : ""}>Enterprise — Cotización personalizada</option>
@@ -8018,6 +8018,22 @@ if(cont.innerHTML.trim() !== ""){
     formularioEditarBillingAbierto = null;
   }
 }
+
+function actualizarPrecioPlanBilling(){
+
+    const plan = document.getElementById("editBillingPlan")?.value;
+    const precioInput = document.getElementById("editBillingPrecio");
+
+    if(!precioInput) return;
+
+    if(plan === "starter"){
+        precioInput.value = 29;
+    }else if(plan === "professional"){
+        precioInput.value = 79;
+    }else if(plan === "enterprise"){
+        precioInput.value = 0;
+    }
+}	
 
 async function guardarEdicionBilling(id){
 
