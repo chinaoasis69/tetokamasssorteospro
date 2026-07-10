@@ -7619,7 +7619,8 @@ Organizadores con suscripción activa.
 	const pagosPendientesBilling = (suscripcionesBilling || [])
     .filter(s =>
         s.estado === "pendiente" ||
-        s.estado === "vencido"
+        s.estado === "vencido" ||
+        s.estado === "suspendido"
     ).length;
   </div>
   <p style="color:#bbb;">Clientes que renovarán en los próximos 7 días.</p>
