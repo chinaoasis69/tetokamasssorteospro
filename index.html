@@ -7570,6 +7570,21 @@ const ingresosEnterpriseBilling = (suscripcionesBilling || [])
   .filter(s => s.estado === "activo" && s.plan === "enterprise")
   .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
 
+const hoyBilling = new Date();
+const limiteRenovacionBilling = new Date();
+
+limiteRenovacionBilling.setDate(hoyBilling.getDate() + 7);
+
+const renovacionesProximasBilling = (suscripcionesBilling || [])
+    .filter(s => {
+        if(s.estado !== "activo" || !s.fecha_vencimiento) return false;
+
+        const vence = new Date(s.fecha_vencimiento + "T00:00:00");
+
+        return vence >= hoyBilling && vence <= limiteRenovacionBilling;
+    })
+    .length;	
+
 const clientesSuspendidosBilling = (suscripcionesBilling || [])
     .filter(s =>
         s.estado === "suspendido" ||
