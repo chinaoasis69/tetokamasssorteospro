@@ -7564,7 +7564,10 @@ const ingresosEnterpriseBilling = (suscripcionesBilling || [])
   .reduce((total, s) => total + Number(s.precio_usd || 0), 0);
 
 const clientesSuspendidosBilling = (suscripcionesBilling || [])
-    .filter(s => s.estado === "suspendido")
+    .filter(s =>
+        s.estado === "suspendido" ||
+        s.estado === "vencido"
+    )
     .length;	
 
     cont.innerHTML = `
