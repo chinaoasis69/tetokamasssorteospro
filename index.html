@@ -7662,6 +7662,30 @@ Organizadores con suscripción activa.
 </div>
 
 <div class="card">
+    <details>
+        <summary style="font-size:24px;font-weight:bold;cursor:pointer;">
+            ⚠️ Clientes con problema de pago (${pagosPendientesBilling})
+        </summary>
+
+        ${(suscripcionesBilling || [])
+            .filter(s =>
+                s.estado === "pendiente" ||
+                s.estado === "vencido" ||
+                s.estado === "suspendido"
+            )
+            .map(s => `
+                <div class="card">
+                    <h4>${s.organizadores?.nombre || "Organizador"}</h4>
+                    <p>📞 ${s.organizadores?.telefono || ""}</p>
+                    <p>📦 ${s.plan}</p>
+                    <p>⚠️ ${s.estado}</p>
+                    <p>📅 Vence: ${s.fecha_vencimiento || "Sin fecha"}</p>
+                </div>
+            `).join("") || "<p>No hay clientes con problema de pago.</p>"}
+    </details>
+</div>
+
+<div class="card">
    <details id="billingSuscripcionesDetails">
     <summary style="font-size:24px;font-weight:bold;cursor:pointer;">
       📋 Suscripciones activas (${suscripcionesBilling?.length || 0})
