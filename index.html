@@ -7703,8 +7703,25 @@ Organizadores con suscripción activa.
                     <p>📦 ${s.plan}</p>
                     <p>⚠️ ${s.estado}</p>
                     <p>📅 Vence: ${s.fecha_vencimiento || "Sin fecha"}</p>
-                </div>
-            `).join("") || "<p>No hay clientes con problema de pago.</p>"}
+
+		<button onclick="editarSuscripcionBilling('${s.id}')">
+          ✏️ Editar
+       </button>
+
+       <button onclick="renovarSuscripcionBilling('${s.id}')">
+         🔄 Renovar
+       </button>
+
+${s.estado === "suspendido" || s.estado === "vencido"
+    ? `<button onclick="reactivarSuscripcionBilling('${s.id}')">
+          ✅ Reactivar
+       </button>`
+    : `<button onclick="suspenderSuscripcionBilling('${s.id}')">
+          ⛔ Suspender
+       </button>`
+}			
+ </div>
+     `).join("") || "<p>No hay clientes con problema de pago.</p>"}
     </details>
 </div>
 
