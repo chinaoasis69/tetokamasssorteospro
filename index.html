@@ -1139,6 +1139,12 @@ font-weight:bold;
 
 <script>
 function volverPanelSuperAdmin(){
+
+  if(localStorage.getItem("admin_rol") !== "super_admin"){
+    alert("❌ Acceso exclusivo para Súper Admin.");
+    return;
+  }
+
   localStorage.removeItem("admin_organizador_id");
   localStorage.removeItem("organizador_admin_id");
 
