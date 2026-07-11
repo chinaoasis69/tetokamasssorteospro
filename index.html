@@ -3598,7 +3598,17 @@ await cargarRifasPublicas();
 
 document.getElementById("panelSuperAdmin").style.display = "none";
 document.getElementById("panelAdmin").style.display = "block";
-document.getElementById("btnVolverSuperAdmin").style.display = "inline-block";	
+	
+const btnVolverSuperAdmin =
+    document.getElementById("btnVolverSuperAdmin");
+
+if(btnVolverSuperAdmin){
+    if(localStorage.getItem("admin_rol") === "super_admin"){
+        btnVolverSuperAdmin.style.display = "inline-block";
+    }else{
+        btnVolverSuperAdmin.style.display = "none";
+    }
+}	
 
 alert("✅ Entrando al panel de: " + data.nombre);
 
