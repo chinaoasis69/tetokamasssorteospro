@@ -3824,11 +3824,45 @@ if(btnVolverSuperAdmin){
   alert("✅ ADMIN DETECTADO");
 
 if (adminData.rol === "super_admin") {
-  await mostrarOrganizadoresAdmin();
+
+    const passwordAuth = prompt(
+        "🔐 Ingresa tu contraseña de Súper Admin"
+    );
+
+    if (!passwordAuth) {
+        alert("❌ Debes ingresar tu contraseña de Súper Admin.");
+        return;
+    }
+
+    const { data: authData, error: authError } =
+        await supabaseClient.auth.signInWithPassword({
+            email: adminData.email,
+            password: passwordAuth
+        });
+
+    if (authError || !authData?.session) {
+        console.error("Error iniciando sesión Auth:", authError);
+        alert("❌ Credenciales de Súper Admin incorrectas.");
+        return;
+    }
+
+    if (authData.user.id !== adminData.auth_user_id) {
+        await supabaseClient.auth.signOut();
+        alert("❌ La identidad Auth no corresponde al Súper Admin.");
+        return;
+    }
+
+    await mostrarOrganizadoresAdmin();
+
 } else {
-  await seleccionarOrganizadorAdmin(adminData.organizador_id);
-document.getElementById("panelAdmin").style.display = "block";
-document.getElementById("panelAdmin").scrollIntoView({ behavior: "smooth" });
+
+    await seleccionarOrganizadorAdmin(adminData.organizador_id);
+
+    document.getElementById("panelAdmin").style.display = "block";
+
+    document
+        .getElementById("panelAdmin")
+        .scrollIntoView({ behavior: "smooth" });
 }
 
 return;
