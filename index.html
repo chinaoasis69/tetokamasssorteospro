@@ -4478,7 +4478,20 @@ if (!organizadorId) {
 }
 
 console.log("USUARIO ACTUAL:", userActual);
-console.log("ORGANIZADOR BUSCADO:", organizadorId);	
+console.log("ORGANIZADOR BUSCADO:", organizadorId);
+
+	if (!organizadorId) {
+    const saldoBox = document.getElementById("saldoBox");
+
+    if (saldoBox) {
+        saldoBox.innerText =
+            "💰 Selecciona un organizador para consultar tu saldo MASS.";
+    }
+
+    console.warn("No hay organizador seleccionado. Se cancela cargarSaldo().");
+
+    return;
+}
 
   const { data } = await supabaseClient
     .from("wallets")
