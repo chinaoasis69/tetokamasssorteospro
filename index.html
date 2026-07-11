@@ -1142,6 +1142,8 @@ font-weight:bold;
 <script>
 function volverPanelSuperAdmin(){
 
+	if(!verificarAccesoSuperAdmin()) return;
+
   if(localStorage.getItem("admin_rol") !== "super_admin"){
     alert("❌ Acceso exclusivo para Súper Admin.");
     return;
@@ -1701,6 +1703,8 @@ const { error } = await supabaseClient
 }	
 
 async function mostrarPatrocinadoresAdmin(){
+
+	if(!verificarAccesoSuperAdmin()) return;
 
   const cont = document.getElementById("adminContenido");
 
@@ -3389,6 +3393,8 @@ function limpiarConvertidorMass() {
 
 async function mostrarConfigAdmin(){
 
+	if(!verificarAccesoSuperAdmin()) return;
+
   const idGuardado = localStorage.getItem("organizador_admin_id");
 
   const adminRol = localStorage.getItem("admin_rol");
@@ -3511,6 +3517,8 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
 }
 
 async function mostrarOrganizadoresAdmin(){
+
+	if(!verificarAccesoSuperAdmin()) return;
 
 	if(localStorage.getItem("admin_rol") !== "super_admin"){
     alert("Esta sección es solo para el administrador principal.");
@@ -6862,6 +6870,8 @@ async function eliminarOrganizador(id){
 
 async function mostrarRecargasMassAdmin() {
 
+	if(!verificarAccesoSuperAdmin()) return;
+
   const orgId = localStorage.getItem("organizador_admin_id");
 
   const { data, error } = await supabaseClient
@@ -7453,9 +7463,23 @@ if(idsRifas.length > 0){
 
 </script>
 
-<script>	  
+<script>
+
+	function verificarAccesoSuperAdmin(){
+    const rol = localStorage.getItem("admin_rol");
+
+    if(rol !== "super_admin"){
+        alert("❌ Acceso exclusivo para Súper Admin.");
+        console.warn("Intento de acceso bloqueado al Panel Súper Admin.");
+        return false;
+    }
+
+    return true;
+}
 
 async function mostrarDashboardGlobalSuperAdmin(){
+
+	if(!verificarAccesoSuperAdmin()) return;
 
   const cont = document.getElementById("superAdminContenido");
   if(!cont) return;
@@ -7585,6 +7609,8 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
 }
 
 async function mostrarBillingSuperAdmin(){
+
+	if(!verificarAccesoSuperAdmin()) return;
 
     const cont = document.getElementById("superAdminContenido");
     if(!cont) return;
