@@ -4111,7 +4111,19 @@ const organizadorId =
   rifa?.organizador_id ||
   rifa?.cliente_id ||
   clienteActual?.id ||
-  null;	
+  null;
+
+	if (!organizadorId) {
+    mostrarNotificacion(
+        "error",
+        "Organizador no encontrado",
+        "No fue posible identificar al organizador de este sorteo.",
+        3000
+    );
+
+    comprando = false;
+    return;
+}
 
   const { data: wallet } = await supabaseClient
   .from("wallets")
