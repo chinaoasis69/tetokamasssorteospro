@@ -7501,22 +7501,36 @@ if(idsRifas.length > 0){
 
 async function verificarAccesoSuperAdmin(){
 
-    const telefono = localStorage.getItem("mass_telefono");
+    const {
+        data: { session },
+        error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-    if(!telefono){
-        alert("❌ Sesión administrativa no encontrada.");
+    if(sessionError || !session){
+        console.warn("No existe una sesión Auth válida.");
+        alert("❌ Sesión de Súper Admin no encontrada.");
         return false;
     }
 
-    const { data: adminData, error } = await supabaseClient
-        .from("admin_organizadores")
-        .select("rol, activo")
-        .eq("telefono", telefono)
-        .eq("activo", true)
-        .maybeSingle();
+    const {
+        data: esSuperAdmin,
+        error: rpcError
+    } = await supabaseClient.rpc("is_super_admin");
 
-    if(error || !adminData || adminData.rol !== "super_admin"){
-        console.warn("Intento de acceso bloqueado al Panel Súper Admin.");
+    if(rpcError){
+        console.error(
+            "Error verificando Súper Admin:",
+            rpcError
+        );
+
+        alert("❌ No se pudo verificar el acceso de Súper Admin.");
+        return false;
+    }
+
+    if(esSuperAdmin !== true){
+        console.warn(
+            "Intento de acceso bloqueado al Panel Súper Admin."
+        );
 
         localStorage.removeItem("admin_rol");
         localStorage.removeItem("admin_organizador_id");
@@ -7526,6 +7540,7 @@ async function verificarAccesoSuperAdmin(){
     }
 
     localStorage.setItem("admin_rol", "super_admin");
+
     return true;
 }
 
