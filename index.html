@@ -1704,7 +1704,7 @@ const { error } = await supabaseClient
 
 async function mostrarPatrocinadoresAdmin(){
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
   const cont = document.getElementById("adminContenido");
 
@@ -3393,7 +3393,7 @@ function limpiarConvertidorMass() {
 
 async function mostrarConfigAdmin(){
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
   const idGuardado = localStorage.getItem("organizador_admin_id");
 
@@ -3518,7 +3518,7 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
 
 async function mostrarOrganizadoresAdmin(){
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
 	if(localStorage.getItem("admin_rol") !== "super_admin"){
     alert("Esta sección es solo para el administrador principal.");
@@ -6870,7 +6870,7 @@ async function eliminarOrganizador(id){
 
 async function mostrarRecargasMassAdmin() {
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
   const orgId = localStorage.getItem("organizador_admin_id");
 
@@ -7628,7 +7628,7 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
 
 async function mostrarBillingSuperAdmin(){
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
     const cont = document.getElementById("superAdminContenido");
     if(!cont) return;
