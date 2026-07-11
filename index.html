@@ -7497,7 +7497,7 @@ async function verificarAccesoSuperAdmin(){
 
 async function mostrarDashboardGlobalSuperAdmin(){
 
-	if(!verificarAccesoSuperAdmin()) return;
+	if(!(await verificarAccesoSuperAdmin())) return;
 
   const cont = document.getElementById("superAdminContenido");
   if(!cont) return;
