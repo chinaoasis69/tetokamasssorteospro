@@ -1325,6 +1325,12 @@ async function adminSecreto(){
 
  if(adminData.rol === "organizador" && adminData.organizador_id){
 
+	const btnVolverSuperAdmin = document.getElementById("btnVolverSuperAdmin");
+
+if(btnVolverSuperAdmin){
+    btnVolverSuperAdmin.style.display = "none";
+}
+
 	const panelSuperAdmin = document.getElementById("panelSuperAdmin");
     const superAdminContenido = document.getElementById("superAdminContenido");
 
@@ -1345,6 +1351,13 @@ async function adminSecreto(){
     }
 
     if(adminData.rol === "super_admin"){
+
+		const btnVolverSuperAdmin = document.getElementById("btnVolverSuperAdmin");
+
+if(btnVolverSuperAdmin){
+    btnVolverSuperAdmin.style.display = "inline-block";
+}
+		
   document.getElementById("panelAdmin").style.display = "none";
   document.getElementById("panelSuperAdmin").style.display = "block";
 
