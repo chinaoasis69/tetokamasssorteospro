@@ -1315,7 +1315,18 @@ async function adminSecreto(){
     localStorage.setItem("admin_rol", adminData.rol);
     localStorage.setItem("admin_organizador_id", adminData.organizador_id || "");
 
-    if(adminData.rol === "organizador" && adminData.organizador_id){
+ if(adminData.rol === "organizador" && adminData.organizador_id){
+
+	const panelSuperAdmin = document.getElementById("panelSuperAdmin");
+    const superAdminContenido = document.getElementById("superAdminContenido");
+
+   if(panelSuperAdmin){
+    panelSuperAdmin.style.display = "none";
+   }
+
+  if(superAdminContenido){
+    superAdminContenido.innerHTML = "";
+   }	
       document.getElementById("panelAdmin").style.display = "block";
 
       setTimeout(() => {
