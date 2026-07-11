@@ -3978,17 +3978,62 @@ let organizadoresActivosCache = [];
 let RIFA_ID = null;
 
 async function asegurarWallet() {
-  const { data } = await supabaseClient
-    .from("wallets")
-    .select("*")
-    .eq("user_id", userActual)
-    .single();
+  const telefono =
+    (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
-  if (!data) {
-    await supabaseClient.from("wallets").insert({
-      user_id: userActual,
-      saldo: 0
-    });
+  const organizadorId =
+    RIFA_ID
+      ? null
+      : localStorage.getItem("organizador_actual_id");
+
+  let orgId = organizadorId;
+
+  if (RIFA_ID) {
+    const { data: rifaActual, error: rifaError } = await supabaseClient
+      .from("rifas")
+      .select("organizador_id")
+      .eq("id", RIFA_ID)
+      .maybeSingle();
+
+    if (rifaError) {
+      console.error("Error obteniendo organizador de la rifa:", rifaError);
+      return;
+    }
+
+    orgId = rifaActual?.organizador_id || null;
+  }
+
+  if (!telefono || !orgId) {
+    console.warn(
+      "No se puede asegurar wallet: falta teléfono u organizador."
+    );
+    return;
+  }
+
+  const { data: wallet, error: walletError } = await supabaseClient
+    .from("wallets")
+    .select("id, saldo")
+    .eq("user_id", telefono)
+    .eq("organizador_id", orgId)
+    .maybeSingle();
+
+  if (walletError) {
+    console.error("Error buscando wallet:", walletError);
+    return;
+  }
+
+  if (!wallet) {
+    const { error: insertError } = await supabaseClient
+      .from("wallets")
+      .insert({
+        user_id: telefono,
+        organizador_id: orgId,
+        saldo: 0
+      });
+
+    if (insertError) {
+      console.error("Error creando wallet:", insertError);
+    }
   }
 }
 
