@@ -3780,6 +3780,25 @@ if(adminData){
   localStorage.setItem("mass_user", telefono);
   localStorage.setItem("mass_telefono", telefono);
 
+	const btnVolverSuperAdmin =
+    document.getElementById("btnVolverSuperAdmin");
+
+if(btnVolverSuperAdmin){
+    if(adminData.rol === "super_admin"){
+        btnVolverSuperAdmin.style.setProperty(
+            "display",
+            "inline-block",
+            "important"
+        );
+    }else{
+        btnVolverSuperAdmin.style.setProperty(
+            "display",
+            "none",
+            "important"
+        );
+    }
+}
+
   userActual = telefono;
 
   mostrarSesionActiva();	
