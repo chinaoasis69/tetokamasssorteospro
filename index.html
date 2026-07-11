@@ -1704,8 +1704,6 @@ const { error } = await supabaseClient
 
 async function mostrarPatrocinadoresAdmin(){
 
-	if(!(await verificarAccesoSuperAdmin())) return;
-
   const cont = document.getElementById("adminContenido");
 
   const adminRol = localStorage.getItem("admin_rol");
@@ -3392,8 +3390,6 @@ function limpiarConvertidorMass() {
 }	
 
 async function mostrarConfigAdmin(){
-
-	if(!(await verificarAccesoSuperAdmin())) return;
 
   const idGuardado = localStorage.getItem("organizador_admin_id");
 
@@ -6980,8 +6976,6 @@ async function eliminarOrganizador(id){
 }
 
 async function mostrarRecargasMassAdmin() {
-
-	if(!(await verificarAccesoSuperAdmin())) return;
 
   const orgId = localStorage.getItem("organizador_admin_id");
 
