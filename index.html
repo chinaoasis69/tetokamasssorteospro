@@ -990,10 +990,13 @@ Cargando historial...
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
-${localStorage.getItem("admin_rol") === "super_admin"
-  ? `<button onclick="volverPanelSuperAdmin()">👑 Volver al Súper Admin</button>`
-  : ""
-}	
+<button
+    id="btnVolverSuperAdmin"
+    onclick="volverPanelSuperAdmin()"
+    style="display:none;"
+>
+    👑 Volver al Súper Admin
+</button>	
 
 <button onclick="mostrarDashboardOrganizador()">
     📊 Dashboard
