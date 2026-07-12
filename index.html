@@ -1148,8 +1148,7 @@ async function volverPanelSuperAdmin(){
     alert("❌ Acceso exclusivo para Súper Admin.");
     return;
   }
-
-  localStorage.removeItem("admin_organizador_id");
+	
   localStorage.removeItem("organizador_admin_id");
 
   document.getElementById("panelAdmin").style.display = "none";
