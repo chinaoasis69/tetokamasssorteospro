@@ -2828,6 +2828,9 @@ async function guardarRifaFormulario() {
   const premio = document.getElementById("formPremio").value.trim();
   const precio = document.getElementById("formPrecio").value;
   const total = document.getElementById("formTotal").value;
+  const modalidad = Number(
+    document.getElementById("formModalidad").value || 1
+  );	
   const fecha = document.getElementById("formFecha").value;
   const metodo = document.getElementById("formMetodo").value.trim();
   const cifras = document.getElementById("formCifras").value;
@@ -2840,11 +2843,31 @@ async function guardarRifaFormulario() {
     return;
   }
 
+const totalNumeros = Number(total);
+
+if (
+  !Number.isInteger(totalNumeros) ||
+  ![100, 1000, 10000, 100000].includes(totalNumeros)
+) {
+  alert("❌ Usa 100, 1000, 10000 o 100000 números.");
+  return;
+}
+
+if (
+  !Number.isInteger(modalidad) ||
+  modalidad <= 0 ||
+  totalNumeros % modalidad !== 0
+) {
+  alert("❌ La modalidad seleccionada no es válida para esa cantidad.");
+  return;
+}	
+
   const payload = {
     titulo,
     premio,
     precio_boleto: Number(precio),
     total_numeros: Number(total),
+	modalidad: modalidad,  
     fecha_sorteo: fecha,
     metodo_sorteo: metodo,
     cifras_sorteo: Number(cifras),
@@ -8613,6 +8636,14 @@ font-family:Arial, sans-serif;">
     <input id="formPremio" placeholder="Premio principal">
     <input id="formPrecio" type="number" placeholder="Precio por boleto">
     <input id="formTotal" type="number" placeholder="Cantidad de números">
+
+<select id="formModalidad">
+  <option value="1">Modalidad 1 — entrega 1 número</option>
+  <option value="2">Modalidad 2 — entrega 2 números</option>
+  <option value="4">Modalidad 4 — entrega 4 números</option>
+  <option value="5">Modalidad 5 — entrega 5 números</option>
+  <option value="10">Modalidad 10 — entrega 10 números</option>
+</select>  
 
     <label>📅 Fecha del sorteo</label>
     <input id="formFecha" type="date">
