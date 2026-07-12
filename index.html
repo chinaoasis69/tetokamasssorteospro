@@ -3820,16 +3820,15 @@ if(btnVolverSuperAdmin){
 
 if (adminData.rol === "super_admin") {
 
-localStorage.removeItem("organizador_actual_id");
-localStorage.removeItem("admin_organizador_id");
-localStorage.removeItem("organizador_admin_id");
+  localStorage.removeItem("organizador_actual_id");
+  localStorage.removeItem("organizador_admin_id");
 
-organizadorId = null;
-clienteActual = null;
+  organizadorId = adminData.organizador_id || null;
+  clienteActual = null;
 
-    const passwordAuth = prompt(
-        "🔐 Ingresa tu contraseña de Súper Admin"
-    );
+  const passwordAuth = prompt(
+    "🔐 Ingresa tu contraseña de Súper Admin"
+  );
 
     if (!passwordAuth) {
         alert("❌ Debes ingresar tu contraseña de Súper Admin.");
