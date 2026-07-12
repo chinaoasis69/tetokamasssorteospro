@@ -5518,17 +5518,23 @@ aplicarFiltros();
 function aplicarFiltros(){
   const buscar = document.getElementById("buscar").value.trim();
 
-const resultado = document.getElementById("resultadoBusqueda");
+  const resultado = document.getElementById("resultadoBusqueda");
 
-if(buscar){
+  const digitosRifa = boletos.length
+    ? Math.max(...boletos.map(b =>
+      String(b.numero).replace(/\D/g, "").length
+      ))
+    : 1;	
 
-    const buscarNormal = buscar.replace(/\D/g, "").padStart(4, "0");
+  if(buscar){
 
-const boleto = boletos.find(b => {
+    const buscarNormal = buscar.replace(/\D/g, "").padStart(digitosRifa, "0");
+
+    const boleto = boletos.find(b => {
 
     const numeroBoleto = String(b.numero)
         .replace(/\D/g, "")
-        .padStart(4, "0");
+        .padStart(digitosRifa, "0");
 
     return numeroBoleto === buscarNormal;
 
@@ -5627,8 +5633,8 @@ const boleto = boletos.find(b => {
 
     if(buscar){
 
-    const numeroNormal = String(b.numero).padStart(4, "0");
-    const buscarNormal = buscar.padStart(4, "0");
+    const numeroNormal = String(b.numero).padStart(digitosRifa, "0");
+    const buscarNormal = buscar.padStart(digitosRifa, "0");
 
     pasa = pasa && numeroNormal.includes(buscarNormal);
 
@@ -5942,6 +5948,12 @@ cargarBoletos();
 
 async function girarLuckySpin(pinYaValidado = false){
 
+  const digitosRifa = boletos.length
+    ? Math.max(...boletos.map(b =>
+      String(b.numero).replace(/\D/g, "").length
+     ))
+   : 1;
+	
   if(!boletoSeleccionado){
     let numeroPin = prompt("Ingresa tu número de boleto, ejemplo: 0002");
 
@@ -5950,7 +5962,7 @@ async function girarLuckySpin(pinYaValidado = false){
       return;
     }
 
-    numeroPin = numeroPin.trim().padStart(4, "0");
+    numeroPin = numeroPin.trim().padStart(digitosRifa, "0");
 
     boletoSeleccionado = boletos.find(b => b.numero === numeroPin);
 
@@ -6101,10 +6113,19 @@ if(spinResult){
 async function girarLuckySpinConBoleto(numero, rifaId) {
   RIFA_ID = rifaId;
 
-  boletoSeleccionado = boletos.find(b =>
-    String(b.numero) === String(numero).padStart(4, "0") &&
-    String(b.rifa_id) === String(rifaId)
-  );
+const boletosDeRifa = boletos.filter(
+  b => String(b.rifa_id) === String(rifaId)
+);
+
+const digitosRifa = boletosDeRifa.length
+  ? Math.max(...boletosDeRifa.map(b =>
+      String(b.numero).replace(/\D/g, "").length
+    ))
+  : 1;	
+
+  boletoSeleccionado = boletosDeRifa.find(b =>
+  String(b.numero) === String(numero).padStart(digitosRifa, "0")
+);
 
   if (!boletoSeleccionado) {
     alert("No se encontró el boleto para girar ❌");
