@@ -5979,41 +5979,87 @@ function abrirSelectorSuerte(){
   }
 }	
 
-function numeroSuerte(cantidad = 1){
+function numeroSuerte(cantidad = 1) {
 
-    document.getElementById("selectorSuerte").style.display = "none";
+  const rifaActual = (rifas || []).find(
+    r => String(r.id) === String(RIFA_ID)
+  );
 
-    const disponibles = boletos.filter(b =>
-        (b.estado || "disponible") === "disponible"
-    );
+  if (!rifaActual) {
+    alert("❌ No se encontró la rifa seleccionada");
+    return;
+  }
 
-    if(disponibles.length === 0){
-        alert("No hay números disponibles");
-        return;
+  const modalidadActual = Number(rifaActual.modalidad || 1);
+  const totalNumerosRifa = Number(
+    rifaActual.total_numeros || boletos.length
+  );
+
+  const saltoNumeros = totalNumerosRifa / modalidadActual;
+
+  const boletosDeRifa = boletos.filter(
+    b => String(b.rifa_id) === String(RIFA_ID)
+  );
+
+  // Solamente números base que tengan todo su paquete disponible
+  const basesValidas = boletosDeRifa.filter(base => {
+
+    const numeroBase = Number(base.numero);
+
+    if ((base.estado || "disponible") !== "disponible") {
+      return false;
     }
 
-    // Limpiar selección anterior
-    boletosSeleccionados = [];
+    // En modalidad 4 y 100 números solo permite bases 00–24
+    if (numeroBase >= saltoNumeros) {
+      return false;
+    }
 
-    // Mezclar aleatoriamente
-    const mezcla = [...disponibles].sort(() => Math.random() - 0.5);
+    const numerosPaquete = Array.from(
+      { length: modalidadActual },
+      (_, indice) => numeroBase + (indice * saltoNumeros)
+    );
 
-    // Tomar la cantidad solicitada
-    mezcla.slice(0, cantidad).forEach(b => {
-        seleccionarBoleto(b);
-    });
+    return numerosPaquete.every(numeroPaquete =>
+      boletosDeRifa.some(b =>
+        Number(b.numero) === numeroPaquete &&
+        (b.estado || "disponible") === "disponible"
+      )
+    );
+  });
 
-    // Ir al Centro de Compra
-    setTimeout(() => {
-        const centro = document.getElementById("resumenCompra");
-        if(centro){
-            centro.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-        }
-    }, 300);
+  if (basesValidas.length < cantidad) {
+    alert(
+      `❌ Solo quedan ${basesValidas.length} paquetes completos disponibles`
+    );
+    return;
+  }
 
+  document.getElementById("selectorSuerte").style.display = "none";
+
+  // Limpiar selección anterior
+  boletosSeleccionados = [];
+
+  // Mezclar únicamente números base válidos
+  const mezcla = [...basesValidas].sort(
+    () => Math.random() - 0.5
+  );
+
+  mezcla.slice(0, cantidad).forEach(b => {
+    seleccionarBoleto(b);
+  });
+
+  // Ir al Centro de Compra
+  setTimeout(() => {
+    const centro = document.getElementById("resumenCompra");
+
+    if (centro) {
+      centro.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
+    }
+  }, 300);
 }
 
 function abrirVideoRifa(){
