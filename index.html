@@ -6387,7 +6387,7 @@ async function pagarReservadoConMass(numero, rifaId) {
 
   const { data: rifa } = await supabaseClient
     .from("rifas")
-    .select("precio_boleto, organizador_id")
+    .select("precio_boleto, organizador_id, total_numeros, modalidad")
     .eq("id", rifaId)
     .single();
 
@@ -6406,17 +6406,113 @@ async function pagarReservadoConMass(numero, rifaId) {
     return;
   }
 
-  await supabaseClient
-    .from("wallets")
-    .update({ saldo: Number(wallet.saldo) - precio })
-    .eq("id", wallet.id);
+const modalidadActual = Number(rifa?.modalidad || 1);
+const totalNumerosRifa = Number(rifa?.total_numeros || 0);
+const digitosRifa = String(totalNumerosRifa - 1).length;
+const saltoNumeros = totalNumerosRifa / modalidadActual;
 
+const numeroBase = Number(numero);
+
+const numerosPaquete = Array.from(
+  { length: modalidadActual },
+  (_, indice) => numeroBase + (indice * saltoNumeros)
+);
+
+const numerosPaqueteTexto = numerosPaquete.map(n =>
+  String(n).padStart(digitosRifa, "0")
+);
+
+const { data: boletosPaquete, error: errorPaquete } =
   await supabaseClient
     .from("boletos")
-    .update({ estado: "vendido" })
+    .select("id, numero, estado, telefono")
     .eq("rifa_id", rifaId)
-    .eq("numero", numero)
-    .eq("telefono", tel);
+    .in("numero", numerosPaqueteTexto);
+
+if (
+  errorPaquete ||
+  !boletosPaquete ||
+  boletosPaquete.length !== modalidadActual
+) {
+  console.error(errorPaquete);
+  alert("❌ No se encontraron todos los números del paquete");
+  return;
+}
+
+const numeroBaseTexto = String(numeroBase).padStart(
+  digitosRifa,
+  "0"
+);
+
+const boletoBase = boletosPaquete.find(
+  b => String(b.numero) === numeroBaseTexto
+);
+
+if (
+  !boletoBase ||
+  boletoBase.estado !== "apartado" ||
+  String(boletoBase.telefono || "").trim() !== tel
+) {
+  alert("❌ Este boleto reservado no pertenece a tu cuenta");
+  return;
+}
+
+const complementariosOcupados = boletosPaquete.some(
+  b =>
+    b.id !== boletoBase.id &&
+    b.estado !== "disponible"
+);
+
+if (complementariosOcupados) {
+  alert("❌ Uno de los números complementarios ya no está disponible");
+  return;
+}
+
+const idsPaquete = boletosPaquete.map(b => b.id);
+
+  const pinGiroReservado = Math.floor(
+  100000 + Math.random() * 900000
+).toString();
+
+const {
+  data: vendidosPaquete,
+  error: errorVentaPaquete
+} = await supabaseClient
+  .from("boletos")
+  .update({
+    estado: "vendido",
+    telefono: tel,
+    nombre: tel,
+    pin_giro: pinGiroReservado,
+    giro_usado: false,
+    fecha: new Date().toISOString(),
+    rifa_id: rifaId
+  })
+  .eq("rifa_id", rifaId)
+  .in("id", idsPaquete)
+  .in("estado", ["apartado", "disponible"])
+  .select("id");
+
+if (
+  errorVentaPaquete ||
+  !vendidosPaquete ||
+  vendidosPaquete.length !== modalidadActual
+) {
+  console.error(errorVentaPaquete);
+  alert("❌ Error vendiendo los números del paquete");
+  return;
+}
+
+const { error: errorSaldo } = await supabaseClient
+  .from("wallets")
+  .update({ saldo: Number(wallet.saldo) - precio })
+  .eq("id", wallet.id);
+
+if (errorSaldo) {
+  console.error(errorSaldo);
+  alert("❌ Los números se asignaron, pero hubo un error descontando el saldo");
+  return;
+}
 
   alert("✅ Boleto pagado con MASS");
   cargarSaldo();
