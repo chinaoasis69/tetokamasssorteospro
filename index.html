@@ -2916,6 +2916,44 @@ async function crearRifaAdmin(){
     const total = prompt("Cantidad de números");
     if(!total) return;
 
+const totalNumeros = Number(total);
+
+if (
+  !Number.isInteger(totalNumeros) ||
+  ![100, 1000, 10000, 100000].includes(totalNumeros)
+) {
+  alert("❌ Cantidad no válida. Usa 100, 1000, 10000 o 100000.");
+  return;
+}
+
+const modalidadIngresada = prompt(
+`Modalidad de la rifa:
+
+1 = entrega 1 número
+2 = entrega 2 números
+4 = entrega 4 números
+5 = entrega 5 números
+10 = entrega 10 números
+
+Escribe la modalidad:`,
+"1"
+);
+
+if(!modalidadIngresada) return;
+
+const modalidad = Number(modalidadIngresada);
+
+if (
+  !Number.isInteger(modalidad) ||
+  modalidad <= 0 ||
+  totalNumeros % modalidad !== 0
+) {
+  alert("❌ Esa modalidad no es válida para la cantidad de números elegida.");
+  return;
+}
+
+const numerosVisibles = totalNumeros / modalidad;	
+
     const fecha = prompt(
 `📅 Fecha del sorteo
 
@@ -2948,6 +2986,7 @@ const imagen = prompt(
 premio: premio,
 precio_boleto: Number(precio),
 total_numeros: Number(total),
+modalidad: modalidad,		
 fecha_sorteo: fecha,
 metodo_sorteo: metodo,
 cifras_sorteo: Number(cifras),
@@ -5651,7 +5690,22 @@ function renderBoletos(){
   const contenedor = document.getElementById("grid");
   contenedor.innerHTML = "";
 
-  filtrados.forEach(b => {
+const rifaActual = rifas.find(
+  r => String(r.id) === String(RIFA_ID)
+);
+
+const modalidadActual = Number(rifaActual?.modalidad || 1);
+const totalNumerosRifa = Number(
+  rifaActual?.total_numeros || filtrados.length
+);
+
+const limiteVisible = totalNumerosRifa / modalidadActual;
+
+const boletosVisibles = filtrados.filter(
+  b => Number(b.numero) < limiteVisible
+);	
+
+  boletosVisibles.forEach(b => {
     const btn = document.createElement("button");
     btn.innerText = b.numero;
 
