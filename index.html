@@ -4203,7 +4203,7 @@ async function comprarConSaldo() {
 
   const { data: rifa } = await supabaseClient
     .from("rifas")
-    .select("precio_boleto, organizador_id, cliente_id")
+    .select("precio_boleto, organizador_id, cliente_id, total_numeros, modalidad")
     .eq("id", RIFA_ID)
     .single();
 
@@ -4246,7 +4246,45 @@ const organizadorId =
     return;
   }
 
-  const ids = boletosSeleccionados.map(b => b.id);
+  const modalidadActual = Number(rifa?.modalidad || 1);
+const totalNumerosRifa = Number(
+  rifa?.total_numeros || boletos.length
+);
+
+const saltoNumeros = totalNumerosRifa / modalidadActual;
+
+const numerosAsignados = boletosSeleccionados.flatMap(b => {
+  const numeroBase = Number(b.numero);
+
+  return Array.from(
+    { length: modalidadActual },
+    (_, indice) => numeroBase + (indice * saltoNumeros)
+  );
+});
+
+const numerosAsignadosSet = new Set(numerosAsignados);
+
+const boletosAsignados = boletos.filter(b =>
+  String(b.rifa_id) === String(RIFA_ID) &&
+  numerosAsignadosSet.has(Number(b.numero))
+);
+
+const cantidadEsperada =
+  boletosSeleccionados.length * modalidadActual;
+
+if (boletosAsignados.length !== cantidadEsperada) {
+  mostrarNotificacion(
+    "error",
+    "Paquete incompleto",
+    "No se encontraron todos los números complementarios.",
+    4000
+  );
+
+	 comprando = false;
+  return;
+}
+
+const ids = boletosAsignados.map(b => b.id);
 
   const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
   const codigoBeneficio = pinGiro;
@@ -4295,7 +4333,7 @@ const patrocinadorBeneficio =
     return;
   }
 
-  await guardarActividadSorteo("vendido", boletosSeleccionados);
+  await guardarActividadSorteo("vendido", boletosAsignados);
 
   const nuevoSaldo = wallet.saldo - totalPagar;
 
@@ -4308,7 +4346,7 @@ const patrocinadorBeneficio =
   mostrarNotificacion(
     "success",
     "🎉 Compra exitosa",
-    `🎟️ Boletos: ${boletosSeleccionados.map(b => b.numero).join(", ")}<br>
+    `🎟️ Números recibidos: ${boletosAsignados.map(b => b.numero).join(", ")}<br>
      💰 Total pagado: ${totalPagar} MASS<br>
      🎡 Tu giro quedó desbloqueado. Ve a MASS LUCKY SPIN.`,
     4000
