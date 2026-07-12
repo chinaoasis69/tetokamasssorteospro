@@ -6226,26 +6226,46 @@ if(spinResult){
 }
 
 async function girarLuckySpinConBoleto(numero, rifaId) {
-  RIFA_ID = rifaId;
+  const telefono = (
+    localStorage.getItem("mass_telefono") ||
+    userActual ||
+    ""
+  ).trim();
 
-const boletosDeRifa = boletos.filter(
-  b => String(b.rifa_id) === String(rifaId)
-);
+  const numeroTexto = String(numero).trim();
 
-const digitosRifa = boletosDeRifa.length
-  ? Math.max(...boletosDeRifa.map(b =>
-      String(b.numero).replace(/\D/g, "").length
-    ))
-  : 1;	
+  const { data: boleto, error } = await supabaseClient
+    .from("boletos")
+    .select("*")
+    .eq("rifa_id", rifaId)
+    .eq("numero", numeroTexto)
+    .eq("telefono", telefono)
+    .limit(1)
+    .maybeSingle();
 
-  boletoSeleccionado = boletosDeRifa.find(b =>
-  String(b.numero) === String(numero).padStart(digitosRifa, "0")
-);
-
-  if (!boletoSeleccionado) {
-    alert("No se encontró el boleto para girar ❌");
+  if (error) {
+    console.error(error);
+    alert("❌ Error buscando el boleto");
     return;
   }
+
+  if (!boleto) {
+    alert("❌ No se encontró este boleto en tu cuenta");
+    return;
+  }
+
+  if (boleto.estado !== "vendido") {
+    alert("❌ Este boleto todavía no está pagado");
+    return;
+  }
+
+  if (boleto.giro_usado === true) {
+    alert("❌ El giro de este boleto ya fue utilizado");
+    return;
+  }
+
+  RIFA_ID = rifaId;
+  boletoSeleccionado = boleto;
 
   await girarLuckySpin(true);
 }	
