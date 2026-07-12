@@ -6339,7 +6339,12 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
   const lista = agrupados[rifaId];
   const sorteo = mapaSorteos[String(rifaId)];
   const rifaActiva = sorteo
-  ? (sorteo.activo === true || sorteo.estado === "activa" || sorteo.estado === "activo")
+  ? (
+      sorteo.activo === true ||
+      sorteo.estado === "activa" ||
+      sorteo.estado === "activo" ||
+      sorteo.estado === "programada"
+    )
   : false;	
   const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
   const idBox = "mis_boletos_" + i;
@@ -7000,9 +7005,12 @@ async function usarGiro(numero, rifaId){
   .single();
 
 const rifaActiva = rifa
-    ? (rifa.activo === true ||
+    ? (
+	   rifa.activo === true ||
        rifa.estado === "activa" ||
-       rifa.estado === "activo")
+       rifa.estado === "activo" ||
+	   rifa.estado === "programada"
+	   )
     : false;
 
 if(errorRifa || !rifa || !rifaActiva){
