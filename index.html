@@ -6910,17 +6910,17 @@ async function generarBoletosRifaAdmin(rifaId, totalNumeros){
     return;
   }
 
-  let boletos = [];
+  const cantidadTotal = Number(totalNumeros);
+const digitos = String(cantidadTotal - 1).length;
+const boletos = [];
 
-  for(let i=0;i<totalNumeros;i++){
-
-    boletos.push({
-      rifa_id: rifaId,
-      numero: String(i).padStart(4,"0"),
-      estado:"disponible"
-    });
-
-  }
+for (let i = 0; i < cantidadTotal; i++) {
+  boletos.push({
+    rifa_id: rifaId,
+    numero: String(i).padStart(digitos, "0"),
+    estado: "disponible"
+  });
+}
 
   const { error } = await supabaseClient
     .from("boletos")
