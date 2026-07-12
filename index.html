@@ -6552,92 +6552,164 @@ abrirModalBeneficios();
 actualizarContadorBeneficios();
 } 	
 	
-async function cargarHistorialSorteos(){
+async function cargarHistorialSorteos() {
+    const contHistorial = document.getElementById("historialSorteos");
 
-const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
+    if (!contHistorial) return;
 
-const { data, error } = await supabaseClient
-  .from("boletos")
-  .select("*")
-  .eq("telefono", tel)
-  .eq("estado", "vendido")	
-  .order("fecha", { ascending:false });
+    const tel = (
+        localStorage.getItem("mass_telefono") ||
+        userActual ||
+        ""
+    ).trim();
 
-if(error){
-  console.error("ERROR HISTORIAL:", error);
+    if (!tel) {
+        contHistorial.innerHTML =
+            "<p>Inicia sesión para consultar tu historial.</p>";
+        return;
+    }
 
-  const contHistorial = document.getElementById("historialSorteos");
-if (contHistorial) {
-  contHistorial.innerHTML = "Error cargando historial: " + error.message;
-}
+    const {
+        data: boletosHistorial,
+        error: boletosError
+    } = await supabaseClient
+        .from("boletos")
+        .select("*")
+        .eq("telefono", tel)
+        .eq("estado", "vendido")
+        .order("fecha", { ascending: false });
 
-  return;
-}
+    if (boletosError) {
+        console.error("ERROR HISTORIAL:", boletosError);
 
-const { data: sorteos } = await supabaseClient
-.from("sorteos")
-.select("*");
+        contHistorial.innerHTML =
+            "Error cargando historial: " + boletosError.message;
 
-let mapaSorteos = {};
+        return;
+    }
 
-(sorteos || []).forEach(s => {
-  mapaSorteos[s.id] = s;
-});
+    if (!boletosHistorial || boletosHistorial.length === 0) {
+        contHistorial.innerHTML = "Sin historial";
+        return;
+    }
 
-let agrupados = {};
+    const rifaIds = [
+        ...new Set(
+            boletosHistorial
+                .map(boleto => boleto.rifa_id)
+                .filter(Boolean)
+        )
+    ];
 
-data.forEach(t => {
+    let mapaRifas = {};
 
-const key = t.rifa_id || "SIN_RIFA";
-if(!agrupados[key]){
-agrupados[key] = [];
-}
+    if (rifaIds.length > 0) {
+        const {
+            data: rifas,
+            error: rifasError
+        } = await supabaseClient
+            .from("rifas")
+            .select("id, titulo, premio, fecha_sorteo")
+            .in("id", rifaIds);
 
-agrupados[key].push(t);
+        if (rifasError) {
+            console.error(
+                "ERROR CARGANDO RIFAS DEL HISTORIAL:",
+                rifasError
+            );
+        }
 
-});
+        (rifas || []).forEach(rifa => {
+            mapaRifas[rifa.id] = rifa;
+        });
+    }
 
-let html = "";
+    const agrupados = {};
 
-Object.keys(agrupados).forEach(rifa => {
+    boletosHistorial.forEach(boleto => {
+        const key = boleto.rifa_id || "SIN_RIFA";
 
-  const idSeguro = rifa.replaceAll("-", "_");
+        if (!agrupados[key]) {
+            agrupados[key] = [];
+        }
 
-  html += `
-  <div style="
-    border:1px solid #38b000;
-    border-radius:10px;
-    padding:10px;
-    margin:10px 0;
-  ">
+        agrupados[key].push(boleto);
+    });
 
-    <h3>🎁 ${mapaSorteos[rifa]?.titulo || mapaSorteos[rifa]?.premio || "Sorteo anterior"}</h3>
-    <p>🏆 ${mapaSorteos[rifa]?.premio || ""}</p>
-    <p>🗓️ ${mapaSorteos[rifa]?.fecha_sorteo || ""}</p>
-    <p>Boletos comprados: <b>${agrupados[rifa].length}</b></p>
+    let html = "";
 
-    <button onclick="document.getElementById('boletos_${idSeguro}').style.display =
-    document.getElementById('boletos_${idSeguro}').style.display === 'none' ? 'block' : 'none'">
-      👁 Ver boletos
-    </button>
+    Object.keys(agrupados).forEach(rifaId => {
+        const idSeguro = rifaId.replaceAll("-", "_");
+        const informacionRifa = mapaRifas[rifaId] || {};
 
-    <div id="boletos_${idSeguro}" style="display:none; margin-top:10px;">
-      ${agrupados[rifa].map(t => `
-        <div>
-          🎟️ Boleto: <b>${t.numero}</b> — 🎰 PIN: <b>${t.pin_giro}</b>
-        </div>
-      `).join("")}
-    </div>
+        const titulo =
+            informacionRifa.titulo ||
+            informacionRifa.premio ||
+            "Sorteo anterior";
 
-  </div>
-  `;
+        const premio =
+            informacionRifa.premio || "";
 
-});
+        const fechaSorteo =
+            informacionRifa.fecha_sorteo || "";
 
-const contHistorial = document.getElementById("historialSorteos");
-if (contHistorial) {
-  contHistorial.innerHTML = html || "Sin historial";
-}
+        html += `
+            <div style="
+                border:1px solid #38be00;
+                border-radius:10px;
+                padding:10px;
+                margin:10px 0;
+            ">
+
+                <h3>🎁 ${titulo}</h3>
+
+                ${premio ? `<p>🏆 ${premio}</p>` : ""}
+
+                ${fechaSorteo ? `<p>📅 ${fechaSorteo}</p>` : ""}
+
+                <p>
+                    Boletos comprados:
+                    <b>${agrupados[rifaId].length}</b>
+                </p>
+
+                <button
+                    onclick="
+                        const contenedor =
+                            document.getElementById('boletos_${idSeguro}');
+
+                        contenedor.style.display =
+                            contenedor.style.display === 'none'
+                                ? 'block'
+                                : 'none';
+                    "
+                >
+                    👁 Ver boletos
+                </button>
+
+                <div
+                    id="boletos_${idSeguro}"
+                    style="display:none; margin-top:10px;"
+                >
+                    ${agrupados[rifaId]
+                        .map(boleto => `
+                            <div>
+                                🎟️ Boleto:
+                                <b>${boleto.numero || "---"}</b>
+
+                                -
+
+                                🧾 PIN:
+                                <b>${boleto.pin_giro || "---"}</b>
+                            </div>
+                        `)
+                        .join("")}
+                </div>
+
+            </div>
+        `;
+    });
+
+    contHistorial.innerHTML = html || "Sin historial";
 }
 
 async function cargarHistorialPremios(){
