@@ -4243,18 +4243,6 @@ const patrocinadorBeneficio =
   .eq("user_id", userActual)
   .eq("organizador_id", organizadorId); 
 
-  await supabaseClient.from("tickets").insert(
-    boletosSeleccionados.map(b => ({
-      user_id: userActual,
-      rifa_id: RIFA_ID,
-      numero: b.numero,
-      pin_giro: pinGiro,
-      monto: precioBoleto,
-      estado: "comprado",
-      giro_usado: false
-    }))
-  );
-
   mostrarNotificacion(
     "success",
     "🎉 Compra exitosa",
