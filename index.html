@@ -3577,9 +3577,9 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
 
 async function mostrarOrganizadoresAdmin(){
 
-	if(!(await verificarAccesoSuperAdmin())) return;
+	const adminActual = await obtenerAdminActual();
 
-	if(localStorage.getItem("admin_rol") !== "super_admin"){
+if (!adminActual || adminActual.rol !== "super_admin") {
     alert("Esta sección es solo para el administrador principal.");
     return;
 }
@@ -3821,7 +3821,30 @@ const MASS_UNIDADES = [
   { codigo: "CLP", nombre: "MASS CLP", moneda: "CLP", pais: "Chile", bandera: "🇨🇱", valor: 1 },
   { codigo: "PEN", nombre: "MASS PEN", moneda: "PEN", pais: "Perú", bandera: "🇵🇪", valor: 1 },
   { codigo: "VES", nombre: "MASS VES", moneda: "VES", pais: "Venezuela", bandera: "🇻🇪", valor: 1 }
-];	
+];
+
+async function obtenerAdminActual() {
+
+    const {
+        data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) return null;
+
+    const { data, error } = await supabaseClient
+        .from("admin_organizadores")
+        .select("*")
+        .eq("auth_user_id", user.id)
+        .eq("activo", true)
+        .maybeSingle();
+
+    if (error) {
+        console.error(error);
+        return null;
+    }
+
+    return data;
+}	
 	
 async function loginMASS(){
 
