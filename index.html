@@ -3570,7 +3570,7 @@ clienteActual = data;
     return;
   }
 
-  const { error } = await supabaseClient
+  const { data: organizadorActualizado, error } = await supabaseClient
     .from("organizadores")
     .update({
       nombre: document.getElementById("cfgNombre").value.trim(),
@@ -3584,7 +3584,16 @@ clienteActual = data;
       banner_url: document.getElementById("cfgBannerUrl").value.trim(),
       color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
     })
-    .eq("id", idPermitido);
+    .eq("id", idPermitido)
+.select("*")
+.maybeSingle();
+
+	console.log("ORGANIZADOR ACTUALIZADO:", organizadorActualizado);
+
+if (!organizadorActualizado) {
+    alert("❌ Supabase no permitió actualizar este organizador.");
+    return;
+}
 
   if(error){
     console.error("ERROR GUARDANDO CONFIG:", error);
