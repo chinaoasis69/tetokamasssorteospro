@@ -9292,25 +9292,67 @@ font-family:Arial, sans-serif;">
       id="formOrganizadorV2"
       style="display:none; margin-top:24px;"
     >
-      <h3>Organizador</h3>
+      <h3>Crear cuenta MASS ID</h3>
 
-      <input
-        id="organizadorEmailV2"
-        type="email"
-        placeholder="Correo electrónico"
-        autocomplete="email"
-      >
+<input
+  id="massIdNombreRegistro"
+  type="text"
+  placeholder="Nombre completo"
+  autocomplete="name"
+>
 
-      <input
-        id="organizadorPasswordV2"
-        type="password"
-        placeholder="Contraseña"
-        autocomplete="current-password"
-      >
+<input
+  id="massIdTelefonoRegistro"
+  type="tel"
+  placeholder="Teléfono"
+  autocomplete="tel"
+>
 
-      <button type="button">
-        Entrar como Organizador
-      </button>
+<input
+  id="massIdEmailRegistro"
+  type="email"
+  placeholder="Correo electrónico"
+  autocomplete="email"
+>
+
+<input
+  id="massIdPasswordRegistro"
+  type="password"
+  placeholder="Contraseña"
+  autocomplete="new-password"
+>
+
+<input
+  id="massIdConfirmarPasswordRegistro"
+  type="password"
+  placeholder="Confirmar contraseña"
+  autocomplete="new-password"
+>
+
+<label style="display:block; margin-top:14px;">
+  <input
+    id="massIdAceptaTerminos"
+    type="checkbox"
+  >
+  Acepto los Términos y condiciones
+</label>
+
+<label style="display:block; margin-top:10px;">
+  <input
+    id="massIdAceptaPrivacidad"
+    type="checkbox"
+  >
+  Acepto el Aviso de privacidad
+</label>
+
+<button
+  type="button"
+  onclick="crearCuentaMassId()"
+  style="margin-top:16px;"
+>
+  📝 Crear cuenta
+</button>
+		
     </div>
 
     <div
