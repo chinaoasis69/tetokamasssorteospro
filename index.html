@@ -3527,20 +3527,42 @@ document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7C
 
 async function guardarConfigCliente(){
 
-const idGuardado = localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_admin_id");
+const adminActual = await obtenerAdminActual();
 
-if((!clienteActual || !clienteActual.id) && idGuardado){
+if (!adminActual) {
+    alert("❌ No hay una sesión administrativa válida.");
+    return;
+}
 
-    const { data } = await supabaseClient
-        .from("organizadores")
-        .select("*")
-        .eq("id", idGuardado)
-        .single();
+let idPermitido = null;
 
-    if(data){
-        clienteActual = data;
-    }
-}	
+if (adminActual.rol === "super_admin") {
+    idPermitido =
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id") ||
+        adminActual.organizador_id;
+} else {
+    idPermitido = adminActual.organizador_id;
+}
+
+if (!idPermitido) {
+    alert("❌ No se encontró el organizador autorizado.");
+    return;
+}
+
+const { data, error: errorCliente } = await supabaseClient
+    .from("organizadores")
+    .select("*")
+    .eq("id", idPermitido)
+    .maybeSingle();
+
+if (errorCliente || !data) {
+    console.error("Error cargando organizador:", errorCliente);
+    alert("❌ No se pudo cargar el organizador autorizado.");
+    return;
+}
+
+clienteActual = data;	
 
   if(!clienteActual || !clienteActual.id){
     alert("❌ No hay cliente cargado. Cierra y abre el panel otra vez.");
@@ -3562,7 +3584,7 @@ if((!clienteActual || !clienteActual.id) && idGuardado){
       banner_url: document.getElementById("cfgBannerUrl").value.trim(),
       color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
     })
-    .eq("id", idGuardado);
+    .eq("id", clientrActual.id);
 
   if(error){
     console.error("ERROR GUARDANDO CONFIG:", error);
