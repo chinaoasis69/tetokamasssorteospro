@@ -7366,7 +7366,9 @@ cargarMisBoletos();
 }	
 
 // Realtime
-abrirAccesoV2();
+window.addEventListener("DOMContentLoaded", () => {
+  abrirAccesoV2();
+});
 
 Promise.resolve().then(async () => {
 
