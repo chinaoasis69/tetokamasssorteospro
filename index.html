@@ -3927,46 +3927,83 @@ if(btnVolverSuperAdmin){
 
   alert("✅ ADMIN DETECTADO");
 
+// 🔐 INICIAR SESIÓN AUTH PARA SUPER ADMIN U ORGANIZADOR
+const nombreRol =
+    adminData.rol === "super_admin"
+        ? "Súper Admin"
+        : "Organizador";
+
+const passwordAuth = prompt(
+    `🔐 Ingresa tu contraseña de ${nombreRol}`
+);
+
+if (!passwordAuth) {
+    alert(`❌ Debes ingresar tu contraseña de ${nombreRol}.`);
+    return;
+}
+
+const { data: authData, error: authError } =
+    await supabaseClient.auth.signInWithPassword({
+        email: adminData.email.trim().toLowerCase(),
+        password: passwordAuth
+    });
+
+if (authError || !authData?.session || !authData?.user) {
+    console.error("Error iniciando sesión Auth:", authError);
+    alert(`❌ Credenciales de ${nombreRol} incorrectas.`);
+    return;
+}
+
+if (
+    !adminData.auth_user_id ||
+    authData.user.id !== adminData.auth_user_id
+) {
+    await supabaseClient.auth.signOut();
+
+    console.error("La identidad Auth no corresponde:", {
+        authUserId: authData.user.id,
+        adminAuthUserId: adminData.auth_user_id
+    });
+
+    alert(
+        `❌ La cuenta Auth no corresponde al ${nombreRol}.`
+    );
+    return;
+}
+
+// 👑 PANEL DEL SÚPER ADMIN
 if (adminData.rol === "super_admin") {
 
-  localStorage.removeItem("organizador_actual_id");
-  localStorage.removeItem("organizador_admin_id");
+    localStorage.removeItem("organizador_actual_id");
+    localStorage.removeItem("organizador_admin_id");
 
-  organizadorId = adminData.organizador_id || null;
-  clienteActual = null;
-
-  const passwordAuth = prompt(
-    "🔐 Ingresa tu contraseña de Súper Admin"
-  );
-
-    if (!passwordAuth) {
-        alert("❌ Debes ingresar tu contraseña de Súper Admin.");
-        return;
-    }
-
-    const { data: authData, error: authError } =
-        await supabaseClient.auth.signInWithPassword({
-            email: adminData.email,
-            password: passwordAuth
-        });
-
-    if (authError || !authData?.session) {
-        console.error("Error iniciando sesión Auth:", authError);
-        alert("❌ Credenciales de Súper Admin incorrectas.");
-        return;
-    }
-
-    if (authData.user.id !== adminData.auth_user_id) {
-        await supabaseClient.auth.signOut();
-        alert("❌ La identidad Auth no corresponde al Súper Admin.");
-        return;
-    }
+    organizadorId = adminData.organizador_id || null;
+    clienteActual = null;
 
     await mostrarOrganizadoresAdmin();
 
 } else {
 
-    await seleccionarOrganizadorAdmin(adminData.organizador_id);
+    // 🏢 PANEL DEL ORGANIZADOR
+    if (!adminData.organizador_id) {
+        await supabaseClient.auth.signOut();
+        alert("❌ Este administrador no tiene organizador asignado.");
+        return;
+    }
+
+    localStorage.setItem(
+        "admin_organizador_id",
+        adminData.organizador_id
+    );
+
+    localStorage.setItem(
+        "organizador_admin_id",
+        adminData.organizador_id
+    );
+
+    await seleccionarOrganizadorAdmin(
+        adminData.organizador_id
+    );
 
     document.getElementById("panelAdmin").style.display = "block";
 
@@ -3976,7 +4013,6 @@ if (adminData.rol === "super_admin") {
 }
 
 return;
-}
 
   // 🔐 Buscar usuario
   const { data } = await supabaseClient
