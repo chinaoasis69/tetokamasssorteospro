@@ -9070,6 +9070,82 @@ async function iniciarSesionMassId() {
   alert("✅ Bienvenido a MASS ID");
 }
 
+async function recuperarPasswordMassId() {
+  const email = (
+    document.getElementById("massIdEmailLogin")?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  if (!email) {
+    alert(
+      "❌ Escribe primero tu correo electrónico en el campo de inicio de sesión."
+    );
+
+    document.getElementById("massIdEmailLogin")?.focus();
+    return;
+  }
+
+  const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!formatoEmail.test(email)) {
+    alert("❌ Ingresa un correo electrónico válido.");
+    return;
+  }
+
+  const botonRecuperar = document.querySelector(
+    '#formUsuarioV2 button[onclick="recuperarPasswordMassId()"]'
+  );
+
+  if (botonRecuperar) {
+    botonRecuperar.disabled = true;
+    botonRecuperar.textContent = "Enviando correo...";
+  }
+
+  try {
+    const { error } =
+      await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo:
+          "https://tetokamasssorteospro.netlify.app/"
+      });
+
+    if (error) {
+      console.error(
+        "ERROR RECUPERANDO CONTRASEÑA MASS ID:",
+        error
+      );
+
+      alert(
+        "❌ No se pudo enviar el correo de recuperación.\n\n" +
+        (error.message || "Intenta nuevamente.")
+      );
+
+      return;
+    }
+
+    alert(
+      "✅ Correo de recuperación enviado.\n\n" +
+      "Revisa tu bandeja de entrada y también la carpeta de correo no deseado."
+    );
+  } catch (error) {
+    console.error(
+      "ERROR INESPERADO RECUPERANDO CONTRASEÑA:",
+      error
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      "Intenta nuevamente."
+    );
+  } finally {
+    if (botonRecuperar) {
+      botonRecuperar.disabled = false;
+      botonRecuperar.textContent =
+        "¿Olvidaste tu contraseña?";
+    }
+  }
+}	
+
 async function crearCuentaMassId() {
   const nombre = (
     document.getElementById("massIdNombreRegistro")?.value || ""
@@ -9487,6 +9563,21 @@ font-family:Arial, sans-serif;">
   onclick="iniciarSesionMassId()"
 >
   🔐 Iniciar sesión
+</button>
+
+		<button
+  type="button"
+  onclick="recuperarPasswordMassId()"
+  style="
+    margin-top:12px;
+    background:transparent;
+    border:none;
+    color:#39ff14;
+    text-decoration:underline;
+    cursor:pointer;
+  "
+>
+  ¿Olvidaste tu contraseña?
 </button>
     </div>
 
