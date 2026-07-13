@@ -9068,6 +9068,208 @@ async function iniciarSesionMassId() {
   cargarHistorialPremios();
 
   alert("✅ Bienvenido a MASS ID");
+}
+
+async function crearCuentaMassId() {
+  const nombre = (
+    document.getElementById("massIdNombreRegistro")?.value || ""
+  ).trim();
+
+  const telefono = (
+    document.getElementById("massIdTelefonoRegistro")?.value || ""
+  )
+    .replace(/\D/g, "")
+    .trim();
+
+  const email = (
+    document.getElementById("massIdEmailRegistro")?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const password = (
+    document.getElementById("massIdPasswordRegistro")?.value || ""
+  ).trim();
+
+  const confirmarPassword = (
+    document.getElementById("massIdConfirmarPasswordRegistro")?.value || ""
+  ).trim();
+
+  const aceptaTerminos =
+    document.getElementById("massIdAceptaTerminos")?.checked === true;
+
+  const aceptaPrivacidad =
+    document.getElementById("massIdAceptaPrivacidad")?.checked === true;
+
+  if (!nombre) {
+    alert("❌ Ingresa tu nombre completo.");
+    return;
+  }
+
+  if (nombre.length < 3) {
+    alert("❌ El nombre debe tener al menos 3 caracteres.");
+    return;
+  }
+
+  if (!telefono) {
+    alert("❌ Ingresa tu número de teléfono.");
+    return;
+  }
+
+  if (telefono.length < 10 || telefono.length > 15) {
+    alert("❌ Ingresa un teléfono válido de 10 a 15 dígitos.");
+    return;
+  }
+
+  if (!email) {
+    alert("❌ Ingresa tu correo electrónico.");
+    return;
+  }
+
+  const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!formatoEmail.test(email)) {
+    alert("❌ Ingresa un correo electrónico válido.");
+    return;
+  }
+
+  if (!password) {
+    alert("❌ Crea una contraseña.");
+    return;
+  }
+
+  if (password.length < 8) {
+    alert("❌ La contraseña debe tener al menos 8 caracteres.");
+    return;
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    alert("❌ La contraseña debe incluir una letra mayúscula.");
+    return;
+  }
+
+  if (!/[a-z]/.test(password)) {
+    alert("❌ La contraseña debe incluir una letra minúscula.");
+    return;
+  }
+
+  if (!/[0-9]/.test(password)) {
+    alert("❌ La contraseña debe incluir al menos un número.");
+    return;
+  }
+
+  if (password !== confirmarPassword) {
+    alert("❌ Las contraseñas no coinciden.");
+    return;
+  }
+
+  if (!aceptaTerminos) {
+    alert("❌ Debes aceptar los Términos y condiciones.");
+    return;
+  }
+
+  if (!aceptaPrivacidad) {
+    alert("❌ Debes aceptar el Aviso de privacidad.");
+    return;
+  }
+
+  const botonCrear = document.querySelector(
+    '#formOrganizadorV2 button[onclick="crearCuentaMassId()"]'
+  );
+
+  if (botonCrear) {
+    botonCrear.disabled = true;
+    botonCrear.textContent = "Creando cuenta...";
+  }
+
+  try {
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            nombre,
+            telefono,
+            acepta_terminos: aceptaTerminos,
+            acepta_privacidad: aceptaPrivacidad
+          }
+        }
+      });
+
+    if (authError) {
+      console.error("ERROR CREANDO MASS ID:", authError);
+
+      const mensaje = String(authError.message || "").toLowerCase();
+
+      if (
+        mensaje.includes("already registered") ||
+        mensaje.includes("already exists") ||
+        mensaje.includes("user already")
+      ) {
+        alert("❌ Ese correo ya está registrado en MASS ID.");
+        return;
+      }
+
+      if (mensaje.includes("password")) {
+        alert("❌ La contraseña no cumple con los requisitos de seguridad.");
+        return;
+      }
+
+      alert(
+        "❌ No se pudo crear la cuenta MASS ID.\n\n" +
+        (authError.message || "Intenta nuevamente.")
+      );
+      return;
+    }
+
+    if (!authData?.user) {
+      alert("❌ Supabase no devolvió el usuario creado.");
+      return;
+    }
+
+    document.getElementById("massIdNombreRegistro").value = "";
+    document.getElementById("massIdTelefonoRegistro").value = "";
+    document.getElementById("massIdEmailRegistro").value = "";
+    document.getElementById("massIdPasswordRegistro").value = "";
+    document.getElementById("massIdConfirmarPasswordRegistro").value = "";
+    document.getElementById("massIdAceptaTerminos").checked = false;
+    document.getElementById("massIdAceptaPrivacidad").checked = false;
+
+    document.getElementById("formOrganizadorV2").style.display = "none";
+    document.getElementById("formUsuarioV2").style.display = "block";
+
+    const inputLoginEmail =
+      document.getElementById("massIdEmailLogin");
+
+    if (inputLoginEmail) {
+      inputLoginEmail.value = email;
+    }
+
+    if (authData.session) {
+      alert(
+        "✅ Tu cuenta MASS ID fue creada correctamente.\n\n" +
+        "Ya puedes iniciar sesión."
+      );
+    } else {
+      alert(
+        "✅ Tu cuenta MASS ID fue creada.\n\n" +
+        "Revisa tu correo electrónico y confirma tu cuenta antes de iniciar sesión."
+      );
+    }
+  } catch (error) {
+    console.error("ERROR INESPERADO MASS ID SIGNUP:", error);
+
+    alert(
+      "❌ Ocurrió un error inesperado al crear la cuenta.\n\n" +
+      "Intenta nuevamente."
+    );
+  } finally {
+    if (botonCrear) {
+      botonCrear.disabled = false;
+      botonCrear.textContent = "📝 Crear cuenta";
+    }
+  }
 }	
 	
 </script>	
