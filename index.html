@@ -8983,6 +8983,91 @@ function mostrarLoginSuperAdminV2(){
 
     document.getElementById("btnRegresarMenuV2").style.display="block";
 
+}
+
+async function iniciarSesionMassId() {
+  const email = (
+    document.getElementById("massIdEmailLogin")?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const password = (
+    document.getElementById("massIdPasswordLogin")?.value || ""
+  ).trim();
+
+  if (!email || !password) {
+    alert("❌ Ingresa tu correo y contraseña.");
+    return;
+  }
+
+  const { data: authData, error: authError } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if (authError || !authData?.user) {
+    console.error("ERROR MASS ID LOGIN:", authError);
+    alert("❌ Correo o contraseña incorrectos.");
+    return;
+  }
+
+  const authUserId = authData.user.id;
+
+  const { data: perfil, error: perfilError } = await supabaseClient
+    .from("usuarios_mass")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+
+  if (perfilError) {
+    console.error("ERROR CARGANDO PERFIL MASS:", perfilError);
+    await supabaseClient.auth.signOut();
+    alert("❌ No se pudo cargar tu perfil MASS.");
+    return;
+  }
+
+  if (!perfil) {
+    await supabaseClient.auth.signOut();
+    alert("❌ Tu cuenta todavía no tiene un perfil MASS vinculado.");
+    return;
+  }
+
+  if (perfil.estado !== "activo") {
+    await supabaseClient.auth.signOut();
+    alert("⏳ Tu cuenta MASS todavía no está activa.");
+    return;
+  }
+
+  userActual = perfil.telefono;
+  usuarioMASS = perfil.telefono;
+
+  localStorage.setItem("mass_user", perfil.telefono);
+  localStorage.setItem("mass_telefono", perfil.telefono);
+  localStorage.setItem("mass_auth_user_id", authUserId);
+  localStorage.setItem("mass_email", perfil.email || email);
+
+  localStorage.removeItem("admin_rol");
+  localStorage.removeItem("admin_organizador_id");
+
+  await supabaseClient
+    .from("usuarios_mass")
+    .update({
+      ultimo_login: new Date().toISOString()
+    })
+    .eq("auth_user_id", authUserId);
+
+  cerrarAccesoV2();
+  mostrarSesionActiva();
+
+  await asegurarWallet();
+  cargarSaldo();
+  cargarMisBoletos();
+  cargarHistorialSorteos();
+  cargarHistorialPremios();
+
+  alert("✅ Bienvenido a MASS ID");
 }	
 	
 </script>	
@@ -9179,26 +9264,28 @@ font-family:Arial, sans-serif;">
       id="formUsuarioV2"
       style="display:none; margin-top:24px;"
     >
-      <h3>Usuario MASS</h3>
+      <h3>Iniciar sesión en MASS ID</h3>
 
-      <input
-        id="usuarioTelefonoV2"
-        type="tel"
-        placeholder="Teléfono"
-        autocomplete="tel"
-      >
+<input
+  id="massIdEmailLogin"
+  type="email"
+  placeholder="Correo electrónico"
+  autocomplete="email"
+>
 
-      <input
-        id="usuarioPinV2"
-        type="password"
-        inputmode="numeric"
-        maxlength="4"
-        placeholder="PIN de 4 dígitos"
-      >
+<input
+  id="massIdPasswordLogin"
+  type="password"
+  placeholder="Contraseña"
+  autocomplete="current-password"
+>
 
-      <button type="button">
-        Entrar como Usuario MASS
-      </button>
+<button
+  type="button"
+  onclick="iniciarSesionMassId()"
+>
+  🔐 Iniciar sesión
+</button>
     </div>
 
     <div
