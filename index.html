@@ -3584,7 +3584,7 @@ clienteActual = data;
       banner_url: document.getElementById("cfgBannerUrl").value.trim(),
       color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
     })
-    .eq("id", clientrActual.id);
+    .eq("id", idPermitido);
 
   if(error){
     console.error("ERROR GUARDANDO CONFIG:", error);
