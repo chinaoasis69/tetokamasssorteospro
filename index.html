@@ -3745,6 +3745,13 @@ async function crearOrganizadorAdmin(){
         return;
     }
 
+	const pinAdmin = (prompt("PIN del organizador — 4 dígitos") || "").trim();
+
+   if (!/^\d{4}$/.test(pinAdmin)) {
+        alert("❌ El PIN debe tener exactamente 4 números.");
+        return;
+   }
+
     const plan = (
         prompt("Plan: starter, pro o premium", "starter") || "starter"
     )
@@ -3783,6 +3790,7 @@ async function crearOrganizadorAdmin(){
                     email,
                     telefono,
                     password,
+					pinAdmin,
                     plan
                 })
             }
