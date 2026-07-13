@@ -9346,6 +9346,67 @@ async function crearCuentaMassId() {
       botonCrear.textContent = "📝 Crear cuenta";
     }
   }
+}
+
+async function guardarNuevaPasswordMassId() {
+  const nuevaPassword = (
+    document.getElementById("massIdNuevaPassword")?.value || ""
+  ).trim();
+
+  const confirmarPassword = (
+    document.getElementById("massIdConfirmarNuevaPassword")?.value || ""
+  ).trim();
+
+  if (!nuevaPassword || !confirmarPassword) {
+    alert("❌ Escribe y confirma tu nueva contraseña.");
+    return;
+  }
+
+  if (nuevaPassword.length < 8) {
+    alert("❌ La contraseña debe tener al menos 8 caracteres.");
+    return;
+  }
+
+  if (!/[A-Z]/.test(nuevaPassword)) {
+    alert("❌ La contraseña debe incluir una letra mayúscula.");
+    return;
+  }
+
+  if (!/[a-z]/.test(nuevaPassword)) {
+    alert("❌ La contraseña debe incluir una letra minúscula.");
+    return;
+  }
+
+  if (!/[0-9]/.test(nuevaPassword)) {
+    alert("❌ La contraseña debe incluir al menos un número.");
+    return;
+  }
+
+  if (nuevaPassword !== confirmarPassword) {
+    alert("❌ Las contraseñas no coinciden.");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password: nuevaPassword
+  });
+
+  if (error) {
+    console.error("ERROR CAMBIANDO PASSWORD MASS ID:", error);
+    alert(
+      "❌ No se pudo cambiar la contraseña.\n\n" +
+      (error.message || "Intenta nuevamente.")
+    );
+    return;
+  }
+
+  document.getElementById("massIdNuevaPassword").value = "";
+  document.getElementById("massIdConfirmarNuevaPassword").value = "";
+
+  document.getElementById("formNuevaPasswordMassId").style.display = "none";
+  document.getElementById("formUsuarioV2").style.display = "block";
+
+  alert("✅ Tu contraseña MASS ID fue actualizada correctamente.");
 }	
 	
 </script>	
@@ -9580,6 +9641,39 @@ font-family:Arial, sans-serif;">
   ¿Olvidaste tu contraseña?
 </button>
     </div>
+
+	  <div
+  id="formNuevaPasswordMassId"
+  style="display:none; margin-top:24px;"
+>
+  <h3>Crear nueva contraseña</h3>
+
+  <p style="text-align:center; opacity:.8;">
+    Escribe y confirma tu nueva contraseña MASS ID.
+  </p>
+
+  <input
+    id="massIdNuevaPassword"
+    type="password"
+    placeholder="Nueva contraseña"
+    autocomplete="new-password"
+  >
+
+  <input
+    id="massIdConfirmarNuevaPassword"
+    type="password"
+    placeholder="Confirmar nueva contraseña"
+    autocomplete="new-password"
+  >
+
+  <button
+    type="button"
+    onclick="guardarNuevaPasswordMassId()"
+    style="margin-top:16px;"
+  >
+    🔐 Guardar nueva contraseña
+  </button>
+</div>
 
     <div
       id="formOrganizadorV2"
