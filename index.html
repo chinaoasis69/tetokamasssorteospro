@@ -3960,8 +3960,21 @@ async function loginMASS(){
     return;
   }
 
+	const tipoLogin = (
+    prompt(
+`¿Cómo deseas iniciar sesión?
+
+1 = Usuario MASS
+2 = Organizador / Súper Admin`
+    ) || "1"
+).trim();
+
 // 🔐 PRIMERO VERIFICAR SI ES ADMIN / ORGANIZADOR
-const pinAdmin = (prompt("🔐 Ingresa tu PIN") || "").trim();
+let pinAdmin = "";
+
+if (tipoLogin === "2") {
+    pinAdmin = (prompt("🔐 Ingresa tu PIN") || "").trim();
+}
 
 const { data: adminData, error: adminError } = await supabaseClient
   .from("admin_organizadores")
