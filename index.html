@@ -3716,56 +3716,114 @@ mostrarDashboardOrganizador();
 
 async function crearOrganizadorAdmin(){
 
-  const nombre = prompt("Nombre del organizador");
-  if(!nombre) return;
+    const nombre = (prompt("Nombre del organizador") || "").trim();
+    if(!nombre) return;
 
-  const slug = prompt("Slug ejemplo: rifas-matamoros");
-  if(!slug) return;
+    const slug = (prompt("Slug ejemplo: rifas-matamoros") || "")
+        .trim()
+        .toLowerCase();
 
-  const email = prompt("Email del organizador") || "";
-  const telefono = prompt("Teléfono / WhatsApp") || "";
+    if(!slug) return;
 
-  const { data: orgNuevo, error } = await supabaseClient
-    .from("organizadores")
-    .insert([{
-      nombre,
-      slug,
-      email,
-      telefono,
-      activo: true
-    }])
-    .select()
-    .single();
+    const email = (prompt("Email del organizador") || "")
+        .trim()
+        .toLowerCase();
 
-  if(error){
-    console.error(error);
-    alert("❌ Error creando organizador");
-    return;
-  }
+    if(!email){
+        alert("❌ Debes ingresar el email del organizador.");
+        return;
+    }
 
-const pinAdmin = prompt("PIN del organizador");
-if(!pinAdmin) return;
+    const telefono = (prompt("Teléfono / WhatsApp") || "").trim();
 
-const { error: adminError } = await supabaseClient
-  .from("admin_organizadores")
-  .insert([{
-    organizador_id: orgNuevo.id,
-    email,
-    nombre,
-    telefono,
-    pin_admin: pinAdmin,
-    rol: "organizador",
-    activo: true
-  }]);
+    const password = prompt(
+        "Contraseña temporal del organizador — mínimo 8 caracteres"
+    ) || "";
 
-if(adminError){
-  console.error(adminError);
-  alert("❌ Organizador creado, pero no se creó su acceso admin");
-  return;
-}	
+    if(password.length < 8){
+        alert("❌ La contraseña debe tener mínimo 8 caracteres.");
+        return;
+    }
 
-  alert("✅ Organizador creado");
-  mostrarOrganizadoresAdmin();
+    const plan = (
+        prompt("Plan: starter, pro o premium", "starter") || "starter"
+    )
+        .trim()
+        .toLowerCase();
+
+    const planesPermitidos = ["starter", "pro", "premium"];
+
+    if(!planesPermitidos.includes(plan)){
+        alert("❌ El plan debe ser starter, pro o premium.");
+        return;
+    }
+
+    try{
+
+        const {
+            data: { session }
+        } = await supabaseClient.auth.getSession();
+
+        if(!session){
+            alert("❌ Debes iniciar sesión como Súper Admin.");
+            return;
+        }
+
+        const respuesta = await fetch(
+            "https://yrmuxelajgmmonbbvshj.supabase.co/functions/v1/crear-organizador",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    nombre,
+                    slug,
+                    email,
+                    telefono,
+                    password,
+                    plan
+                })
+            }
+        );
+
+        const resultado = await respuesta.json();
+
+        if(!respuesta.ok){
+            console.error("ERROR EDGE FUNCTION:", resultado);
+
+            alert(
+                "❌ " +
+                (
+                    resultado.error ||
+                    "No se pudo crear el organizador."
+                )
+            );
+
+            return;
+        }
+
+        alert(
+            "✅ Organizador creado correctamente.\n\n" +
+            "Email: " + email + "\n" +
+            "Plan: " + plan
+        );
+
+        await mostrarOrganizadoresAdmin();
+
+    }catch(error){
+
+        console.error("ERROR CREANDO ORGANIZADOR:", error);
+
+        alert(
+            "❌ Error inesperado: " +
+            (
+                error?.message ||
+                "No se pudo completar la operación."
+            )
+        );
+    }
 }	
 
 async function validarPagoAdmin(numero){
