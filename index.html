@@ -7366,7 +7366,9 @@ cargarMisBoletos();
 }	
 
 // Realtime
-loginMASS().then(async () => {
+abrirAccesoV2();
+
+Promise.resolve().then(async () => {
 
     await asegurarWallet();
 
@@ -8921,6 +8923,64 @@ async function eliminarSuscripcionBilling(id){
 
     alert("✅ Suscripción eliminada.");
     mostrarBillingSuperAdmin();
+}
+
+function abrirAccesoV2(){
+
+    document.getElementById("accesoV2").style.display="block";
+
+    regresarMenuAccesoV2();
+
+}
+
+function cerrarAccesoV2(){
+
+    document.getElementById("accesoV2").style.display="none";
+
+}
+
+function regresarMenuAccesoV2(){
+
+    document.getElementById("menuAccesoV2").style.display="grid";
+
+    document.getElementById("formUsuarioV2").style.display="none";
+
+    document.getElementById("formOrganizadorV2").style.display="none";
+
+    document.getElementById("formSuperAdminV2").style.display="none";
+
+    document.getElementById("btnRegresarMenuV2").style.display="none";
+
+}
+
+function mostrarLoginUsuarioV2(){
+
+    document.getElementById("menuAccesoV2").style.display="none";
+
+    document.getElementById("formUsuarioV2").style.display="block";
+
+    document.getElementById("btnRegresarMenuV2").style.display="block";
+
+}
+
+function mostrarLoginOrganizadorV2(){
+
+    document.getElementById("menuAccesoV2").style.display="none";
+
+    document.getElementById("formOrganizadorV2").style.display="block";
+
+    document.getElementById("btnRegresarMenuV2").style.display="block";
+
+}
+
+function mostrarLoginSuperAdminV2(){
+
+    document.getElementById("menuAccesoV2").style.display="none";
+
+    document.getElementById("formSuperAdminV2").style.display="block";
+
+    document.getElementById("btnRegresarMenuV2").style.display="block";
+
 }	
 	
 </script>	
@@ -9037,6 +9097,164 @@ font-family:Arial, sans-serif;">
     <button class="btn-main" onclick="guardarRifaFormulario()">💾 Guardar dinámica</button>
     <button class="btn-dark" onclick="cerrarModalRifa()">❌ Cancelar</button>
   </div>
+
+	<!-- =========================================
+     ACCESO V2 - MASS SORTEOS PRO
+========================================= -->
+<div
+  id="accesoV2"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:99999;
+    background:rgba(0,0,0,.92);
+    overflow:auto;
+    padding:24px;
+  "
+>
+  <div
+    style="
+      width:min(480px, 100%);
+      margin:40px auto;
+      background:#111;
+      border:1px solid #39ff14;
+      border-radius:20px;
+      padding:24px;
+      box-shadow:0 0 25px rgba(57,255,20,.18);
+    "
+  >
+    <button
+      type="button"
+      onclick="cerrarAccesoV2()"
+      style="
+        float:right;
+        background:transparent;
+        border:none;
+        color:white;
+        font-size:26px;
+        cursor:pointer;
+      "
+    >
+      ×
+    </button>
+
+    <h2 style="text-align:center; margin-top:10px;">
+      TE-TO-KA MASS SORTEOS PRO
+    </h2>
+
+    <p style="text-align:center; opacity:.8;">
+      Selecciona el tipo de acceso
+    </p>
+
+    <div
+      id="menuAccesoV2"
+      style="
+        display:grid;
+        gap:14px;
+        margin-top:25px;
+      "
+    >
+      <button type="button" onclick="mostrarLoginUsuarioV2()">
+        👤 Usuario MASS
+      </button>
+
+      <button type="button" onclick="mostrarLoginOrganizadorV2()">
+        🏢 Organizador
+      </button>
+
+      <button type="button" onclick="mostrarLoginSuperAdminV2()">
+        👑 Súper Admin
+      </button>
+    </div>
+
+    <div
+      id="formUsuarioV2"
+      style="display:none; margin-top:24px;"
+    >
+      <h3>Usuario MASS</h3>
+
+      <input
+        id="usuarioTelefonoV2"
+        type="tel"
+        placeholder="Teléfono"
+        autocomplete="tel"
+      >
+
+      <input
+        id="usuarioPinV2"
+        type="password"
+        inputmode="numeric"
+        maxlength="4"
+        placeholder="PIN de 4 dígitos"
+      >
+
+      <button type="button">
+        Entrar como Usuario MASS
+      </button>
+    </div>
+
+    <div
+      id="formOrganizadorV2"
+      style="display:none; margin-top:24px;"
+    >
+      <h3>Organizador</h3>
+
+      <input
+        id="organizadorEmailV2"
+        type="email"
+        placeholder="Correo electrónico"
+        autocomplete="email"
+      >
+
+      <input
+        id="organizadorPasswordV2"
+        type="password"
+        placeholder="Contraseña"
+        autocomplete="current-password"
+      >
+
+      <button type="button">
+        Entrar como Organizador
+      </button>
+    </div>
+
+    <div
+      id="formSuperAdminV2"
+      style="display:none; margin-top:24px;"
+    >
+      <h3>Súper Admin</h3>
+
+      <input
+        id="superAdminEmailV2"
+        type="email"
+        placeholder="Correo electrónico"
+        autocomplete="email"
+      >
+
+      <input
+        id="superAdminPasswordV2"
+        type="password"
+        placeholder="Contraseña"
+        autocomplete="current-password"
+      >
+
+      <button type="button">
+        Entrar como Súper Admin
+      </button>
+    </div>
+
+    <button
+      id="btnRegresarMenuV2"
+      type="button"
+      onclick="regresarMenuAccesoV2()"
+      style="display:none; margin-top:16px;"
+    >
+      ← Regresar
+    </button>
+  </div>
+</div>
+	
 </div>	  
 
 </body>
