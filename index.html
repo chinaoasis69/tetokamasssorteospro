@@ -3899,6 +3899,51 @@ const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  console.log("EVENTO AUTH MASS ID:", event);
+
+  if (event === "PASSWORD_RECOVERY") {
+    const acceso = document.getElementById("accesoV2");
+    const menu = document.getElementById("menuAccesoV2");
+    const login = document.getElementById("formUsuarioV2");
+    const registro = document.getElementById("formOrganizadorV2");
+    const superAdmin = document.getElementById("formSuperAdminV2");
+    const nuevaPassword = document.getElementById(
+      "formNuevaPasswordMassId"
+    );
+    const regresar = document.getElementById("btnRegresarMenuV2");
+
+    if (acceso) {
+      acceso.style.display = "block";
+    }
+
+    if (menu) {
+      menu.style.display = "none";
+    }
+
+    if (login) {
+      login.style.display = "none";
+    }
+
+    if (registro) {
+      registro.style.display = "none";
+    }
+
+    if (superAdmin) {
+      superAdmin.style.display = "none";
+    }
+
+    if (regresar) {
+      regresar.style.display = "none";
+    }
+
+    if (nuevaPassword) {
+      nuevaPassword.style.display = "block";
+    }
+  }
+});
+	
 let userActual = localStorage.getItem("mass_user");
 let rifaActual = null;
 let clienteActual = null;
