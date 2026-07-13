@@ -9155,18 +9155,45 @@ async function recuperarPasswordMassId() {
       });
 
     if (error) {
-      console.error(
+
+    console.error(
         "ERROR RECUPERANDO CONTRASEÑA MASS ID:",
         error
-      );
+    );
 
-      alert(
-        "❌ No se pudo enviar el correo de recuperación.\n\n" +
-        (error.message || "Intenta nuevamente.")
-      );
+    let mensaje = "Intenta nuevamente en unos minutos.";
 
-      return;
+    if (error?.message?.includes("rate limit")) {
+
+        mensaje =
+            "Ya solicitaste un correo de recuperación recientemente.\n\n" +
+            "Por seguridad debes esperar unos minutos antes de volver a intentarlo.\n\n" +
+            "Revisa también tu bandeja de entrada y la carpeta de correo no deseado, ya que es posible que el correo ya haya sido enviado.";
+
+    } else if (error?.message?.includes("User not found")) {
+
+        mensaje =
+            "No encontramos una cuenta MASS ID con ese correo electrónico.";
+
+    } else if (error?.message?.includes("Invalid email")) {
+
+        mensaje =
+            "El correo electrónico no tiene un formato válido.";
+
+    } else if (error?.message) {
+
+        mensaje = error.message;
+
     }
+
+    alert(
+        "❌ No fue posible enviar el correo de recuperación.\n\n" +
+        mensaje
+    );
+
+    return;
+
+}
 
     alert(
       "✅ Correo de recuperación enviado.\n\n" +
