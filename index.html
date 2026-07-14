@@ -9030,6 +9030,72 @@ function mostrarLoginSuperAdminV2(){
 
 }
 
+async function iniciarSesionSuperAdminV2() {
+  const email = (
+    document.getElementById("superAdminEmailV2")?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const password = (
+    document.getElementById("superAdminPasswordV2")?.value || ""
+  ).trim();
+
+  if (!email || !password) {
+    alert("❌ Ingresa tu correo y contraseña de Súper Admin.");
+    return;
+  }
+
+  try {
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (authError || !authData?.user) {
+      console.error("ERROR LOGIN SÚPER ADMIN:", authError);
+      alert("❌ Correo o contraseña de Súper Admin incorrectos.");
+      return;
+    }
+
+    const { data: adminData, error: adminError } =
+      await supabaseClient
+        .from("admin_organizadores")
+        .select("*")
+        .eq("email", email)
+        .eq("rol", "super_admin")
+        .maybeSingle();
+
+    if (adminError) {
+      console.error("ERROR BUSCANDO SÚPER ADMIN:", adminError);
+      await supabaseClient.auth.signOut();
+      alert("❌ No se pudo verificar la cuenta de Súper Admin.");
+      return;
+    }
+
+    if (!adminData) {
+      await supabaseClient.auth.signOut();
+      alert("❌ Esta cuenta no tiene permisos de Súper Admin.");
+      return;
+    }
+
+    localStorage.setItem("admin_rol", "super_admin");
+    localStorage.removeItem("admin_organizador_id");
+
+    cerrarAccesoV2();
+
+    if (typeof mostrarPanelAdmin === "function") {
+      mostrarPanelAdmin();
+    }
+
+    alert("✅ Bienvenido, Súper Admin.");
+  } catch (error) {
+    console.error("ERROR INESPERADO LOGIN SÚPER ADMIN:", error);
+    alert("❌ Ocurrió un error al iniciar sesión como Súper Admin.");
+  }
+}	
+
 async function iniciarSesionMassId() {
   const email = (
     document.getElementById("massIdEmailLogin")?.value || ""
