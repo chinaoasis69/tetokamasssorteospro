@@ -9083,6 +9083,11 @@ async function iniciarSesionSuperAdminV2() {
     localStorage.setItem("admin_rol", "super_admin");
     localStorage.removeItem("admin_organizador_id");
 
+	if (adminData.telefono) {
+   localStorage.setItem("mass_telefono", adminData.telefono);
+   localStorage.setItem("mass_user", adminData.telefono);
+   }  
+
     cerrarAccesoV2();
 
     if (typeof mostrarPanelAdmin === "function") {
