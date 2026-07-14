@@ -33,38 +33,64 @@ async function abrirMiMassId() {
     return;
   }
 
-  const telefono =
-  localStorage.getItem("mass_telefono") ||
-  localStorage.getItem("mass_user");
+  const {
+  data: { user },
+  error: userError
+} = await supabaseClient.auth.getUser();
 
-if (telefono) {
-  const { data: perfil, error } = await supabaseClient
-    .from("usuarios_mass")
-    .select("nombre, telefono, email")
-    .eq("telefono", telefono)
-    .maybeSingle();
+if (userError || !user) {
+  console.error("ERROR OBTENIENDO USUARIO AUTH:", userError);
+  alert("❌ No se pudo identificar tu cuenta MASS.");
+  return;
+}
 
-  if (error) {
-    console.error("ERROR CARGANDO PERFIL MASS ID:", error);
-  }
+const { data: perfil, error: perfilError } = await supabaseClient
+  .from("usuarios_mass")
+  .select("nombre, telefono, email, mass_id, estado")
+  .eq("auth_user_id", user.id)
+  .single();
 
-  if (perfil) {
-    const nombrePerfil = document.getElementById("massIdNombre");
-    const numeroPerfil = document.getElementById("massIdNumero");
+if (perfilError || !perfil) {
+  console.error("ERROR CARGANDO PERFIL MASS ID:", perfilError);
+  alert("❌ No se pudo cargar tu perfil MASS ID.");
+  return;
+}
 
-    if (nombrePerfil) {
-      nombrePerfil.textContent = perfil.nombre || "Usuario MASS";
-    }
+const nombrePerfil = document.getElementById("massIdNombre");
+const numeroPerfil = document.getElementById("massIdNumero");
 
-    if (numeroPerfil) {
-      numeroPerfil.innerHTML = `
-        📱 ${perfil.telefono || telefono}<br>
-        <span style="color:#bbb; font-size:15px;">
-          📧 ${perfil.email || "Correo no disponible"}
-        </span>
-      `;
-    }
-  }
+if (nombrePerfil) {
+  nombrePerfil.textContent = perfil.nombre || "Usuario MASS";
+}
+
+if (numeroPerfil) {
+  numeroPerfil.innerHTML = `
+    <div style="
+      color:#39ff14;
+      font-size:22px;
+      font-weight:bold;
+      margin-bottom:12px;
+    ">
+      🆔 ${perfil.mass_id || "MASS ID pendiente"}
+    </div>
+
+    <div style="
+      color:#39ff14;
+      font-size:18px;
+      font-weight:bold;
+      margin-bottom:6px;
+    ">
+      📱 ${perfil.telefono || "Teléfono no disponible"}
+    </div>
+
+    <div style="
+      color:#bbb;
+      font-size:15px;
+      overflow-wrap:anywhere;
+    ">
+      📧 ${perfil.email || user.email || "Correo no disponible"}
+    </div>
+  `;
 }
 
   panel.style.display = "block";
