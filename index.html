@@ -9788,74 +9788,102 @@ font-family:Arial, sans-serif;">
   autocomplete="new-password"
 >
 
-<div style="margin-top:16px; display:flex;
-align-items:center;
-justify-content:flex-start;
-gap:10px;
-text-align:left;
-width:fit-content;
-margin-left:auto;
-margin-right:auto;">
-
-    <input
-        id="massIdAceptaTerminos"
-        type="checkbox"
-        style="margin-top:3px;"
-    >
-
-    <label
-        for="massIdAceptaTerminos"
-        style="
-margin:0;
-cursor:pointer;
-text-align:left;
-line-height:1.4;"
-    >
-Acepto los
-<a
-  href="#"
-  onclick="event.preventDefault(); abrirTerminosMassId();"
-  style="color:#39ff14; font-weight:bold; text-decoration:underline;"
+<div
+    style="
+        width:min(420px, 100%);
+        margin:18px auto 0;
+        display:grid;
+        gap:14px;
+        text-align:left;
+    "
 >
-  Términos y Condiciones
-</a>
-    </label>
-
-</div>
-
-<div style="margin-top:12px; display:flex;
-align-items:center;
-justify-content:flex-start;
-gap:10px;
-text-align:left;
-width:fit-content;
-margin-left:auto;
-margin-right:auto;">
-
-    <input
-        id="massIdAceptaPrivacidad"
-        type="checkbox"
-        style="margin-top:3px;"
-    >
-
-    <label
-        for="massIdAceptaPrivacidad"
+    <!-- TÉRMINOS Y CONDICIONES -->
+    <div
         style="
-margin:0;
-cursor:pointer;
-text-align:left;
-line-height:1.4;"
+            display:grid;
+            grid-template-columns:22px minmax(0, 1fr);
+            align-items:start;
+            column-gap:10px;
+            width:100%;
+        "
     >
-   Acepto el
-<a
-  href="#"
-  onclick="event.preventDefault(); abrirPrivacidadMassId();"
-  style="color:#39ff14; font-weight:bold; text-decoration:underline;"
->
-  Aviso de Privacidad
-</a>     
-    </label>
+        <input
+            id="massIdAceptaTerminos"
+            type="checkbox"
+            style="
+                width:18px !important;
+                min-width:18px;
+                height:18px !important;
+                margin:3px 0 0 0;
+                padding:0;
+                cursor:pointer;
+            "
+        >
 
+        <div style="margin:0; line-height:1.4; text-align:left;">
+            Acepto los
+            <a
+                href="#"
+                onclick="
+                    event.preventDefault();
+                    event.stopPropagation();
+                    abrirTerminosMassId();
+                "
+                style="
+                    color:#39ff14;
+                    font-weight:bold;
+                    text-decoration:underline;
+                    cursor:pointer;
+                "
+            >
+                Términos y Condiciones
+            </a>
+        </div>
+    </div>
+
+    <!-- AVISO DE PRIVACIDAD -->
+    <div
+        style="
+            display:grid;
+            grid-template-columns:22px minmax(0, 1fr);
+            align-items:start;
+            column-gap:10px;
+            width:100%;
+        "
+    >
+        <input
+            id="massIdAceptaPrivacidad"
+            type="checkbox"
+            style="
+                width:18px !important;
+                min-width:18px;
+                height:18px !important;
+                margin:3px 0 0 0;
+                padding:0;
+                cursor:pointer;
+            "
+        >
+
+        <div style="margin:0; line-height:1.4; text-align:left;">
+            Acepto el
+            <a
+                href="#"
+                onclick="
+                    event.preventDefault();
+                    event.stopPropagation();
+                    abrirPrivacidadMassId();
+                "
+                style="
+                    color:#39ff14;
+                    font-weight:bold;
+                    text-decoration:underline;
+                    cursor:pointer;
+                "
+            >
+                Aviso de Privacidad
+            </a>
+        </div>
+    </div>
 </div>
 
 <button
