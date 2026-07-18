@@ -166,10 +166,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>🔐 Seguridad</span>
-        <span>›</span>
-      </button>
+      <button
+  id="btnMassIdSeguridad"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>🔐 Seguridad</span>
+  <span>›</span>
+</button>
 
       <button type="button" class="mass-id-menu-button">
         <span>📧 Cambiar correo</span>
@@ -455,6 +459,113 @@
       >
         Formatos permitidos: JPG, PNG o WEBP.
       </p>
+    </div>
+  </div> 
+
+  <!-- SEGURIDAD -->
+  <div
+    id="massIdSeguridad"
+    style="
+      display:none;
+      margin-top:26px;
+      padding:22px;
+      border:1px solid #333;
+      border-radius:16px;
+      background:#181818;
+    "
+  >
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:15px;
+        margin-bottom:22px;
+      "
+    >
+      <div>
+        <h3 style="margin:0;">🔐 Seguridad</h3>
+
+        <p
+          style="
+            margin:7px 0 0;
+            color:#bbb;
+            font-size:14px;
+          "
+        >
+          Revisa el estado de protección de tu cuenta MASS.
+        </p>
+      </div>
+
+      <button
+        id="btnVolverSeguridadMassId"
+        type="button"
+        aria-label="Volver al menú de Mi MASS ID"
+        style="
+          min-width:90px;
+          padding:10px 14px;
+          border:1px solid #39ff14;
+          border-radius:10px;
+          background:#141414;
+          color:#fff;
+          font-weight:bold;
+          cursor:pointer;
+        "
+      >
+        ← Volver
+      </button>
+    </div>
+
+    <div
+      style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+        gap:14px;
+      "
+    >
+      <div class="mass-id-security-item">
+        <span>🛡️ Estado de la cuenta</span>
+        <strong id="massIdSeguridadCuentaEstado">
+          Cuenta protegida
+        </strong>
+      </div>
+
+      <div class="mass-id-security-item">
+        <span>📧 Correo de acceso</span>
+        <strong id="massIdSeguridadCorreoEstado">
+          Verificando...
+        </strong>
+      </div>
+
+      <div class="mass-id-security-item">
+        <span>🔑 Contraseña</span>
+        <strong id="massIdSeguridadPasswordEstado">
+          Protección activa
+        </strong>
+      </div>
+
+      <div class="mass-id-security-item">
+        <span>🔐 Verificación en dos pasos</span>
+        <strong id="massIdSeguridadMfaEstado">
+          No configurada
+        </strong>
+      </div>
+    </div>
+
+    <div
+      style="
+        margin-top:18px;
+        padding:14px;
+        border:1px solid rgba(57,255,20,.3);
+        border-radius:12px;
+        background:#141414;
+        color:#bbb;
+        font-size:13px;
+        line-height:1.5;
+      "
+    >
+      Los cambios sensibles requerirán confirmar tu identidad
+      antes de aplicarse.
     </div>
   </div>        
 </section>
