@@ -46,7 +46,7 @@ if (userError || !user) {
 
 const { data: perfil, error: perfilError } = await supabaseClient
   .from("usuarios_mass")
-  .select("nombre, telefono, email, mass_id, estado")
+  .select("nombre, telefono, email, mass_id, estado, foto_perfil_url")
   .eq("auth_user_id", user.id)
   .single();
 
@@ -137,7 +137,57 @@ const fotoImagen = document.getElementById(
 
 const fotoIcono = document.getElementById(
   "massIdFotoIcono"
-);  
+);
+
+const btnGuardarFoto = document.getElementById(
+  "btnGuardarFotoMassId"
+);
+
+let archivoFotoSeleccionado = null;
+
+function actualizarBotonGuardarFoto(
+  habilitado,
+  texto = "💾 Guardar foto"
+) {
+  if (!btnGuardarFoto) {
+    return;
+  }
+
+  btnGuardarFoto.disabled = !habilitado;
+  btnGuardarFoto.textContent = texto;
+
+  btnGuardarFoto.style.borderColor =
+    habilitado ? "#39ff14" : "#555";
+
+  btnGuardarFoto.style.background =
+    habilitado ? "#1b1b1b" : "#242424";
+
+  btnGuardarFoto.style.color =
+    habilitado ? "#fff" : "#888";
+
+  btnGuardarFoto.style.cursor =
+    habilitado ? "pointer" : "not-allowed";
+
+  btnGuardarFoto.style.opacity =
+    habilitado ? "1" : ".65";
+}
+
+actualizarBotonGuardarFoto(false);
+
+/* Mostrar la foto guardada anteriormente */
+if (
+  perfil.foto_perfil_url &&
+  fotoImagen &&
+  fotoIcono
+) {
+  fotoImagen.src = perfil.foto_perfil_url;
+  fotoImagen.style.display = "block";
+  fotoIcono.style.display = "none";
+} else if (fotoImagen && fotoIcono) {
+  fotoImagen.removeAttribute("src");
+  fotoImagen.style.display = "none";
+  fotoIcono.style.display = "inline";
+}  
 
 /* Al abrir Mi MASS ID, siempre comienza en el menú principal */
 if (menuPrincipal) {
@@ -273,6 +323,9 @@ if (
       return;
     }
 
+   archivoFotoSeleccionado = null;
+actualizarBotonGuardarFoto(false); 
+
     const formatosPermitidos = [
       "image/jpeg",
       "image/png",
@@ -296,17 +349,147 @@ if (
     const lector = new FileReader();
 
     lector.onload = function (evento) {
-      fotoImagen.src = evento.target.result;
-      fotoImagen.style.display = "block";
-      fotoIcono.style.display = "none";
-    };
+  fotoImagen.src = evento.target.result;
+  fotoImagen.style.display = "block";
+  fotoIcono.style.display = "none";
+
+  archivoFotoSeleccionado = archivo;
+  actualizarBotonGuardarFoto(true);
+};
 
     lector.onerror = function () {
       alert("❌ No fue posible leer la imagen seleccionada.");
       fotoInput.value = "";
+    
+ archivoFotoSeleccionado = null;
+actualizarBotonGuardarFoto(false);
     };
 
     lector.readAsDataURL(archivo);
+  };
+} 
+
+/* Guardar la foto permanentemente */
+if (
+  btnGuardarFoto &&
+  fotoInput &&
+  fotoImagen &&
+  fotoIcono
+) {
+  btnGuardarFoto.onclick = async function () {
+    if (!archivoFotoSeleccionado) {
+      alert("❌ Primero selecciona una fotografía.");
+      return;
+    }
+
+    actualizarBotonGuardarFoto(
+      false,
+      "⏳ Guardando foto..."
+    );
+
+    try {
+      const extensiones = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp"
+      };
+
+      const extension =
+        extensiones[archivoFotoSeleccionado.type];
+
+      if (!extension) {
+        throw new Error(
+          "El formato de la fotografía no es válido."
+        );
+      }
+
+      const nombreArchivo =
+        `avatar-${Date.now()}.${extension}`;
+
+      const rutaArchivo =
+        `${user.id}/${nombreArchivo}`;
+
+      const { error: errorSubida } =
+        await supabaseClient.storage
+          .from("mass-id-avatars")
+          .upload(
+            rutaArchivo,
+            archivoFotoSeleccionado,
+            {
+              cacheControl: "3600",
+              upsert: false,
+              contentType:
+                archivoFotoSeleccionado.type
+            }
+          );
+
+      if (errorSubida) {
+        throw errorSubida;
+      }
+
+      const { data: datosUrl } =
+        supabaseClient.storage
+          .from("mass-id-avatars")
+          .getPublicUrl(rutaArchivo);
+
+      const fotoPublicaUrl =
+        datosUrl?.publicUrl;
+
+      if (!fotoPublicaUrl) {
+        throw new Error(
+          "No se pudo obtener la URL pública."
+        );
+      }
+
+      const { error: errorPerfil } =
+        await supabaseClient
+          .from("usuarios_mass")
+          .update({
+            foto_perfil_url: fotoPublicaUrl
+          })
+          .eq("auth_user_id", user.id);
+
+      if (errorPerfil) {
+        throw errorPerfil;
+      }
+
+      perfil.foto_perfil_url =
+        fotoPublicaUrl;
+
+      fotoImagen.src =
+        fotoPublicaUrl;
+
+      fotoImagen.style.display =
+        "block";
+
+      fotoIcono.style.display =
+        "none";
+
+      archivoFotoSeleccionado = null;
+      fotoInput.value = "";
+
+      actualizarBotonGuardarFoto(
+        false,
+        "✅ Foto guardada"
+      );
+
+      alert(
+        "✅ Tu foto de perfil fue guardada correctamente."
+      );
+    } catch (error) {
+      console.error(
+        "ERROR GUARDANDO FOTO MASS ID:",
+        error
+      );
+
+      alert(
+        `❌ No fue posible guardar la foto: ${
+          error.message || "Error desconocido"
+        }`
+      );
+
+      actualizarBotonGuardarFoto(true);
+    }
   };
 }  
 
