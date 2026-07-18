@@ -137,6 +137,10 @@ const btnVolverSeguridad = document.getElementById(
 
 const seguridadCorreoEstado = document.getElementById(
   "massIdSeguridadCorreoEstado"
+);
+
+const seguridadMfaEstado = document.getElementById(
+  "massIdSeguridadMfaEstado"
 );  
 
 const btnSeleccionarFoto = document.getElementById(
@@ -397,7 +401,7 @@ if (
   menuPrincipal &&
   seccionSeguridad
 ) {
-  btnSeguridad.onclick = function () {
+  btnSeguridad.onclick = async function () {
 
   if (seguridadCorreoEstado) {
   const correoConfirmado = Boolean(
@@ -413,7 +417,57 @@ if (
     correoConfirmado
       ? "#39ff14"
       : "#ffbf47";
-}  
+}
+
+if (seguridadMfaEstado) {
+  seguridadMfaEstado.textContent =
+    "Verificando...";
+
+  seguridadMfaEstado.style.color =
+    "#fff";
+
+  const {
+    data: nivelMfa,
+    error: errorMfa
+  } =
+    await supabaseClient.auth.mfa
+      .getAuthenticatorAssuranceLevel();
+
+  if (errorMfa) {
+    console.error(
+      "ERROR CONSULTANDO MFA:",
+      errorMfa
+    );
+
+    seguridadMfaEstado.textContent =
+      "No disponible";
+
+    seguridadMfaEstado.style.color =
+      "#ff5b5b";
+  } else {
+    const nivelActual =
+      nivelMfa?.currentLevel;
+
+    const siguienteNivel =
+      nivelMfa?.nextLevel;
+
+    const mfaConfigurada =
+      nivelActual === "aal2" ||
+      siguienteNivel === "aal2";
+
+    seguridadMfaEstado.textContent =
+      nivelActual === "aal2"
+        ? "Configurada y activa ✅"
+        : mfaConfigurada
+          ? "Configurada ✅"
+          : "No configurada";
+
+    seguridadMfaEstado.style.color =
+      mfaConfigurada
+        ? "#39ff14"
+        : "#ffbf47";
+  }
+}    
     menuPrincipal.style.display = "none";
 
     if (seccionInformacion) {
