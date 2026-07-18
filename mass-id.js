@@ -93,6 +93,86 @@ if (numeroPerfil) {
   `;
 }
 
+  const menuPrincipal = document.getElementById("massIdMenuPrincipal");
+const seccionInformacion = document.getElementById(
+  "massIdInformacionPersonal"
+);
+
+const btnInformacionPersonal = document.getElementById(
+  "btnMassIdInformacionPersonal"
+);
+
+const btnVolverMenuMassId = document.getElementById(
+  "btnVolverMenuMassId"
+);
+
+const infoNombre = document.getElementById("massIdInfoNombre");
+const infoNumero = document.getElementById("massIdInfoNumero");
+const infoTelefono = document.getElementById("massIdInfoTelefono");
+const infoCorreo = document.getElementById("massIdInfoCorreo");
+
+/* Al abrir Mi MASS ID, siempre comienza en el menú principal */
+if (menuPrincipal && seccionInformacion) {
+  menuPrincipal.style.display = "block";
+  seccionInformacion.style.display = "none";
+}
+
+/* Abrir Información personal */
+if (
+  btnInformacionPersonal &&
+  menuPrincipal &&
+  seccionInformacion
+) {
+  btnInformacionPersonal.onclick = function () {
+    if (infoNombre) {
+      infoNombre.textContent =
+        perfil.nombre || "No disponible";
+    }
+
+    if (infoNumero) {
+      infoNumero.textContent =
+        perfil.mass_id || "No disponible";
+    }
+
+    if (infoTelefono) {
+      infoTelefono.textContent =
+        perfil.telefono || "No disponible";
+    }
+
+    if (infoCorreo) {
+      infoCorreo.textContent =
+        perfil.email ||
+        user.email ||
+        "No disponible";
+    }
+
+    menuPrincipal.style.display = "none";
+    seccionInformacion.style.display = "block";
+
+    seccionInformacion.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Regresar al menú principal */
+if (
+  btnVolverMenuMassId &&
+  menuPrincipal &&
+  seccionInformacion
+) {
+  btnVolverMenuMassId.onclick = function () {
+    seccionInformacion.style.display = "none";
+    menuPrincipal.style.display = "block";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
   panel.style.display = "block";
   panel.scrollIntoView({
     behavior: "smooth",
