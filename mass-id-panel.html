@@ -143,10 +143,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>📷 Foto de perfil</span>
-        <span>›</span>
-      </button>
+      <button
+  id="btnMassIdFotoPerfil"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>📷 Foto de perfil</span>
+  <span>›</span>
+</button>
 
       <button type="button" class="mass-id-menu-button">
         <span>🔐 Seguridad</span>
@@ -284,5 +288,140 @@
         <strong id="massIdInfoCorreo">No disponible</strong>
       </div>
     </div>
-  </div>  
+  </div>
+
+  <!-- FOTO DE PERFIL -->
+  <div
+    id="massIdFotoPerfil"
+    style="
+      display:none;
+      margin-top:26px;
+      padding:22px;
+      border:1px solid #333;
+      border-radius:16px;
+      background:#181818;
+    "
+  >
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:15px;
+        margin-bottom:22px;
+      "
+    >
+      <div>
+        <h3 style="margin:0;">📷 Foto de perfil</h3>
+
+        <p
+          style="
+            margin:7px 0 0;
+            color:#bbb;
+            font-size:14px;
+          "
+        >
+          Elige la imagen que aparecerá en tu identidad MASS.
+        </p>
+      </div>
+
+      <button
+        id="btnVolverFotoPerfilMassId"
+        type="button"
+        aria-label="Volver al menú de Mi MASS ID"
+        style="
+          min-width:90px;
+          padding:10px 14px;
+          border:1px solid #39ff14;
+          border-radius:10px;
+          background:#141414;
+          color:#fff;
+          font-weight:bold;
+          cursor:pointer;
+        "
+      >
+        ← Volver
+      </button>
+    </div>
+
+    <div
+      style="
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:18px;
+        padding:24px 16px;
+        border:1px solid rgba(57,255,20,.35);
+        border-radius:14px;
+        background:#141414;
+        text-align:center;
+      "
+    >
+      <div
+        id="massIdFotoVistaPrevia"
+        style="
+          width:130px;
+          height:130px;
+          border-radius:50%;
+          border:3px solid #39ff14;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          overflow:hidden;
+          background:#101010;
+          font-size:58px;
+          box-shadow:0 0 18px rgba(57,255,20,.25);
+        "
+      >
+        <span id="massIdFotoIcono">👤</span>
+
+        <img
+          id="massIdFotoImagen"
+          src=""
+          alt="Vista previa de la foto de perfil"
+          style="
+            display:none;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+          "
+        >
+      </div>
+
+      <input
+        id="massIdFotoInput"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        hidden
+      >
+
+      <button
+        id="btnSeleccionarFotoMassId"
+        type="button"
+        style="
+          min-width:180px;
+          padding:12px 18px;
+          border:1px solid #39ff14;
+          border-radius:10px;
+          background:#1b1b1b;
+          color:#fff;
+          font-weight:bold;
+          cursor:pointer;
+        "
+      >
+        📁 Seleccionar foto
+      </button>
+
+      <p
+        style="
+          margin:0;
+          color:#999;
+          font-size:13px;
+        "
+      >
+        Formatos permitidos: JPG, PNG o WEBP.
+      </p>
+    </div>
+  </div>        
 </section>
