@@ -10,64 +10,192 @@
     background:#111;
     color:#fff;
     box-shadow:0 0 24px rgba(57,255,20,.35);
-"
+    box-sizing:border-box;
+  "
 >
+  <!-- ENCABEZADO -->
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:15px;
+      margin-bottom:24px;
+    "
+  >
+    <div>
+      <h2 style="margin:0;">👤 Mi MASS ID</h2>
 
-<div style="text-align:center;">
+      <p
+        style="
+          color:#bbb;
+          margin:7px 0 0;
+        "
+      >
+        Tu identidad digital del ecosistema MASS.
+      </p>
+    </div>
 
-<h2>👤 Mi MASS ID</h2>
+    <button
+      type="button"
+      onclick="cerrarMiMassId()"
+      aria-label="Cerrar Mi MASS ID"
+      style="
+        width:42px;
+        height:42px;
+        flex-shrink:0;
+        border:1px solid #555;
+        border-radius:50%;
+        background:#1b1b1b;
+        color:#fff;
+        font-size:22px;
+        cursor:pointer;
+      "
+    >
+      ×
+    </button>
+  </div>
 
-<p style="color:#bbb;">
-Tu identidad digital del ecosistema MASS.
-</p>
+  <!-- TARJETA PRINCIPAL DEL PERFIL -->
+  <div
+    style="
+      text-align:center;
+      padding:22px 16px;
+      border:1px solid #333;
+      border-radius:16px;
+      background:#181818;
+    "
+  >
+    <div
+      style="
+        width:100px;
+        height:100px;
+        margin:0 auto 18px;
+        border-radius:50%;
+        border:2px solid #39ff14;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:46px;
+        background:#101010;
+      "
+    >
+      👤
+    </div>
 
-<div
-style="
-width:100px;
-height:100px;
-margin:25px auto;
-border-radius:50%;
-border:2px solid #39ff14;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:46px;
-background:#181818;
-">
+    <h3
+      id="massIdNombre"
+      style="
+        margin:0;
+        font-size:23px;
+      "
+    >
+      Usuario MASS
+    </h3>
 
-👤
+    <div
+      id="massIdNumero"
+      style="
+        margin-top:10px;
+        font-size:20px;
+        font-weight:bold;
+        color:#39ff14;
+      "
+    >
+      MASS ID
+    </div>
 
-</div>
+    <div
+      style="
+        margin-top:14px;
+        color:#bbb;
+        font-size:14px;
+      "
+    >
+      Cuenta verificada ✅
+    </div>
+  </div>
 
-<h3 id="massIdNombre">
+  <!-- MENÚ PRINCIPAL -->
+  <div style="margin-top:26px;">
+    <h3
+      style="
+        margin:0 0 14px;
+        font-size:18px;
+      "
+    >
+      Administración de la cuenta
+    </h3>
 
-Usuario MASS
+    <div
+      style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+        gap:12px;
+      "
+    >
+      <button type="button" class="mass-id-menu-button">
+        <span>👤 Información personal</span>
+        <span>›</span>
+      </button>
 
-</h3>
+      <button type="button" class="mass-id-menu-button">
+        <span>📷 Foto de perfil</span>
+        <span>›</span>
+      </button>
 
-<div
-id="massIdNumero"
-style="
-font-size:20px;
-font-weight:bold;
-color:#39ff14;
-margin-top:8px;
-">
+      <button type="button" class="mass-id-menu-button">
+        <span>🔐 Seguridad</span>
+        <span>›</span>
+      </button>
 
-MASS ID
+      <button type="button" class="mass-id-menu-button">
+        <span>📧 Cambiar correo</span>
+        <span>›</span>
+      </button>
 
-</div>
+      <button type="button" class="mass-id-menu-button">
+        <span>📱 Cambiar teléfono</span>
+        <span>›</span>
+      </button>
 
-<div
-style="
-margin-top:10px;
-color:#bbb;
-">
+      <button type="button" class="mass-id-menu-button">
+        <span>🔑 Cambiar contraseña</span>
+        <span>›</span>
+      </button>
 
-Cuenta verificada ✅
+      <button type="button" class="mass-id-menu-button">
+        <span>🛡️ Privacidad</span>
+        <span>›</span>
+      </button>
 
-</div>
+      <button type="button" class="mass-id-menu-button">
+        <span>📄 Documentos legales</span>
+        <span>›</span>
+      </button>
 
-</div>
+      <button type="button" class="mass-id-menu-button">
+        <span>🕘 Actividad de la cuenta</span>
+        <span>›</span>
+      </button>
 
+      <button type="button" class="mass-id-menu-button">
+        <span>💻 Dispositivos conectados</span>
+        <span>›</span>
+      </button>
+
+      <button type="button" class="mass-id-menu-button">
+        <span>🚪 Cerrar todas las sesiones</span>
+        <span>›</span>
+      </button>
+
+      <button
+        type="button"
+        class="mass-id-menu-button mass-id-danger-button"
+      >
+        <span>⚠️ Cerrar o desactivar cuenta</span>
+        <span>›</span>
+      </button>
+    </div>
+  </div>
 </section>
