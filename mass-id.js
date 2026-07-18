@@ -163,6 +163,20 @@ const mensajeMfa = document.getElementById(
   "massIdMfaMensaje"
 );
 
+const qrMfaImagen = document.getElementById(
+  "massIdMfaQrImagen"
+);
+
+const qrMfaPendiente = document.getElementById(
+  "massIdMfaQrPendiente"
+);
+
+const claveMfaManual = document.getElementById(
+  "massIdMfaClaveManual"
+);
+
+let factorMfaId = null;  
+
 function cerrarPanelConfiguracionMfa() {
   if (panelMfaConfiguracion) {
     panelMfaConfiguracion.style.display = "none";
@@ -523,12 +537,12 @@ if (seguridadMfaEstado) {
   };
 }
 
-/* Mostrar panel de configuración MFA */
+/* Mostrar panel y generar configuración MFA */
 if (
   btnConfigurarMfa &&
   panelMfaConfiguracion
 ) {
-  btnConfigurarMfa.onclick = function () {
+  btnConfigurarMfa.onclick = async function () {
     if (inputCodigoMfa) {
       inputCodigoMfa.value = "";
     }
@@ -544,6 +558,136 @@ if (
       behavior: "smooth",
       block: "start"
     });
+
+    /*
+      Si el QR ya fue generado durante esta sesión,
+      solamente vuelve a mostrar el panel.
+    */
+    if (
+      factorMfaId &&
+      qrMfaImagen &&
+      qrMfaImagen.getAttribute("src")
+    ) {
+      return;
+    }
+
+    btnConfigurarMfa.disabled = true;
+    btnConfigurarMfa.textContent =
+      "⏳ Generando código...";
+
+    try {
+      if (qrMfaImagen) {
+        qrMfaImagen.removeAttribute("src");
+        qrMfaImagen.style.display = "none";
+      }
+
+      if (qrMfaPendiente) {
+        qrMfaPendiente.textContent =
+          "Generando QR...";
+
+        qrMfaPendiente.style.display =
+          "inline";
+      }
+
+      if (claveMfaManual) {
+        claveMfaManual.textContent =
+          "Generando clave...";
+      }
+
+      const {
+        data: datosEnrolamiento,
+        error: errorEnrolamiento
+      } =
+        await supabaseClient.auth.mfa.enroll({
+          factorType: "totp"
+        });
+
+      if (errorEnrolamiento) {
+        throw errorEnrolamiento;
+      }
+
+      const nuevoFactorId =
+        datosEnrolamiento?.id;
+
+      const codigoQr =
+        datosEnrolamiento?.totp?.qr_code;
+
+      const claveSecreta =
+        datosEnrolamiento?.totp?.secret;
+
+      if (
+        !nuevoFactorId ||
+        !codigoQr ||
+        !claveSecreta
+      ) {
+        throw new Error(
+          "Supabase no devolvió los datos completos de configuración."
+        );
+      }
+
+      factorMfaId = nuevoFactorId;
+
+      if (qrMfaImagen) {
+        qrMfaImagen.src = codigoQr;
+        qrMfaImagen.style.display = "block";
+      }
+
+      if (qrMfaPendiente) {
+        qrMfaPendiente.style.display = "none";
+      }
+
+      if (claveMfaManual) {
+        claveMfaManual.textContent =
+          claveSecreta;
+      }
+
+      if (mensajeMfa) {
+        mensajeMfa.textContent =
+          "Escanea el QR y escribe el código generado por tu aplicación.";
+
+        mensajeMfa.style.display = "block";
+        mensajeMfa.style.color = "#39ff14";
+      }
+    } catch (error) {
+      factorMfaId = null;
+
+      console.error(
+        "ERROR GENERANDO CONFIGURACIÓN MFA:",
+        error
+      );
+
+      if (qrMfaImagen) {
+        qrMfaImagen.removeAttribute("src");
+        qrMfaImagen.style.display = "none";
+      }
+
+      if (qrMfaPendiente) {
+        qrMfaPendiente.textContent =
+          "QR no disponible";
+
+        qrMfaPendiente.style.display =
+          "inline";
+      }
+
+      if (claveMfaManual) {
+        claveMfaManual.textContent =
+          "Clave no disponible";
+      }
+
+      if (mensajeMfa) {
+        mensajeMfa.textContent =
+          `No fue posible generar la configuración: ${
+            error.message || "Error desconocido"
+          }`;
+
+        mensajeMfa.style.display = "block";
+        mensajeMfa.style.color = "#ff5b5b";
+      }
+    } finally {
+      btnConfigurarMfa.disabled = false;
+      btnConfigurarMfa.textContent =
+        "🔐 Configurar verificación";
+    }
   };
 }
 
