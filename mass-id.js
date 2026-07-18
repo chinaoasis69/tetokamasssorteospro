@@ -141,7 +141,42 @@ const seguridadCorreoEstado = document.getElementById(
 
 const seguridadMfaEstado = document.getElementById(
   "massIdSeguridadMfaEstado"
-);  
+);
+
+const panelMfaConfiguracion = document.getElementById(
+  "massIdMfaConfiguracion"
+);
+
+const btnConfigurarMfa = document.getElementById(
+  "btnConfigurarMfaMassId"
+);
+
+const btnCancelarMfa = document.getElementById(
+  "btnCancelarMfaMassId"
+);
+
+const inputCodigoMfa = document.getElementById(
+  "massIdMfaCodigoConfirmacion"
+);
+
+const mensajeMfa = document.getElementById(
+  "massIdMfaMensaje"
+);
+
+function cerrarPanelConfiguracionMfa() {
+  if (panelMfaConfiguracion) {
+    panelMfaConfiguracion.style.display = "none";
+  }
+
+  if (inputCodigoMfa) {
+    inputCodigoMfa.value = "";
+  }
+
+  if (mensajeMfa) {
+    mensajeMfa.textContent = "";
+    mensajeMfa.style.display = "none";
+  }
+}  
 
 const btnSeleccionarFoto = document.getElementById(
   "btnSeleccionarFotoMassId"
@@ -402,7 +437,8 @@ if (
   seccionSeguridad
 ) {
   btnSeguridad.onclick = async function () {
-
+    cerrarPanelConfiguracionMfa();
+    
   if (seguridadCorreoEstado) {
   const correoConfirmado = Boolean(
     user.email_confirmed_at
@@ -487,6 +523,47 @@ if (seguridadMfaEstado) {
   };
 }
 
+/* Mostrar panel de configuración MFA */
+if (
+  btnConfigurarMfa &&
+  panelMfaConfiguracion
+) {
+  btnConfigurarMfa.onclick = function () {
+    if (inputCodigoMfa) {
+      inputCodigoMfa.value = "";
+    }
+
+    if (mensajeMfa) {
+      mensajeMfa.textContent = "";
+      mensajeMfa.style.display = "none";
+    }
+
+    panelMfaConfiguracion.style.display = "block";
+
+    panelMfaConfiguracion.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Cancelar configuración MFA */
+if (
+  btnCancelarMfa &&
+  panelMfaConfiguracion
+) {
+  btnCancelarMfa.onclick = function () {
+    cerrarPanelConfiguracionMfa();
+
+    if (seccionSeguridad) {
+      seccionSeguridad.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  };
+}  
+
 /* Regresar desde Seguridad al menú principal */
 if (
   btnVolverSeguridad &&
@@ -494,6 +571,8 @@ if (
   seccionSeguridad
 ) {
   btnVolverSeguridad.onclick = function () {
+    cerrarPanelConfiguracionMfa();
+    
     seccionSeguridad.style.display = "none";
 
     if (seccionInformacion) {
