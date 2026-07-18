@@ -571,6 +571,233 @@
 </div>
     </div>
 
+    <!-- CONFIGURACIÓN DE VERIFICACIÓN EN DOS PASOS -->
+    <div
+      id="massIdMfaConfiguracion"
+      style="
+        display:none;
+        margin-top:18px;
+        padding:18px;
+        border:1px solid rgba(57,255,20,.4);
+        border-radius:14px;
+        background:#141414;
+      "
+    >
+      <div style="margin-bottom:18px;">
+        <h4
+          style="
+            margin:0;
+            color:#fff;
+            font-size:18px;
+          "
+        >
+          🔐 Configurar verificación en dos pasos
+        </h4>
+
+        <p
+          style="
+            margin:8px 0 0;
+            color:#bbb;
+            font-size:14px;
+            line-height:1.5;
+          "
+        >
+          Escanea el código QR con una aplicación de
+          autenticación y escribe el código de seis dígitos.
+        </p>
+      </div>
+
+      <div
+        style="
+          display:grid;
+          grid-template-columns:repeat(
+            auto-fit,
+            minmax(220px,1fr)
+          );
+          gap:16px;
+          align-items:stretch;
+        "
+      >
+        <!-- CÓDIGO QR -->
+        <div
+          style="
+            min-height:230px;
+            padding:16px;
+            border:1px solid #333;
+            border-radius:12px;
+            background:#1b1b1b;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            gap:12px;
+            text-align:center;
+          "
+        >
+          <strong style="color:#fff;">
+            Código QR
+          </strong>
+
+          <div
+            id="massIdMfaQrContenedor"
+            style="
+              width:180px;
+              height:180px;
+              padding:10px;
+              box-sizing:border-box;
+              border-radius:12px;
+              background:#fff;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+            "
+          >
+            <img
+              id="massIdMfaQrImagen"
+              src=""
+              alt="Código QR de verificación en dos pasos"
+              style="
+                display:none;
+                width:100%;
+                height:100%;
+                object-fit:contain;
+              "
+            >
+
+            <span
+              id="massIdMfaQrPendiente"
+              style="
+                color:#555;
+                font-size:13px;
+              "
+            >
+              QR pendiente
+            </span>
+          </div>
+        </div>
+
+        <!-- CLAVE Y CONFIRMACIÓN -->
+        <div
+          style="
+            padding:16px;
+            border:1px solid #333;
+            border-radius:12px;
+            background:#1b1b1b;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            gap:14px;
+          "
+        >
+          <div>
+            <span
+              style="
+                display:block;
+                margin-bottom:7px;
+                color:#aaa;
+                font-size:13px;
+              "
+            >
+              Clave de configuración manual
+            </span>
+
+            <code
+              id="massIdMfaClaveManual"
+              style="
+                display:block;
+                padding:11px;
+                border:1px solid #444;
+                border-radius:9px;
+                background:#101010;
+                color:#39ff14;
+                overflow-wrap:anywhere;
+              "
+            >
+              Clave pendiente
+            </code>
+          </div>
+
+          <label
+            for="massIdMfaCodigoConfirmacion"
+            style="
+              color:#fff;
+              font-size:14px;
+              font-weight:bold;
+            "
+          >
+            Código de seis dígitos
+          </label>
+
+          <input
+            id="massIdMfaCodigoConfirmacion"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            maxlength="6"
+            placeholder="000000"
+            style="
+              width:100%;
+              padding:13px;
+              box-sizing:border-box;
+              border:1px solid #555;
+              border-radius:10px;
+              background:#101010;
+              color:#fff;
+              font-size:20px;
+              font-weight:bold;
+              text-align:center;
+              letter-spacing:6px;
+              outline:none;
+            "
+          >
+
+          <button
+            id="btnConfirmarMfaMassId"
+            type="button"
+            style="
+              width:100%;
+              padding:12px 16px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#1b1b1b;
+              color:#fff;
+              font-weight:bold;
+              cursor:pointer;
+            "
+          >
+            ✅ Confirmar y activar
+          </button>
+
+          <button
+            id="btnCancelarMfaMassId"
+            type="button"
+            style="
+              width:100%;
+              padding:11px 16px;
+              border:1px solid #555;
+              border-radius:10px;
+              background:#242424;
+              color:#ddd;
+              font-weight:bold;
+              cursor:pointer;
+            "
+          >
+            Cancelar
+          </button>
+
+          <p
+            id="massIdMfaMensaje"
+            style="
+              display:none;
+              margin:0;
+              font-size:13px;
+              line-height:1.4;
+            "
+          ></p>
+        </div>
+      </div>
+    </div>    
+
     <div
       style="
         margin-top:18px;
