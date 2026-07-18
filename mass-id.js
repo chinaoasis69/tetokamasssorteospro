@@ -111,10 +111,29 @@ const infoNumero = document.getElementById("massIdInfoNumero");
 const infoTelefono = document.getElementById("massIdInfoTelefono");
 const infoCorreo = document.getElementById("massIdInfoCorreo");
 
+const seccionFotoPerfil = document.getElementById(
+  "massIdFotoPerfil"
+);
+
+const btnFotoPerfil = document.getElementById(
+  "btnMassIdFotoPerfil"
+);
+
+const btnVolverFotoPerfil = document.getElementById(
+  "btnVolverFotoPerfilMassId"
+);
+
 /* Al abrir Mi MASS ID, siempre comienza en el menú principal */
-if (menuPrincipal && seccionInformacion) {
+if (menuPrincipal) {
   menuPrincipal.style.display = "block";
+}
+
+if (seccionInformacion) {
   seccionInformacion.style.display = "none";
+}
+
+if (seccionFotoPerfil) {
+  seccionFotoPerfil.style.display = "none";
 }
 
 /* Abrir Información personal */
@@ -172,6 +191,50 @@ if (
     });
   };
 }
+
+/* Abrir Foto de perfil */
+if (
+  btnFotoPerfil &&
+  menuPrincipal &&
+  seccionFotoPerfil
+) {
+  btnFotoPerfil.onclick = function () {
+    menuPrincipal.style.display = "none";
+
+    if (seccionInformacion) {
+      seccionInformacion.style.display = "none";
+    }
+
+    seccionFotoPerfil.style.display = "block";
+
+    seccionFotoPerfil.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Regresar desde Foto de perfil al menú principal */
+if (
+  btnVolverFotoPerfil &&
+  menuPrincipal &&
+  seccionFotoPerfil
+) {
+  btnVolverFotoPerfil.onclick = function () {
+    seccionFotoPerfil.style.display = "none";
+
+    if (seccionInformacion) {
+      seccionInformacion.style.display = "none";
+    }
+
+    menuPrincipal.style.display = "block";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}  
 
   panel.style.display = "block";
   panel.scrollIntoView({
