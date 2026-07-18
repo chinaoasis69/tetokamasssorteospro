@@ -133,6 +133,10 @@ const btnSeguridad = document.getElementById(
 
 const btnVolverSeguridad = document.getElementById(
   "btnVolverSeguridadMassId"
+); 
+
+const seguridadCorreoEstado = document.getElementById(
+  "massIdSeguridadCorreoEstado"
 );  
 
 const btnSeleccionarFoto = document.getElementById(
@@ -394,6 +398,22 @@ if (
   seccionSeguridad
 ) {
   btnSeguridad.onclick = function () {
+
+  if (seguridadCorreoEstado) {
+  const correoConfirmado = Boolean(
+    user.email_confirmed_at
+  );
+
+  seguridadCorreoEstado.textContent =
+    correoConfirmado
+      ? "Correo verificado ✅"
+      : "Correo pendiente de verificar";
+
+  seguridadCorreoEstado.style.color =
+    correoConfirmado
+      ? "#39ff14"
+      : "#ffbf47";
+}  
     menuPrincipal.style.display = "none";
 
     if (seccionInformacion) {
