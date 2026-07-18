@@ -131,3 +131,99 @@
     font-size: 20px;
   }
 }
+
+/* =====================================================
+   MI MASS ID — INFORMACIÓN PERSONAL
+===================================================== */
+
+#miMassIdPanel .mass-id-info-item {
+  width: 100%;
+  min-height: 92px;
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(57, 255, 20, 0.38);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    180deg,
+    #202020 0%,
+    #151515 100%
+  );
+
+  text-align: left;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+#miMassIdPanel .mass-id-info-item span {
+  display: block;
+  width: 100%;
+
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#miMassIdPanel .mass-id-info-item strong {
+  display: block;
+  width: 100%;
+
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#miMassIdPanel #massIdInfoNumero,
+#miMassIdPanel #massIdInfoTelefono {
+  color: #39ff14;
+}
+
+#miMassIdPanel #massIdInfoCorreo {
+  font-size: 15px;
+}
+
+
+/* =====================================================
+   INFORMACIÓN PERSONAL — IPHONE
+===================================================== */
+
+@media (max-width: 600px) {
+  #miMassIdPanel #massIdInformacionPersonal {
+    padding: 16px !important;
+  }
+
+  #miMassIdPanel #massIdInformacionPersonal > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  #miMassIdPanel #btnVolverMenuMassId {
+    width: 100%;
+  }
+
+  #miMassIdPanel .mass-id-info-item {
+    min-height: 84px;
+    padding: 14px;
+  }
+
+  #miMassIdPanel .mass-id-info-item strong {
+    font-size: 16px;
+  }
+
+  #miMassIdPanel #massIdInfoCorreo {
+    font-size: 14px;
+  }
+}
