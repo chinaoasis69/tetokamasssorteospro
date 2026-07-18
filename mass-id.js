@@ -123,6 +123,18 @@ const btnVolverFotoPerfil = document.getElementById(
   "btnVolverFotoPerfilMassId"
 );
 
+const seccionSeguridad = document.getElementById(
+  "massIdSeguridad"
+);
+
+const btnSeguridad = document.getElementById(
+  "btnMassIdSeguridad"
+);
+
+const btnVolverSeguridad = document.getElementById(
+  "btnVolverSeguridadMassId"
+);  
+
 const btnSeleccionarFoto = document.getElementById(
   "btnSeleccionarFotoMassId"
 );
@@ -271,6 +283,10 @@ if (seccionFotoPerfil) {
   seccionFotoPerfil.style.display = "none";
 }
 
+if (seccionSeguridad) {
+  seccionSeguridad.style.display = "none";
+}  
+
 /* Abrir Información personal */
 if (
   btnInformacionPersonal &&
@@ -370,6 +386,58 @@ if (
     });
   };
 }
+
+/* Abrir Seguridad */
+if (
+  btnSeguridad &&
+  menuPrincipal &&
+  seccionSeguridad
+) {
+  btnSeguridad.onclick = function () {
+    menuPrincipal.style.display = "none";
+
+    if (seccionInformacion) {
+      seccionInformacion.style.display = "none";
+    }
+
+    if (seccionFotoPerfil) {
+      seccionFotoPerfil.style.display = "none";
+    }
+
+    seccionSeguridad.style.display = "block";
+
+    seccionSeguridad.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Regresar desde Seguridad al menú principal */
+if (
+  btnVolverSeguridad &&
+  menuPrincipal &&
+  seccionSeguridad
+) {
+  btnVolverSeguridad.onclick = function () {
+    seccionSeguridad.style.display = "none";
+
+    if (seccionInformacion) {
+      seccionInformacion.style.display = "none";
+    }
+
+    if (seccionFotoPerfil) {
+      seccionFotoPerfil.style.display = "none";
+    }
+
+    menuPrincipal.style.display = "block";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}  
 
 /* Abrir selector de archivos */
 if (btnSeleccionarFoto && fotoInput) {
