@@ -139,6 +139,14 @@ const fotoIcono = document.getElementById(
   "massIdFotoIcono"
 );
 
+const fotoPrincipalImagen = document.getElementById(
+  "massIdFotoPrincipalImagen"
+);
+
+const fotoPrincipalIcono = document.getElementById(
+  "massIdFotoPrincipalIcono"
+);  
+
 const btnGuardarFoto = document.getElementById(
   "btnGuardarFotoMassId"
 );
@@ -175,18 +183,45 @@ function actualizarBotonGuardarFoto(
 actualizarBotonGuardarFoto(false);
 
 /* Mostrar la foto guardada anteriormente */
-if (
-  perfil.foto_perfil_url &&
-  fotoImagen &&
-  fotoIcono
-) {
-  fotoImagen.src = perfil.foto_perfil_url;
-  fotoImagen.style.display = "block";
-  fotoIcono.style.display = "none";
-} else if (fotoImagen && fotoIcono) {
-  fotoImagen.removeAttribute("src");
-  fotoImagen.style.display = "none";
-  fotoIcono.style.display = "inline";
+if (perfil.foto_perfil_url) {
+  if (fotoImagen && fotoIcono) {
+    fotoImagen.src = perfil.foto_perfil_url;
+    fotoImagen.style.display = "block";
+    fotoIcono.style.display = "none";
+  }
+
+  if (
+    fotoPrincipalImagen &&
+    fotoPrincipalIcono
+  ) {
+    fotoPrincipalImagen.src =
+      perfil.foto_perfil_url;
+
+    fotoPrincipalImagen.style.display =
+      "block";
+
+    fotoPrincipalIcono.style.display =
+      "none";
+  }
+} else {
+  if (fotoImagen && fotoIcono) {
+    fotoImagen.removeAttribute("src");
+    fotoImagen.style.display = "none";
+    fotoIcono.style.display = "inline";
+  }
+
+  if (
+    fotoPrincipalImagen &&
+    fotoPrincipalIcono
+  ) {
+    fotoPrincipalImagen.removeAttribute("src");
+
+    fotoPrincipalImagen.style.display =
+      "none";
+
+    fotoPrincipalIcono.style.display =
+      "inline";
+  }
 }  
 
 /* Al abrir Mi MASS ID, siempre comienza en el menú principal */
@@ -464,6 +499,20 @@ if (
 
       fotoIcono.style.display =
         "none";
+
+     if (
+  fotoPrincipalImagen &&
+  fotoPrincipalIcono
+) {
+  fotoPrincipalImagen.src =
+    fotoPublicaUrl;
+
+  fotoPrincipalImagen.style.display =
+    "block";
+
+  fotoPrincipalIcono.style.display =
+    "none";
+} 
 
       archivoFotoSeleccionado = null;
       fotoInput.value = "";
