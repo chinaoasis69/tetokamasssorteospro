@@ -182,6 +182,40 @@ function actualizarBotonGuardarFoto(
 
 actualizarBotonGuardarFoto(false);
 
+function obtenerRutaAvatarDesdeUrl(urlFoto) {
+  if (!urlFoto) {
+    return null;
+  }
+
+  try {
+    const url = new URL(urlFoto);
+
+    const marcador =
+      "/storage/v1/object/public/mass-id-avatars/";
+
+    const posicion =
+      url.pathname.indexOf(marcador);
+
+    if (posicion === -1) {
+      return null;
+    }
+
+    const rutaCodificada =
+      url.pathname.slice(
+        posicion + marcador.length
+      );
+
+    return decodeURIComponent(rutaCodificada);
+  } catch (error) {
+    console.warn(
+      "URL ANTERIOR DE FOTO NO VÁLIDA:",
+      error
+    );
+
+    return null;
+  }
+}  
+
 /* Mostrar la foto guardada anteriormente */
 if (perfil.foto_perfil_url) {
   if (fotoImagen && fotoIcono) {
@@ -417,6 +451,9 @@ if (
       return;
     }
 
+  const fotoAnteriorUrl =
+  perfil.foto_perfil_url || null;  
+
     actualizarBotonGuardarFoto(
       false,
       "⏳ Guardando foto..."
@@ -485,8 +522,40 @@ if (
           .eq("auth_user_id", user.id);
 
       if (errorPerfil) {
-        throw errorPerfil;
-      }
+  const { error: errorLimpieza } =
+    await supabaseClient.storage
+      .from("mass-id-avatars")
+      .remove([rutaArchivo]);
+
+  if (errorLimpieza) {
+    console.warn(
+      "NO SE PUDO LIMPIAR LA FOTO NUEVA:",
+      errorLimpieza
+    );
+  }
+
+  throw errorPerfil;
+}
+
+const rutaFotoAnterior =
+  obtenerRutaAvatarDesdeUrl(fotoAnteriorUrl);
+
+if (
+  rutaFotoAnterior &&
+  rutaFotoAnterior !== rutaArchivo
+) {
+  const { error: errorEliminarAnterior } =
+    await supabaseClient.storage
+      .from("mass-id-avatars")
+      .remove([rutaFotoAnterior]);
+
+  if (errorEliminarAnterior) {
+    console.warn(
+      "NO SE PUDO ELIMINAR LA FOTO ANTERIOR:",
+      errorEliminarAnterior
+    );
+  }
+}      
 
       perfil.foto_perfil_url =
         fotoPublicaUrl;
