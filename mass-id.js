@@ -123,6 +123,22 @@ const btnVolverFotoPerfil = document.getElementById(
   "btnVolverFotoPerfilMassId"
 );
 
+const btnSeleccionarFoto = document.getElementById(
+  "btnSeleccionarFotoMassId"
+);
+
+const fotoInput = document.getElementById(
+  "massIdFotoInput"
+);
+
+const fotoImagen = document.getElementById(
+  "massIdFotoImagen"
+);
+
+const fotoIcono = document.getElementById(
+  "massIdFotoIcono"
+);  
+
 /* Al abrir Mi MASS ID, siempre comienza en el menú principal */
 if (menuPrincipal) {
   menuPrincipal.style.display = "block";
@@ -233,6 +249,64 @@ if (
       behavior: "smooth",
       block: "start"
     });
+  };
+}
+
+/* Abrir selector de archivos */
+if (btnSeleccionarFoto && fotoInput) {
+  btnSeleccionarFoto.onclick = function () {
+    fotoInput.value = "";
+    fotoInput.click();
+  };
+}
+
+/* Mostrar la foto seleccionada en la vista previa */
+if (
+  fotoInput &&
+  fotoImagen &&
+  fotoIcono
+) {
+  fotoInput.onchange = function () {
+    const archivo = fotoInput.files?.[0];
+
+    if (!archivo) {
+      return;
+    }
+
+    const formatosPermitidos = [
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ];
+
+    if (!formatosPermitidos.includes(archivo.type)) {
+      alert("❌ Selecciona una imagen JPG, PNG o WEBP.");
+      fotoInput.value = "";
+      return;
+    }
+
+    const limiteBytes = 5 * 1024 * 1024;
+
+    if (archivo.size > limiteBytes) {
+      alert("❌ La imagen no puede superar los 5 MB.");
+      fotoInput.value = "";
+      return;
+    }
+
+    const lector = new FileReader();
+
+    lector.onload = function (evento) {
+      fotoImagen.src = evento.target.result;
+      fotoImagen.style.display = "block";
+      fotoIcono.style.display = "none";
+    };
+
+    lector.onerror = function () {
+      alert("❌ No fue posible leer la imagen seleccionada.");
+      fotoInput.value = "";
+    };
+
+    lector.readAsDataURL(archivo);
   };
 }  
 
