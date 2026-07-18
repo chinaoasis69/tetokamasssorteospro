@@ -227,3 +227,95 @@
     font-size: 14px;
   }
 }
+
+/* =====================================================
+   MI MASS ID — SEGURIDAD
+===================================================== */
+
+#miMassIdPanel .mass-id-security-item {
+  width: 100%;
+  min-height: 96px;
+  padding: 16px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 9px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(57, 255, 20, 0.38);
+  border-radius: 12px;
+
+  background: linear-gradient(
+    180deg,
+    #202020 0%,
+    #151515 100%
+  );
+
+  text-align: left;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+#miMassIdPanel .mass-id-security-item span {
+  display: block;
+  width: 100%;
+
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#miMassIdPanel .mass-id-security-item strong {
+  display: block;
+  width: 100%;
+
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+#miMassIdPanel #massIdSeguridadCuentaEstado,
+#miMassIdPanel #massIdSeguridadPasswordEstado {
+  color: #39ff14;
+}
+
+#miMassIdPanel #massIdSeguridadMfaEstado {
+  color: #ffbf47;
+}
+
+
+/* =====================================================
+   SEGURIDAD — IPHONE
+===================================================== */
+
+@media (max-width: 600px) {
+  #miMassIdPanel #massIdSeguridad {
+    padding: 16px !important;
+  }
+
+  #miMassIdPanel #massIdSeguridad > div:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  #miMassIdPanel #btnVolverSeguridadMassId {
+    width: 100%;
+  }
+
+  #miMassIdPanel .mass-id-security-item {
+    min-height: 84px;
+    padding: 14px;
+  }
+
+  #miMassIdPanel .mass-id-security-item strong {
+    font-size: 16px;
+  }
+}
