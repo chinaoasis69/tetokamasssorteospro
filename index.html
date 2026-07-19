@@ -9196,6 +9196,295 @@ async function iniciarSesionSuperAdminV2() {
     console.error("ERROR INESPERADO LOGIN SÚPER ADMIN:", error);
     alert("❌ Ocurrió un error al iniciar sesión como Súper Admin.");
   }
+}
+
+async function solicitarMfaLoginMassId() {
+  const {
+    data: nivelMfa,
+    error: errorNivelMfa
+  } =
+    await supabaseClient.auth.mfa
+      .getAuthenticatorAssuranceLevel();
+
+  if (errorNivelMfa) {
+    throw errorNivelMfa;
+  }
+
+  const nivelActual =
+    nivelMfa?.currentLevel || null;
+
+  const siguienteNivel =
+    nivelMfa?.nextLevel || null;
+
+  /*
+    Si la sesión ya está en AAL2 o la cuenta
+    no necesita MFA, permite continuar.
+  */
+  if (
+    nivelActual === "aal2" ||
+    siguienteNivel !== "aal2"
+  ) {
+    return true;
+  }
+
+  const {
+    data: factores,
+    error: errorFactores
+  } =
+    await supabaseClient.auth.mfa
+      .listFactors();
+
+  if (errorFactores) {
+    throw errorFactores;
+  }
+
+  const listaFactores =
+    Array.isArray(factores?.all)
+      ? factores.all
+      : [
+          ...(
+            Array.isArray(factores?.totp)
+              ? factores.totp
+              : []
+          ),
+          ...(
+            Array.isArray(factores?.phone)
+              ? factores.phone
+              : []
+          )
+        ];
+
+  const factorVerificado =
+    listaFactores.find((factor) => {
+      const tipoFactor =
+        factor.factor_type ||
+        factor.factorType ||
+        factor.type;
+
+      return (
+        tipoFactor === "totp" &&
+        factor.status === "verified"
+      );
+    });
+
+  if (!factorVerificado?.id) {
+    throw new Error(
+      "No se encontró un factor MFA verificado."
+    );
+  }
+
+  const formularioLogin =
+    document.getElementById(
+      "formUsuarioV2"
+    );
+
+  const panelMfaLogin =
+    document.getElementById(
+      "formMfaLoginMassId"
+    );
+
+  const inputCodigoMfaLogin =
+    document.getElementById(
+      "massIdCodigoMfaLogin"
+    );
+
+  const mensajeMfaLogin =
+    document.getElementById(
+      "massIdMensajeMfaLogin"
+    );
+
+  const btnConfirmarMfaLogin =
+    document.getElementById(
+      "btnConfirmarMfaLoginMassId"
+    );
+
+  const btnCancelarMfaLogin =
+    document.getElementById(
+      "btnCancelarMfaLoginMassId"
+    );
+
+  const btnRegresarMenu =
+    document.getElementById(
+      "btnRegresarMenuV2"
+    );
+
+  if (
+    !formularioLogin ||
+    !panelMfaLogin ||
+    !inputCodigoMfaLogin ||
+    !btnConfirmarMfaLogin ||
+    !btnCancelarMfaLogin
+  ) {
+    throw new Error(
+      "No se encontró el panel MFA del inicio de sesión."
+    );
+  }
+
+  inputCodigoMfaLogin.value = "";
+  inputCodigoMfaLogin.disabled = false;
+
+  if (mensajeMfaLogin) {
+    mensajeMfaLogin.textContent = "";
+    mensajeMfaLogin.style.display = "none";
+  }
+
+  formularioLogin.style.display = "none";
+  panelMfaLogin.style.display = "block";
+
+  if (btnRegresarMenu) {
+    btnRegresarMenu.style.display = "none";
+  }
+
+  setTimeout(() => {
+    inputCodigoMfaLogin.focus();
+  }, 100);
+
+  return await new Promise((resolve) => {
+    let procesoTerminado = false;
+
+    function terminarProceso(resultado) {
+      if (procesoTerminado) {
+        return;
+      }
+
+      procesoTerminado = true;
+      resolve(resultado);
+    }
+
+    btnConfirmarMfaLogin.onclick =
+      async function () {
+        const codigoMfa =
+          inputCodigoMfaLogin.value
+            .replace(/\D/g, "")
+            .slice(0, 6);
+
+        inputCodigoMfaLogin.value =
+          codigoMfa;
+
+        if (!/^\d{6}$/.test(codigoMfa)) {
+          if (mensajeMfaLogin) {
+            mensajeMfaLogin.textContent =
+              "Escribe exactamente los seis dígitos.";
+
+            mensajeMfaLogin.style.display =
+              "block";
+
+            mensajeMfaLogin.style.color =
+              "#ffbf47";
+          }
+
+          inputCodigoMfaLogin.focus();
+          return;
+        }
+
+        btnConfirmarMfaLogin.disabled = true;
+        btnConfirmarMfaLogin.textContent =
+          "⏳ Verificando código...";
+
+        inputCodigoMfaLogin.disabled = true;
+
+        if (mensajeMfaLogin) {
+          mensajeMfaLogin.textContent =
+            "Confirmando tu identidad...";
+
+          mensajeMfaLogin.style.display =
+            "block";
+
+          mensajeMfaLogin.style.color =
+            "#fff";
+        }
+
+        try {
+          const {
+            error: errorVerificacion
+          } =
+            await supabaseClient.auth.mfa
+              .challengeAndVerify({
+                factorId:
+                  factorVerificado.id,
+
+                code: codigoMfa
+              });
+
+          if (errorVerificacion) {
+            throw errorVerificacion;
+          }
+
+          panelMfaLogin.style.display =
+            "none";
+
+          inputCodigoMfaLogin.value = "";
+
+          if (mensajeMfaLogin) {
+            mensajeMfaLogin.textContent = "";
+            mensajeMfaLogin.style.display =
+              "none";
+          }
+
+          terminarProceso(true);
+        } catch (error) {
+          console.error(
+            "ERROR VERIFICANDO MFA EN LOGIN:",
+            error
+          );
+
+          if (mensajeMfaLogin) {
+            mensajeMfaLogin.textContent =
+              "El código es incorrecto o venció. Escribe el código nuevo de tu aplicación.";
+
+            mensajeMfaLogin.style.display =
+              "block";
+
+            mensajeMfaLogin.style.color =
+              "#ff5b5b";
+          }
+
+          inputCodigoMfaLogin.value = "";
+          inputCodigoMfaLogin.focus();
+        } finally {
+          btnConfirmarMfaLogin.disabled =
+            false;
+
+          btnConfirmarMfaLogin.textContent =
+            "✅ Verificar código";
+
+          inputCodigoMfaLogin.disabled =
+            false;
+        }
+      };
+
+    btnCancelarMfaLogin.onclick =
+      async function () {
+        await supabaseClient.auth.signOut();
+
+        inputCodigoMfaLogin.value = "";
+
+        if (mensajeMfaLogin) {
+          mensajeMfaLogin.textContent = "";
+          mensajeMfaLogin.style.display =
+            "none";
+        }
+
+        panelMfaLogin.style.display = "none";
+        formularioLogin.style.display =
+          "block";
+
+        if (btnRegresarMenu) {
+          btnRegresarMenu.style.display =
+            "block";
+        }
+
+        terminarProceso(false);
+      };
+
+    inputCodigoMfaLogin.onkeydown =
+      function (evento) {
+        if (evento.key === "Enter") {
+          evento.preventDefault();
+          btnConfirmarMfaLogin.click();
+        }
+      };
+  });
 }	
 
 async function iniciarSesionMassId() {
@@ -9225,6 +9514,34 @@ async function iniciarSesionMassId() {
     alert("❌ Correo o contraseña incorrectos.");
     return;
   }
+
+let accesoMfaAprobado = false;
+
+try {
+  accesoMfaAprobado =
+    await solicitarMfaLoginMassId();
+} catch (errorMfaLogin) {
+  console.error(
+    "ERROR PREPARANDO MFA EN LOGIN:",
+    errorMfaLogin
+  );
+
+  await supabaseClient.auth.signOut();
+
+  alert(
+    "❌ No fue posible verificar la seguridad de tu cuenta.\n\n" +
+    (
+      errorMfaLogin.message ||
+      "Intenta iniciar sesión nuevamente."
+    )
+  );
+
+  return;
+}
+
+if (!accesoMfaAprobado) {
+  return;
+}	
 
   const authUserId = authData.user.id;
 
@@ -9881,6 +10198,97 @@ font-family:Arial, sans-serif;">
   ¿Olvidaste tu contraseña?
 </button>
     </div>
+
+<!-- VERIFICACIÓN MFA DURANTE EL INICIO DE SESIÓN -->
+<div
+  id="formMfaLoginMassId"
+  style="
+    display:none;
+    margin-top:24px;
+    padding:18px;
+    border:1px solid #39ff14;
+    border-radius:14px;
+    background:#181818;
+  "
+>
+  <h3 style="margin-top:0;">
+    🔐 Verificación en dos pasos
+  </h3>
+
+  <p
+    style="
+      color:#bbb;
+      line-height:1.5;
+      margin-bottom:16px;
+    "
+  >
+    Abre tu aplicación de autenticación y escribe
+    el código actual de seis dígitos.
+  </p>
+
+  <input
+    id="massIdCodigoMfaLogin"
+    type="text"
+    inputmode="numeric"
+    autocomplete="one-time-code"
+    maxlength="6"
+    placeholder="000000"
+    style="
+      width:100%;
+      max-width:320px;
+      padding:14px;
+      border:1px solid #39ff14;
+      border-radius:10px;
+      background:#101010;
+      color:#fff;
+      font-size:22px;
+      font-weight:bold;
+      text-align:center;
+      letter-spacing:7px;
+      box-sizing:border-box;
+    "
+  >
+
+  <div
+    id="massIdMensajeMfaLogin"
+    style="
+      display:none;
+      margin:12px 0;
+      font-size:14px;
+      line-height:1.4;
+    "
+  ></div>
+
+  <button
+    id="btnConfirmarMfaLoginMassId"
+    type="button"
+    style="
+      width:100%;
+      max-width:320px;
+      margin-top:10px;
+      border:1px solid #39ff14;
+      background:#1b1b1b;
+      color:#fff;
+    "
+  >
+    ✅ Verificar código
+  </button>
+
+  <button
+    id="btnCancelarMfaLoginMassId"
+    type="button"
+    style="
+      width:100%;
+      max-width:320px;
+      margin-top:8px;
+      border:1px solid #666;
+      background:#242424;
+      color:#ddd;
+    "
+  >
+    Cancelar inicio de sesión
+  </button>
+</div>	  
 
 	  <div
   id="formNuevaPasswordMassId"
