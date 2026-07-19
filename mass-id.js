@@ -134,6 +134,61 @@ const btnCancelarDireccion =
 const mensajeDireccionFormulario =
   document.getElementById(
     "massIdDireccionMensajeFormulario"
+  );
+
+const direccionEstado =
+  document.getElementById(
+    "massIdDireccionEstado"
+  );
+
+const btnGuardarDireccion =
+  document.getElementById(
+    "btnGuardarDireccionMassId"
+  );
+
+const inputDireccionNombre =
+  document.getElementById(
+    "massIdDireccionNombreUbicacion"
+  );
+
+const inputDireccionPais =
+  document.getElementById(
+    "massIdDireccionPais"
+  );
+
+const inputDireccionLinea1 =
+  document.getElementById(
+    "massIdDireccionLinea1"
+  );
+
+const inputDireccionLinea2 =
+  document.getElementById(
+    "massIdDireccionLinea2"
+  );
+
+const inputDireccionCiudad =
+  document.getElementById(
+    "massIdDireccionCiudad"
+  );
+
+const inputDireccionEstadoRegion =
+  document.getElementById(
+    "massIdDireccionEstadoRegion"
+  );
+
+const inputDireccionCodigoPostal =
+  document.getElementById(
+    "massIdDireccionCodigoPostal"
+  );
+
+const inputDireccionInstrucciones =
+  document.getElementById(
+    "massIdDireccionInstrucciones"
+  );
+
+const inputDireccionPrincipal =
+  document.getElementById(
+    "massIdDireccionPrincipal"
   );  
 
 const seccionFotoPerfil = document.getElementById(
@@ -562,6 +617,263 @@ if (
       block: "start"
     });
   };
+}
+
+/* Guardar dirección privada MASS */
+if (
+  btnGuardarDireccion &&
+  direccionInvitacion &&
+  direccionFormulario &&
+  inputDireccionNombre &&
+  inputDireccionPais &&
+  inputDireccionLinea1 &&
+  inputDireccionCiudad &&
+  inputDireccionEstadoRegion &&
+  inputDireccionCodigoPostal
+) {
+  btnGuardarDireccion.onclick =
+    async function () {
+      const nombreUbicacion =
+        inputDireccionNombre.value.trim() ||
+        "Casa";
+
+      const pais =
+        inputDireccionPais.value.trim();
+
+      const direccionLinea1 =
+        inputDireccionLinea1.value.trim();
+
+      const direccionLinea2 =
+        inputDireccionLinea2
+          ? inputDireccionLinea2.value.trim()
+          : "";
+
+      const ciudad =
+        inputDireccionCiudad.value.trim();
+
+      const estadoRegion =
+        inputDireccionEstadoRegion.value.trim();
+
+      const codigoPostal =
+        inputDireccionCodigoPostal.value.trim();
+
+      const instrucciones =
+        inputDireccionInstrucciones
+          ? inputDireccionInstrucciones.value.trim()
+          : "";
+
+      const esPrincipal =
+        Boolean(
+          inputDireccionPrincipal?.checked
+        );
+
+      function mostrarMensajeDireccion(
+        texto,
+        color
+      ) {
+        if (!mensajeDireccionFormulario) {
+          return;
+        }
+
+        mensajeDireccionFormulario.textContent =
+          texto;
+
+        mensajeDireccionFormulario.style.color =
+          color;
+
+        mensajeDireccionFormulario.style.display =
+          "block";
+      }
+
+      if (!pais) {
+        mostrarMensajeDireccion(
+          "⚠️ Escribe el país.",
+          "#ffbf47"
+        );
+
+        inputDireccionPais.focus();
+        return;
+      }
+
+      if (!direccionLinea1) {
+        mostrarMensajeDireccion(
+          "⚠️ Escribe la dirección.",
+          "#ffbf47"
+        );
+
+        inputDireccionLinea1.focus();
+        return;
+      }
+
+      if (!ciudad) {
+        mostrarMensajeDireccion(
+          "⚠️ Escribe la ciudad.",
+          "#ffbf47"
+        );
+
+        inputDireccionCiudad.focus();
+        return;
+      }
+
+      if (!estadoRegion) {
+        mostrarMensajeDireccion(
+          "⚠️ Escribe el estado o región.",
+          "#ffbf47"
+        );
+
+        inputDireccionEstadoRegion.focus();
+        return;
+      }
+
+      if (!codigoPostal) {
+        mostrarMensajeDireccion(
+          "⚠️ Escribe el código postal.",
+          "#ffbf47"
+        );
+
+        inputDireccionCodigoPostal.focus();
+        return;
+      }
+
+      btnGuardarDireccion.disabled = true;
+
+      btnGuardarDireccion.textContent =
+        "⏳ Guardando dirección...";
+
+      btnGuardarDireccion.style.cursor =
+        "not-allowed";
+
+      btnGuardarDireccion.style.opacity =
+        ".7";
+
+      mostrarMensajeDireccion(
+        "Guardando tu dirección privada...",
+        "#fff"
+      );
+
+      try {
+        /*
+          Si la nueva dirección será principal,
+          primero desmarca cualquier dirección
+          principal anterior de este usuario.
+        */
+        if (esPrincipal) {
+          const {
+            error: errorDesmarcarPrincipal
+          } =
+            await supabaseClient
+              .from("direcciones_mass")
+              .update({
+                es_principal: false,
+                actualizada_en:
+                  new Date().toISOString()
+              })
+              .eq("auth_user_id", user.id)
+              .eq("es_principal", true)
+              .eq("activa", true);
+
+          if (errorDesmarcarPrincipal) {
+            throw errorDesmarcarPrincipal;
+          }
+        }
+
+        const {
+          error: errorGuardarDireccion
+        } =
+          await supabaseClient
+            .from("direcciones_mass")
+            .insert({
+              auth_user_id: user.id,
+              nombre_ubicacion:
+                nombreUbicacion,
+              pais: pais,
+              direccion_linea_1:
+                direccionLinea1,
+              direccion_linea_2:
+                direccionLinea2 || null,
+              ciudad: ciudad,
+              estado: estadoRegion,
+              codigo_postal:
+                codigoPostal,
+              instrucciones_entrega:
+                instrucciones || null,
+              es_principal:
+                esPrincipal,
+              activa: true
+            });
+
+        if (errorGuardarDireccion) {
+          throw errorGuardarDireccion;
+        }
+
+        if (direccionEstado) {
+          direccionEstado.textContent =
+            "✅ Dirección preparada para servicios MASS";
+
+          direccionEstado.style.display =
+            "block";
+        }
+
+        mostrarMensajeDireccion(
+          "✅ Dirección guardada correctamente.",
+          "#39ff14"
+        );
+
+        inputDireccionLinea1.value = "";
+
+        if (inputDireccionLinea2) {
+          inputDireccionLinea2.value = "";
+        }
+
+        inputDireccionCiudad.value = "";
+        inputDireccionEstadoRegion.value = "";
+        inputDireccionCodigoPostal.value = "";
+
+        if (inputDireccionInstrucciones) {
+          inputDireccionInstrucciones.value = "";
+        }
+
+        if (inputDireccionPrincipal) {
+          inputDireccionPrincipal.checked =
+            true;
+        }
+
+        btnAgregarDireccion.textContent =
+          "📍 Agregar otra dirección";
+
+        direccionFormulario.style.display =
+          "none";
+
+        direccionInvitacion.style.display =
+          "block";
+
+        direccionInvitacion.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      } catch (error) {
+        console.error(
+          "ERROR GUARDANDO DIRECCIÓN MASS:",
+          error
+        );
+
+        mostrarMensajeDireccion(
+          "❌ No fue posible guardar la dirección. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+      } finally {
+        btnGuardarDireccion.disabled = false;
+
+        btnGuardarDireccion.textContent =
+          "💾 Guardar dirección";
+
+        btnGuardarDireccion.style.cursor =
+          "pointer";
+
+        btnGuardarDireccion.style.opacity =
+          "1";
+      }
+    };
 }  
 
 /* Abrir Foto de perfil */
