@@ -730,16 +730,70 @@ if (
       );
     }
 
-    const { error: errorEliminar } =
-      await supabaseClient.auth.mfa
-        .unenroll({
-          factorId:
-            factoresTotpVerificados[0].id
-        });
+   const factorVerificado =
+  factoresTotpVerificados[0];
 
-    if (errorEliminar) {
-      throw errorEliminar;
-    }
+const {
+  data: nivelSesion,
+  error: errorNivelSesion
+} =
+  await supabaseClient.auth.mfa
+    .getAuthenticatorAssuranceLevel();
+
+if (errorNivelSesion) {
+  throw errorNivelSesion;
+}
+
+/*
+  Para eliminar un factor verificado,
+  la sesión debe estar primero en AAL2.
+*/
+if (nivelSesion?.currentLevel !== "aal2") {
+  const codigoDesactivacion =
+    window.prompt(
+      "Escribe el código actual de seis dígitos de tu aplicación de autenticación."
+    );
+
+  if (codigoDesactivacion === null) {
+    return;
+  }
+
+  const codigoLimpio =
+    codigoDesactivacion
+      .replace(/\D/g, "")
+      .slice(0, 6);
+
+  if (!/^\d{6}$/.test(codigoLimpio)) {
+    throw new Error(
+      "Debes escribir exactamente seis dígitos."
+    );
+  }
+
+  const {
+    error: errorConfirmarIdentidad
+  } =
+    await supabaseClient.auth.mfa
+      .challengeAndVerify({
+        factorId: factorVerificado.id,
+        code: codigoLimpio
+      });
+
+  if (errorConfirmarIdentidad) {
+    throw new Error(
+      "El código de autenticación es incorrecto o venció."
+    );
+  }
+}
+
+const { error: errorEliminar } =
+  await supabaseClient.auth.mfa
+    .unenroll({
+      factorId: factorVerificado.id
+    });
+
+if (errorEliminar) {
+  throw errorEliminar;
+} 
 
     await supabaseClient.auth.refreshSession();
 
@@ -777,12 +831,29 @@ if (
       }`
     );
   } finally {
-    btnConfigurarMfa.disabled = false;
-    btnConfigurarMfa.style.cursor =
-      "pointer";
-    btnConfigurarMfa.style.opacity =
-      "1";
-  }
+  btnConfigurarMfa.disabled = false;
+
+  btnConfigurarMfa.textContent =
+    mfaConfiguradaActualmente
+      ? "🗑️ Desactivar verificación"
+      : "🔐 Configurar verificación";
+
+  btnConfigurarMfa.style.borderColor =
+    mfaConfiguradaActualmente
+      ? "#ff5b5b"
+      : "#39ff14";
+
+  btnConfigurarMfa.style.color =
+    mfaConfiguradaActualmente
+      ? "#ff8a8a"
+      : "#fff";
+
+  btnConfigurarMfa.style.cursor =
+    "pointer";
+
+  btnConfigurarMfa.style.opacity =
+    "1";
+}
 
   return;
 }
