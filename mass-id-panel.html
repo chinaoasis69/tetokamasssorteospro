@@ -350,7 +350,7 @@
         "
       >
         Prepara tu cuenta para futuros servicios
-        de entrega, recolección y
+        de entrega, recolección de
         <strong style="color:#39ff14;">
           TE-TO-KA MASS RUTA
         </strong>.
@@ -416,7 +416,382 @@
   >
     ✅ Dirección preparada para servicios MASS
   </p>
-</div>  
+</div>
+
+ <!-- FORMULARIO PRIVADO DE DIRECCIÓN MASS -->
+<div
+  id="massIdDireccionFormulario"
+  style="
+    display:none;
+    margin-top:22px;
+    padding:20px;
+    border:1px solid rgba(57,255,20,.4);
+    border-radius:14px;
+    background:#141414;
+  "
+>
+  <div style="margin-bottom:18px;">
+    <h3 style="margin:0 0 7px;">
+      📍 Agregar dirección
+    </h3>
+
+    <p
+      style="
+        margin:0;
+        color:#aaa;
+        font-size:13px;
+        line-height:1.5;
+      "
+    >
+      Completa solamente la información necesaria.
+      Podrás editarla o eliminarla cuando quieras.
+    </p>
+  </div>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(220px,1fr));
+      gap:14px;
+    "
+  >
+    <label
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+        color:#ddd;
+        font-size:13px;
+        font-weight:bold;
+      "
+    >
+      Nombre de la ubicación
+
+      <select
+        id="massIdDireccionNombreUbicacion"
+        style="
+          width:100%;
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+        <option value="Casa">Casa</option>
+        <option value="Trabajo">Trabajo</option>
+        <option value="Otra">Otra</option>
+      </select>
+    </label>
+
+    <label
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+        color:#ddd;
+        font-size:13px;
+        font-weight:bold;
+      "
+    >
+      País
+
+      <input
+        id="massIdDireccionPais"
+        type="text"
+        value="Estados Unidos"
+        autocomplete="country-name"
+        maxlength="80"
+        style="
+          width:100%;
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </label>
+  </div>
+
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-top:14px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Dirección
+
+    <input
+      id="massIdDireccionLinea1"
+      type="text"
+      autocomplete="street-address"
+      maxlength="160"
+      placeholder="Número y nombre de la calle"
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+      "
+    >
+  </label>
+
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-top:14px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Apartamento, unidad o referencia
+    <span style="color:#888; font-weight:normal;">
+      Opcional
+    </span>
+
+    <input
+      id="massIdDireccionLinea2"
+      type="text"
+      maxlength="160"
+      placeholder="Apartamento, unidad, edificio, etc."
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+      "
+    >
+  </label>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(180px,1fr));
+      gap:14px;
+      margin-top:14px;
+    "
+  >
+    <label
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+        color:#ddd;
+        font-size:13px;
+        font-weight:bold;
+      "
+    >
+      Ciudad
+
+      <input
+        id="massIdDireccionCiudad"
+        type="text"
+        autocomplete="address-level2"
+        maxlength="100"
+        style="
+          width:100%;
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+        color:#ddd;
+        font-size:13px;
+        font-weight:bold;
+      "
+    >
+      Estado o región
+
+      <input
+        id="massIdDireccionEstadoRegion"
+        type="text"
+        autocomplete="address-level1"
+        maxlength="100"
+        style="
+          width:100%;
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:7px;
+        color:#ddd;
+        font-size:13px;
+        font-weight:bold;
+      "
+    >
+      Código postal
+
+      <input
+        id="massIdDireccionCodigoPostal"
+        type="text"
+        inputmode="text"
+        autocomplete="postal-code"
+        maxlength="20"
+        style="
+          width:100%;
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </label>
+  </div>
+
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-top:14px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Instrucciones para entrega
+    <span style="color:#888; font-weight:normal;">
+      Opcional
+    </span>
+
+    <textarea
+      id="massIdDireccionInstrucciones"
+      maxlength="500"
+      rows="3"
+      placeholder="Portón, referencia, lugar seguro, etc."
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        resize:vertical;
+        box-sizing:border-box;
+      "
+    ></textarea>
+  </label>
+
+  <label
+    style="
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:16px;
+      padding:12px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      color:#ddd;
+      font-size:13px;
+      cursor:pointer;
+    "
+  >
+    <input
+      id="massIdDireccionPrincipal"
+      type="checkbox"
+      checked
+    >
+
+    Usar como mi dirección principal
+  </label>
+
+  <div
+    id="massIdDireccionMensajeFormulario"
+    style="
+      display:none;
+      margin-top:14px;
+      font-size:14px;
+      line-height:1.5;
+    "
+  ></div>
+
+  <div
+    style="
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    "
+  >
+    <button
+      id="btnGuardarDireccionMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:200px;
+        padding:12px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      💾 Guardar dirección
+    </button>
+
+    <button
+      id="btnCancelarDireccionMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:160px;
+        padding:12px 16px;
+        border:1px solid #666;
+        border-radius:10px;
+        background:#242424;
+        color:#ddd;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      Ahora no
+    </button>
+  </div>
+</div>   
   </div>
 
   <!-- FOTO DE PERFIL -->
