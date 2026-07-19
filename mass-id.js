@@ -175,7 +175,61 @@ const claveMfaManual = document.getElementById(
   "massIdMfaClaveManual"
 );
 
-let factorMfaId = null;  
+let factorMfaId = null;
+
+async function eliminarFactoresMfaPendientes() {
+  const {
+    data: factores,
+    error: errorFactores
+  } =
+    await supabaseClient.auth.mfa
+      .listFactors();
+
+  if (errorFactores) {
+    throw errorFactores;
+  }
+
+  const listaFactores =
+    Array.isArray(factores?.all)
+      ? factores.all
+      : [
+          ...(
+            Array.isArray(factores?.totp)
+              ? factores.totp
+              : []
+          ),
+          ...(
+            Array.isArray(factores?.phone)
+              ? factores.phone
+              : []
+          )
+        ];
+
+  const factoresPendientes =
+    listaFactores.filter((factor) => {
+      const tipoFactor =
+        factor.factor_type ||
+        factor.factorType ||
+        factor.type;
+
+      return (
+        tipoFactor === "totp" &&
+        factor.status === "unverified"
+      );
+    });
+
+  for (const factor of factoresPendientes) {
+    const { error: errorEliminar } =
+      await supabaseClient.auth.mfa
+        .unenroll({
+          factorId: factor.id
+        });
+
+    if (errorEliminar) {
+      throw errorEliminar;
+    }
+  }
+}  
 
 function cerrarPanelConfiguracionMfa() {
   if (panelMfaConfiguracion) {
@@ -593,6 +647,10 @@ if (
         claveMfaManual.textContent =
           "Generando clave...";
       }
+
+     factorMfaId = null;
+
+await eliminarFactoresMfaPendientes(); 
 
       const {
         data: datosEnrolamiento,
