@@ -9068,12 +9068,118 @@ async function eliminarSuscripcionBilling(id){
     mostrarBillingSuperAdmin();
 }
 
-function abrirAccesoV2(){
+async function abrirAccesoV2() {
+  const acceso =
+    document.getElementById("accesoV2");
 
-    document.getElementById("accesoV2").style.display="block";
+  if (!acceso) {
+    return;
+  }
 
+  function limpiarSesionVisualMass() {
+    localStorage.removeItem("mass_telefono");
+    localStorage.removeItem("mass_user");
+    localStorage.removeItem(
+      "mass_auth_user_id"
+    );
+    localStorage.removeItem("mass_email");
+
+    const sesionActivaBox =
+      document.getElementById(
+        "sesionActivaBox"
+      );
+
+    if (sesionActivaBox) {
+      sesionActivaBox.style.display =
+        "none";
+    }
+  }
+
+  try {
+    const {
+      data: { session },
+      error: errorSesion
+    } =
+      await supabaseClient.auth
+        .getSession();
+
+    if (errorSesion) {
+      throw errorSesion;
+    }
+
+    /*
+      Sin sesión válida:
+      muestra normalmente el menú de acceso.
+    */
+    if (!session?.user) {
+      limpiarSesionVisualMass();
+
+      acceso.style.display = "block";
+      regresarMenuAccesoV2();
+      return;
+    }
+
+    const {
+      data: nivelMfa,
+      error: errorNivelMfa
+    } =
+      await supabaseClient.auth.mfa
+        .getAuthenticatorAssuranceLevel();
+
+    if (errorNivelMfa) {
+      throw errorNivelMfa;
+    }
+
+    const mfaPendiente =
+      nivelMfa?.currentLevel !== "aal2" &&
+      nivelMfa?.nextLevel === "aal2";
+
+    /*
+      Existe sesión, pero todavía falta MFA:
+      muestra solamente el desafío de seis dígitos.
+    */
+    if (mfaPendiente) {
+      acceso.style.display = "block";
+
+      const menuAcceso =
+        document.getElementById(
+          "menuAccesoV2"
+        );
+
+      if (menuAcceso) {
+        menuAcceso.style.display =
+          "none";
+      }
+
+      const accesoMfaAprobado =
+        await solicitarMfaLoginMassId();
+
+      if (!accesoMfaAprobado) {
+        limpiarSesionVisualMass();
+        regresarMenuAccesoV2();
+        return;
+      }
+    }
+
+    /*
+      Sesión válida y seguridad completa:
+      no abre el modal de acceso.
+    */
+    acceso.style.display = "none";
+    mostrarSesionActiva();
+  } catch (error) {
+    console.error(
+      "ERROR RESTAURANDO SESIÓN MASS ID:",
+      error
+    );
+
+    await supabaseClient.auth.signOut();
+
+    limpiarSesionVisualMass();
+
+    acceso.style.display = "block";
     regresarMenuAccesoV2();
-
+  }
 }
 
 function cerrarAccesoV2(){
