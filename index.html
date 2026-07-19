@@ -9166,7 +9166,21 @@ async function abrirAccesoV2() {
       no abre el modal de acceso.
     */
     acceso.style.display = "none";
-    mostrarSesionActiva();
+
+/*
+  Reconstruye la página pública después
+  de restaurar correctamente la sesión.
+  Esta función también vuelve a cargar
+  los patrocinadores de plataforma.
+*/
+if (
+  typeof cargarRifasPublicas ===
+  "function"
+) {
+  await cargarRifasPublicas();
+}
+
+mostrarSesionActiva();
   } catch (error) {
     console.error(
       "ERROR RESTAURANDO SESIÓN MASS ID:",
