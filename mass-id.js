@@ -111,6 +111,31 @@ const infoNumero = document.getElementById("massIdInfoNumero");
 const infoTelefono = document.getElementById("massIdInfoTelefono");
 const infoCorreo = document.getElementById("massIdInfoCorreo");
 
+const direccionInvitacion =
+  document.getElementById(
+    "massIdDireccionInvitacion"
+  );
+
+const direccionFormulario =
+  document.getElementById(
+    "massIdDireccionFormulario"
+  );
+
+const btnAgregarDireccion =
+  document.getElementById(
+    "btnAgregarDireccionMassId"
+  );
+
+const btnCancelarDireccion =
+  document.getElementById(
+    "btnCancelarDireccionMassId"
+  );
+
+const mensajeDireccionFormulario =
+  document.getElementById(
+    "massIdDireccionMensajeFormulario"
+  );  
+
 const seccionFotoPerfil = document.getElementById(
   "massIdFotoPerfil"
 );
@@ -494,6 +519,50 @@ if (
     });
   };
 }
+
+/* Abrir formulario opcional de dirección */
+if (
+  btnAgregarDireccion &&
+  direccionInvitacion &&
+  direccionFormulario
+) {
+  btnAgregarDireccion.onclick = function () {
+    direccionInvitacion.style.display = "none";
+    direccionFormulario.style.display = "block";
+
+    if (mensajeDireccionFormulario) {
+      mensajeDireccionFormulario.textContent = "";
+      mensajeDireccionFormulario.style.display = "none";
+    }
+
+    direccionFormulario.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Cancelar formulario opcional de dirección */
+if (
+  btnCancelarDireccion &&
+  direccionInvitacion &&
+  direccionFormulario
+) {
+  btnCancelarDireccion.onclick = function () {
+    direccionFormulario.style.display = "none";
+    direccionInvitacion.style.display = "block";
+
+    if (mensajeDireccionFormulario) {
+      mensajeDireccionFormulario.textContent = "";
+      mensajeDireccionFormulario.style.display = "none";
+    }
+
+    direccionInvitacion.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}  
 
 /* Abrir Foto de perfil */
 if (
