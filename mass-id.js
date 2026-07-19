@@ -231,9 +231,45 @@ async function eliminarFactoresMfaPendientes() {
   }
 }  
 
-function cerrarPanelConfiguracionMfa() {
+async function cerrarPanelConfiguracionMfa() {
+  /*
+    Si existe un factor pendiente generado durante
+    esta sesión, lo elimina antes de cerrar.
+  */
+  if (factorMfaId) {
+    const idFactorPendiente = factorMfaId;
+
+    factorMfaId = null;
+
+    const { error: errorDescartarFactor } =
+      await supabaseClient.auth.mfa.unenroll({
+        factorId: idFactorPendiente
+      });
+
+    if (errorDescartarFactor) {
+      console.warn(
+        "NO SE PUDO DESCARTAR EL FACTOR MFA:",
+        errorDescartarFactor
+      );
+    }
+  }
+
   if (panelMfaConfiguracion) {
     panelMfaConfiguracion.style.display = "none";
+  }
+
+  if (qrMfaImagen) {
+    qrMfaImagen.removeAttribute("src");
+    qrMfaImagen.style.display = "none";
+  }
+
+  if (qrMfaPendiente) {
+    qrMfaPendiente.textContent = "QR pendiente";
+    qrMfaPendiente.style.display = "inline";
+  }
+
+  if (claveMfaManual) {
+    claveMfaManual.textContent = "Clave pendiente";
   }
 
   if (inputCodigoMfa) {
@@ -244,7 +280,7 @@ function cerrarPanelConfiguracionMfa() {
     mensajeMfa.textContent = "";
     mensajeMfa.style.display = "none";
   }
-}  
+} 
 
 const btnSeleccionarFoto = document.getElementById(
   "btnSeleccionarFotoMassId"
@@ -505,7 +541,7 @@ if (
   seccionSeguridad
 ) {
   btnSeguridad.onclick = async function () {
-    cerrarPanelConfiguracionMfa();
+    await cerrarPanelConfiguracionMfa();
     
   if (seguridadCorreoEstado) {
   const correoConfirmado = Boolean(
@@ -754,8 +790,8 @@ if (
   btnCancelarMfa &&
   panelMfaConfiguracion
 ) {
-  btnCancelarMfa.onclick = function () {
-    cerrarPanelConfiguracionMfa();
+  btnCancelarMfa.onclick = async function () {
+  await cerrarPanelConfiguracionMfa();
 
     if (seccionSeguridad) {
       seccionSeguridad.scrollIntoView({
@@ -772,8 +808,8 @@ if (
   menuPrincipal &&
   seccionSeguridad
 ) {
-  btnVolverSeguridad.onclick = function () {
-    cerrarPanelConfiguracionMfa();
+  btnVolverSeguridad.onclick = async function () {
+  await cerrarPanelConfiguracionMfa();
     
     seccionSeguridad.style.display = "none";
 
