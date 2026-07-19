@@ -155,6 +155,10 @@ const btnCancelarMfa = document.getElementById(
   "btnCancelarMfaMassId"
 );
 
+const btnConfirmarMfa = document.getElementById(
+  "btnConfirmarMfaMassId"
+);  
+
 const inputCodigoMfa = document.getElementById(
   "massIdMfaCodigoConfirmacion"
 );
@@ -784,6 +788,139 @@ await eliminarFactoresMfaPendientes();
     }
   };
 }
+
+/* Confirmar y activar MFA */
+if (
+  btnConfirmarMfa &&
+  inputCodigoMfa &&
+  panelMfaConfiguracion
+) {
+  btnConfirmarMfa.onclick = async function () {
+    const codigoMfa =
+      inputCodigoMfa.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+
+    inputCodigoMfa.value = codigoMfa;
+
+    if (!factorMfaId) {
+      if (mensajeMfa) {
+        mensajeMfa.textContent =
+          "Primero genera y escanea un código QR.";
+
+        mensajeMfa.style.display = "block";
+        mensajeMfa.style.color = "#ffbf47";
+      }
+
+      return;
+    }
+
+    if (!/^\d{6}$/.test(codigoMfa)) {
+      if (mensajeMfa) {
+        mensajeMfa.textContent =
+          "Escribe exactamente los seis dígitos de tu aplicación.";
+
+        mensajeMfa.style.display = "block";
+        mensajeMfa.style.color = "#ffbf47";
+      }
+
+      inputCodigoMfa.focus();
+      return;
+    }
+
+    btnConfirmarMfa.disabled = true;
+    btnConfirmarMfa.textContent =
+      "⏳ Verificando código...";
+
+    inputCodigoMfa.disabled = true;
+
+    if (mensajeMfa) {
+      mensajeMfa.textContent =
+        "Verificando el código de seguridad...";
+
+      mensajeMfa.style.display = "block";
+      mensajeMfa.style.color = "#fff";
+    }
+
+    try {
+      const {
+        error: errorVerificacion
+      } =
+        await supabaseClient.auth.mfa
+          .challengeAndVerify({
+            factorId: factorMfaId,
+            code: codigoMfa
+          });
+
+      if (errorVerificacion) {
+        throw errorVerificacion;
+      }
+
+      /*
+        Evita que cerrarPanelConfiguracionMfa()
+        elimine el factor que ya fue activado.
+      */
+      factorMfaId = null;
+
+      if (seguridadMfaEstado) {
+        seguridadMfaEstado.textContent =
+          "Configurada y activa ✅";
+
+        seguridadMfaEstado.style.color =
+          "#39ff14";
+      }
+
+      if (btnConfigurarMfa) {
+        btnConfigurarMfa.disabled = true;
+
+        btnConfigurarMfa.textContent =
+          "✅ Verificación configurada";
+
+        btnConfigurarMfa.style.cursor =
+          "not-allowed";
+
+        btnConfigurarMfa.style.opacity =
+          ".75";
+      }
+
+      await cerrarPanelConfiguracionMfa();
+
+      if (seccionSeguridad) {
+        seccionSeguridad.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+
+      alert(
+        "✅ La verificación en dos pasos fue activada correctamente."
+      );
+    } catch (error) {
+      console.error(
+        "ERROR ACTIVANDO MFA:",
+        error
+      );
+
+      if (mensajeMfa) {
+        mensajeMfa.textContent =
+          "El código es incorrecto o venció. Genera uno nuevo en tu aplicación e inténtalo otra vez.";
+
+        mensajeMfa.style.display = "block";
+        mensajeMfa.style.color = "#ff5b5b";
+      }
+
+      inputCodigoMfa.value = "";
+      inputCodigoMfa.focus();
+    } finally {
+      btnConfirmarMfa.disabled = false;
+
+      btnConfirmarMfa.textContent =
+        "✅ Confirmar y activar";
+
+      inputCodigoMfa.disabled = false;
+    }
+  };
+}  
 
 /* Cancelar configuración MFA */
 if (
