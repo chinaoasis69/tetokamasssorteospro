@@ -418,6 +418,95 @@
   </p>
 </div>
 
+<!-- DIRECCIONES GUARDADAS DEL USUARIO -->
+<div
+  id="massIdDireccionesGuardadas"
+  style="
+    display:none;
+    margin-top:18px;
+    padding:18px;
+    border:1px solid rgba(57,255,20,.4);
+    border-radius:14px;
+    background:#141414;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    "
+  >
+    <div>
+      <h3
+        style="
+          margin:0 0 6px;
+          font-size:19px;
+        "
+      >
+        📍 Tus direcciones guardadas
+      </h3>
+
+      <p
+        style="
+          margin:0;
+          color:#aaa;
+          font-size:13px;
+          line-height:1.5;
+        "
+      >
+        Estas ubicaciones son privadas y solamente
+        están disponibles dentro de tu cuenta MASS.
+      </p>
+    </div>
+
+    <span
+      id="massIdDireccionesCantidad"
+      style="
+        padding:7px 11px;
+        border:1px solid rgba(57,255,20,.35);
+        border-radius:20px;
+        background:#101010;
+        color:#39ff14;
+        font-size:12px;
+        font-weight:bold;
+      "
+    >
+      0 ubicaciones
+    </span>
+  </div>
+
+  <div
+    id="massIdDireccionesMensaje"
+    style="
+      display:none;
+      margin-bottom:14px;
+      padding:11px 13px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.5;
+    "
+  >
+    Cargando direcciones...
+  </div>
+
+  <div
+    id="massIdDireccionesLista"
+    style="
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(240px,1fr));
+      gap:14px;
+    "
+  ></div>
+</div>    
+
  <!-- FORMULARIO PRIVADO DE DIRECCIÓN MASS -->
 <div
   id="massIdDireccionFormulario"
