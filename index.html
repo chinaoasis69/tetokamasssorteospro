@@ -9182,10 +9182,70 @@ async function abrirAccesoV2() {
   }
 }
 
-function cerrarAccesoV2(){
+async function cerrarAccesoV2() {
+  const acceso =
+    document.getElementById("accesoV2");
 
-    document.getElementById("accesoV2").style.display="none";
+  const panelMfaLogin =
+    document.getElementById(
+      "formMfaLoginMassId"
+    );
 
+  const btnCancelarMfaLogin =
+    document.getElementById(
+      "btnCancelarMfaLoginMassId"
+    );
+
+  const mfaVisible =
+    panelMfaLogin &&
+    window.getComputedStyle(
+      panelMfaLogin
+    ).display !== "none";
+
+  /*
+    Si la X se presiona durante el desafío MFA,
+    debe ejecutar la misma cancelación segura.
+  */
+  if (mfaVisible) {
+    if (btnCancelarMfaLogin) {
+      btnCancelarMfaLogin.click();
+      return;
+    }
+
+    await supabaseClient.auth.signOut();
+
+    localStorage.removeItem("mass_telefono");
+    localStorage.removeItem("mass_user");
+    localStorage.removeItem(
+      "mass_auth_user_id"
+    );
+    localStorage.removeItem("mass_email");
+
+    const sesionActivaBox =
+      document.getElementById(
+        "sesionActivaBox"
+      );
+
+    if (sesionActivaBox) {
+      sesionActivaBox.style.display =
+        "none";
+    }
+
+    if (acceso) {
+      acceso.style.display = "none";
+    }
+
+    location.reload();
+    return;
+  }
+
+  /*
+    Fuera del desafío MFA,
+    la X funciona normalmente.
+  */
+  if (acceso) {
+    acceso.style.display = "none";
+  }
 }
 
 function regresarMenuAccesoV2(){
