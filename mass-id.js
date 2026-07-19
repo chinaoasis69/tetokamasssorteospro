@@ -180,6 +180,7 @@ const claveMfaManual = document.getElementById(
 );
 
 let factorMfaId = null;
+let mfaConfiguradaActualmente = false;  
 
 async function eliminarFactoresMfaPendientes() {
   const {
@@ -599,6 +600,34 @@ if (seguridadMfaEstado) {
       nivelActual === "aal2" ||
       siguienteNivel === "aal2";
 
+   mfaConfiguradaActualmente =
+  mfaConfigurada;
+
+if (btnConfigurarMfa) {
+  btnConfigurarMfa.disabled = false;
+
+  btnConfigurarMfa.textContent =
+    mfaConfigurada
+      ? "🗑️ Desactivar verificación"
+      : "🔐 Configurar verificación";
+
+  btnConfigurarMfa.style.borderColor =
+    mfaConfigurada
+      ? "#ff5b5b"
+      : "#39ff14";
+
+  btnConfigurarMfa.style.color =
+    mfaConfigurada
+      ? "#ff8a8a"
+      : "#fff";
+
+  btnConfigurarMfa.style.cursor =
+    "pointer";
+
+  btnConfigurarMfa.style.opacity =
+    "1";
+} 
+
     seguridadMfaEstado.textContent =
       nivelActual === "aal2"
         ? "Configurada y activa ✅"
@@ -637,6 +666,127 @@ if (
   panelMfaConfiguracion
 ) {
   btnConfigurarMfa.onclick = async function () {
+
+   if (mfaConfiguradaActualmente) {
+  const confirmarDesactivacion =
+    window.confirm(
+      "¿Deseas desactivar la verificación en dos pasos?"
+    );
+
+  if (!confirmarDesactivacion) {
+    return;
+  }
+
+  btnConfigurarMfa.disabled = true;
+  btnConfigurarMfa.textContent =
+    "⏳ Desactivando...";
+
+  try {
+    const {
+      data: factores,
+      error: errorFactores
+    } =
+      await supabaseClient.auth.mfa
+        .listFactors();
+
+    if (errorFactores) {
+      throw errorFactores;
+    }
+
+    const listaFactores =
+      Array.isArray(factores?.all)
+        ? factores.all
+        : [
+            ...(
+              Array.isArray(factores?.totp)
+                ? factores.totp
+                : []
+            ),
+            ...(
+              Array.isArray(factores?.phone)
+                ? factores.phone
+                : []
+            )
+          ];
+
+    const factoresTotpVerificados =
+      listaFactores.filter((factor) => {
+        const tipoFactor =
+          factor.factor_type ||
+          factor.factorType ||
+          factor.type;
+
+        return (
+          tipoFactor === "totp" &&
+          factor.status === "verified"
+        );
+      });
+
+    if (factoresTotpVerificados.length !== 1) {
+      throw new Error(
+        factoresTotpVerificados.length === 0
+          ? "No se encontró un factor verificado."
+          : "Existe más de un factor verificado."
+      );
+    }
+
+    const { error: errorEliminar } =
+      await supabaseClient.auth.mfa
+        .unenroll({
+          factorId:
+            factoresTotpVerificados[0].id
+        });
+
+    if (errorEliminar) {
+      throw errorEliminar;
+    }
+
+    await supabaseClient.auth.refreshSession();
+
+    mfaConfiguradaActualmente = false;
+
+    if (seguridadMfaEstado) {
+      seguridadMfaEstado.textContent =
+        "No configurada";
+
+      seguridadMfaEstado.style.color =
+        "#ffbf47";
+    }
+
+    btnConfigurarMfa.textContent =
+      "🔐 Configurar verificación";
+
+    btnConfigurarMfa.style.borderColor =
+      "#39ff14";
+
+    btnConfigurarMfa.style.color =
+      "#fff";
+
+    alert(
+      "✅ La verificación en dos pasos fue desactivada."
+    );
+  } catch (error) {
+    console.error(
+      "ERROR DESACTIVANDO MFA:",
+      error
+    );
+
+    alert(
+      `❌ No fue posible desactivar la verificación: ${
+        error.message || "Error desconocido"
+      }`
+    );
+  } finally {
+    btnConfigurarMfa.disabled = false;
+    btnConfigurarMfa.style.cursor =
+      "pointer";
+    btnConfigurarMfa.style.opacity =
+      "1";
+  }
+
+  return;
+}
+    
     if (inputCodigoMfa) {
       inputCodigoMfa.value = "";
     }
