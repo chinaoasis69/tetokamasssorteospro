@@ -141,6 +141,26 @@ const direccionEstado =
     "massIdDireccionEstado"
   );
 
+const panelDireccionesGuardadas =
+  document.getElementById(
+    "massIdDireccionesGuardadas"
+  );
+
+const contadorDirecciones =
+  document.getElementById(
+    "massIdDireccionesCantidad"
+  );
+
+const mensajeDirecciones =
+  document.getElementById(
+    "massIdDireccionesMensaje"
+  );
+
+const listaDirecciones =
+  document.getElementById(
+    "massIdDireccionesLista"
+  );  
+
 const btnGuardarDireccion =
   document.getElementById(
     "btnGuardarDireccionMassId"
@@ -517,6 +537,330 @@ if (seccionFotoPerfil) {
 
 if (seccionSeguridad) {
   seccionSeguridad.style.display = "none";
+}
+
+/* Cargar direcciones privadas del usuario */
+async function cargarDireccionesMass() {
+  if (
+    !panelDireccionesGuardadas ||
+    !contadorDirecciones ||
+    !mensajeDirecciones ||
+    !listaDirecciones
+  ) {
+    return;
+  }
+
+  panelDireccionesGuardadas.style.display =
+    "block";
+
+  contadorDirecciones.textContent =
+    "Consultando...";
+
+  mensajeDirecciones.textContent =
+    "Cargando direcciones...";
+
+  mensajeDirecciones.style.color =
+    "#bbb";
+
+  mensajeDirecciones.style.display =
+    "block";
+
+  listaDirecciones.replaceChildren();
+
+  try {
+    const {
+      data: direcciones,
+      error: errorDirecciones
+    } =
+      await supabaseClient
+        .from("direcciones_mass")
+        .select(
+          [
+            "id",
+            "nombre_ubicacion",
+            "pais",
+            "direccion_linea_1",
+            "direccion_linea_2",
+            "ciudad",
+            "estado",
+            "codigo_postal",
+            "instrucciones_entrega",
+            "es_principal",
+            "activa",
+            "creada_en"
+          ].join(",")
+        )
+        .eq("auth_user_id", user.id)
+        .eq("activa", true)
+        .order(
+          "es_principal",
+          { ascending: false }
+        )
+        .order(
+          "creada_en",
+          { ascending: true }
+        );
+
+    if (errorDirecciones) {
+      throw errorDirecciones;
+    }
+
+    const direccionesActivas =
+      Array.isArray(direcciones)
+        ? direcciones
+        : [];
+
+    const cantidad =
+      direccionesActivas.length;
+
+    contadorDirecciones.textContent =
+      cantidad === 1
+        ? "1 ubicación"
+        : cantidad + " ubicaciones";
+
+    /*
+      Si todavía no hay direcciones,
+      solamente muestra la invitación.
+    */
+    if (cantidad === 0) {
+      panelDireccionesGuardadas.style.display =
+        "none";
+
+      mensajeDirecciones.style.display =
+        "none";
+
+      if (direccionEstado) {
+        direccionEstado.style.display =
+          "none";
+      }
+
+      if (btnAgregarDireccion) {
+        btnAgregarDireccion.textContent =
+          "📍 Agregar dirección opcional";
+      }
+
+      return;
+    }
+
+    mensajeDirecciones.style.display =
+      "none";
+
+    if (direccionEstado) {
+      direccionEstado.textContent =
+        "✅ Dirección preparada para servicios MASS";
+
+      direccionEstado.style.display =
+        "block";
+    }
+
+    if (btnAgregarDireccion) {
+      btnAgregarDireccion.textContent =
+        "📍 Agregar otra dirección";
+    }
+
+    direccionesActivas.forEach(
+      function (direccion) {
+        const tarjeta =
+          document.createElement("article");
+
+        tarjeta.style.cssText =
+          "padding:15px;" +
+          "border:1px solid " +
+          (
+            direccion.es_principal
+              ? "rgba(57,255,20,.65)"
+              : "#444"
+          ) +
+          ";" +
+          "border-radius:12px;" +
+          "background:#101010;" +
+          "box-sizing:border-box;";
+
+        const encabezado =
+          document.createElement("div");
+
+        encabezado.style.cssText =
+          "display:flex;" +
+          "align-items:flex-start;" +
+          "justify-content:space-between;" +
+          "gap:10px;" +
+          "margin-bottom:10px;";
+
+        const titulo =
+          document.createElement("strong");
+
+        titulo.textContent =
+          "📍 " +
+          (
+            direccion.nombre_ubicacion ||
+            "Ubicación"
+          );
+
+        titulo.style.cssText =
+          "color:#fff;" +
+          "font-size:16px;";
+
+        encabezado.appendChild(titulo);
+
+        if (direccion.es_principal) {
+          const distintivo =
+            document.createElement("span");
+
+          distintivo.textContent =
+            "Principal";
+
+          distintivo.style.cssText =
+            "padding:5px 8px;" +
+            "border:1px solid " +
+            "rgba(57,255,20,.45);" +
+            "border-radius:15px;" +
+            "color:#39ff14;" +
+            "font-size:11px;" +
+            "font-weight:bold;" +
+            "white-space:nowrap;";
+
+          encabezado.appendChild(
+            distintivo
+          );
+        }
+
+        tarjeta.appendChild(encabezado);
+
+        const lineaPrincipal =
+          document.createElement("p");
+
+        lineaPrincipal.textContent =
+          direccion.direccion_linea_1 ||
+          "Dirección no disponible";
+
+        lineaPrincipal.style.cssText =
+          "margin:0;" +
+          "color:#fff;" +
+          "font-size:14px;" +
+          "font-weight:bold;" +
+          "line-height:1.5;";
+
+        tarjeta.appendChild(
+          lineaPrincipal
+        );
+
+        if (direccion.direccion_linea_2) {
+          const lineaSecundaria =
+            document.createElement("p");
+
+          lineaSecundaria.textContent =
+            direccion.direccion_linea_2;
+
+          lineaSecundaria.style.cssText =
+            "margin:4px 0 0;" +
+            "color:#bbb;" +
+            "font-size:13px;" +
+            "line-height:1.5;";
+
+          tarjeta.appendChild(
+            lineaSecundaria
+          );
+        }
+
+        const ciudadEstado =
+          [
+            direccion.ciudad,
+            direccion.estado
+          ]
+            .filter(Boolean)
+            .join(", ");
+
+        const localidad =
+          [
+            ciudadEstado,
+            direccion.codigo_postal
+          ]
+            .filter(Boolean)
+            .join(" ");
+
+        if (localidad) {
+          const textoLocalidad =
+            document.createElement("p");
+
+          textoLocalidad.textContent =
+            localidad;
+
+          textoLocalidad.style.cssText =
+            "margin:6px 0 0;" +
+            "color:#39ff14;" +
+            "font-size:13px;" +
+            "font-weight:bold;" +
+            "line-height:1.5;";
+
+          tarjeta.appendChild(
+            textoLocalidad
+          );
+        }
+
+        if (direccion.pais) {
+          const textoPais =
+            document.createElement("p");
+
+          textoPais.textContent =
+            direccion.pais;
+
+          textoPais.style.cssText =
+            "margin:4px 0 0;" +
+            "color:#aaa;" +
+            "font-size:13px;" +
+            "line-height:1.5;";
+
+          tarjeta.appendChild(
+            textoPais
+          );
+        }
+
+        if (
+          direccion.instrucciones_entrega
+        ) {
+          const instrucciones =
+            document.createElement("p");
+
+          instrucciones.textContent =
+            "🚚 " +
+            direccion.instrucciones_entrega;
+
+          instrucciones.style.cssText =
+            "margin:10px 0 0;" +
+            "padding-top:10px;" +
+            "border-top:1px solid #333;" +
+            "color:#bbb;" +
+            "font-size:12px;" +
+            "line-height:1.5;";
+
+          tarjeta.appendChild(
+            instrucciones
+          );
+        }
+
+        listaDirecciones.appendChild(
+          tarjeta
+        );
+      }
+    );
+  } catch (error) {
+    console.error(
+      "ERROR CARGANDO DIRECCIONES MASS:",
+      error
+    );
+
+    contadorDirecciones.textContent =
+      "No disponible";
+
+    mensajeDirecciones.textContent =
+      "❌ No fue posible cargar tus direcciones.";
+
+    mensajeDirecciones.style.color =
+      "#ff5b5b";
+
+    mensajeDirecciones.style.display =
+      "block";
+  }
 }  
 
 /* Abrir Información personal */
@@ -525,7 +869,7 @@ if (
   menuPrincipal &&
   seccionInformacion
 ) {
-  btnInformacionPersonal.onclick = function () {
+  btnInformacionPersonal.onclick = async function () {
     if (infoNombre) {
       infoNombre.textContent =
         perfil.nombre || "No disponible";
@@ -550,6 +894,8 @@ if (
 
     menuPrincipal.style.display = "none";
     seccionInformacion.style.display = "block";
+
+   await cargarDireccionesMass(); 
 
     seccionInformacion.scrollIntoView({
       behavior: "smooth",
@@ -846,6 +1192,8 @@ if (
 
         direccionInvitacion.style.display =
           "block";
+
+       await cargarDireccionesMass(); 
 
         direccionInvitacion.scrollIntoView({
           behavior: "smooth",
