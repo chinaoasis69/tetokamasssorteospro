@@ -972,6 +972,214 @@ async function cargarDireccionesMass() {
           "font-weight:bold;" +
           "cursor:pointer;";
 
+              btnEliminarDireccion.onclick =
+          async function () {
+            const nombreDireccion =
+              direccion.nombre_ubicacion ||
+              "esta ubicación";
+
+            const confirmarEliminacion =
+              window.confirm(
+                "¿Deseas eliminar la dirección " +
+                '"' +
+                nombreDireccion +
+                '"?'
+              );
+
+            if (!confirmarEliminacion) {
+              return;
+            }
+
+            const textoOriginal =
+              btnEliminarDireccion.textContent;
+
+            btnEliminarDireccion.disabled =
+              true;
+
+            btnEditarDireccion.disabled =
+              true;
+
+            btnEliminarDireccion.textContent =
+              "⏳ Eliminando...";
+
+            btnEliminarDireccion.style.cursor =
+              "not-allowed";
+
+            btnEliminarDireccion.style.opacity =
+              ".7";
+
+            try {
+              const eraPrincipal =
+                Boolean(
+                  direccion.es_principal
+                );
+
+              const direccionReemplazo =
+                eraPrincipal
+                  ? direccionesActivas.find(
+                      function (otraDireccion) {
+                        return (
+                          otraDireccion.id !==
+                          direccion.id
+                        );
+                      }
+                    )
+                  : null;
+
+              /*
+                Si se elimina la principal y existe
+                otra dirección, primero liberamos
+                la marca de principal.
+              */
+              if (
+                eraPrincipal &&
+                direccionReemplazo?.id
+              ) {
+                const {
+                  error:
+                    errorDesmarcarPrincipal
+                } =
+                  await supabaseClient
+                    .from("direcciones_mass")
+                    .update({
+                      es_principal: false,
+                      actualizada_en:
+                        new Date()
+                          .toISOString()
+                    })
+                    .eq(
+                      "id",
+                      direccion.id
+                    )
+                    .eq(
+                      "auth_user_id",
+                      user.id
+                    );
+
+                if (
+                  errorDesmarcarPrincipal
+                ) {
+                  throw errorDesmarcarPrincipal;
+                }
+
+                const {
+                  error:
+                    errorAsignarPrincipal
+                } =
+                  await supabaseClient
+                    .from("direcciones_mass")
+                    .update({
+                      es_principal: true,
+                      actualizada_en:
+                        new Date()
+                          .toISOString()
+                    })
+                    .eq(
+                      "id",
+                      direccionReemplazo.id
+                    )
+                    .eq(
+                      "auth_user_id",
+                      user.id
+                    );
+
+                if (errorAsignarPrincipal) {
+                  /*
+                    Si no pudimos asignar la otra,
+                    restauramos la principal original.
+                  */
+                  await supabaseClient
+                    .from("direcciones_mass")
+                    .update({
+                      es_principal: true,
+                      actualizada_en:
+                        new Date()
+                          .toISOString()
+                    })
+                    .eq(
+                      "id",
+                      direccion.id
+                    )
+                    .eq(
+                      "auth_user_id",
+                      user.id
+                    );
+
+                  throw errorAsignarPrincipal;
+                }
+              }
+
+              /*
+                Eliminación segura:
+                conserva la fila, pero la desactiva.
+              */
+              const {
+                error:
+                  errorDesactivarDireccion
+              } =
+                await supabaseClient
+                  .from("direcciones_mass")
+                  .update({
+                    activa: false,
+                    es_principal: false,
+                    actualizada_en:
+                      new Date()
+                        .toISOString()
+                  })
+                  .eq(
+                    "id",
+                    direccion.id
+                  )
+                  .eq(
+                    "auth_user_id",
+                    user.id
+                  );
+
+              if (
+                errorDesactivarDireccion
+              ) {
+                throw errorDesactivarDireccion;
+              }
+
+              if (
+                direccionEditandoId ===
+                direccion.id
+              ) {
+                direccionEditandoId = null;
+              }
+
+              await cargarDireccionesMass();
+
+              alert(
+                "✅ Dirección eliminada correctamente."
+              );
+            } catch (error) {
+              console.error(
+                "ERROR ELIMINANDO DIRECCIÓN MASS:",
+                error
+              );
+
+              alert(
+                "❌ No fue posible eliminar la dirección. Inténtalo nuevamente."
+              );
+
+              btnEliminarDireccion.disabled =
+                false;
+
+              btnEditarDireccion.disabled =
+                false;
+
+              btnEliminarDireccion.textContent =
+                textoOriginal;
+
+              btnEliminarDireccion.style.cursor =
+                "pointer";
+
+              btnEliminarDireccion.style.opacity =
+                "1";
+            }
+          };  
+
         controlesDireccion.appendChild(
           btnEditarDireccion
         );
