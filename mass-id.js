@@ -838,6 +838,76 @@ async function cargarDireccionesMass() {
           );
         }
 
+             /* Controles de la dirección */
+        const controlesDireccion =
+          document.createElement("div");
+
+        controlesDireccion.style.cssText =
+          "display:flex;" +
+          "gap:10px;" +
+          "flex-wrap:wrap;" +
+          "margin-top:14px;" +
+          "padding-top:12px;" +
+          "border-top:1px solid #333;";
+
+        const btnEditarDireccion =
+          document.createElement("button");
+
+        btnEditarDireccion.type =
+          "button";
+
+        btnEditarDireccion.textContent =
+          "✏️ Editar";
+
+        btnEditarDireccion.dataset.direccionId =
+          direccion.id;
+
+        btnEditarDireccion.style.cssText =
+          "flex:1;" +
+          "min-width:110px;" +
+          "padding:9px 12px;" +
+          "border:1px solid #39ff14;" +
+          "border-radius:9px;" +
+          "background:#1b1b1b;" +
+          "color:#fff;" +
+          "font-weight:bold;" +
+          "cursor:pointer;";
+
+        const btnEliminarDireccion =
+          document.createElement("button");
+
+        btnEliminarDireccion.type =
+          "button";
+
+        btnEliminarDireccion.textContent =
+          "🗑️ Eliminar";
+
+        btnEliminarDireccion.dataset.direccionId =
+          direccion.id;
+
+        btnEliminarDireccion.style.cssText =
+          "flex:1;" +
+          "min-width:110px;" +
+          "padding:9px 12px;" +
+          "border:1px solid #ff5b5b;" +
+          "border-radius:9px;" +
+          "background:#1b1b1b;" +
+          "color:#ff8a8a;" +
+          "font-weight:bold;" +
+          "cursor:pointer;";
+
+        controlesDireccion.appendChild(
+          btnEditarDireccion
+        );
+
+        controlesDireccion.appendChild(
+          btnEliminarDireccion
+        );
+
+        tarjeta.appendChild(
+          controlesDireccion
+        );   
+
         listaDirecciones.appendChild(
           tarjeta
         );
