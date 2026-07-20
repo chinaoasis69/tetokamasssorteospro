@@ -159,7 +159,30 @@ const inputPasswordActualCambioCorreo =
 const mensajeCambioCorreo =
   document.getElementById(
     "massIdCambiarCorreoMensaje"
-  );  
+  ); 
+
+const panelMfaCambioCorreo =
+  document.getElementById(
+    "massIdCambioCorreoMfa"
+  );
+
+const inputCodigoMfaCambioCorreo =
+  document.getElementById(
+    "massIdCodigoMfaCambioCorreo"
+  );
+
+const mensajeMfaCambioCorreo =
+  document.getElementById(
+    "massIdCambioCorreoMfaMensaje"
+  );
+
+const btnConfirmarMfaCambioCorreo =
+  document.getElementById(
+    "btnConfirmarMfaCambioCorreoMassId"
+  );
+
+let factorMfaCambioCorreoId = null;
+let nuevoCorreoPendienteCambio = "";  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1355,6 +1378,31 @@ function regresarDesdeCambioCorreo() {
     "";
 }
 
+    factorMfaCambioCorreoId = null;
+  nuevoCorreoPendienteCambio = "";
+
+  if (panelMfaCambioCorreo) {
+    panelMfaCambioCorreo.style.display =
+      "none";
+  }
+
+  if (inputCodigoMfaCambioCorreo) {
+    inputCodigoMfaCambioCorreo.value = "";
+  }
+
+  if (mensajeMfaCambioCorreo) {
+    mensajeMfaCambioCorreo.textContent =
+      "";
+
+    mensajeMfaCambioCorreo.style.display =
+      "none";
+  }
+
+  if (btnContinuarCambioCorreo) {
+    btnContinuarCambioCorreo.style.display =
+      "block";
+  }
+
   if (mensajeCambioCorreo) {
     mensajeCambioCorreo.textContent = "";
     mensajeCambioCorreo.style.display =
@@ -1398,6 +1446,32 @@ if (
   inputPasswordActualCambioCorreo.value =
     "";
 }
+
+           factorMfaCambioCorreoId = null;
+      nuevoCorreoPendienteCambio = "";
+
+      if (panelMfaCambioCorreo) {
+        panelMfaCambioCorreo.style.display =
+          "none";
+      }
+
+      if (inputCodigoMfaCambioCorreo) {
+        inputCodigoMfaCambioCorreo.value =
+          "";
+      }
+
+      if (mensajeMfaCambioCorreo) {
+        mensajeMfaCambioCorreo.textContent =
+          "";
+
+        mensajeMfaCambioCorreo.style.display =
+          "none";
+      }
+
+      if (btnContinuarCambioCorreo) {
+        btnContinuarCambioCorreo.style.display =
+          "block";
+      } 
 
       if (mensajeCambioCorreo) {
         mensajeCambioCorreo.textContent =
@@ -1669,13 +1743,108 @@ if (
           );
         }
 
-        inputPasswordActualCambioCorreo
+                inputPasswordActualCambioCorreo
           .value = "";
 
+        const {
+          data: factoresCambioCorreo,
+          error: errorFactoresCambioCorreo
+        } =
+          await supabaseClient.auth.mfa
+            .listFactors();
+
+        if (errorFactoresCambioCorreo) {
+          throw errorFactoresCambioCorreo;
+        }
+
+        const listaFactoresCambioCorreo =
+          Array.isArray(
+            factoresCambioCorreo?.all
+          )
+            ? factoresCambioCorreo.all
+            : [
+                ...(
+                  Array.isArray(
+                    factoresCambioCorreo?.totp
+                  )
+                    ? factoresCambioCorreo.totp
+                    : []
+                ),
+                ...(
+                  Array.isArray(
+                    factoresCambioCorreo?.phone
+                  )
+                    ? factoresCambioCorreo.phone
+                    : []
+                )
+              ];
+
+        const factorVerificadoCambioCorreo =
+          listaFactoresCambioCorreo.find(
+            function (factor) {
+              const tipoFactor =
+                factor.factor_type ||
+                factor.factorType ||
+                factor.type;
+
+              return (
+                tipoFactor === "totp" &&
+                factor.status === "verified"
+              );
+            }
+          );
+
+        nuevoCorreoPendienteCambio =
+          nuevoCorreo;
+
+        if (
+          !factorVerificadoCambioCorreo?.id
+        ) {
+          mostrarMensajeCambioCorreo(
+            "✅ Contraseña confirmada. Esta cuenta no tiene verificación en dos pasos activa.",
+            "#39ff14"
+          );
+
+          return;
+        }
+
+        factorMfaCambioCorreoId =
+          factorVerificadoCambioCorreo.id;
+
+        if (inputCodigoMfaCambioCorreo) {
+          inputCodigoMfaCambioCorreo.value =
+            "";
+        }
+
+        if (mensajeMfaCambioCorreo) {
+          mensajeMfaCambioCorreo.textContent =
+            "";
+
+          mensajeMfaCambioCorreo.style.display =
+            "none";
+        }
+
+        if (panelMfaCambioCorreo) {
+          panelMfaCambioCorreo.style.display =
+            "block";
+
+          panelMfaCambioCorreo.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        }
+
+        btnContinuarCambioCorreo.style.display =
+          "none";
+
         mostrarMensajeCambioCorreo(
-          "✅ Contraseña confirmada correctamente. En el siguiente paso confirmaremos tu código de seguridad.",
+          "✅ Contraseña confirmada. Escribe ahora el código de seguridad de tu aplicación.",
           "#39ff14"
         );
+
+        setTimeout(function () {
+          inputCodigoMfaCambioCorreo?.focus();
+        }, 150);
       } catch (error) {
         console.error(
           "ERROR CONFIRMANDO CONTRASEÑA PARA CAMBIO DE CORREO:",
