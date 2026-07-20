@@ -151,6 +151,11 @@ const inputConfirmarNuevoCorreo =
     "massIdConfirmarNuevoCorreo"
   );
 
+const inputPasswordActualCambioCorreo =
+  document.getElementById(
+    "massIdPasswordActualCambioCorreo"
+  );  
+
 const mensajeCambioCorreo =
   document.getElementById(
     "massIdCambiarCorreoMensaje"
@@ -1345,6 +1350,11 @@ function regresarDesdeCambioCorreo() {
     inputConfirmarNuevoCorreo.value = "";
   }
 
+  if (inputPasswordActualCambioCorreo) {
+  inputPasswordActualCambioCorreo.value =
+    "";
+}
+
   if (mensajeCambioCorreo) {
     mensajeCambioCorreo.textContent = "";
     mensajeCambioCorreo.style.display =
@@ -1383,6 +1393,11 @@ if (
         inputConfirmarNuevoCorreo.value =
           "";
       }
+
+      if (inputPasswordActualCambioCorreo) {
+  inputPasswordActualCambioCorreo.value =
+    "";
+}
 
       if (mensajeCambioCorreo) {
         mensajeCambioCorreo.textContent =
@@ -1423,6 +1438,138 @@ if (
       }, 150);
     };
 }
+
+/* Mostrar mensajes de Cambiar correo */
+function mostrarMensajeCambioCorreo(
+  texto,
+  color
+) {
+  if (!mensajeCambioCorreo) {
+    return;
+  }
+
+  mensajeCambioCorreo.textContent =
+    texto;
+
+  mensajeCambioCorreo.style.color =
+    color;
+
+  mensajeCambioCorreo.style.borderColor =
+    color;
+
+  mensajeCambioCorreo.style.display =
+    "block";
+}
+
+/* Validar datos antes de confirmar identidad */
+if (
+  btnContinuarCambioCorreo &&
+  inputNuevoCorreo &&
+  inputConfirmarNuevoCorreo &&
+  inputPasswordActualCambioCorreo
+) {
+  btnContinuarCambioCorreo.onclick =
+    function () {
+      const nuevoCorreo =
+        inputNuevoCorreo.value
+          .trim()
+          .toLowerCase();
+
+      const confirmarNuevoCorreo =
+        inputConfirmarNuevoCorreo.value
+          .trim()
+          .toLowerCase();
+
+      const passwordActual =
+        inputPasswordActualCambioCorreo
+          .value;
+
+      const correoActual =
+        (
+          user.email ||
+          perfil.email ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+      const patronCorreo =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      if (!nuevoCorreo) {
+        mostrarMensajeCambioCorreo(
+          "❌ Escribe el nuevo correo electrónico.",
+          "#ff5b5b"
+        );
+
+        inputNuevoCorreo.focus();
+        return;
+      }
+
+      if (!patronCorreo.test(nuevoCorreo)) {
+        mostrarMensajeCambioCorreo(
+          "❌ Escribe un correo electrónico válido.",
+          "#ff5b5b"
+        );
+
+        inputNuevoCorreo.focus();
+        return;
+      }
+
+      if (
+        nuevoCorreo ===
+        correoActual
+      ) {
+        mostrarMensajeCambioCorreo(
+          "❌ El nuevo correo es igual al correo actual.",
+          "#ff5b5b"
+        );
+
+        inputNuevoCorreo.focus();
+        return;
+      }
+
+      if (!confirmarNuevoCorreo) {
+        mostrarMensajeCambioCorreo(
+          "❌ Confirma el nuevo correo electrónico.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevoCorreo.focus();
+        return;
+      }
+
+      if (
+        nuevoCorreo !==
+        confirmarNuevoCorreo
+      ) {
+        mostrarMensajeCambioCorreo(
+          "❌ Los correos electrónicos no coinciden.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevoCorreo.focus();
+        return;
+      }
+
+      if (!passwordActual) {
+        mostrarMensajeCambioCorreo(
+          "❌ Escribe tu contraseña actual.",
+          "#ff5b5b"
+        );
+
+        inputPasswordActualCambioCorreo
+          .focus();
+
+        return;
+      }
+
+      mostrarMensajeCambioCorreo(
+        "✅ Información validada. Tu contraseña será confirmada en el siguiente paso.",
+        "#39ff14"
+      );
+    };
+}  
 
 /* Volver desde Cambiar correo */
 if (
