@@ -1469,7 +1469,7 @@ if (
   inputPasswordActualCambioCorreo
 ) {
   btnContinuarCambioCorreo.onclick =
-    function () {
+    async function () {
       const nuevoCorreo =
         inputNuevoCorreo.value
           .trim()
@@ -1564,10 +1564,176 @@ if (
         return;
       }
 
+         const textoOriginalBoton =
+        btnContinuarCambioCorreo.textContent;
+
+      let clienteVerificacionPassword =
+        null;
+
+      btnContinuarCambioCorreo.disabled =
+        true;
+
+      btnContinuarCambioCorreo.textContent =
+        "⏳ Confirmando contraseña...";
+
+      btnContinuarCambioCorreo.style.cursor =
+        "not-allowed";
+
+      btnContinuarCambioCorreo.style.opacity =
+        ".7";
+
       mostrarMensajeCambioCorreo(
-        "✅ Información validada. Tu contraseña será confirmada en el siguiente paso.",
-        "#39ff14"
+        "⏳ Confirmando tu contraseña actual...",
+        "#ffffff"
       );
+
+      try {
+        if (
+          !window.supabase ||
+          typeof window.supabase.createClient !==
+            "function"
+        ) {
+          throw new Error(
+            "No está disponible el cliente temporal de Supabase."
+          );
+        }
+
+        if (
+          !supabaseClient.supabaseUrl ||
+          !supabaseClient.supabaseKey
+        ) {
+          throw new Error(
+            "No fue posible preparar la verificación segura."
+          );
+        }
+
+        /*
+          Este cliente temporal no guarda ni
+          reemplaza la sesión principal.
+        */
+        clienteVerificacionPassword =
+          window.supabase.createClient(
+            supabaseClient.supabaseUrl,
+            supabaseClient.supabaseKey,
+            {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false,
+                storageKey:
+                  "mass-password-check-" +
+                  Date.now()
+              }
+            }
+          );
+
+        const {
+          data: datosPassword,
+          error: errorPassword
+        } =
+          await clienteVerificacionPassword
+            .auth
+            .signInWithPassword({
+              email: correoActual,
+              password: passwordActual
+            });
+
+        if (
+          errorPassword ||
+          !datosPassword?.user
+        ) {
+          inputPasswordActualCambioCorreo
+            .value = "";
+
+          mostrarMensajeCambioCorreo(
+            "❌ La contraseña actual es incorrecta.",
+            "#ff5b5b"
+          );
+
+          inputPasswordActualCambioCorreo
+            .focus();
+
+          return;
+        }
+
+        /*
+          La identidad comprobada debe coincidir
+          con el usuario actualmente conectado.
+        */
+        if (
+          datosPassword.user.id !==
+          user.id
+        ) {
+          throw new Error(
+            "La identidad confirmada no coincide con la sesión activa."
+          );
+        }
+
+        inputPasswordActualCambioCorreo
+          .value = "";
+
+        mostrarMensajeCambioCorreo(
+          "✅ Contraseña confirmada correctamente. En el siguiente paso confirmaremos tu código de seguridad.",
+          "#39ff14"
+        );
+      } catch (error) {
+        console.error(
+          "ERROR CONFIRMANDO CONTRASEÑA PARA CAMBIO DE CORREO:",
+          error
+        );
+
+        inputPasswordActualCambioCorreo
+          .value = "";
+
+        mostrarMensajeCambioCorreo(
+          "❌ No fue posible confirmar tu contraseña. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        inputPasswordActualCambioCorreo
+          .focus();
+      } finally {
+        /*
+          Cierra únicamente la sesión temporal.
+          Nunca utiliza el cierre global.
+        */
+        if (clienteVerificacionPassword) {
+          try {
+            await clienteVerificacionPassword
+              .auth
+              .signOut({
+                scope: "local"
+              });
+          } catch (
+            errorCerrarVerificacion
+          ) {
+            console.warn(
+              "No fue posible cerrar el cliente temporal:",
+              errorCerrarVerificacion
+            );
+          }
+
+          if (
+            typeof clienteVerificacionPassword
+              .auth.dispose === "function"
+          ) {
+            clienteVerificacionPassword
+              .auth.dispose();
+          }
+        }
+
+        btnContinuarCambioCorreo.disabled =
+          false;
+
+        btnContinuarCambioCorreo.textContent =
+          textoOriginalBoton;
+
+        btnContinuarCambioCorreo.style.cursor =
+          "pointer";
+
+        btnContinuarCambioCorreo.style.opacity =
+          "1";
+      }   
     };
 }  
 
