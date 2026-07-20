@@ -111,6 +111,51 @@ const infoNumero = document.getElementById("massIdInfoNumero");
 const infoTelefono = document.getElementById("massIdInfoTelefono");
 const infoCorreo = document.getElementById("massIdInfoCorreo");
 
+const seccionCambiarCorreo =
+  document.getElementById(
+    "massIdCambiarCorreo"
+  );
+
+const btnCambiarCorreo =
+  document.getElementById(
+    "btnMassIdCambiarCorreo"
+  );
+
+const btnVolverCambiarCorreo =
+  document.getElementById(
+    "btnVolverCambiarCorreoMassId"
+  );
+
+const btnCancelarCambioCorreo =
+  document.getElementById(
+    "btnCancelarCambioCorreoMassId"
+  );
+
+const btnContinuarCambioCorreo =
+  document.getElementById(
+    "btnContinuarCambioCorreoMassId"
+  );
+
+const correoActualCambio =
+  document.getElementById(
+    "massIdCambiarCorreoActual"
+  );
+
+const inputNuevoCorreo =
+  document.getElementById(
+    "massIdNuevoCorreo"
+  );
+
+const inputConfirmarNuevoCorreo =
+  document.getElementById(
+    "massIdConfirmarNuevoCorreo"
+  );
+
+const mensajeCambioCorreo =
+  document.getElementById(
+    "massIdCambiarCorreoMensaje"
+  );  
+
 const direccionInvitacion =
   document.getElementById(
     "massIdDireccionInvitacion"
@@ -540,6 +585,11 @@ if (seccionFotoPerfil) {
 if (seccionSeguridad) {
   seccionSeguridad.style.display = "none";
 }
+
+if (seccionCambiarCorreo) {
+  seccionCambiarCorreo.style.display =
+    "none";
+}  
 
 /* Cargar direcciones privadas del usuario */
 async function cargarDireccionesMass() {
@@ -1274,6 +1324,129 @@ if (
     });
   };
 }
+
+  /* Regresar desde Cambiar correo */
+function regresarDesdeCambioCorreo() {
+  if (seccionCambiarCorreo) {
+    seccionCambiarCorreo.style.display =
+      "none";
+  }
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display =
+      "block";
+  }
+
+  if (inputNuevoCorreo) {
+    inputNuevoCorreo.value = "";
+  }
+
+  if (inputConfirmarNuevoCorreo) {
+    inputConfirmarNuevoCorreo.value = "";
+  }
+
+  if (mensajeCambioCorreo) {
+    mensajeCambioCorreo.textContent = "";
+    mensajeCambioCorreo.style.display =
+      "none";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+/* Abrir Cambiar correo */
+if (
+  btnCambiarCorreo &&
+  menuPrincipal &&
+  seccionCambiarCorreo
+) {
+  btnCambiarCorreo.onclick =
+    function () {
+      const correoActual =
+        perfil.email ||
+        user.email ||
+        "No disponible";
+
+      if (correoActualCambio) {
+        correoActualCambio.textContent =
+          correoActual;
+      }
+
+      if (inputNuevoCorreo) {
+        inputNuevoCorreo.value = "";
+      }
+
+      if (inputConfirmarNuevoCorreo) {
+        inputConfirmarNuevoCorreo.value =
+          "";
+      }
+
+      if (mensajeCambioCorreo) {
+        mensajeCambioCorreo.textContent =
+          "";
+
+        mensajeCambioCorreo.style.display =
+          "none";
+      }
+
+      menuPrincipal.style.display =
+        "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display =
+          "none";
+      }
+
+      if (seccionFotoPerfil) {
+        seccionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (seccionSeguridad) {
+        seccionSeguridad.style.display =
+          "none";
+      }
+
+      seccionCambiarCorreo.style.display =
+        "block";
+
+      seccionCambiarCorreo.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      setTimeout(function () {
+        inputNuevoCorreo?.focus();
+      }, 150);
+    };
+}
+
+/* Volver desde Cambiar correo */
+if (
+  btnVolverCambiarCorreo &&
+  menuPrincipal &&
+  seccionCambiarCorreo
+) {
+  btnVolverCambiarCorreo.onclick =
+    function () {
+      regresarDesdeCambioCorreo();
+    };
+}
+
+/* Cancelar Cambiar correo */
+if (
+  btnCancelarCambioCorreo &&
+  menuPrincipal &&
+  seccionCambiarCorreo
+) {
+  btnCancelarCambioCorreo.onclick =
+    function () {
+      regresarDesdeCambioCorreo();
+    };
+}  
 
 /* Abrir formulario opcional de dirección */
 if (
