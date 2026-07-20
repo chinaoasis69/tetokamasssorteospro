@@ -1049,6 +1049,38 @@
     </label>
   </div>
 
+    <!-- CONTRASEÑA ACTUAL -->
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      margin-top:14px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Contraseña actual
+
+    <input
+      id="massIdPasswordActualCambioCorreo"
+      type="password"
+      autocomplete="current-password"
+      maxlength="128"
+      placeholder="Escribe tu contraseña actual"
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+      "
+    >
+  </label>
+
   <div
     style="
       margin-top:18px;
@@ -1061,9 +1093,11 @@
       line-height:1.55;
     "
   >
-    🔐 Antes de realizar este cambio confirmaremos
-    tu identidad. Después recibirás un enlace de
-    verificación en el nuevo correo electrónico.
+    🔐 Confirmaremos primero tu contraseña actual
+y, si tu cuenta tiene verificación en dos pasos,
+también solicitaremos tu código de seguridad.
+Después recibirás el enlace de verificación en
+el nuevo correo electrónico.
   </div>
 
   <div
