@@ -209,7 +209,9 @@ const inputDireccionInstrucciones =
 const inputDireccionPrincipal =
   document.getElementById(
     "massIdDireccionPrincipal"
-  );  
+  );
+
+let direccionEditandoId = null;  
 
 const seccionFotoPerfil = document.getElementById(
   "massIdFotoPerfil"
@@ -873,6 +875,80 @@ async function cargarDireccionesMass() {
           "font-weight:bold;" +
           "cursor:pointer;";
 
+     btnEditarDireccion.onclick =
+  function () {
+    direccionEditandoId =
+      direccion.id;
+
+    inputDireccionNombre.value =
+      direccion.nombre_ubicacion ||
+      "Casa";
+
+    inputDireccionPais.value =
+      direccion.pais ||
+      "Estados Unidos";
+
+    inputDireccionLinea1.value =
+      direccion.direccion_linea_1 ||
+      "";
+
+    if (inputDireccionLinea2) {
+      inputDireccionLinea2.value =
+        direccion.direccion_linea_2 ||
+        "";
+    }
+
+    inputDireccionCiudad.value =
+      direccion.ciudad ||
+      "";
+
+    inputDireccionEstadoRegion.value =
+      direccion.estado ||
+      "";
+
+    inputDireccionCodigoPostal.value =
+      direccion.codigo_postal ||
+      "";
+
+    if (inputDireccionInstrucciones) {
+      inputDireccionInstrucciones.value =
+        direccion.instrucciones_entrega ||
+        "";
+    }
+
+    if (inputDireccionPrincipal) {
+      inputDireccionPrincipal.checked =
+        Boolean(
+          direccion.es_principal
+        );
+    }
+
+    if (mensajeDireccionFormulario) {
+      mensajeDireccionFormulario.textContent =
+        "✏️ Editando esta dirección.";
+
+      mensajeDireccionFormulario.style.color =
+        "#fff";
+
+      mensajeDireccionFormulario.style.display =
+        "block";
+    }
+
+    direccionInvitacion.style.display =
+      "none";
+
+    direccionFormulario.style.display =
+      "block";
+
+    btnGuardarDireccion.textContent =
+      "💾 Actualizar dirección";
+
+    direccionFormulario.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };   
+
         const btnEliminarDireccion =
           document.createElement("button");
 
@@ -998,6 +1074,43 @@ if (
   direccionFormulario
 ) {
   btnAgregarDireccion.onclick = function () {
+
+      direccionEditandoId = null;
+
+    btnGuardarDireccion.textContent =
+      "💾 Guardar dirección";
+
+    inputDireccionNombre.value =
+      "Casa";
+
+    inputDireccionPais.value =
+      "Estados Unidos";
+
+    inputDireccionLinea1.value =
+      "";
+
+    if (inputDireccionLinea2) {
+      inputDireccionLinea2.value = "";
+    }
+
+    inputDireccionCiudad.value =
+      "";
+
+    inputDireccionEstadoRegion.value =
+      "";
+
+    inputDireccionCodigoPostal.value =
+      "";
+
+    if (inputDireccionInstrucciones) {
+      inputDireccionInstrucciones.value = "";
+    }
+
+    if (inputDireccionPrincipal) {
+      inputDireccionPrincipal.checked =
+        true;
+    }
+    
     direccionInvitacion.style.display = "none";
     direccionFormulario.style.display = "block";
 
@@ -1020,6 +1133,12 @@ if (
   direccionFormulario
 ) {
   btnCancelarDireccion.onclick = function () {
+
+      direccionEditandoId = null;
+
+    btnGuardarDireccion.textContent =
+      "💾 Guardar dirección";
+    
     direccionFormulario.style.display = "none";
     direccionInvitacion.style.display = "block";
 
@@ -1083,7 +1202,13 @@ if (
           inputDireccionPrincipal?.checked
         );
 
-      function mostrarMensajeDireccion(
+          const direccionIdActual =
+        direccionEditandoId;
+
+      const esEdicion =
+        Boolean(direccionIdActual);
+  
+     function mostrarMensajeDireccion(
         texto,
         color
       ) {
@@ -1153,8 +1278,10 @@ if (
 
       btnGuardarDireccion.disabled = true;
 
-      btnGuardarDireccion.textContent =
-        "⏳ Guardando dirección...";
+            btnGuardarDireccion.textContent =
+        esEdicion
+          ? "⏳ Actualizando dirección..."
+          : "⏳ Guardando dirección...";
 
       btnGuardarDireccion.style.cursor =
         "not-allowed";
@@ -1162,8 +1289,10 @@ if (
       btnGuardarDireccion.style.opacity =
         ".7";
 
-      mostrarMensajeDireccion(
-        "Guardando tu dirección privada...",
+            mostrarMensajeDireccion(
+        esEdicion
+          ? "Actualizando tu dirección privada..."
+          : "Guardando tu dirección privada...",
         "#fff"
       );
 
@@ -1193,30 +1322,63 @@ if (
           }
         }
 
-        const {
-          error: errorGuardarDireccion
-        } =
-          await supabaseClient
-            .from("direcciones_mass")
-            .insert({
-              auth_user_id: user.id,
-              nombre_ubicacion:
-                nombreUbicacion,
-              pais: pais,
-              direccion_linea_1:
-                direccionLinea1,
-              direccion_linea_2:
-                direccionLinea2 || null,
-              ciudad: ciudad,
-              estado: estadoRegion,
-              codigo_postal:
-                codigoPostal,
-              instrucciones_entrega:
-                instrucciones || null,
-              es_principal:
-                esPrincipal,
-              activa: true
-            });
+                const datosDireccion = {
+          nombre_ubicacion:
+            nombreUbicacion,
+          pais: pais,
+          direccion_linea_1:
+            direccionLinea1,
+          direccion_linea_2:
+            direccionLinea2 || null,
+          ciudad: ciudad,
+          estado: estadoRegion,
+          codigo_postal:
+            codigoPostal,
+          instrucciones_entrega:
+            instrucciones || null,
+          es_principal:
+            esPrincipal,
+          activa: true,
+          actualizada_en:
+            new Date().toISOString()
+        };
+
+        let errorGuardarDireccion =
+          null;
+
+        if (esEdicion) {
+          const {
+            error: errorActualizarDireccion
+          } =
+            await supabaseClient
+              .from("direcciones_mass")
+              .update(datosDireccion)
+              .eq(
+                "id",
+                direccionIdActual
+              )
+              .eq(
+                "auth_user_id",
+                user.id
+              );
+
+          errorGuardarDireccion =
+            errorActualizarDireccion;
+        } else {
+          const {
+            error: errorInsertarDireccion
+          } =
+            await supabaseClient
+              .from("direcciones_mass")
+              .insert({
+                auth_user_id:
+                  user.id,
+                ...datosDireccion
+              });
+
+          errorGuardarDireccion =
+            errorInsertarDireccion;
+        }
 
         if (errorGuardarDireccion) {
           throw errorGuardarDireccion;
@@ -1230,10 +1392,14 @@ if (
             "block";
         }
 
-        mostrarMensajeDireccion(
-          "✅ Dirección guardada correctamente.",
+                mostrarMensajeDireccion(
+          esEdicion
+            ? "✅ Dirección actualizada correctamente."
+            : "✅ Dirección guardada correctamente.",
           "#39ff14"
         );
+
+        direccionEditandoId = null;
 
         inputDireccionLinea1.value = "";
 
@@ -1282,8 +1448,10 @@ if (
       } finally {
         btnGuardarDireccion.disabled = false;
 
-        btnGuardarDireccion.textContent =
-          "💾 Guardar dirección";
+                btnGuardarDireccion.textContent =
+          direccionEditandoId
+            ? "💾 Actualizar dirección"
+            : "💾 Guardar dirección";
 
         btnGuardarDireccion.style.cursor =
           "pointer";
