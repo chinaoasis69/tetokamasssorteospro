@@ -1941,10 +1941,108 @@ try {
   inputPasswordActualCambioTelefono
     .value = "";
 
+  const {
+  data: factoresCambioTelefono,
+  error: errorFactoresCambioTelefono
+} =
+  await supabaseClient.auth.mfa
+    .listFactors();
+
+if (errorFactoresCambioTelefono) {
+  throw errorFactoresCambioTelefono;
+}
+
+const listaFactoresCambioTelefono =
+  Array.isArray(
+    factoresCambioTelefono?.all
+  )
+    ? factoresCambioTelefono.all
+    : [
+        ...(
+          Array.isArray(
+            factoresCambioTelefono?.totp
+          )
+            ? factoresCambioTelefono.totp
+            : []
+        ),
+        ...(
+          Array.isArray(
+            factoresCambioTelefono?.phone
+          )
+            ? factoresCambioTelefono.phone
+            : []
+        )
+      ];
+
+const factorVerificadoCambioTelefono =
+  listaFactoresCambioTelefono.find(
+    function (factor) {
+      const tipoFactor =
+        factor.factor_type ||
+        factor.factorType ||
+        factor.type;
+
+      return (
+        tipoFactor === "totp" &&
+        factor.status === "verified"
+      );
+    }
+  );
+
+nuevoTelefonoPendienteCambio =
+  nuevoTelefono;
+
+if (
+  !factorVerificadoCambioTelefono?.id
+) {
   mostrarMensajeCambioTelefono(
-    "✅ Contraseña confirmada correctamente. En el siguiente paso confirmaremos tu código de seguridad.",
+    "✅ Contraseña confirmada. Esta cuenta no tiene verificación en dos pasos activa.",
     "#39ff14"
   );
+
+  return;
+}
+
+factorMfaCambioTelefonoId =
+  factorVerificadoCambioTelefono.id;
+
+mfaCambioTelefonoAprobado = false;
+
+if (inputCodigoMfaCambioTelefono) {
+  inputCodigoMfaCambioTelefono.value =
+    "";
+}
+
+if (mensajeMfaCambioTelefono) {
+  mensajeMfaCambioTelefono.textContent =
+    "";
+
+  mensajeMfaCambioTelefono.style.display =
+    "none";
+}
+
+if (panelMfaCambioTelefono) {
+  panelMfaCambioTelefono.style.display =
+    "block";
+
+  panelMfaCambioTelefono.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+btnContinuarCambioTelefono.style.display =
+  "none";
+
+mostrarMensajeCambioTelefono(
+  "✅ Contraseña confirmada. Escribe ahora el código de seguridad de tu aplicación.",
+  "#39ff14"
+);
+
+setTimeout(function () {
+  inputCodigoMfaCambioTelefono?.focus();
+}, 150);
+  
 } catch (error) {
   console.error(
     "ERROR CONFIRMANDO CONTRASEÑA PARA CAMBIO DE TELÉFONO:",
