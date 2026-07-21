@@ -1666,7 +1666,7 @@ if (
   inputPasswordActualCambioTelefono
 ) {
   btnContinuarCambioTelefono.onclick =
-    function () {
+   async function () {
       const nuevoTelefono =
         inputNuevoTelefono.value
           .replace(/\D/g, "");
@@ -1757,10 +1757,186 @@ if (
         return;
       }
 
-      mostrarMensajeCambioTelefono(
-        "✅ Información validada. Tu contraseña será confirmada en el siguiente paso.",
-        "#39ff14"
+    const correoActual =
+  (
+    user.email ||
+    perfil.email ||
+    ""
+  )
+    .trim()
+    .toLowerCase();
+
+if (!correoActual) {
+  mostrarMensajeCambioTelefono(
+    "❌ No fue posible identificar el correo de tu cuenta.",
+    "#ff5b5b"
+  );
+
+  return;
+}
+
+const textoOriginalBotonTelefono =
+  btnContinuarCambioTelefono.textContent;
+
+let clienteVerificacionPasswordTelefono =
+  null;
+
+btnContinuarCambioTelefono.disabled =
+  true;
+
+btnContinuarCambioTelefono.textContent =
+  "⏳ Confirmando contraseña...";
+
+btnContinuarCambioTelefono.style.cursor =
+  "not-allowed";
+
+btnContinuarCambioTelefono.style.opacity =
+  ".7";
+
+mostrarMensajeCambioTelefono(
+  "⏳ Confirmando tu contraseña actual...",
+  "#ffffff"
+);
+
+try {
+  if (
+    !window.supabase ||
+    typeof window.supabase.createClient !==
+      "function"
+  ) {
+    throw new Error(
+      "No está disponible el cliente temporal de Supabase."
+    );
+  }
+
+  if (
+    !supabaseClient.supabaseUrl ||
+    !supabaseClient.supabaseKey
+  ) {
+    throw new Error(
+      "No fue posible preparar la verificación segura."
+    );
+  }
+
+  /*
+    Este cliente temporal no guarda ni
+    reemplaza la sesión principal.
+  */
+  clienteVerificacionPasswordTelefono =
+    window.supabase.createClient(
+      supabaseClient.supabaseUrl,
+      supabaseClient.supabaseKey,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+          storageKey:
+            "mass-phone-password-check-" +
+            Date.now()
+        }
+      }
+    );
+
+  const {
+    data: datosPasswordTelefono,
+    error: errorPasswordTelefono
+  } =
+    await clienteVerificacionPasswordTelefono
+      .auth
+      .signInWithPassword({
+        email: correoActual,
+        password: passwordActual
+      });
+
+  if (
+    errorPasswordTelefono ||
+    !datosPasswordTelefono?.user
+  ) {
+    inputPasswordActualCambioTelefono
+      .value = "";
+
+    mostrarMensajeCambioTelefono(
+      "❌ La contraseña actual es incorrecta.",
+      "#ff5b5b"
+    );
+
+    inputPasswordActualCambioTelefono
+      .focus();
+
+    return;
+  }
+
+  if (
+    datosPasswordTelefono.user.id !==
+    user.id
+  ) {
+    throw new Error(
+      "La identidad confirmada no coincide con la sesión activa."
+    );
+  }
+
+  inputPasswordActualCambioTelefono
+    .value = "";
+
+  mostrarMensajeCambioTelefono(
+    "✅ Contraseña confirmada correctamente. En el siguiente paso confirmaremos tu código de seguridad.",
+    "#39ff14"
+  );
+} catch (error) {
+  console.error(
+    "ERROR CONFIRMANDO CONTRASEÑA PARA CAMBIO DE TELÉFONO:",
+    error
+  );
+
+  inputPasswordActualCambioTelefono
+    .value = "";
+
+  mostrarMensajeCambioTelefono(
+    "❌ No fue posible confirmar tu contraseña. Inténtalo nuevamente.",
+    "#ff5b5b"
+  );
+
+  inputPasswordActualCambioTelefono
+    .focus();
+} finally {
+  if (clienteVerificacionPasswordTelefono) {
+    try {
+      await clienteVerificacionPasswordTelefono
+        .auth
+        .signOut({
+          scope: "local"
+        });
+    } catch (
+      errorCerrarVerificacionTelefono
+    ) {
+      console.warn(
+        "No fue posible cerrar el cliente temporal:",
+        errorCerrarVerificacionTelefono
       );
+    }
+
+    if (
+      typeof clienteVerificacionPasswordTelefono
+        .auth.dispose === "function"
+    ) {
+      clienteVerificacionPasswordTelefono
+        .auth.dispose();
+    }
+  }
+
+  btnContinuarCambioTelefono.disabled =
+    false;
+
+  btnContinuarCambioTelefono.textContent =
+    textoOriginalBotonTelefono;
+
+  btnContinuarCambioTelefono.style.cursor =
+    "pointer";
+
+  btnContinuarCambioTelefono.style.opacity =
+    "1";
+}  
     };
 }  
 
