@@ -56,6 +56,50 @@ if (perfilError || !perfil) {
   return;
 }
 
+/*
+  Sincronizar el correo oficial de Supabase Auth
+  con el perfil privado de usuarios_mass.
+*/
+const correoOficialAuth = (
+  user.email || ""
+)
+  .trim()
+  .toLowerCase();
+
+const correoGuardadoPerfil = (
+  perfil.email || ""
+)
+  .trim()
+  .toLowerCase();
+
+if (
+  correoOficialAuth &&
+  correoOficialAuth !== correoGuardadoPerfil
+) {
+  const {
+    error: errorSincronizarCorreo
+  } =
+    await supabaseClient
+      .from("usuarios_mass")
+      .update({
+        email: correoOficialAuth
+      })
+      .eq("auth_user_id", user.id);
+
+  if (errorSincronizarCorreo) {
+    console.error(
+      "ERROR SINCRONIZANDO CORREO MASS ID:",
+      errorSincronizarCorreo
+    );
+  } else {
+    perfil.email = correoOficialAuth;
+    localStorage.setItem(
+      "mass_email",
+      correoOficialAuth
+    );
+  }
+}  
+
 const nombrePerfil = document.getElementById("massIdNombre");
 const numeroPerfil = document.getElementById("massIdNumero");
 
