@@ -277,7 +277,31 @@ const btnContinuarCambioTelefono =
 const btnCancelarCambioTelefono =
   document.getElementById(
     "btnCancelarCambioTelefonoMassId"
-  );  
+  );
+
+const panelMfaCambioTelefono =
+  document.getElementById(
+    "massIdCambioTelefonoMfa"
+  );
+
+const inputCodigoMfaCambioTelefono =
+  document.getElementById(
+    "massIdCodigoMfaCambioTelefono"
+  );
+
+const mensajeMfaCambioTelefono =
+  document.getElementById(
+    "massIdCambioTelefonoMfaMensaje"
+  );
+
+const btnConfirmarMfaCambioTelefono =
+  document.getElementById(
+    "btnConfirmarMfaCambioTelefonoMassId"
+  );
+
+let factorMfaCambioTelefonoId = null;
+let nuevoTelefonoPendienteCambio = "";
+let mfaCambioTelefonoAprobado = false;  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1529,6 +1553,44 @@ function limpiarFormularioCambioTelefono() {
     mensajeCambioTelefono.textContent = "";
     mensajeCambioTelefono.style.display = "none";
   }
+
+factorMfaCambioTelefonoId = null;
+nuevoTelefonoPendienteCambio = "";
+mfaCambioTelefonoAprobado = false;
+
+if (panelMfaCambioTelefono) {
+  panelMfaCambioTelefono.style.display =
+    "none";
+}
+
+if (inputCodigoMfaCambioTelefono) {
+  inputCodigoMfaCambioTelefono.value = "";
+}
+
+if (mensajeMfaCambioTelefono) {
+  mensajeMfaCambioTelefono.textContent = "";
+  mensajeMfaCambioTelefono.style.display =
+    "none";
+}
+
+if (btnConfirmarMfaCambioTelefono) {
+  btnConfirmarMfaCambioTelefono.disabled =
+    false;
+
+  btnConfirmarMfaCambioTelefono.textContent =
+    "✅ Confirmar código y cambiar teléfono";
+
+  btnConfirmarMfaCambioTelefono.style.cursor =
+    "pointer";
+
+  btnConfirmarMfaCambioTelefono.style.opacity =
+    "1";
+}
+
+if (btnContinuarCambioTelefono) {
+  btnContinuarCambioTelefono.style.display =
+    "block";
+}  
 
   if (btnContinuarCambioTelefono) {
     btnContinuarCambioTelefono.disabled = false;
