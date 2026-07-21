@@ -1539,6 +1539,28 @@ function limpiarFormularioCambioTelefono() {
     btnContinuarCambioTelefono.style.opacity =
       "1";
   }
+}
+
+/* Mostrar mensajes de Cambiar teléfono */
+function mostrarMensajeCambioTelefono(
+  texto,
+  color
+) {
+  if (!mensajeCambioTelefono) {
+    return;
+  }
+
+  mensajeCambioTelefono.textContent =
+    texto;
+
+  mensajeCambioTelefono.style.color =
+    color;
+
+  mensajeCambioTelefono.style.borderColor =
+    color;
+
+  mensajeCambioTelefono.style.display =
+    "block";
 }  
 
 /* Regresar desde Cambiar teléfono */
@@ -1633,6 +1655,112 @@ if (
   btnCancelarCambioTelefono.onclick =
     function () {
       regresarDesdeCambioTelefono();
+    };
+}
+
+/* Validar datos de Cambiar teléfono */
+if (
+  btnContinuarCambioTelefono &&
+  inputNuevoTelefono &&
+  inputConfirmarNuevoTelefono &&
+  inputPasswordActualCambioTelefono
+) {
+  btnContinuarCambioTelefono.onclick =
+    function () {
+      const nuevoTelefono =
+        inputNuevoTelefono.value
+          .replace(/\D/g, "");
+
+      const confirmarNuevoTelefono =
+        inputConfirmarNuevoTelefono.value
+          .replace(/\D/g, "");
+
+      const passwordActual =
+        inputPasswordActualCambioTelefono
+          .value;
+
+      const telefonoActual =
+        (
+          perfil.telefono ||
+          user.phone ||
+          ""
+        )
+          .replace(/\D/g, "");
+
+      if (!nuevoTelefono) {
+        mostrarMensajeCambioTelefono(
+          "❌ Escribe el nuevo número de teléfono.",
+          "#ff5b5b"
+        );
+
+        inputNuevoTelefono.focus();
+        return;
+      }
+
+      if (
+        nuevoTelefono.length < 10 ||
+        nuevoTelefono.length > 15
+      ) {
+        mostrarMensajeCambioTelefono(
+          "❌ Escribe un teléfono válido de 10 a 15 dígitos.",
+          "#ff5b5b"
+        );
+
+        inputNuevoTelefono.focus();
+        return;
+      }
+
+      if (
+        nuevoTelefono === telefonoActual
+      ) {
+        mostrarMensajeCambioTelefono(
+          "❌ El nuevo teléfono es igual al teléfono actual.",
+          "#ff5b5b"
+        );
+
+        inputNuevoTelefono.focus();
+        return;
+      }
+
+      if (!confirmarNuevoTelefono) {
+        mostrarMensajeCambioTelefono(
+          "❌ Confirma el nuevo número de teléfono.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevoTelefono.focus();
+        return;
+      }
+
+      if (
+        nuevoTelefono !==
+        confirmarNuevoTelefono
+      ) {
+        mostrarMensajeCambioTelefono(
+          "❌ Los números de teléfono no coinciden.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevoTelefono.focus();
+        return;
+      }
+
+      if (!passwordActual) {
+        mostrarMensajeCambioTelefono(
+          "❌ Escribe tu contraseña actual.",
+          "#ff5b5b"
+        );
+
+        inputPasswordActualCambioTelefono
+          .focus();
+
+        return;
+      }
+
+      mostrarMensajeCambioTelefono(
+        "✅ Información validada. Tu contraseña será confirmada en el siguiente paso.",
+        "#39ff14"
+      );
     };
 }  
 
