@@ -1352,6 +1352,186 @@ el nuevo correo electrónico.
       No disponible
     </strong>
   </div>
+
+  <!-- NUEVO TELÉFONO -->
+<div
+  style="
+    display:grid;
+    grid-template-columns:
+      repeat(auto-fit,minmax(240px,1fr));
+    gap:14px;
+  "
+>
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Nuevo teléfono
+
+    <input
+      id="massIdNuevoTelefono"
+      type="tel"
+      inputmode="tel"
+      autocomplete="tel"
+      maxlength="20"
+      placeholder="Ejemplo: 9563724890"
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+      "
+    >
+  </label>
+
+  <label
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:7px;
+      color:#ddd;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    Confirmar nuevo teléfono
+
+    <input
+      id="massIdConfirmarNuevoTelefono"
+      type="tel"
+      inputmode="tel"
+      autocomplete="off"
+      maxlength="20"
+      placeholder="Escribe nuevamente el teléfono"
+      style="
+        width:100%;
+        padding:12px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+      "
+    >
+  </label>
+</div>
+
+<!-- CONTRASEÑA ACTUAL -->
+<label
+  style="
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+    margin-top:14px;
+    color:#ddd;
+    font-size:13px;
+    font-weight:bold;
+  "
+>
+  Contraseña actual
+
+  <input
+    id="massIdPasswordActualCambioTelefono"
+    type="password"
+    autocomplete="current-password"
+    maxlength="128"
+    placeholder="Escribe tu contraseña actual"
+    style="
+      width:100%;
+      padding:12px;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#101010;
+      color:#fff;
+      box-sizing:border-box;
+    "
+  >
+</label>
+
+<div
+  style="
+    margin-top:18px;
+    padding:13px 15px;
+    border:1px solid rgba(57,255,20,.25);
+    border-radius:10px;
+    background:#101010;
+    color:#bbb;
+    font-size:13px;
+    line-height:1.55;
+  "
+>
+  🔐 Confirmaremos tu contraseña actual y, si tu cuenta
+  tiene verificación en dos pasos, también solicitaremos
+  tu código de seguridad antes de cambiar el teléfono.
+</div>
+
+<div
+  id="massIdCambiarTelefonoMensaje"
+  style="
+    display:none;
+    margin-top:15px;
+    padding:12px 14px;
+    border:1px solid #333;
+    border-radius:10px;
+    background:#101010;
+    font-size:14px;
+    line-height:1.5;
+  "
+></div>
+
+<div
+  style="
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:18px;
+  "
+>
+  <button
+    id="btnContinuarCambioTelefonoMassId"
+    type="button"
+    style="
+      flex:1;
+      min-width:220px;
+      padding:12px 16px;
+      border:1px solid #39ff14;
+      border-radius:10px;
+      background:#1b1b1b;
+      color:#fff;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    🔐 Continuar y verificar identidad
+  </button>
+
+  <button
+    id="btnCancelarCambioTelefonoMassId"
+    type="button"
+    style="
+      flex:1;
+      min-width:160px;
+      padding:12px 16px;
+      border:1px solid #666;
+      border-radius:10px;
+      background:#242424;
+      color:#ddd;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    Cancelar
+  </button>
+</div>
 </div>
 
   <!-- FOTO DE PERFIL -->
