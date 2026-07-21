@@ -9335,13 +9335,15 @@ async function iniciarSesionSuperAdminV2() {
       return;
     }
 
-    const { data: adminData, error: adminError } =
-      await supabaseClient
-        .from("admin_organizadores")
-        .select("*")
-        .eq("email", email)
-        .eq("rol", "super_admin")
-        .maybeSingle();
+    const authUserId = authData.user.id;
+
+const { data: adminData, error: adminError } =
+  await supabaseClient
+    .from("admin_organizadores")
+    .select("*")
+    .eq("auth_user_id", authUserId)
+    .eq("rol", "super_admin")
+    .maybeSingle();
 
     if (adminError) {
       console.error("ERROR BUSCANDO SÚPER ADMIN:", adminError);
