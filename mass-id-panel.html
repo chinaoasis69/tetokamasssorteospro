@@ -184,10 +184,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>📱 Cambiar teléfono</span>
-        <span>›</span>
-      </button>
+      <button
+  id="btnMassIdCambiarTelefono"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>📱 Cambiar teléfono</span>
+  <span>›</span>
+</button>
 
       <button type="button" class="mass-id-menu-button">
         <span>🔑 Cambiar contraseña</span>
@@ -1255,7 +1259,100 @@ el nuevo correo electrónico.
       Cancelar
     </button>
   </div>
-</div>        
+</div> 
+
+  <!-- CAMBIAR TELÉFONO -->
+<div
+  id="massIdCambiarTelefono"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:15px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        📱 Cambiar teléfono
+      </h3>
+
+      <p
+        style="
+          margin:7px 0 0;
+          color:#bbb;
+          font-size:14px;
+          line-height:1.5;
+        "
+      >
+        Actualiza el número utilizado para identificarte
+        y recibir avisos importantes de tu cuenta MASS.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverCambiarTelefonoMassId"
+      type="button"
+      aria-label="Volver al menú de Mi MASS ID"
+      style="
+        min-width:90px;
+        padding:10px 14px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#141414;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <!-- TELÉFONO ACTUAL -->
+  <div
+    style="
+      padding:16px;
+      border:1px solid rgba(57,255,20,.35);
+      border-radius:12px;
+      background:#101010;
+      margin-bottom:18px;
+    "
+  >
+    <span
+      style="
+        display:block;
+        color:#aaa;
+        font-size:13px;
+        margin-bottom:7px;
+      "
+    >
+      Teléfono actual
+    </span>
+
+    <strong
+      id="massIdCambiarTelefonoActual"
+      style="
+        color:#39ff14;
+        font-size:16px;
+        overflow-wrap:anywhere;
+      "
+    >
+      No disponible
+    </strong>
+  </div>
+</div>
 
   <!-- FOTO DE PERFIL -->
   <div
