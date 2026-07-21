@@ -182,7 +182,8 @@ const btnConfirmarMfaCambioCorreo =
   );
 
 let factorMfaCambioCorreoId = null;
-let nuevoCorreoPendienteCambio = "";  
+let nuevoCorreoPendienteCambio = "";
+let mfaCambioCorreoAprobado = false;  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1380,6 +1381,7 @@ function regresarDesdeCambioCorreo() {
 
     factorMfaCambioCorreoId = null;
   nuevoCorreoPendienteCambio = "";
+  mfaCambioCorreoAprobado = false;
 
   if (panelMfaCambioCorreo) {
     panelMfaCambioCorreo.style.display =
@@ -1449,6 +1451,7 @@ if (
 
            factorMfaCambioCorreoId = null;
       nuevoCorreoPendienteCambio = "";
+      mfaCambioCorreoAprobado = false;
 
       if (panelMfaCambioCorreo) {
         panelMfaCambioCorreo.style.display =
@@ -1903,6 +1906,169 @@ if (
         btnContinuarCambioCorreo.style.opacity =
           "1";
       }   
+    };
+}
+
+/* Mostrar mensajes del código MFA */
+function mostrarMensajeMfaCambioCorreo(
+  texto,
+  color
+) {
+  if (!mensajeMfaCambioCorreo) {
+    return;
+  }
+
+  mensajeMfaCambioCorreo.textContent =
+    texto;
+
+  mensajeMfaCambioCorreo.style.color =
+    color;
+
+  mensajeMfaCambioCorreo.style.borderColor =
+    color;
+
+  mensajeMfaCambioCorreo.style.display =
+    "block";
+}
+
+/* Permitir solamente seis números */
+if (inputCodigoMfaCambioCorreo) {
+  inputCodigoMfaCambioCorreo.oninput =
+    function () {
+      this.value = this.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+    };
+}
+
+/* Confirmar código MFA del cambio de correo */
+if (
+  btnConfirmarMfaCambioCorreo &&
+  inputCodigoMfaCambioCorreo
+) {
+  btnConfirmarMfaCambioCorreo.onclick =
+    async function () {
+      const codigoMfa =
+        inputCodigoMfaCambioCorreo.value
+          .replace(/\D/g, "");
+
+      if (
+        !factorMfaCambioCorreoId ||
+        !nuevoCorreoPendienteCambio
+      ) {
+        mostrarMensajeMfaCambioCorreo(
+          "❌ La confirmación anterior venció. Vuelve a confirmar tu contraseña.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      if (!/^\d{6}$/.test(codigoMfa)) {
+        mostrarMensajeMfaCambioCorreo(
+          "❌ Escribe el código completo de seis dígitos.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioCorreo.focus();
+        return;
+      }
+
+      const textoOriginalBotonMfa =
+        btnConfirmarMfaCambioCorreo
+          .textContent;
+
+      let codigoMfaConfirmado = false;
+
+      mfaCambioCorreoAprobado = false;
+
+      btnConfirmarMfaCambioCorreo.disabled =
+        true;
+
+      btnConfirmarMfaCambioCorreo.textContent =
+        "⏳ Confirmando código...";
+
+      btnConfirmarMfaCambioCorreo.style.cursor =
+        "not-allowed";
+
+      btnConfirmarMfaCambioCorreo.style.opacity =
+        ".7";
+
+      mostrarMensajeMfaCambioCorreo(
+        "⏳ Verificando tu código de seguridad...",
+        "#ffffff"
+      );
+
+      try {
+        const {
+          error: errorConfirmarMfa
+        } =
+          await supabaseClient.auth.mfa
+            .challengeAndVerify({
+              factorId:
+                factorMfaCambioCorreoId,
+              code: codigoMfa
+            });
+
+        if (errorConfirmarMfa) {
+          inputCodigoMfaCambioCorreo.value =
+            "";
+
+          mostrarMensajeMfaCambioCorreo(
+            "❌ El código es incorrecto o venció. Escribe el código nuevo de tu aplicación.",
+            "#ff5b5b"
+          );
+
+          inputCodigoMfaCambioCorreo.focus();
+          return;
+        }
+
+        mfaCambioCorreoAprobado = true;
+        codigoMfaConfirmado = true;
+
+        inputCodigoMfaCambioCorreo.value =
+          "";
+
+        mostrarMensajeMfaCambioCorreo(
+          "✅ Código de seguridad confirmado correctamente.",
+          "#39ff14"
+        );
+
+        btnConfirmarMfaCambioCorreo.textContent =
+          "✅ Código confirmado";
+
+        btnConfirmarMfaCambioCorreo.style.opacity =
+          "1";
+      } catch (error) {
+        console.error(
+          "ERROR CONFIRMANDO MFA PARA CAMBIO DE CORREO:",
+          error
+        );
+
+        inputCodigoMfaCambioCorreo.value =
+          "";
+
+        mostrarMensajeMfaCambioCorreo(
+          "❌ No fue posible confirmar el código. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioCorreo.focus();
+      } finally {
+        if (!codigoMfaConfirmado) {
+          btnConfirmarMfaCambioCorreo.disabled =
+            false;
+
+          btnConfirmarMfaCambioCorreo.textContent =
+            textoOriginalBotonMfa;
+
+          btnConfirmarMfaCambioCorreo.style.cursor =
+            "pointer";
+
+          btnConfirmarMfaCambioCorreo.style.opacity =
+            "1";
+        }
+      }
     };
 }  
 
