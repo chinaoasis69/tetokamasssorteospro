@@ -2023,19 +2023,66 @@ if (
           return;
         }
 
-        mfaCambioCorreoAprobado = true;
+                mfaCambioCorreoAprobado = true;
         codigoMfaConfirmado = true;
 
         inputCodigoMfaCambioCorreo.value =
           "";
 
+        btnConfirmarMfaCambioCorreo.textContent =
+          "⏳ Solicitando cambio...";
+
         mostrarMensajeMfaCambioCorreo(
-          "✅ Código de seguridad confirmado correctamente.",
+          "⏳ Código confirmado. Enviando la solicitud de cambio de correo...",
+          "#ffffff"
+        );
+
+        const correoSolicitado =
+          nuevoCorreoPendienteCambio;
+
+        const {
+          data: datosSolicitudCorreo,
+          error: errorSolicitudCorreo
+        } =
+          await supabaseClient.auth.updateUser({
+            email: correoSolicitado
+          });
+
+        if (errorSolicitudCorreo) {
+          console.error(
+            "ERROR SOLICITANDO CAMBIO DE CORREO MASS ID:",
+            errorSolicitudCorreo
+          );
+
+          mfaCambioCorreoAprobado = false;
+          codigoMfaConfirmado = false;
+
+          mostrarMensajeMfaCambioCorreo(
+            "❌ El código fue correcto, pero no fue posible enviar la solicitud de cambio de correo. Inténtalo nuevamente.",
+            "#ff5b5b"
+          );
+
+          return;
+        }
+
+        const correoPendienteConfirmacion =
+          datosSolicitudCorreo?.user?.new_email ||
+          correoSolicitado;
+
+        mostrarMensajeMfaCambioCorreo(
+          "✅ Solicitud enviada. Revisa " +
+            correoPendienteConfirmacion +
+            " y abre el enlace de verificación. Si también recibes un mensaje en tu correo actual, confirma ambos enlaces.",
+          "#39ff14"
+        );
+
+        mostrarMensajeCambioCorreo(
+          "📧 El cambio está pendiente de confirmación. Tu correo actual seguirá activo hasta completar la verificación.",
           "#39ff14"
         );
 
         btnConfirmarMfaCambioCorreo.textContent =
-          "✅ Código confirmado";
+          "✅ Revisa tu nuevo correo";
 
         btnConfirmarMfaCambioCorreo.style.opacity =
           "1";
