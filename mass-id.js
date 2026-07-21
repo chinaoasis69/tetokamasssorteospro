@@ -2216,21 +2216,169 @@ if (
         }
 
         mfaCambioTelefonoAprobado = true;
-        codigoMfaTelefonoConfirmado = true;
 
-        inputCodigoMfaCambioTelefono.value =
-          "";
+inputCodigoMfaCambioTelefono.value =
+  "";
 
-        mostrarMensajeMfaCambioTelefono(
-          "✅ Código de seguridad confirmado correctamente.",
-          "#39ff14"
+const telefonoNuevoConfirmado =
+  nuevoTelefonoPendienteCambio;
+
+const telefonoAnterior =
+  (
+    perfil.telefono ||
+    ""
+  )
+    .replace(/\D/g, "");
+
+btnConfirmarMfaCambioTelefono.textContent =
+  "⏳ Actualizando teléfono...";
+
+mostrarMensajeMfaCambioTelefono(
+  "⏳ Código confirmado. Actualizando tu teléfono en el ecosistema MASS...",
+  "#ffffff"
+);
+
+/*
+  Primero sincronizamos cualquier permiso
+  relacionado con este mismo auth_user_id.
+*/
+const {
+  data: filasAdminTelefono,
+  error: errorActualizarAdminTelefono
+} =
+  await supabaseClient
+    .from("admin_organizadores")
+    .update({
+      telefono: telefonoNuevoConfirmado
+    })
+    .eq(
+      "auth_user_id",
+      user.id
+    )
+    .select("id");
+
+if (errorActualizarAdminTelefono) {
+  throw errorActualizarAdminTelefono;
+}
+
+/*
+  Después actualizamos el perfil principal
+  privado de Mi MASS ID.
+*/
+const {
+  data: perfilTelefonoActualizado,
+  error: errorActualizarPerfilTelefono
+} =
+  await supabaseClient
+    .from("usuarios_mass")
+    .update({
+      telefono: telefonoNuevoConfirmado
+    })
+    .eq(
+      "auth_user_id",
+      user.id
+    )
+    .select("telefono")
+    .maybeSingle();
+
+if (
+  errorActualizarPerfilTelefono ||
+  !perfilTelefonoActualizado
+) {
+  /*
+    Si falló el perfil principal, regresamos
+    admin_organizadores al teléfono anterior.
+  */
+  if (
+    Array.isArray(filasAdminTelefono) &&
+    filasAdminTelefono.length > 0
+  ) {
+    const {
+      error: errorRestaurarAdminTelefono
+    } =
+      await supabaseClient
+        .from("admin_organizadores")
+        .update({
+          telefono:
+            telefonoAnterior || null
+        })
+        .eq(
+          "auth_user_id",
+          user.id
         );
 
-        btnConfirmarMfaCambioTelefono.textContent =
-          "✅ Código confirmado";
+    if (errorRestaurarAdminTelefono) {
+      console.error(
+        "ERROR RESTAURANDO TELÉFONO ADMIN:",
+        errorRestaurarAdminTelefono
+      );
+    }
+  }
 
-        btnConfirmarMfaCambioTelefono.style.opacity =
-          "1";
+  throw (
+    errorActualizarPerfilTelefono ||
+    new Error(
+      "No se encontró el perfil MASS ID para actualizar."
+    )
+  );
+}
+
+/* Actualizar los datos activos del navegador */
+perfil.telefono =
+  telefonoNuevoConfirmado;
+
+localStorage.setItem(
+  "mass_telefono",
+  telefonoNuevoConfirmado
+);
+
+localStorage.setItem(
+  "mass_user",
+  telefonoNuevoConfirmado
+);
+
+try {
+  if (
+    typeof userActual !==
+    "undefined"
+  ) {
+    userActual =
+      telefonoNuevoConfirmado;
+  }
+} catch (
+  errorActualizarUsuarioLocal
+) {
+  console.warn(
+    "No fue posible actualizar userActual:",
+    errorActualizarUsuarioLocal
+  );
+}
+
+codigoMfaTelefonoConfirmado = true;
+
+mostrarMensajeMfaCambioTelefono(
+  "✅ Tu teléfono fue actualizado correctamente en el ecosistema MASS.",
+  "#39ff14"
+);
+
+btnConfirmarMfaCambioTelefono.textContent =
+  "✅ Teléfono actualizado";
+
+btnConfirmarMfaCambioTelefono.style.opacity =
+  "1";
+
+/*
+  Regresar al menú y recargar Mi MASS ID
+  para mostrar inmediatamente el número nuevo.
+*/
+regresarDesdeCambioTelefono();
+
+await abrirMiMassId();
+
+alert(
+  "✅ Tu teléfono fue actualizado correctamente."
+);
+        
       } catch (error) {
         console.error(
           "ERROR CONFIRMANDO MFA PARA CAMBIO DE TELÉFONO:",
