@@ -2098,6 +2098,170 @@ setTimeout(function () {
     "1";
 }  
     };
+}
+
+/* Mostrar mensajes del código MFA de teléfono */
+function mostrarMensajeMfaCambioTelefono(
+  texto,
+  color
+) {
+  if (!mensajeMfaCambioTelefono) {
+    return;
+  }
+
+  mensajeMfaCambioTelefono.textContent =
+    texto;
+
+  mensajeMfaCambioTelefono.style.color =
+    color;
+
+  mensajeMfaCambioTelefono.style.borderColor =
+    color;
+
+  mensajeMfaCambioTelefono.style.display =
+    "block";
+}
+
+/* Permitir solamente seis números */
+if (inputCodigoMfaCambioTelefono) {
+  inputCodigoMfaCambioTelefono.oninput =
+    function () {
+      this.value = this.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+    };
+}
+
+/* Confirmar código MFA del cambio de teléfono */
+if (
+  btnConfirmarMfaCambioTelefono &&
+  inputCodigoMfaCambioTelefono
+) {
+  btnConfirmarMfaCambioTelefono.onclick =
+    async function () {
+      const codigoMfa =
+        inputCodigoMfaCambioTelefono.value
+          .replace(/\D/g, "");
+
+      if (
+        !factorMfaCambioTelefonoId ||
+        !nuevoTelefonoPendienteCambio
+      ) {
+        mostrarMensajeMfaCambioTelefono(
+          "❌ La confirmación anterior venció. Vuelve a confirmar tu contraseña.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      if (!/^\d{6}$/.test(codigoMfa)) {
+        mostrarMensajeMfaCambioTelefono(
+          "❌ Escribe el código completo de seis dígitos.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioTelefono.focus();
+        return;
+      }
+
+      const textoOriginalBotonMfaTelefono =
+        btnConfirmarMfaCambioTelefono
+          .textContent;
+
+      let codigoMfaTelefonoConfirmado =
+        false;
+
+      mfaCambioTelefonoAprobado = false;
+
+      btnConfirmarMfaCambioTelefono.disabled =
+        true;
+
+      btnConfirmarMfaCambioTelefono.textContent =
+        "⏳ Confirmando código...";
+
+      btnConfirmarMfaCambioTelefono.style.cursor =
+        "not-allowed";
+
+      btnConfirmarMfaCambioTelefono.style.opacity =
+        ".7";
+
+      mostrarMensajeMfaCambioTelefono(
+        "⏳ Verificando tu código de seguridad...",
+        "#ffffff"
+      );
+
+      try {
+        const {
+          error: errorConfirmarMfaTelefono
+        } =
+          await supabaseClient.auth.mfa
+            .challengeAndVerify({
+              factorId:
+                factorMfaCambioTelefonoId,
+              code: codigoMfa
+            });
+
+        if (errorConfirmarMfaTelefono) {
+          inputCodigoMfaCambioTelefono.value =
+            "";
+
+          mostrarMensajeMfaCambioTelefono(
+            "❌ El código es incorrecto o venció. Escribe el código nuevo de tu aplicación.",
+            "#ff5b5b"
+          );
+
+          inputCodigoMfaCambioTelefono.focus();
+          return;
+        }
+
+        mfaCambioTelefonoAprobado = true;
+        codigoMfaTelefonoConfirmado = true;
+
+        inputCodigoMfaCambioTelefono.value =
+          "";
+
+        mostrarMensajeMfaCambioTelefono(
+          "✅ Código de seguridad confirmado correctamente.",
+          "#39ff14"
+        );
+
+        btnConfirmarMfaCambioTelefono.textContent =
+          "✅ Código confirmado";
+
+        btnConfirmarMfaCambioTelefono.style.opacity =
+          "1";
+      } catch (error) {
+        console.error(
+          "ERROR CONFIRMANDO MFA PARA CAMBIO DE TELÉFONO:",
+          error
+        );
+
+        inputCodigoMfaCambioTelefono.value =
+          "";
+
+        mostrarMensajeMfaCambioTelefono(
+          "❌ No fue posible confirmar el código. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioTelefono.focus();
+      } finally {
+        if (!codigoMfaTelefonoConfirmado) {
+          btnConfirmarMfaCambioTelefono.disabled =
+            false;
+
+          btnConfirmarMfaCambioTelefono.textContent =
+            textoOriginalBotonMfaTelefono;
+
+          btnConfirmarMfaCambioTelefono.style.cursor =
+            "pointer";
+
+          btnConfirmarMfaCambioTelefono.style.opacity =
+            "1";
+        }
+      }
+    };
 }  
 
 /* Abrir Cambiar correo */
