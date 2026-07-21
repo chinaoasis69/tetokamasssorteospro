@@ -247,6 +247,36 @@ const btnVolverCambiarTelefono =
 const telefonoActualCambio =
   document.getElementById(
     "massIdCambiarTelefonoActual"
+  ); 
+
+const inputNuevoTelefono =
+  document.getElementById(
+    "massIdNuevoTelefono"
+  );
+
+const inputConfirmarNuevoTelefono =
+  document.getElementById(
+    "massIdConfirmarNuevoTelefono"
+  );
+
+const inputPasswordActualCambioTelefono =
+  document.getElementById(
+    "massIdPasswordActualCambioTelefono"
+  );
+
+const mensajeCambioTelefono =
+  document.getElementById(
+    "massIdCambiarTelefonoMensaje"
+  );
+
+const btnContinuarCambioTelefono =
+  document.getElementById(
+    "btnContinuarCambioTelefonoMassId"
+  );
+
+const btnCancelarCambioTelefono =
+  document.getElementById(
+    "btnCancelarCambioTelefonoMassId"
   );  
 
 const direccionInvitacion =
@@ -1481,8 +1511,40 @@ function regresarDesdeCambioCorreo() {
   });
 }
 
+/* Limpiar formulario de Cambiar teléfono */
+function limpiarFormularioCambioTelefono() {
+  if (inputNuevoTelefono) {
+    inputNuevoTelefono.value = "";
+  }
+
+  if (inputConfirmarNuevoTelefono) {
+    inputConfirmarNuevoTelefono.value = "";
+  }
+
+  if (inputPasswordActualCambioTelefono) {
+    inputPasswordActualCambioTelefono.value = "";
+  }
+
+  if (mensajeCambioTelefono) {
+    mensajeCambioTelefono.textContent = "";
+    mensajeCambioTelefono.style.display = "none";
+  }
+
+  if (btnContinuarCambioTelefono) {
+    btnContinuarCambioTelefono.disabled = false;
+    btnContinuarCambioTelefono.textContent =
+      "🔐 Continuar y verificar identidad";
+    btnContinuarCambioTelefono.style.cursor =
+      "pointer";
+    btnContinuarCambioTelefono.style.opacity =
+      "1";
+  }
+}  
+
 /* Regresar desde Cambiar teléfono */
 function regresarDesdeCambioTelefono() {
+  limpiarFormularioCambioTelefono();
+  
   if (seccionCambiarTelefono) {
     seccionCambiarTelefono.style.display =
       "none";
@@ -1557,6 +1619,18 @@ if (
   seccionCambiarTelefono
 ) {
   btnVolverCambiarTelefono.onclick =
+    function () {
+      regresarDesdeCambioTelefono();
+    };
+} 
+
+/* Cancelar Cambiar teléfono */
+if (
+  btnCancelarCambioTelefono &&
+  menuPrincipal &&
+  seccionCambiarTelefono
+) {
+  btnCancelarCambioTelefono.onclick =
     function () {
       regresarDesdeCambioTelefono();
     };
