@@ -227,7 +227,27 @@ const btnConfirmarMfaCambioCorreo =
 
 let factorMfaCambioCorreoId = null;
 let nuevoCorreoPendienteCambio = "";
-let mfaCambioCorreoAprobado = false;  
+let mfaCambioCorreoAprobado = false;
+
+const seccionCambiarTelefono =
+  document.getElementById(
+    "massIdCambiarTelefono"
+  );
+
+const btnCambiarTelefono =
+  document.getElementById(
+    "btnMassIdCambiarTelefono"
+  );
+
+const btnVolverCambiarTelefono =
+  document.getElementById(
+    "btnVolverCambiarTelefonoMassId"
+  );
+
+const telefonoActualCambio =
+  document.getElementById(
+    "massIdCambiarTelefonoActual"
+  );  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1460,6 +1480,87 @@ function regresarDesdeCambioCorreo() {
     block: "start"
   });
 }
+
+/* Regresar desde Cambiar teléfono */
+function regresarDesdeCambioTelefono() {
+  if (seccionCambiarTelefono) {
+    seccionCambiarTelefono.style.display =
+      "none";
+  }
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display =
+      "block";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+/* Abrir Cambiar teléfono */
+if (
+  btnCambiarTelefono &&
+  menuPrincipal &&
+  seccionCambiarTelefono
+) {
+  btnCambiarTelefono.onclick =
+    function () {
+      const telefonoActual =
+        perfil.telefono ||
+        user.phone ||
+        "No disponible";
+
+      if (telefonoActualCambio) {
+        telefonoActualCambio.textContent =
+          telefonoActual;
+      }
+
+      menuPrincipal.style.display =
+        "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display =
+          "none";
+      }
+
+      if (seccionFotoPerfil) {
+        seccionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (seccionSeguridad) {
+        seccionSeguridad.style.display =
+          "none";
+      }
+
+      if (seccionCambiarCorreo) {
+        seccionCambiarCorreo.style.display =
+          "none";
+      }
+
+      seccionCambiarTelefono.style.display =
+        "block";
+
+      seccionCambiarTelefono.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
+
+/* Volver desde Cambiar teléfono */
+if (
+  btnVolverCambiarTelefono &&
+  menuPrincipal &&
+  seccionCambiarTelefono
+) {
+  btnVolverCambiarTelefono.onclick =
+    function () {
+      regresarDesdeCambioTelefono();
+    };
+}  
 
 /* Abrir Cambiar correo */
 if (
