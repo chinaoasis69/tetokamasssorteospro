@@ -477,7 +477,126 @@ let preferenciasPrivacidadOriginales = {
   personalizacion: false
 };
 
-let privacidadMassCargada = false;  
+let privacidadMassCargada = false;
+
+/* Elementos del panel Documentos legales */
+const seccionDocumentosLegales =
+  document.getElementById(
+    "massIdDocumentosLegales"
+  );
+
+const btnDocumentosLegales =
+  document.getElementById(
+    "btnMassIdDocumentosLegales"
+  );
+
+const btnVolverDocumentosLegales =
+  document.getElementById(
+    "btnVolverDocumentosLegalesMassId"
+  );
+
+const listaDocumentosLegales =
+  document.getElementById(
+    "massIdListaDocumentosLegales"
+  );
+
+const mensajeDocumentosLegales =
+  document.getElementById(
+    "massIdDocumentosLegalesMensaje"
+  );
+
+/* Catálogo oficial del MASS ID Legal Center */
+const catalogoDocumentosLegalesMassId =
+  Object.freeze([
+    {
+      codigo: "MASS-LC-000",
+      titulo: "Gobernanza del Centro Legal",
+      descripcion:
+        "Establece la estructura, autoridad, control de versiones y administración del MASS ID Legal Center.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-001",
+      titulo: "Definiciones legales",
+      descripcion:
+        "Define los términos oficiales utilizados dentro de MASS ID y del ecosistema MASS.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-002",
+      titulo: "Acuerdo de usuario MASS ID",
+      descripcion:
+        "Contiene los términos y condiciones aplicables al registro, acceso y uso de MASS ID.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-003",
+      titulo: "Aviso de privacidad",
+      descripcion:
+        "Explica cómo se recopilan, utilizan, protegen y administran los datos personales.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-004",
+      titulo: "Política de seguridad",
+      descripcion:
+        "Describe las medidas utilizadas para proteger cuentas, identidad, sesiones y datos.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-005",
+      titulo: "Política de cookies",
+      descripcion:
+        "Explica el uso de cookies, almacenamiento local y tecnologías relacionadas.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-006",
+      titulo: "Política de inteligencia artificial",
+      descripcion:
+        "Regula el uso responsable, transparente y seguro de inteligencia artificial dentro de MASS.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-007",
+      titulo: "Política de pagos",
+      descripcion:
+        "Establece las reglas relacionadas con cargos, autorizaciones y procesamiento de pagos.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-008",
+      titulo: "Política de reembolsos",
+      descripcion:
+        "Define las condiciones, requisitos y procedimientos aplicables a reembolsos.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-009",
+      titulo: "Política antifraude",
+      descripcion:
+        "Establece medidas para prevenir abuso, suplantación de identidad, fraude y actividades sospechosas.",
+      version: "1.0",
+      estado: "En preparación"
+    },
+    {
+      codigo: "MASS-LC-010",
+      titulo: "Normas de la comunidad",
+      descripcion:
+        "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.",
+      version: "1.0",
+      estado: "En preparación"
+    }
+  ]);  
 
 const direccionInvitacion =
   document.getElementById(
@@ -2257,6 +2376,228 @@ if (btnGuardarPrivacidad) {
         btnGuardarPrivacidad.style.opacity =
           "1";
       }
+    };
+}
+
+/* Mostrar mensajes del panel Documentos legales */
+function mostrarMensajeDocumentosLegales(
+  texto,
+  color
+) {
+  if (!mensajeDocumentosLegales) {
+    return;
+  }
+
+  mensajeDocumentosLegales.textContent =
+    texto;
+
+  mensajeDocumentosLegales.style.color =
+    color;
+
+  mensajeDocumentosLegales.style.borderColor =
+    color;
+
+  mensajeDocumentosLegales.style.display =
+    texto ? "block" : "none";
+}
+
+/* Ocultar mensajes del panel Documentos legales */
+function ocultarMensajeDocumentosLegales() {
+  if (!mensajeDocumentosLegales) {
+    return;
+  }
+
+  mensajeDocumentosLegales.textContent = "";
+  mensajeDocumentosLegales.style.display =
+    "none";
+}
+
+/* Renderizar el catálogo oficial del MASS ID Legal Center */
+function renderizarDocumentosLegalesMassId() {
+  if (!listaDocumentosLegales) {
+    return;
+  }
+
+  listaDocumentosLegales.innerHTML =
+    catalogoDocumentosLegalesMassId
+      .map(function (documentoLegal) {
+        return `
+          <article
+            style="
+              padding:16px;
+              border:1px solid #333;
+              border-radius:12px;
+              background:#141414;
+              display:flex;
+              flex-direction:column;
+              gap:10px;
+              min-height:210px;
+            "
+          >
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                justify-content:space-between;
+                gap:10px;
+                flex-wrap:wrap;
+              "
+            >
+              <strong
+                style="
+                  color:#39ff14;
+                  font-size:13px;
+                  letter-spacing:.5px;
+                "
+              >
+                ${documentoLegal.codigo}
+              </strong>
+
+              <span
+                style="
+                  padding:5px 9px;
+                  border:1px solid #666;
+                  border-radius:999px;
+                  color:#ddd;
+                  font-size:11px;
+                  font-weight:bold;
+                "
+              >
+                ${documentoLegal.estado}
+              </span>
+            </div>
+
+            <h4
+              style="
+                margin:0;
+                color:#fff;
+                font-size:17px;
+                line-height:1.35;
+              "
+            >
+              ${documentoLegal.titulo}
+            </h4>
+
+            <p
+              style="
+                margin:0;
+                color:#bbb;
+                font-size:13px;
+                line-height:1.55;
+                flex:1;
+              "
+            >
+              ${documentoLegal.descripcion}
+            </p>
+
+            <div
+              style="
+                padding-top:10px;
+                border-top:1px solid #2f2f2f;
+                color:#999;
+                font-size:12px;
+              "
+            >
+              Versión ${documentoLegal.version}
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+
+  mostrarMensajeDocumentosLegales(
+    `✅ ${catalogoDocumentosLegalesMassId.length} documentos oficiales cargados.`,
+    "#39ff14"
+  );
+}
+
+/* Regresar desde el panel Documentos legales */
+function regresarDesdeDocumentosLegales() {
+  ocultarMensajeDocumentosLegales();
+
+  if (sectionDocumentosLegales) {
+    sectionDocumentosLegales.style.display =
+      "none";
+  }
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display =
+      "block";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+/* Abrir el panel Documentos legales */
+if (
+  btnDocumentosLegales &&
+  menuPrincipal &&
+  sectionDocumentosLegales
+) {
+  btnDocumentosLegales.onclick =
+    function () {
+      menuPrincipal.style.display =
+        "none";
+
+      if (sectionInformacion) {
+        sectionInformacion.style.display =
+          "none";
+      }
+
+      if (sectionFotoPerfil) {
+        sectionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (sectionSeguridad) {
+        sectionSeguridad.style.display =
+          "none";
+      }
+
+      if (sectionCambiarCorreo) {
+        sectionCambiarCorreo.style.display =
+          "none";
+      }
+
+      if (sectionCambiarTelefono) {
+        sectionCambiarTelefono.style.display =
+          "none";
+      }
+
+      if (sectionCambiarContrasena) {
+        sectionCambiarContrasena.style.display =
+          "none";
+      }
+
+      if (sectionPrivacidad) {
+        sectionPrivacidad.style.display =
+          "none";
+      }
+
+      sectionDocumentosLegales.style.display =
+        "block";
+
+      renderizarDocumentosLegalesMassId();
+
+      sectionDocumentosLegales.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
+
+/* Volver desde Documentos legales */
+if (
+  btnVolverDocumentosLegales &&
+  menuPrincipal &&
+  sectionDocumentosLegales
+) {
+  btnVolverDocumentosLegales.onclick =
+    function () {
+      regresarDesdeDocumentosLegales();
     };
 }  
 
