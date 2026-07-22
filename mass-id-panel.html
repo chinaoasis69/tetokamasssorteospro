@@ -202,10 +202,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>🛡️ Privacidad</span>
-        <span>›</span>
-      </button>
+      <button
+  id="btnMassIdPrivacidad"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>🛡️ Privacidad</span>
+  <span>›</span>
+</button>
 
       <button type="button" class="mass-id-menu-button">
         <span>📄 Documentos legales</span>
@@ -2114,6 +2118,413 @@ el nuevo correo electrónico.
     </button>
   </div>
 </div>
+
+<!-- PRIVACIDAD -->
+<div
+  id="massIdPrivacidad"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        🛡️ Privacidad
+      </h3>
+
+      <p
+        style="
+          margin:7px 0 0;
+          color:#bbb;
+          font-size:14px;
+          line-height:1.5;
+        "
+      >
+        Controla cómo se muestran y utilizan
+        tus datos dentro del ecosistema MASS.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverPrivacidadMassId"
+      type="button"
+      style="
+        min-width:90px;
+        padding:10px 14px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#141414;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    style="
+      margin-bottom:16px;
+      padding:13px 15px;
+      border:1px solid rgba(57,255,20,.3);
+      border-radius:12px;
+      background:#101010;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.55;
+    "
+  >
+    🔐 Tú siempre podrás ver tus propios datos.
+    Estas opciones controlarán lo que otros
+    usuarios autorizados puedan ver y las
+    preferencias de uso de información.
+  </div>
+
+  <div
+    style="
+      display:grid;
+      gap:12px;
+    "
+  >
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#141414;
+        cursor:pointer;
+      "
+    >
+      <span>
+        <strong
+          style="
+            display:block;
+            margin-bottom:5px;
+            color:#fff;
+          "
+        >
+          👤 Perfil visible
+        </strong>
+
+        <span
+          style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.45;
+          "
+        >
+          Permitir que otros usuarios MASS
+          autorizados encuentren tu perfil.
+        </span>
+      </span>
+
+      <input
+        id="massIdPrivacidadPerfilPublico"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex-shrink:0;
+          accent-color:#39ff14;
+          cursor:pointer;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#141414;
+        cursor:pointer;
+      "
+    >
+      <span>
+        <strong
+          style="
+            display:block;
+            margin-bottom:5px;
+            color:#fff;
+          "
+        >
+          📱 Mostrar teléfono
+        </strong>
+
+        <span
+          style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.45;
+          "
+        >
+          Mostrar tu número solamente dentro
+          de perfiles o servicios autorizados.
+        </span>
+      </span>
+
+      <input
+        id="massIdPrivacidadMostrarTelefono"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex-shrink:0;
+          accent-color:#39ff14;
+          cursor:pointer;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#141414;
+        cursor:pointer;
+      "
+    >
+      <span>
+        <strong
+          style="
+            display:block;
+            margin-bottom:5px;
+            color:#fff;
+          "
+        >
+          📧 Mostrar correo
+        </strong>
+
+        <span
+          style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.45;
+          "
+        >
+          Permitir que tu correo sea visible
+          en funciones MASS autorizadas.
+        </span>
+      </span>
+
+      <input
+        id="massIdPrivacidadMostrarCorreo"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex-shrink:0;
+          accent-color:#39ff14;
+          cursor:pointer;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#141414;
+        cursor:pointer;
+      "
+    >
+      <span>
+        <strong
+          style="
+            display:block;
+            margin-bottom:5px;
+            color:#fff;
+          "
+        >
+          🔔 Novedades y promociones
+        </strong>
+
+        <span
+          style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.45;
+          "
+        >
+          Recibir noticias, ofertas y novedades
+          de productos del ecosistema MASS.
+        </span>
+      </span>
+
+      <input
+        id="massIdPrivacidadPromociones"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex-shrink:0;
+          accent-color:#39ff14;
+          cursor:pointer;
+        "
+      >
+    </label>
+
+    <label
+      style="
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap:18px;
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#141414;
+        cursor:pointer;
+      "
+    >
+      <span>
+        <strong
+          style="
+            display:block;
+            margin-bottom:5px;
+            color:#fff;
+          "
+        >
+          ✨ Personalización
+        </strong>
+
+        <span
+          style="
+            color:#aaa;
+            font-size:13px;
+            line-height:1.45;
+          "
+        >
+          Permitir que MASS personalice tu
+          experiencia según tu actividad.
+        </span>
+      </span>
+
+      <input
+        id="massIdPrivacidadPersonalizacion"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex-shrink:0;
+          accent-color:#39ff14;
+          cursor:pointer;
+        "
+      >
+    </label>
+  </div>
+
+  <div
+    style="
+      margin-top:16px;
+      padding:13px 15px;
+      border:1px solid #333;
+      border-radius:12px;
+      background:#101010;
+      color:#aaa;
+      font-size:13px;
+      line-height:1.55;
+    "
+  >
+    🛡️ Las alertas esenciales de seguridad,
+    acceso a la cuenta, pagos y verificación
+    permanecerán activas para protegerte.
+    Tu contraseña nunca será pública.
+  </div>
+
+  <div
+    id="massIdPrivacidadMensaje"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:12px 14px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      font-size:14px;
+      line-height:1.5;
+      text-align:center;
+    "
+  ></div>
+
+  <div
+    style="
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    "
+  >
+    <button
+      id="btnGuardarPrivacidadMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:220px;
+        padding:12px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      💾 Guardar preferencias
+    </button>
+
+    <button
+      id="btnCancelarPrivacidadMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:160px;
+        padding:12px 16px;
+        border:1px solid #666;
+        border-radius:10px;
+        background:#242424;
+        color:#ddd;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      Cancelar
+    </button>
+  </div>
+</div>  
 
   <!-- FOTO DE PERFIL -->
   <div
