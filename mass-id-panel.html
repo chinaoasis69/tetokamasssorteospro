@@ -193,10 +193,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>🔑 Cambiar contraseña</span>
-        <span>›</span>
-      </button>
+      <button
+  id="btnMassIdCambiarContrasena"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>🔑 Cambiar contraseña</span>
+  <span>›</span>
+</button>
 
       <button type="button" class="mass-id-menu-button">
         <span>🛡️ Privacidad</span>
@@ -1771,6 +1775,344 @@ el nuevo correo electrónico.
     Cancelar
   </button>
 </div>
+</div>
+
+  <!-- CAMBIAR CONTRASEÑA -->
+<div
+  id="massIdCambiarContrasena"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        🔑 Cambiar contraseña
+      </h3>
+
+      <p
+        style="
+          margin:7px 0 0;
+          color:#bbb;
+          font-size:14px;
+          line-height:1.5;
+        "
+      >
+        Protege tu cuenta MASS con una contraseña
+        segura y diferente a la actual.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverCambiarContrasenaMassId"
+      type="button"
+      style="
+        min-width:90px;
+        padding:10px 14px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#141414;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(240px,1fr));
+      gap:14px;
+    "
+  >
+    <div>
+      <label
+        for="massIdPasswordActualCambioContrasena"
+        style="
+          display:block;
+          margin-bottom:7px;
+          color:#ddd;
+          font-size:14px;
+          font-weight:bold;
+        "
+      >
+        Contraseña actual
+      </label>
+
+      <input
+        id="massIdPasswordActualCambioContrasena"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Escribe tu contraseña actual"
+        style="
+          width:100%;
+          padding:13px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+
+    <div>
+      <label
+        for="massIdNuevaContrasena"
+        style="
+          display:block;
+          margin-bottom:7px;
+          color:#ddd;
+          font-size:14px;
+          font-weight:bold;
+        "
+      >
+        Nueva contraseña
+      </label>
+
+      <input
+        id="massIdNuevaContrasena"
+        type="password"
+        autocomplete="new-password"
+        placeholder="Escribe la nueva contraseña"
+        minlength="8"
+        style="
+          width:100%;
+          padding:13px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+
+    <div>
+      <label
+        for="massIdConfirmarNuevaContrasena"
+        style="
+          display:block;
+          margin-bottom:7px;
+          color:#ddd;
+          font-size:14px;
+          font-weight:bold;
+        "
+      >
+        Confirmar nueva contraseña
+      </label>
+
+      <input
+        id="massIdConfirmarNuevaContrasena"
+        type="password"
+        autocomplete="new-password"
+        placeholder="Confirma la nueva contraseña"
+        minlength="8"
+        style="
+          width:100%;
+          padding:13px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#101010;
+          color:#fff;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+  </div>
+
+  <div
+    style="
+      margin-top:16px;
+      padding:12px 14px;
+      border:1px solid rgba(57,255,20,.3);
+      border-radius:10px;
+      background:#101010;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.55;
+    "
+  >
+    🔐 Confirmaremos tu contraseña actual y,
+    si tu cuenta tiene verificación en dos pasos,
+    también solicitaremos el código de tu
+    aplicación de autenticación.
+  </div>
+
+  <div
+    id="massIdCambiarContrasenaMensaje"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:12px 14px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      font-size:14px;
+      line-height:1.5;
+      text-align:center;
+    "
+  ></div>
+
+  <!-- MFA PARA CAMBIO DE CONTRASEÑA -->
+  <div
+    id="massIdCambioContrasenaMfa"
+    style="
+      display:none;
+      margin-top:18px;
+      padding:18px;
+      border:1px solid rgba(57,255,20,.45);
+      border-radius:14px;
+      background:#141414;
+    "
+  >
+    <h3
+      style="
+        margin:0 0 8px;
+        text-align:center;
+      "
+    >
+      🔐 Código de seguridad
+    </h3>
+
+    <p
+      style="
+        margin:0;
+        color:#bbb;
+        font-size:14px;
+        line-height:1.55;
+        text-align:center;
+      "
+    >
+      Abre tu aplicación de autenticación y
+      escribe el código actual de seis dígitos.
+    </p>
+
+    <input
+      id="massIdCodigoMfaCambioContrasena"
+      type="text"
+      inputmode="numeric"
+      autocomplete="one-time-code"
+      maxlength="6"
+      pattern="[0-9]{6}"
+      placeholder="000000"
+      aria-label="Código de seguridad de seis dígitos"
+      style="
+        width:100%;
+        max-width:420px;
+        display:block;
+        margin:18px auto 0;
+        padding:14px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#101010;
+        color:#fff;
+        box-sizing:border-box;
+        text-align:center;
+        font-size:22px;
+        font-weight:bold;
+        letter-spacing:10px;
+      "
+    >
+
+    <div
+      id="massIdCambioContrasenaMfaMensaje"
+      style="
+        display:none;
+        margin-top:14px;
+        padding:11px 13px;
+        border:1px solid #333;
+        border-radius:10px;
+        background:#101010;
+        font-size:14px;
+        line-height:1.5;
+        text-align:center;
+      "
+    ></div>
+
+    <button
+      id="btnConfirmarMfaCambioContrasenaMassId"
+      type="button"
+      style="
+        width:100%;
+        max-width:420px;
+        display:block;
+        margin:16px auto 0;
+        padding:12px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✅ Confirmar código y cambiar contraseña
+    </button>
+  </div>
+
+  <div
+    style="
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    "
+  >
+    <button
+      id="btnContinuarCambioContrasenaMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:220px;
+        padding:12px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      🔐 Continuar y verificar identidad
+    </button>
+
+    <button
+      id="btnCancelarCambioContrasenaMassId"
+      type="button"
+      style="
+        flex:1;
+        min-width:160px;
+        padding:12px 16px;
+        border:1px solid #666;
+        border-radius:10px;
+        background:#242424;
+        color:#ddd;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      Cancelar
+    </button>
+  </div>
 </div>
 
   <!-- FOTO DE PERFIL -->
