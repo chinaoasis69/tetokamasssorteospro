@@ -211,10 +211,14 @@
   <span>›</span>
 </button>
 
-      <button type="button" class="mass-id-menu-button">
-        <span>📄 Documentos legales</span>
-        <span>›</span>
-      </button>
+<button
+  id="btnMassIdDocumentosLegales"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>📄 Documentos legales</span>
+  <span>›</span>
+</button>      
 
       <button type="button" class="mass-id-menu-button">
         <span>🕘 Actividad de la cuenta</span>
@@ -2524,6 +2528,121 @@ el nuevo correo electrónico.
       Cancelar
     </button>
   </div>
+</div>
+
+<!-- DOCUMENTOS LEGALES -->
+<div
+  id="massIdDocumentosLegales"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        📄 Documentos legales
+      </h3>
+
+      <p
+        style="
+          margin:7px 0 0;
+          color:#bbb;
+          font-size:14px;
+          line-height:1.5;
+        "
+      >
+        Consulta las políticas, acuerdos y normas
+        oficiales que protegen tu MASS ID.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverDocumentosLegalesMassId"
+      type="button"
+      aria-label="Volver al menú de Mi MASS ID"
+      style="
+        min-width:90px;
+        padding:10px 14px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#141414;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    style="
+      margin-bottom:18px;
+      padding:15px;
+      border:1px solid rgba(57,255,20,.35);
+      border-radius:12px;
+      background:#101010;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.6;
+      text-align:center;
+    "
+  >
+    ⚖️ <strong style="color:#fff;">
+      MASS ID Legal Center
+    </strong>
+
+    <br>
+
+    Base legal oficial administrada por
+    <strong style="color:#39ff14;">
+      TE-TO-KA SOLUTIONS® LLC
+    </strong>.
+
+    <br>
+
+    Cada documento tendrá identificación,
+    versión y fecha de vigencia.
+  </div>
+
+  <div
+    id="massIdListaDocumentosLegales"
+    style="
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(260px,1fr));
+      gap:12px;
+    "
+  ></div>
+
+  <div
+    id="massIdDocumentosLegalesMensaje"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:12px 14px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      font-size:14px;
+      line-height:1.5;
+      text-align:center;
+    "
+  ></div>
 </div>  
 
   <!-- FOTO DE PERFIL -->
