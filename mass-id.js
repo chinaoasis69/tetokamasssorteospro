@@ -2515,8 +2515,8 @@ function renderizarDocumentosLegalesMassId() {
 function regresarDesdeDocumentosLegales() {
   ocultarMensajeDocumentosLegales();
 
-  if (sectionDocumentosLegales) {
-    sectionDocumentosLegales.style.display =
+  if (seccionDocumentosLegales) {
+    seccionDocumentosLegales.style.display =
       "none";
   }
 
@@ -2535,7 +2535,7 @@ function regresarDesdeDocumentosLegales() {
 if (
   btnDocumentosLegales &&
   menuPrincipal &&
-  sectionDocumentosLegales
+  seccionDocumentosLegales
 ) {
   btnDocumentosLegales.onclick =
     function () {
@@ -2577,12 +2577,12 @@ if (
           "none";
       }
 
-      sectionDocumentosLegales.style.display =
+      seccionDocumentosLegales.style.display =
         "block";
 
       renderizarDocumentosLegalesMassId();
 
-      sectionDocumentosLegales.scrollIntoView({
+      seccionDocumentosLegales.scrollIntoView({
         behavior: "smooth",
         block: "start"
       });
@@ -2593,7 +2593,7 @@ if (
 if (
   btnVolverDocumentosLegales &&
   menuPrincipal &&
-  sectionDocumentosLegales
+  seccionDocumentosLegales
 ) {
   btnVolverDocumentosLegales.onclick =
     function () {
