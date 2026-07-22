@@ -337,7 +337,77 @@ let mfaCambioTelefonoAprobado = false;
 let smsCambioTelefonoEnviado = false;
 let smsCambioTelefonoConfirmado = false;
 let temporizadorReenvioSmsCambioTelefono =
-  null; 
+  null;
+
+/* Elementos para Cambiar contraseña */
+const seccionCambiarContrasena =
+  document.getElementById(
+    "massIdCambiarContrasena"
+  );
+
+const btnCambiarContrasena =
+  document.getElementById(
+    "btnMassIdCambiarContrasena"
+  );
+
+const btnVolverCambiarContrasena =
+  document.getElementById(
+    "btnVolverCambiarContrasenaMassId"
+  );
+
+const btnCancelarCambioContrasena =
+  document.getElementById(
+    "btnCancelarCambioContrasenaMassId"
+  );
+
+const btnContinuarCambioContrasena =
+  document.getElementById(
+    "btnContinuarCambioContrasenaMassId"
+  );
+
+const inputPasswordActualCambioContrasena =
+  document.getElementById(
+    "massIdPasswordActualCambioContrasena"
+  );
+
+const inputNuevaContrasena =
+  document.getElementById(
+    "massIdNuevaContrasena"
+  );
+
+const inputConfirmarNuevaContrasena =
+  document.getElementById(
+    "massIdConfirmarNuevaContrasena"
+  );
+
+const mensajeCambioContrasena =
+  document.getElementById(
+    "massIdCambiarContrasenaMensaje"
+  );
+
+const panelMfaCambioContrasena =
+  document.getElementById(
+    "massIdCambioContrasenaMfa"
+  );
+
+const inputCodigoMfaCambioContrasena =
+  document.getElementById(
+    "massIdCodigoMfaCambioContrasena"
+  );
+
+const mensajeMfaCambioContrasena =
+  document.getElementById(
+    "massIdCambioContrasenaMfaMensaje"
+  );
+
+const btnConfirmarMfaCambioContrasena =
+  document.getElementById(
+    "btnConfirmarMfaCambioContrasenaMassId"
+  );
+
+let factorMfaCambioContrasenaId = null;
+let nuevaContrasenaPendienteCambio = "";
+let mfaCambioContrasenaAprobado = false;  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1570,6 +1640,867 @@ function regresarDesdeCambioCorreo() {
     block: "start"
   });
 }
+
+/* Limpiar formulario de Cambiar contraseña */
+function limpiarFormularioCambioContrasena() {
+  if (inputPasswordActualCambioContrasena) {
+    inputPasswordActualCambioContrasena.value =
+      "";
+  }
+
+  if (inputNuevaContrasena) {
+    inputNuevaContrasena.value =
+      "";
+  }
+
+  if (inputConfirmarNuevaContrasena) {
+    inputConfirmarNuevaContrasena.value =
+      "";
+  }
+
+  factorMfaCambioContrasenaId = null;
+  nuevaContrasenaPendienteCambio = "";
+  mfaCambioContrasenaAprobado = false;
+
+  if (mensajeCambioContrasena) {
+    mensajeCambioContrasena.textContent =
+      "";
+
+    mensajeCambioContrasena.style.display =
+      "none";
+  }
+
+  if (panelMfaCambioContrasena) {
+    panelMfaCambioContrasena.style.display =
+      "none";
+  }
+
+  if (inputCodigoMfaCambioContrasena) {
+    inputCodigoMfaCambioContrasena.value =
+      "";
+  }
+
+  if (mensajeMfaCambioContrasena) {
+    mensajeMfaCambioContrasena.textContent =
+      "";
+
+    mensajeMfaCambioContrasena.style.display =
+      "none";
+  }
+
+  if (btnContinuarCambioContrasena) {
+    btnContinuarCambioContrasena.disabled =
+      false;
+
+    btnContinuarCambioContrasena.style.display =
+      "block";
+
+    btnContinuarCambioContrasena.textContent =
+      "🔐 Continuar y verificar identidad";
+
+    btnContinuarCambioContrasena.style.cursor =
+      "pointer";
+
+    btnContinuarCambioContrasena.style.opacity =
+      "1";
+  }
+
+  if (btnConfirmarMfaCambioContrasena) {
+    btnConfirmarMfaCambioContrasena.disabled =
+      false;
+
+    btnConfirmarMfaCambioContrasena.textContent =
+      "✅ Confirmar código y cambiar contraseña";
+
+    btnConfirmarMfaCambioContrasena.style.cursor =
+      "pointer";
+
+    btnConfirmarMfaCambioContrasena.style.opacity =
+      "1";
+  }
+}
+
+/* Mostrar mensajes de Cambiar contraseña */
+function mostrarMensajeCambioContrasena(
+  texto,
+  color
+) {
+  if (!mensajeCambioContrasena) {
+    return;
+  }
+
+  mensajeCambioContrasena.textContent =
+    texto;
+
+  mensajeCambioContrasena.style.color =
+    color;
+
+  mensajeCambioContrasena.style.borderColor =
+    color;
+
+  mensajeCambioContrasena.style.display =
+    "block";
+}
+
+/* Mostrar mensajes MFA de Cambiar contraseña */
+function mostrarMensajeMfaCambioContrasena(
+  texto,
+  color
+) {
+  if (!mensajeMfaCambioContrasena) {
+    return;
+  }
+
+  mensajeMfaCambioContrasena.textContent =
+    texto;
+
+  mensajeMfaCambioContrasena.style.color =
+    color;
+
+  mensajeMfaCambioContrasena.style.borderColor =
+    color;
+
+  mensajeMfaCambioContrasena.style.display =
+    "block";
+}
+
+/* Regresar desde Cambiar contraseña */
+function regresarDesdeCambioContrasena() {
+  limpiarFormularioCambioContrasena();
+
+  if (seccionCambiarContrasena) {
+    seccionCambiarContrasena.style.display =
+      "none";
+  }
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display =
+      "block";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+/* Abrir Cambiar contraseña */
+if (
+  btnCambiarContrasena &&
+  menuPrincipal &&
+  seccionCambiarContrasena
+) {
+  btnCambiarContrasena.onclick =
+    function () {
+      limpiarFormularioCambioContrasena();
+
+      menuPrincipal.style.display =
+        "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display =
+          "none";
+      }
+
+      if (seccionFotoPerfil) {
+        seccionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (seccionSeguridad) {
+        seccionSeguridad.style.display =
+          "none";
+      }
+
+      if (seccionCambiarCorreo) {
+        seccionCambiarCorreo.style.display =
+          "none";
+      }
+
+      if (seccionCambiarTelefono) {
+        seccionCambiarTelefono.style.display =
+          "none";
+      }
+
+      seccionCambiarContrasena.style.display =
+        "block";
+
+      seccionCambiarContrasena.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      setTimeout(function () {
+        inputPasswordActualCambioContrasena
+          ?.focus();
+      }, 150);
+    };
+}
+
+/* Volver desde Cambiar contraseña */
+if (
+  btnVolverCambiarContrasena &&
+  menuPrincipal &&
+  seccionCambiarContrasena
+) {
+  btnVolverCambiarContrasena.onclick =
+    function () {
+      regresarDesdeCambioContrasena();
+    };
+}
+
+/* Cancelar Cambiar contraseña */
+if (
+  btnCancelarCambioContrasena &&
+  menuPrincipal &&
+  seccionCambiarContrasena
+) {
+  btnCancelarCambioContrasena.onclick =
+    function () {
+      regresarDesdeCambioContrasena();
+    };
+} 
+
+/* Validar datos de Cambiar contraseña */
+if (
+  btnContinuarCambioContrasena &&
+  inputPasswordActualCambioContrasena &&
+  inputNuevaContrasena &&
+  inputConfirmarNuevaContrasena
+) {
+  btnContinuarCambioContrasena.onclick =
+    async function () {
+      const passwordActual =
+        inputPasswordActualCambioContrasena
+          .value;
+
+      const nuevaContrasena =
+        inputNuevaContrasena.value;
+
+      const confirmarNuevaContrasena =
+        inputConfirmarNuevaContrasena
+          .value;
+
+      if (!passwordActual) {
+        mostrarMensajeCambioContrasena(
+          "❌ Escribe tu contraseña actual.",
+          "#ff5b5b"
+        );
+
+        inputPasswordActualCambioContrasena
+          .focus();
+
+        return;
+      }
+
+      if (!nuevaContrasena) {
+        mostrarMensajeCambioContrasena(
+          "❌ Escribe la nueva contraseña.",
+          "#ff5b5b"
+        );
+
+        inputNuevaContrasena.focus();
+        return;
+      }
+
+      if (nuevaContrasena.length < 8) {
+        mostrarMensajeCambioContrasena(
+          "❌ La nueva contraseña debe tener por lo menos 8 caracteres.",
+          "#ff5b5b"
+        );
+
+        inputNuevaContrasena.focus();
+        return;
+      }
+
+      if (nuevaContrasena === passwordActual) {
+        mostrarMensajeCambioContrasena(
+          "❌ La nueva contraseña debe ser diferente a la contraseña actual.",
+          "#ff5b5b"
+        );
+
+        inputNuevaContrasena.focus();
+        return;
+      }
+
+      if (!confirmarNuevaContrasena) {
+        mostrarMensajeCambioContrasena(
+          "❌ Confirma la nueva contraseña.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevaContrasena.focus();
+        return;
+      }
+
+      if (
+        nuevaContrasena !==
+        confirmarNuevaContrasena
+      ) {
+        mostrarMensajeCambioContrasena(
+          "❌ Las nuevas contraseñas no coinciden.",
+          "#ff5b5b"
+        );
+
+        inputConfirmarNuevaContrasena
+          .focus();
+
+        return;
+      }
+
+      const correoActual =
+        (
+          user.email ||
+          perfil.email ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+      if (!correoActual) {
+        mostrarMensajeCambioContrasena(
+          "❌ No fue posible identificar el correo de tu cuenta.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      const textoOriginalBotonContrasena =
+        btnContinuarCambioContrasena
+          .textContent;
+
+      let clienteVerificacionPasswordContrasena =
+        null;
+
+      let esperandoMfaContrasena =
+        false;
+
+      btnContinuarCambioContrasena.disabled =
+        true;
+
+      btnContinuarCambioContrasena.textContent =
+        "⏳ Confirmando contraseña...";
+
+      btnContinuarCambioContrasena.style.cursor =
+        "not-allowed";
+
+      btnContinuarCambioContrasena.style.opacity =
+        ".7";
+
+      mostrarMensajeCambioContrasena(
+        "⏳ Confirmando tu contraseña actual...",
+        "#ffffff"
+      );
+
+      try {
+        if (
+          !window.supabase ||
+          typeof window.supabase.createClient !==
+            "function"
+        ) {
+          throw new Error(
+            "No está disponible el cliente temporal de Supabase."
+          );
+        }
+
+        if (
+          !supabaseClient.supabaseUrl ||
+          !supabaseClient.supabaseKey
+        ) {
+          throw new Error(
+            "No fue posible preparar la verificación segura."
+          );
+        }
+
+        /*
+          Este cliente temporal no guarda ni
+          reemplaza la sesión principal.
+        */
+        clienteVerificacionPasswordContrasena =
+          window.supabase.createClient(
+            supabaseClient.supabaseUrl,
+            supabaseClient.supabaseKey,
+            {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+                detectSessionInUrl: false,
+                storageKey:
+                  "mass-password-change-check-" +
+                  Date.now()
+              }
+            }
+          );
+
+        const {
+          data: datosPasswordContrasena,
+          error: errorPasswordContrasena
+        } =
+          await clienteVerificacionPasswordContrasena
+            .auth
+            .signInWithPassword({
+              email: correoActual,
+              password: passwordActual
+            });
+
+        if (
+          errorPasswordContrasena ||
+          !datosPasswordContrasena?.user
+        ) {
+          inputPasswordActualCambioContrasena
+            .value = "";
+
+          mostrarMensajeCambioContrasena(
+            "❌ La contraseña actual es incorrecta.",
+            "#ff5b5b"
+          );
+
+          inputPasswordActualCambioContrasena
+            .focus();
+
+          return;
+        }
+
+        if (
+          datosPasswordContrasena.user.id !==
+          user.id
+        ) {
+          throw new Error(
+            "La identidad confirmada no coincide con la sesión activa."
+          );
+        }
+
+        inputPasswordActualCambioContrasena
+          .value = "";
+
+        const {
+          data: factoresCambioContrasena,
+          error: errorFactoresCambioContrasena
+        } =
+          await supabaseClient.auth.mfa
+            .listFactors();
+
+        if (errorFactoresCambioContrasena) {
+          throw errorFactoresCambioContrasena;
+        }
+
+        const listaFactoresCambioContrasena =
+          Array.isArray(
+            factoresCambioContrasena?.all
+          )
+            ? factoresCambioContrasena.all
+            : [
+                ...(
+                  Array.isArray(
+                    factoresCambioContrasena
+                      ?.totp
+                  )
+                    ? factoresCambioContrasena
+                        .totp
+                    : []
+                ),
+                ...(
+                  Array.isArray(
+                    factoresCambioContrasena
+                      ?.phone
+                  )
+                    ? factoresCambioContrasena
+                        .phone
+                    : []
+                )
+              ];
+
+        const factorVerificadoCambioContrasena =
+          listaFactoresCambioContrasena.find(
+            function (factor) {
+              const tipoFactor =
+                factor.factor_type ||
+                factor.factorType ||
+                factor.type;
+
+              return (
+                tipoFactor === "totp" &&
+                factor.status === "verified"
+              );
+            }
+          );
+
+        nuevaContrasenaPendienteCambio =
+          nuevaContrasena;
+
+       if (
+  !factorVerificadoCambioContrasena?.id
+) {
+  mfaCambioContrasenaAprobado =
+    true;
+
+  mostrarMensajeCambioContrasena(
+    "⏳ Contraseña actual confirmada. Actualizando tu nueva contraseña...",
+    "#ffffff"
+  );
+
+  btnContinuarCambioContrasena.textContent =
+    "⏳ Actualizando contraseña...";
+
+  const {
+    data: datosContrasenaActualizada,
+    error: errorActualizarContrasena
+  } =
+    await supabaseClient.auth.updateUser({
+      password:
+        nuevaContrasenaPendienteCambio
+    });
+
+  if (errorActualizarContrasena) {
+    throw errorActualizarContrasena;
+  }
+
+  if (
+    !datosContrasenaActualizada?.user ||
+    datosContrasenaActualizada.user.id !==
+      user.id
+  ) {
+    throw new Error(
+      "La contraseña se actualizó en una cuenta diferente a la sesión activa."
+    );
+  }
+
+  inputNuevaContrasena.value =
+    "";
+
+  inputConfirmarNuevaContrasena.value =
+    "";
+
+  mostrarMensajeCambioContrasena(
+    "✅ Tu contraseña fue actualizada correctamente.",
+    "#39ff14"
+  );
+
+  btnContinuarCambioContrasena.textContent =
+    "✅ Contraseña actualizada";
+
+  btnContinuarCambioContrasena.style.opacity =
+    "1";
+
+  alert(
+    "✅ Tu contraseña fue actualizada correctamente."
+  );
+
+  regresarDesdeCambioContrasena();
+
+  return;
+} 
+
+        factorMfaCambioContrasenaId =
+          factorVerificadoCambioContrasena.id;
+
+        mfaCambioContrasenaAprobado =
+          false;
+
+        esperandoMfaContrasena =
+          true;
+
+        if (inputCodigoMfaCambioContrasena) {
+          inputCodigoMfaCambioContrasena
+            .value = "";
+        }
+
+        if (mensajeMfaCambioContrasena) {
+          mensajeMfaCambioContrasena
+            .textContent = "";
+
+          mensajeMfaCambioContrasena
+            .style.display = "none";
+        }
+
+        if (panelMfaCambioContrasena) {
+          panelMfaCambioContrasena
+            .style.display = "block";
+
+          panelMfaCambioContrasena
+            .scrollIntoView({
+              behavior: "smooth",
+              block: "start"
+            });
+        }
+
+        btnContinuarCambioContrasena
+          .style.display = "none";
+
+        mostrarMensajeCambioContrasena(
+          "✅ Contraseña actual confirmada. Escribe ahora el código de seguridad de tu aplicación.",
+          "#39ff14"
+        );
+
+        setTimeout(function () {
+          inputCodigoMfaCambioContrasena
+            ?.focus();
+        }, 150);
+      } catch (error) {
+        console.error(
+          "ERROR CONFIRMANDO CONTRASEÑA ACTUAL:",
+          error
+        );
+
+        inputPasswordActualCambioContrasena
+          .value = "";
+
+        mostrarMensajeCambioContrasena(
+          "❌ No fue posible confirmar tu contraseña. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        inputPasswordActualCambioContrasena
+          .focus();
+      } finally {
+        if (
+          clienteVerificacionPasswordContrasena
+        ) {
+          try {
+            await clienteVerificacionPasswordContrasena
+              .auth
+              .signOut({
+                scope: "local"
+              });
+          } catch (
+            errorCerrarVerificacionContrasena
+          ) {
+            console.warn(
+              "No fue posible cerrar el cliente temporal:",
+              errorCerrarVerificacionContrasena
+            );
+          }
+
+          if (
+            typeof clienteVerificacionPasswordContrasena
+              .auth.dispose === "function"
+          ) {
+            clienteVerificacionPasswordContrasena
+              .auth.dispose();
+          }
+        }
+
+        if (!esperandoMfaContrasena) {
+          btnContinuarCambioContrasena
+            .disabled = false;
+
+          btnContinuarCambioContrasena
+            .textContent =
+              textoOriginalBotonContrasena;
+
+          btnContinuarCambioContrasena
+            .style.cursor = "pointer";
+
+          btnContinuarCambioContrasena
+            .style.opacity = "1";
+        }
+      }
+    };
+} 
+
+/* Permitir solamente seis números en MFA */
+if (inputCodigoMfaCambioContrasena) {
+  inputCodigoMfaCambioContrasena.oninput =
+    function () {
+      this.value = this.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+    };
+}
+
+/* Confirmar MFA y cambiar contraseña */
+if (
+  btnConfirmarMfaCambioContrasena &&
+  inputCodigoMfaCambioContrasena
+) {
+  btnConfirmarMfaCambioContrasena.onclick =
+    async function () {
+      const codigoMfaContrasena =
+        inputCodigoMfaCambioContrasena.value
+          .replace(/\D/g, "");
+
+      if (
+        !factorMfaCambioContrasenaId ||
+        !nuevaContrasenaPendienteCambio
+      ) {
+        mostrarMensajeMfaCambioContrasena(
+          "❌ La solicitud de cambio venció. Vuelve a comenzar el proceso.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      if (
+        !/^\d{6}$/.test(
+          codigoMfaContrasena
+        )
+      ) {
+        mostrarMensajeMfaCambioContrasena(
+          "❌ Escribe el código completo de seis dígitos.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioContrasena
+          .focus();
+
+        return;
+      }
+
+      const textoOriginalBotonMfaContrasena =
+        btnConfirmarMfaCambioContrasena
+          .textContent;
+
+      let procesoContrasenaCompletado =
+        false;
+
+      btnConfirmarMfaCambioContrasena.disabled =
+        true;
+
+      btnConfirmarMfaCambioContrasena.textContent =
+        "⏳ Confirmando código...";
+
+      btnConfirmarMfaCambioContrasena.style.cursor =
+        "not-allowed";
+
+      btnConfirmarMfaCambioContrasena.style.opacity =
+        ".7";
+
+      mostrarMensajeMfaCambioContrasena(
+        "⏳ Confirmando tu identidad...",
+        "#ffffff"
+      );
+
+      try {
+        const {
+          error: errorConfirmarMfaContrasena
+        } =
+          await supabaseClient.auth.mfa
+            .challengeAndVerify({
+              factorId:
+                factorMfaCambioContrasenaId,
+              code:
+                codigoMfaContrasena
+            });
+
+        if (errorConfirmarMfaContrasena) {
+          inputCodigoMfaCambioContrasena
+            .value = "";
+
+          mostrarMensajeMfaCambioContrasena(
+            "❌ El código es incorrecto o venció. Escribe el código actual de tu aplicación.",
+            "#ff5b5b"
+          );
+
+          inputCodigoMfaCambioContrasena
+            .focus();
+
+          return;
+        }
+
+        mfaCambioContrasenaAprobado =
+          true;
+
+        inputCodigoMfaCambioContrasena
+          .value = "";
+
+        btnConfirmarMfaCambioContrasena
+          .textContent =
+            "⏳ Actualizando contraseña...";
+
+        mostrarMensajeMfaCambioContrasena(
+          "⏳ Identidad confirmada. Actualizando tu contraseña...",
+          "#ffffff"
+        );
+
+        const {
+          data: datosContrasenaActualizadaMfa,
+          error: errorActualizarContrasenaMfa
+        } =
+          await supabaseClient.auth.updateUser({
+            password:
+              nuevaContrasenaPendienteCambio
+          });
+
+        if (errorActualizarContrasenaMfa) {
+          throw errorActualizarContrasenaMfa;
+        }
+
+        if (
+          !datosContrasenaActualizadaMfa?.user ||
+          datosContrasenaActualizadaMfa
+            .user.id !== user.id
+        ) {
+          throw new Error(
+            "La contraseña se actualizó en una cuenta diferente a la sesión activa."
+          );
+        }
+
+        procesoContrasenaCompletado =
+          true;
+
+        if (inputNuevaContrasena) {
+          inputNuevaContrasena.value =
+            "";
+        }
+
+        if (inputConfirmarNuevaContrasena) {
+          inputConfirmarNuevaContrasena
+            .value = "";
+        }
+
+        mostrarMensajeMfaCambioContrasena(
+          "✅ Tu identidad fue confirmada y la contraseña fue actualizada correctamente.",
+          "#39ff14"
+        );
+
+        btnConfirmarMfaCambioContrasena
+          .textContent =
+            "✅ Contraseña actualizada";
+
+        btnConfirmarMfaCambioContrasena
+          .style.opacity = "1";
+
+        alert(
+          "✅ Tu contraseña fue actualizada correctamente."
+        );
+
+        regresarDesdeCambioContrasena();
+      } catch (error) {
+        console.error(
+          "ERROR CAMBIANDO CONTRASEÑA CON MFA:",
+          error
+        );
+
+        inputCodigoMfaCambioContrasena
+          .value = "";
+
+        mostrarMensajeMfaCambioContrasena(
+          "❌ No fue posible actualizar la contraseña. Inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        inputCodigoMfaCambioContrasena
+          .focus();
+      } finally {
+        if (!procesoContrasenaCompletado) {
+          btnConfirmarMfaCambioContrasena
+            .disabled = false;
+
+          btnConfirmarMfaCambioContrasena
+            .textContent =
+              textoOriginalBotonMfaContrasena;
+
+          btnConfirmarMfaCambioContrasena
+            .style.cursor = "pointer";
+
+          btnConfirmarMfaCambioContrasena
+            .style.opacity = "1";
+        }
+      }
+    };
+}  
 
 /* Limpiar formulario de Cambiar teléfono */
 function limpiarFormularioCambioTelefono() {
