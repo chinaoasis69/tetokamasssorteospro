@@ -407,7 +407,77 @@ const btnConfirmarMfaCambioContrasena =
 
 let factorMfaCambioContrasenaId = null;
 let nuevaContrasenaPendienteCambio = "";
-let mfaCambioContrasenaAprobado = false;  
+let mfaCambioContrasenaAprobado = false;
+
+/* Elementos del panel Privacidad */
+const seccionPrivacidad =
+  document.getElementById(
+    "massIdPrivacidad"
+  );
+
+const btnPrivacidad =
+  document.getElementById(
+    "btnMassIdPrivacidad"
+  );
+
+const btnVolverPrivacidad =
+  document.getElementById(
+    "btnVolverPrivacidadMassId"
+  );
+
+const btnGuardarPrivacidad =
+  document.getElementById(
+    "btnGuardarPrivacidadMassId"
+  );
+
+const btnCancelarPrivacidad =
+  document.getElementById(
+    "btnCancelarPrivacidadMassId"
+  );
+
+const inputPrivacidadPerfilPublico =
+  document.getElementById(
+    "massIdPrivacidadPerfilPublico"
+  );
+
+const inputPrivacidadMostrarTelefono =
+  document.getElementById(
+    "massIdPrivacidadMostrarTelefono"
+  );
+
+const inputPrivacidadMostrarCorreo =
+  document.getElementById(
+    "massIdPrivacidadMostrarCorreo"
+  );
+
+const inputPrivacidadPromociones =
+  document.getElementById(
+    "massIdPrivacidadPromociones"
+  );
+
+const inputPrivacidadPersonalizacion =
+  document.getElementById(
+    "massIdPrivacidadPersonalizacion"
+  );
+
+const mensajePrivacidad =
+  document.getElementById(
+    "massIdPrivacidadMensaje"
+  );
+
+/*
+  Conserva las preferencias cargadas para
+  poder restaurarlas al presionar Cancelar.
+*/
+let preferenciasPrivacidadOriginales = {
+  perfil_publico: false,
+  mostrar_telefono: false,
+  mostrar_correo: false,
+  promociones: false,
+  personalizacion: false
+};
+
+let privacidadMassCargada = false;  
 
 const direccionInvitacion =
   document.getElementById(
@@ -1640,6 +1710,555 @@ function regresarDesdeCambioCorreo() {
     block: "start"
   });
 }
+
+/* Herramientas del panel Privacidad */
+function normalizarPreferenciasPrivacidad(
+  preferencias
+) {
+  const datos = preferencias || {};
+
+  return {
+    perfil_publico:
+      datos.perfil_publico === true,
+
+    mostrar_telefono:
+      datos.mostrar_telefono === true,
+
+    mostrar_correo:
+      datos.mostrar_correo === true,
+
+    promociones:
+      datos.promociones === true,
+
+    personalizacion:
+      datos.personalizacion === true
+  };
+}
+
+
+/* Colocar las preferencias en los controles */
+function aplicarPreferenciasPrivacidad(
+  preferencias
+) {
+  const datos =
+    normalizarPreferenciasPrivacidad(
+      preferencias
+    );
+
+  if (inputPrivacidadPerfilPublico) {
+    inputPrivacidadPerfilPublico.checked =
+      datos.perfil_publico;
+  }
+
+  if (inputPrivacidadMostrarTelefono) {
+    inputPrivacidadMostrarTelefono.checked =
+      datos.mostrar_telefono;
+  }
+
+  if (inputPrivacidadMostrarCorreo) {
+    inputPrivacidadMostrarCorreo.checked =
+      datos.mostrar_correo;
+  }
+
+  if (inputPrivacidadPromociones) {
+    inputPrivacidadPromociones.checked =
+      datos.promociones;
+  }
+
+  if (inputPrivacidadPersonalizacion) {
+    inputPrivacidadPersonalizacion.checked =
+      datos.personalizacion;
+  }
+}
+
+
+/* Leer los valores actuales del formulario */
+function leerPreferenciasPrivacidadFormulario() {
+  return {
+    perfil_publico:
+      Boolean(
+        inputPrivacidadPerfilPublico?.checked
+      ),
+
+    mostrar_telefono:
+      Boolean(
+        inputPrivacidadMostrarTelefono
+          ?.checked
+      ),
+
+    mostrar_correo:
+      Boolean(
+        inputPrivacidadMostrarCorreo?.checked
+      ),
+
+    promociones:
+      Boolean(
+        inputPrivacidadPromociones?.checked
+      ),
+
+    personalizacion:
+      Boolean(
+        inputPrivacidadPersonalizacion
+          ?.checked
+      )
+  };
+}
+
+
+/* Conservar una copia de las preferencias */
+function establecerPreferenciasPrivacidadOriginales(
+  preferencias
+) {
+  preferenciasPrivacidadOriginales =
+    normalizarPreferenciasPrivacidad(
+      preferencias
+    );
+}
+
+
+/* Mostrar mensajes del panel Privacidad */
+function mostrarMensajePrivacidad(
+  texto,
+  color
+) {
+  if (!mensajePrivacidad) {
+    return;
+  }
+
+  mensajePrivacidad.textContent =
+    texto;
+
+  mensajePrivacidad.style.color =
+    color;
+
+  mensajePrivacidad.style.borderColor =
+    color;
+
+  mensajePrivacidad.style.display =
+    "block";
+}
+
+
+/* Ocultar mensajes del panel Privacidad */
+function ocultarMensajePrivacidad() {
+  if (!mensajePrivacidad) {
+    return;
+  }
+
+  mensajePrivacidad.textContent =
+    "";
+
+  mensajePrivacidad.style.display =
+    "none";
+}
+
+
+/* Restaurar cambios que no fueron guardados */
+function restaurarPreferenciasPrivacidad() {
+  aplicarPreferenciasPrivacidad(
+    preferenciasPrivacidadOriginales
+  );
+
+  ocultarMensajePrivacidad();
+}
+
+
+/* Regresar desde el panel Privacidad */
+function regresarDesdePrivacidad() {
+  restaurarPreferenciasPrivacidad();
+
+  if (seccionPrivacidad) {
+    seccionPrivacidad.style.display =
+      "none";
+  }
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display =
+      "block";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+} 
+
+/* Cargar preferencias privadas desde Supabase */
+async function cargarPreferenciasPrivacidad() {
+  privacidadMassCargada = false;
+
+  ocultarMensajePrivacidad();
+
+  aplicarPreferenciasPrivacidad({
+    perfil_publico: false,
+    mostrar_telefono: false,
+    mostrar_correo: false,
+    promociones: false,
+    personalizacion: false
+  });
+
+  if (!user?.id) {
+    mostrarMensajePrivacidad(
+      "❌ No fue posible identificar la cuenta activa.",
+      "#ff5b5b"
+    );
+
+    return false;
+  }
+
+  if (btnGuardarPrivacidad) {
+    btnGuardarPrivacidad.disabled =
+      true;
+
+    btnGuardarPrivacidad.textContent =
+      "⏳ Cargando preferencias...";
+
+    btnGuardarPrivacidad.style.cursor =
+      "not-allowed";
+
+    btnGuardarPrivacidad.style.opacity =
+      ".7";
+  }
+
+  try {
+    const {
+      data: privacidadGuardada,
+      error: errorCargarPrivacidad
+    } =
+      await supabaseClient
+        .from("privacidad_mass")
+        .select(`
+          perfil_publico,
+          mostrar_telefono,
+          mostrar_correo,
+          promociones,
+          personalizacion
+        `)
+        .eq("auth_user_id", user.id)
+        .maybeSingle();
+
+    if (errorCargarPrivacidad) {
+      throw errorCargarPrivacidad;
+    }
+
+    /*
+      Si todavía no existe una fila,
+      aplicamos privacidad máxima.
+      La fila se creará al guardar.
+    */
+    if (!privacidadGuardada) {
+      const preferenciasIniciales = {
+        perfil_publico: false,
+        mostrar_telefono: false,
+        mostrar_correo: false,
+        promociones: false,
+        personalizacion: false
+      };
+
+      establecerPreferenciasPrivacidadOriginales(
+        preferenciasIniciales
+      );
+
+      aplicarPreferenciasPrivacidad(
+        preferenciasIniciales
+      );
+
+      privacidadMassCargada = true;
+
+      mostrarMensajePrivacidad(
+        "🛡️ Privacidad máxima aplicada. Todas las preferencias comienzan desactivadas.",
+        "#39ff14"
+      );
+
+      return true;
+    }
+
+    const preferenciasNormalizadas =
+      normalizarPreferenciasPrivacidad(
+        privacidadGuardada
+      );
+
+    establecerPreferenciasPrivacidadOriginales(
+      preferenciasNormalizadas
+    );
+
+    aplicarPreferenciasPrivacidad(
+      preferenciasNormalizadas
+    );
+
+    privacidadMassCargada = true;
+
+    mostrarMensajePrivacidad(
+      "✅ Tus preferencias de privacidad fueron cargadas correctamente.",
+      "#39ff14"
+    );
+
+    return true;
+  } catch (error) {
+    console.error(
+      "ERROR CARGANDO PRIVACIDAD MASS:",
+      error
+    );
+
+    privacidadMassCargada = false;
+
+    mostrarMensajePrivacidad(
+      "❌ No fue posible cargar tus preferencias de privacidad.",
+      "#ff5b5b"
+    );
+
+    return false;
+  } finally {
+    if (btnGuardarPrivacidad) {
+      btnGuardarPrivacidad.disabled =
+        false;
+
+      btnGuardarPrivacidad.textContent =
+        "💾 Guardar preferencias";
+
+      btnGuardarPrivacidad.style.cursor =
+        "pointer";
+
+      btnGuardarPrivacidad.style.opacity =
+        "1";
+    }
+  }
+}
+
+/* Abrir el panel Privacidad */
+if (
+  btnPrivacidad &&
+  menuPrincipal &&
+  seccionPrivacidad
+) {
+  btnPrivacidad.onclick =
+    async function () {
+      menuPrincipal.style.display =
+        "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display =
+          "none";
+      }
+
+      if (seccionFotoPerfil) {
+        seccionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (seccionSeguridad) {
+        seccionSeguridad.style.display =
+          "none";
+      }
+
+      if (seccionCambiarCorreo) {
+        seccionCambiarCorreo.style.display =
+          "none";
+      }
+
+      if (seccionCambiarTelefono) {
+        seccionCambiarTelefono.style.display =
+          "none";
+      }
+
+      if (seccionCambiarContrasena) {
+        seccionCambiarContrasena.style.display =
+          "none";
+      }
+
+      seccionPrivacidad.style.display =
+        "block";
+
+      seccionPrivacidad.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      await cargarPreferenciasPrivacidad();
+    };
+}
+
+
+/* Volver desde el panel Privacidad */
+if (
+  btnVolverPrivacidad &&
+  menuPrincipal &&
+  seccionPrivacidad
+) {
+  btnVolverPrivacidad.onclick =
+    function () {
+      regresarDesdePrivacidad();
+    };
+}
+
+
+/* Cancelar cambios de Privacidad */
+if (
+  btnCancelarPrivacidad &&
+  menuPrincipal &&
+  seccionPrivacidad
+) {
+  btnCancelarPrivacidad.onclick =
+    function () {
+      regresarDesdePrivacidad();
+    };
+}
+
+/* Guardar preferencias de Privacidad */
+if (btnGuardarPrivacidad) {
+  btnGuardarPrivacidad.onclick =
+    async function () {
+      if (!user?.id) {
+        mostrarMensajePrivacidad(
+          "❌ No fue posible identificar la cuenta activa.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      if (!privacidadMassCargada) {
+        mostrarMensajePrivacidad(
+          "❌ Las preferencias no terminaron de cargar. Cierra y vuelve a abrir Privacidad.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      const nuevasPreferencias =
+        leerPreferenciasPrivacidadFormulario();
+
+      const textoOriginalBotonPrivacidad =
+        btnGuardarPrivacidad.textContent;
+
+      btnGuardarPrivacidad.disabled =
+        true;
+
+      btnGuardarPrivacidad.textContent =
+        "⏳ Guardando preferencias...";
+
+      btnGuardarPrivacidad.style.cursor =
+        "not-allowed";
+
+      btnGuardarPrivacidad.style.opacity =
+        ".7";
+
+      mostrarMensajePrivacidad(
+        "⏳ Guardando tus preferencias privadas...",
+        "#ffffff"
+      );
+
+      try {
+        const {
+          data: privacidadActualizada,
+          error: errorGuardarPrivacidad
+        } =
+          await supabaseClient
+            .from("privacidad_mass")
+            .upsert(
+              {
+                auth_user_id: user.id,
+
+                perfil_publico:
+                  nuevasPreferencias
+                    .perfil_publico,
+
+                mostrar_telefono:
+                  nuevasPreferencias
+                    .mostrar_telefono,
+
+                mostrar_correo:
+                  nuevasPreferencias
+                    .mostrar_correo,
+
+                promociones:
+                  nuevasPreferencias
+                    .promociones,
+
+                personalizacion:
+                  nuevasPreferencias
+                    .personalizacion
+              },
+              {
+                onConflict: "auth_user_id"
+              }
+            )
+            .select(`
+              perfil_publico,
+              mostrar_telefono,
+              mostrar_correo,
+              promociones,
+              personalizacion
+            `)
+            .maybeSingle();
+
+        if (errorGuardarPrivacidad) {
+          throw errorGuardarPrivacidad;
+        }
+
+        if (!privacidadActualizada) {
+          throw new Error(
+            "Supabase no devolvió las preferencias guardadas."
+          );
+        }
+
+        const preferenciasConfirmadas =
+          normalizarPreferenciasPrivacidad(
+            privacidadActualizada
+          );
+
+        establecerPreferenciasPrivacidadOriginales(
+          preferenciasConfirmadas
+        );
+
+        aplicarPreferenciasPrivacidad(
+          preferenciasConfirmadas
+        );
+
+        privacidadMassCargada = true;
+
+        mostrarMensajePrivacidad(
+          "✅ Tus preferencias de privacidad fueron guardadas correctamente.",
+          "#39ff14"
+        );
+
+        btnGuardarPrivacidad.textContent =
+          "✅ Preferencias guardadas";
+
+        btnGuardarPrivacidad.style.opacity =
+          "1";
+
+        setTimeout(function () {
+          if (!btnGuardarPrivacidad) {
+            return;
+          }
+
+          btnGuardarPrivacidad.textContent =
+            textoOriginalBotonPrivacidad;
+        }, 1500);
+      } catch (error) {
+        console.error(
+          "ERROR GUARDANDO PRIVACIDAD MASS:",
+          error
+        );
+
+        mostrarMensajePrivacidad(
+          "❌ No fue posible guardar tus preferencias de privacidad.",
+          "#ff5b5b"
+        );
+      } finally {
+        btnGuardarPrivacidad.disabled =
+          false;
+
+        btnGuardarPrivacidad.style.cursor =
+          "pointer";
+
+        btnGuardarPrivacidad.style.opacity =
+          "1";
+      }
+    };
+}  
 
 /* Limpiar formulario de Cambiar contraseña */
 function limpiarFormularioCambioContrasena() {
