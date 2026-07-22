@@ -2542,40 +2542,40 @@ if (
       menuPrincipal.style.display =
         "none";
 
-      if (sectionInformacion) {
-        sectionInformacion.style.display =
-          "none";
-      }
+      if (seccionInformacion) {
+  seccionInformacion.style.display =
+    "none";
+}
 
-      if (sectionFotoPerfil) {
-        sectionFotoPerfil.style.display =
-          "none";
-      }
+if (seccionFotoPerfil) {
+  seccionFotoPerfil.style.display =
+    "none";
+}
 
-      if (sectionSeguridad) {
-        sectionSeguridad.style.display =
-          "none";
-      }
+if (seccionSeguridad) {
+  seccionSeguridad.style.display =
+    "none";
+}
 
-      if (sectionCambiarCorreo) {
-        sectionCambiarCorreo.style.display =
-          "none";
-      }
+if (seccionCambiarCorreo) {
+  seccionCambiarCorreo.style.display =
+    "none";
+}
 
-      if (sectionCambiarTelefono) {
-        sectionCambiarTelefono.style.display =
-          "none";
-      }
+if (seccionCambiarTelefono) {
+  seccionCambiarTelefono.style.display =
+    "none";
+}
 
-      if (sectionCambiarContrasena) {
-        sectionCambiarContrasena.style.display =
-          "none";
-      }
+if (seccionCambiarContrasena) {
+  seccionCambiarContrasena.style.display =
+    "none";
+}
 
-      if (sectionPrivacidad) {
-        sectionPrivacidad.style.display =
-          "none";
-      }
+if (seccionPrivacidad) {
+  seccionPrivacidad.style.display =
+    "none";
+}
 
       seccionDocumentosLegales.style.display =
         "block";
