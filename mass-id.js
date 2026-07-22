@@ -299,9 +299,45 @@ const btnConfirmarMfaCambioTelefono =
     "btnConfirmarMfaCambioTelefonoMassId"
   );
 
+/* Panel SMS para verificar el nuevo teléfono */
+const panelSmsCambioTelefono =
+  document.getElementById(
+    "massIdCambioTelefonoSms"
+  );
+
+const telefonoSmsDestino =
+  document.getElementById(
+    "massIdTelefonoSmsDestino"
+  );
+
+const inputCodigoSmsCambioTelefono =
+  document.getElementById(
+    "massIdCodigoSmsCambioTelefono"
+  );
+
+const mensajeSmsCambioTelefono =
+  document.getElementById(
+    "massIdCambioTelefonoSmsMensaje"
+  );
+
+const btnConfirmarSmsCambioTelefono =
+  document.getElementById(
+    "btnConfirmarSmsCambioTelefonoMassId"
+  );
+
+const btnReenviarSmsCambioTelefono =
+  document.getElementById(
+    "btnReenviarSmsCambioTelefonoMassId"
+  );
+
 let factorMfaCambioTelefonoId = null;
 let nuevoTelefonoPendienteCambio = "";
-let mfaCambioTelefonoAprobado = false;  
+let telefonoE164PendienteCambio = "";
+let mfaCambioTelefonoAprobado = false;
+let smsCambioTelefonoEnviado = false;
+let smsCambioTelefonoConfirmado = false;
+let temporizadorReenvioSmsCambioTelefono =
+  null; 
 
 const direccionInvitacion =
   document.getElementById(
@@ -1556,7 +1592,19 @@ function limpiarFormularioCambioTelefono() {
 
 factorMfaCambioTelefonoId = null;
 nuevoTelefonoPendienteCambio = "";
+telefonoE164PendienteCambio = "";
 mfaCambioTelefonoAprobado = false;
+smsCambioTelefonoEnviado = false;
+smsCambioTelefonoConfirmado = false;
+
+if (temporizadorReenvioSmsCambioTelefono) {
+  clearInterval(
+    temporizadorReenvioSmsCambioTelefono
+  );
+
+  temporizadorReenvioSmsCambioTelefono =
+    null;
+}  
 
 if (panelMfaCambioTelefono) {
   panelMfaCambioTelefono.style.display =
@@ -1578,12 +1626,64 @@ if (btnConfirmarMfaCambioTelefono) {
     false;
 
   btnConfirmarMfaCambioTelefono.textContent =
-    "✅ Confirmar código y cambiar teléfono";
+    "✅ Confirmar identidad y enviar SMS";
 
   btnConfirmarMfaCambioTelefono.style.cursor =
     "pointer";
 
   btnConfirmarMfaCambioTelefono.style.opacity =
+    "1";
+}
+
+/* Limpiar el panel SMS */
+if (panelSmsCambioTelefono) {
+  panelSmsCambioTelefono.style.display =
+    "none";
+}
+
+if (telefonoSmsDestino) {
+  telefonoSmsDestino.textContent =
+    "Nuevo teléfono";
+}
+
+if (inputCodigoSmsCambioTelefono) {
+  inputCodigoSmsCambioTelefono.value =
+    "";
+}
+
+if (mensajeSmsCambioTelefono) {
+  mensajeSmsCambioTelefono.textContent =
+    "";
+
+  mensajeSmsCambioTelefono.style.display =
+    "none";
+}
+
+if (btnConfirmarSmsCambioTelefono) {
+  btnConfirmarSmsCambioTelefono.disabled =
+    false;
+
+  btnConfirmarSmsCambioTelefono.textContent =
+    "✅ Confirmar código SMS y cambiar teléfono";
+
+  btnConfirmarSmsCambioTelefono.style.cursor =
+    "pointer";
+
+  btnConfirmarSmsCambioTelefono.style.opacity =
+    "1";
+}
+
+if (btnReenviarSmsCambioTelefono) {
+  btnReenviarSmsCambioTelefono.disabled =
+    false;
+
+  btnReenviarSmsCambioTelefono.textContent =
+    "🔄 Reenviar código SMS";
+
+  btnReenviarSmsCambioTelefono.style.cursor =
+    "pointer";
+
+  btnReenviarSmsCambioTelefono.style.opacity =
     "1";
 }
 
@@ -2132,6 +2232,77 @@ if (inputCodigoMfaCambioTelefono) {
     };
 }
 
+/* Mostrar mensajes de verificación SMS */
+function mostrarMensajeSmsCambioTelefono(
+  texto,
+  color
+) {
+  if (!mensajeSmsCambioTelefono) {
+    return;
+  }
+
+  mensajeSmsCambioTelefono.textContent =
+    texto;
+
+  mensajeSmsCambioTelefono.style.color =
+    color;
+
+  mensajeSmsCambioTelefono.style.borderColor =
+    color;
+
+  mensajeSmsCambioTelefono.style.display =
+    "block";
+}
+
+/*
+  Convertir el nuevo teléfono al formato
+  internacional E.164 requerido por Supabase
+  y Twilio Verify.
+
+  Ejemplo:
+  9563724892 → +19563724892
+*/
+function convertirTelefonoCambioAE164(
+  telefono
+) {
+  const digitos =
+    String(telefono || "")
+      .replace(/\D/g, "");
+
+  /* Estados Unidos: diez dígitos */
+  if (/^\d{10}$/.test(digitos)) {
+    return "+1" + digitos;
+  }
+
+  /*
+    Estados Unidos cuando ya incluye
+    el número 1 al principio.
+  */
+  if (/^1\d{10}$/.test(digitos)) {
+    return "+" + digitos;
+  }
+
+  /*
+    Otros números que ya incluyen
+    código internacional.
+  */
+  if (/^\d{11,15}$/.test(digitos)) {
+    return "+" + digitos;
+  }
+
+  return "";
+}
+
+/* Permitir solamente seis números en el SMS */
+if (inputCodigoSmsCambioTelefono) {
+  inputCodigoSmsCambioTelefono.oninput =
+    function () {
+      this.value = this.value
+        .replace(/\D/g, "")
+        .slice(0, 6);
+    };
+}  
+
 /* Confirmar código MFA del cambio de teléfono */
 if (
   btnConfirmarMfaCambioTelefono &&
@@ -2215,169 +2386,115 @@ if (
           return;
         }
 
-        mfaCambioTelefonoAprobado = true;
+      mfaCambioTelefonoAprobado = true;
 
 inputCodigoMfaCambioTelefono.value =
   "";
 
-const telefonoNuevoConfirmado =
-  nuevoTelefonoPendienteCambio;
+telefonoE164PendienteCambio =
+  convertirTelefonoCambioAE164(
+    nuevoTelefonoPendienteCambio
+  );
 
-const telefonoAnterior =
-  (
-    perfil.telefono ||
-    ""
-  )
-    .replace(/\D/g, "");
+if (!telefonoE164PendienteCambio) {
+  mostrarMensajeMfaCambioTelefono(
+    "❌ El nuevo teléfono no tiene un formato válido para recibir el SMS.",
+    "#ff5b5b"
+  );
+
+  return;
+}
 
 btnConfirmarMfaCambioTelefono.textContent =
-  "⏳ Actualizando teléfono...";
+  "⏳ Enviando código SMS...";
 
 mostrarMensajeMfaCambioTelefono(
-  "⏳ Código confirmado. Actualizando tu teléfono en el ecosistema MASS...",
+  "⏳ Identidad confirmada. Enviando el código al nuevo teléfono...",
   "#ffffff"
 );
 
 /*
-  Primero sincronizamos cualquier permiso
-  relacionado con este mismo auth_user_id.
+  Iniciar el cambio en Supabase Auth.
+  Como Phone Confirmations está activado,
+  esto enviará el código mediante Twilio Verify.
 */
 const {
-  data: filasAdminTelefono,
-  error: errorActualizarAdminTelefono
+  error: errorEnviarSmsCambioTelefono
 } =
-  await supabaseClient
-    .from("admin_organizadores")
-    .update({
-      telefono: telefonoNuevoConfirmado
-    })
-    .eq(
-      "auth_user_id",
-      user.id
-    )
-    .select("id");
+  await supabaseClient.auth.updateUser({
+    phone: telefonoE164PendienteCambio
+  });
 
-if (errorActualizarAdminTelefono) {
-  throw errorActualizarAdminTelefono;
-}
-
-/*
-  Después actualizamos el perfil principal
-  privado de Mi MASS ID.
-*/
-const {
-  data: perfilTelefonoActualizado,
-  error: errorActualizarPerfilTelefono
-} =
-  await supabaseClient
-    .from("usuarios_mass")
-    .update({
-      telefono: telefonoNuevoConfirmado
-    })
-    .eq(
-      "auth_user_id",
-      user.id
-    )
-    .select("telefono")
-    .maybeSingle();
-
-if (
-  errorActualizarPerfilTelefono ||
-  !perfilTelefonoActualizado
-) {
-  /*
-    Si falló el perfil principal, regresamos
-    admin_organizadores al teléfono anterior.
-  */
-  if (
-    Array.isArray(filasAdminTelefono) &&
-    filasAdminTelefono.length > 0
-  ) {
-    const {
-      error: errorRestaurarAdminTelefono
-    } =
-      await supabaseClient
-        .from("admin_organizadores")
-        .update({
-          telefono:
-            telefonoAnterior || null
-        })
-        .eq(
-          "auth_user_id",
-          user.id
-        );
-
-    if (errorRestaurarAdminTelefono) {
-      console.error(
-        "ERROR RESTAURANDO TELÉFONO ADMIN:",
-        errorRestaurarAdminTelefono
-      );
-    }
-  }
-
-  throw (
-    errorActualizarPerfilTelefono ||
-    new Error(
-      "No se encontró el perfil MASS ID para actualizar."
-    )
+if (errorEnviarSmsCambioTelefono) {
+  console.error(
+    "ERROR ENVIANDO SMS PARA CAMBIO DE TELÉFONO:",
+    errorEnviarSmsCambioTelefono
   );
-}
 
-/* Actualizar los datos activos del navegador */
-perfil.telefono =
-  telefonoNuevoConfirmado;
+  smsCambioTelefonoEnviado = false;
 
-localStorage.setItem(
-  "mass_telefono",
-  telefonoNuevoConfirmado
-);
-
-localStorage.setItem(
-  "mass_user",
-  telefonoNuevoConfirmado
-);
-
-try {
-  if (
-    typeof userActual !==
-    "undefined"
-  ) {
-    userActual =
-      telefonoNuevoConfirmado;
-  }
-} catch (
-  errorActualizarUsuarioLocal
-) {
-  console.warn(
-    "No fue posible actualizar userActual:",
-    errorActualizarUsuarioLocal
+  mostrarMensajeMfaCambioTelefono(
+    "❌ No fue posible enviar el código SMS. Revisa el número e inténtalo nuevamente.",
+    "#ff5b5b"
   );
+
+  return;
 }
 
+smsCambioTelefonoEnviado = true;
+smsCambioTelefonoConfirmado = false;
 codigoMfaTelefonoConfirmado = true;
 
-mostrarMensajeMfaCambioTelefono(
-  "✅ Tu teléfono fue actualizado correctamente en el ecosistema MASS.",
-  "#39ff14"
-);
+if (telefonoSmsDestino) {
+  const ultimosCuatroTelefono =
+    nuevoTelefonoPendienteCambio.slice(-4);
+
+  telefonoSmsDestino.textContent =
+    "••• ••• " + ultimosCuatroTelefono;
+}
+
+if (inputCodigoSmsCambioTelefono) {
+  inputCodigoSmsCambioTelefono.value =
+    "";
+}
+
+if (mensajeSmsCambioTelefono) {
+  mensajeSmsCambioTelefono.textContent =
+    "";
+
+  mensajeSmsCambioTelefono.style.display =
+    "none";
+}
+
+if (panelMfaCambioTelefono) {
+  panelMfaCambioTelefono.style.display =
+    "none";
+}
+
+if (panelSmsCambioTelefono) {
+  panelSmsCambioTelefono.style.display =
+    "block";
+
+  panelSmsCambioTelefono.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
 
 btnConfirmarMfaCambioTelefono.textContent =
-  "✅ Teléfono actualizado";
+  "✅ SMS enviado";
 
 btnConfirmarMfaCambioTelefono.style.opacity =
   "1";
 
-/*
-  Regresar al menú y recargar Mi MASS ID
-  para mostrar inmediatamente el número nuevo.
-*/
-regresarDesdeCambioTelefono();
-
-await abrirMiMassId();
-
-alert(
-  "✅ Tu teléfono fue actualizado correctamente."
+mostrarMensajeCambioTelefono(
+  "✅ Identidad confirmada. Enviamos un código SMS al nuevo teléfono.",
+  "#39ff14"
 );
+
+setTimeout(function () {
+  inputCodigoSmsCambioTelefono?.focus();
+}, 150);
         
       } catch (error) {
         console.error(
@@ -2408,6 +2525,512 @@ alert(
           btnConfirmarMfaCambioTelefono.style.opacity =
             "1";
         }
+      }
+    };
+}
+
+/* Confirmar código SMS del nuevo teléfono */
+if (
+  btnConfirmarSmsCambioTelefono &&
+  inputCodigoSmsCambioTelefono
+) {
+  btnConfirmarSmsCambioTelefono.onclick =
+    async function () {
+      const codigoSms =
+        inputCodigoSmsCambioTelefono.value
+          .replace(/\D/g, "");
+
+      if (
+        !mfaCambioTelefonoAprobado ||
+        !smsCambioTelefonoEnviado ||
+        !telefonoE164PendienteCambio ||
+        !nuevoTelefonoPendienteCambio
+      ) {
+        mostrarMensajeSmsCambioTelefono(
+          "❌ La solicitud de cambio venció. Vuelve a comenzar el proceso.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      if (!/^\d{6}$/.test(codigoSms)) {
+        mostrarMensajeSmsCambioTelefono(
+          "❌ Escribe el código SMS completo de seis dígitos.",
+          "#ff5b5b"
+        );
+
+        inputCodigoSmsCambioTelefono.focus();
+        return;
+      }
+
+      const textoOriginalBotonSms =
+        btnConfirmarSmsCambioTelefono
+          .textContent;
+
+      let procesoTelefonoCompletado =
+        false;
+
+      btnConfirmarSmsCambioTelefono.disabled =
+        true;
+
+      btnConfirmarSmsCambioTelefono.textContent =
+        "⏳ Confirmando código SMS...";
+
+      btnConfirmarSmsCambioTelefono.style.cursor =
+        "not-allowed";
+
+      btnConfirmarSmsCambioTelefono.style.opacity =
+        ".7";
+
+      mostrarMensajeSmsCambioTelefono(
+        "⏳ Verificando que el nuevo teléfono te pertenece...",
+        "#ffffff"
+      );
+
+      try {
+        /*
+          Revisar primero si el código ya fue
+          confirmado anteriormente. Esto permite
+          recuperar una sincronización interrumpida.
+        */
+        const {
+          data: datosUsuarioAntesSms,
+          error: errorUsuarioAntesSms
+        } =
+          await supabaseClient.auth.getUser();
+
+        const usuarioAntesSms =
+          datosUsuarioAntesSms?.user;
+
+        if (
+          errorUsuarioAntesSms ||
+          !usuarioAntesSms ||
+          usuarioAntesSms.id !== user.id
+        ) {
+          throw (
+            errorUsuarioAntesSms ||
+            new Error(
+              "La sesión activa no coincide con la cuenta."
+            )
+          );
+        }
+
+        const telefonoAuthAntesSms =
+          (
+            usuarioAntesSms.phone ||
+            ""
+          )
+            .replace(/\D/g, "");
+
+        const telefonoPendienteDigitos =
+          telefonoE164PendienteCambio
+            .replace(/\D/g, "");
+
+        const telefonoYaConfirmadoEnAuth =
+          telefonoAuthAntesSms ===
+          telefonoPendienteDigitos;
+
+        if (!telefonoYaConfirmadoEnAuth) {
+          const {
+            error: errorConfirmarSmsTelefono
+          } =
+            await supabaseClient.auth.verifyOtp({
+              phone:
+                telefonoE164PendienteCambio,
+              token: codigoSms,
+              type: "phone_change"
+            });
+
+          if (errorConfirmarSmsTelefono) {
+            inputCodigoSmsCambioTelefono.value =
+              "";
+
+            mostrarMensajeSmsCambioTelefono(
+              "❌ El código SMS es incorrecto o venció. Escribe el código más reciente.",
+              "#ff5b5b"
+            );
+
+            inputCodigoSmsCambioTelefono.focus();
+            return;
+          }
+        }
+
+        /*
+          Confirmar que Supabase Auth realmente
+          guardó el teléfono en esta misma cuenta.
+        */
+        const {
+          data: datosUsuarioConfirmado,
+          error: errorUsuarioConfirmado
+        } =
+          await supabaseClient.auth.getUser();
+
+        const usuarioConfirmado =
+          datosUsuarioConfirmado?.user;
+
+        if (
+          errorUsuarioConfirmado ||
+          !usuarioConfirmado ||
+          usuarioConfirmado.id !== user.id
+        ) {
+          throw (
+            errorUsuarioConfirmado ||
+            new Error(
+              "No fue posible confirmar la identidad después del SMS."
+            )
+          );
+        }
+
+        const telefonoAuthConfirmado =
+          (
+            usuarioConfirmado.phone ||
+            ""
+          )
+            .replace(/\D/g, "");
+
+        if (
+          telefonoAuthConfirmado !==
+          telefonoPendienteDigitos
+        ) {
+          throw new Error(
+            "El teléfono confirmado no coincide con el teléfono solicitado."
+          );
+        }
+
+        smsCambioTelefonoConfirmado = true;
+
+        const telefonoNuevoConfirmado =
+          nuevoTelefonoPendienteCambio;
+
+        const telefonoAnterior =
+          (
+            perfil.telefono ||
+            ""
+          )
+            .replace(/\D/g, "");
+
+        btnConfirmarSmsCambioTelefono.textContent =
+          "⏳ Sincronizando teléfono...";
+
+        mostrarMensajeSmsCambioTelefono(
+          "⏳ Teléfono verificado. Sincronizando tu cuenta MASS...",
+          "#ffffff"
+        );
+
+        /*
+          Actualizar permisos relacionados con
+          el mismo auth_user_id.
+        */
+        const {
+          data: filasAdminTelefono,
+          error: errorActualizarAdminTelefono
+        } =
+          await supabaseClient
+            .from("admin_organizadores")
+            .update({
+              telefono:
+                telefonoNuevoConfirmado
+            })
+            .eq(
+              "auth_user_id",
+              user.id
+            )
+            .select("id");
+
+        if (errorActualizarAdminTelefono) {
+          throw errorActualizarAdminTelefono;
+        }
+
+        /*
+          Actualizar el perfil principal
+          privado de Mi MASS ID.
+        */
+        const {
+          data: perfilTelefonoActualizado,
+          error: errorActualizarPerfilTelefono
+        } =
+          await supabaseClient
+            .from("usuarios_mass")
+            .update({
+              telefono:
+                telefonoNuevoConfirmado
+            })
+            .eq(
+              "auth_user_id",
+              user.id
+            )
+            .select("telefono")
+            .maybeSingle();
+
+        if (
+          errorActualizarPerfilTelefono ||
+          !perfilTelefonoActualizado
+        ) {
+          /*
+            Si falla el perfil principal,
+            restaurar admin_organizadores.
+          */
+          if (
+            Array.isArray(filasAdminTelefono) &&
+            filasAdminTelefono.length > 0
+          ) {
+            const {
+              error:
+                errorRestaurarAdminTelefono
+            } =
+              await supabaseClient
+                .from("admin_organizadores")
+                .update({
+                  telefono:
+                    telefonoAnterior || null
+                })
+                .eq(
+                  "auth_user_id",
+                  user.id
+                );
+
+            if (errorRestaurarAdminTelefono) {
+              console.error(
+                "ERROR RESTAURANDO TELÉFONO ADMIN:",
+                errorRestaurarAdminTelefono
+              );
+            }
+          }
+
+          throw (
+            errorActualizarPerfilTelefono ||
+            new Error(
+              "No se encontró el perfil MASS ID para actualizar."
+            )
+          );
+        }
+
+        /* Actualizar los datos activos */
+        perfil.telefono =
+          telefonoNuevoConfirmado;
+
+        localStorage.setItem(
+          "mass_telefono",
+          telefonoNuevoConfirmado
+        );
+
+        localStorage.setItem(
+          "mass_user",
+          telefonoNuevoConfirmado
+        );
+
+        try {
+          if (
+            typeof userActual !==
+            "undefined"
+          ) {
+            userActual =
+              telefonoNuevoConfirmado;
+          }
+        } catch (
+          errorActualizarUsuarioLocal
+        ) {
+          console.warn(
+            "No fue posible actualizar userActual:",
+            errorActualizarUsuarioLocal
+          );
+        }
+
+        procesoTelefonoCompletado = true;
+
+        mostrarMensajeSmsCambioTelefono(
+          "✅ El nuevo teléfono fue verificado y actualizado correctamente.",
+          "#39ff14"
+        );
+
+        btnConfirmarSmsCambioTelefono.textContent =
+          "✅ Teléfono actualizado";
+
+        btnConfirmarSmsCambioTelefono.style.opacity =
+          "1";
+
+        regresarDesdeCambioTelefono();
+
+        await abrirMiMassId();
+
+        alert(
+          "✅ Tu nuevo teléfono fue verificado por SMS y actualizado correctamente."
+        );
+      } catch (error) {
+        console.error(
+          "ERROR CONFIRMANDO SMS PARA CAMBIO DE TELÉFONO:",
+          error
+        );
+
+        inputCodigoSmsCambioTelefono.value =
+          "";
+
+        const mensajeErrorTelefono =
+          error?.code === "23505"
+            ? "❌ Ese teléfono ya está registrado en otra cuenta MASS."
+            : "❌ No fue posible completar el cambio de teléfono. Inténtalo nuevamente.";
+
+        mostrarMensajeSmsCambioTelefono(
+          mensajeErrorTelefono,
+          "#ff5b5b"
+        );
+
+        inputCodigoSmsCambioTelefono.focus();
+      } finally {
+        if (!procesoTelefonoCompletado) {
+          btnConfirmarSmsCambioTelefono.disabled =
+            false;
+
+          btnConfirmarSmsCambioTelefono.textContent =
+            textoOriginalBotonSms;
+
+          btnConfirmarSmsCambioTelefono.style.cursor =
+            "pointer";
+
+          btnConfirmarSmsCambioTelefono.style.opacity =
+            "1";
+        }
+      }
+    };
+}
+
+/* Reenviar código SMS del nuevo teléfono */
+if (btnReenviarSmsCambioTelefono) {
+  btnReenviarSmsCambioTelefono.onclick =
+    async function () {
+      if (
+        !mfaCambioTelefonoAprobado ||
+        !smsCambioTelefonoEnviado ||
+        !telefonoE164PendienteCambio ||
+        !nuevoTelefonoPendienteCambio
+      ) {
+        mostrarMensajeSmsCambioTelefono(
+          "❌ La solicitud de cambio venció. Vuelve a comenzar el proceso.",
+          "#ff5b5b"
+        );
+
+        return;
+      }
+
+      const textoOriginalBotonReenvio =
+        "🔄 Reenviar código SMS";
+
+      btnReenviarSmsCambioTelefono.disabled =
+        true;
+
+      btnReenviarSmsCambioTelefono.textContent =
+        "⏳ Reenviando código...";
+
+      btnReenviarSmsCambioTelefono.style.cursor =
+        "not-allowed";
+
+      btnReenviarSmsCambioTelefono.style.opacity =
+        ".7";
+
+      mostrarMensajeSmsCambioTelefono(
+        "⏳ Solicitando un nuevo código SMS...",
+        "#ffffff"
+      );
+
+      try {
+        const {
+          error: errorReenviarSmsTelefono
+        } =
+          await supabaseClient.auth.resend({
+            type: "phone_change",
+            phone:
+              telefonoE164PendienteCambio
+          });
+
+        if (errorReenviarSmsTelefono) {
+          throw errorReenviarSmsTelefono;
+        }
+
+        smsCambioTelefonoEnviado = true;
+        smsCambioTelefonoConfirmado = false;
+
+        if (inputCodigoSmsCambioTelefono) {
+          inputCodigoSmsCambioTelefono.value =
+            "";
+
+          inputCodigoSmsCambioTelefono.focus();
+        }
+
+        mostrarMensajeSmsCambioTelefono(
+          "✅ Enviamos un código SMS nuevo. Utiliza únicamente el código más reciente.",
+          "#39ff14"
+        );
+
+        let segundosRestantes = 60;
+
+        btnReenviarSmsCambioTelefono.textContent =
+          "⏳ Reenviar en " +
+          segundosRestantes +
+          " s";
+
+        if (
+          temporizadorReenvioSmsCambioTelefono
+        ) {
+          clearInterval(
+            temporizadorReenvioSmsCambioTelefono
+          );
+        }
+
+        temporizadorReenvioSmsCambioTelefono =
+          setInterval(function () {
+            segundosRestantes -= 1;
+
+            if (segundosRestantes <= 0) {
+              clearInterval(
+                temporizadorReenvioSmsCambioTelefono
+              );
+
+              temporizadorReenvioSmsCambioTelefono =
+                null;
+
+              btnReenviarSmsCambioTelefono.disabled =
+                false;
+
+              btnReenviarSmsCambioTelefono.textContent =
+                textoOriginalBotonReenvio;
+
+              btnReenviarSmsCambioTelefono.style.cursor =
+                "pointer";
+
+              btnReenviarSmsCambioTelefono.style.opacity =
+                "1";
+
+              return;
+            }
+
+            btnReenviarSmsCambioTelefono.textContent =
+              "⏳ Reenviar en " +
+              segundosRestantes +
+              " s";
+          }, 1000);
+      } catch (error) {
+        console.error(
+          "ERROR REENVIANDO SMS PARA CAMBIO DE TELÉFONO:",
+          error
+        );
+
+        mostrarMensajeSmsCambioTelefono(
+          "❌ No fue posible reenviar el código SMS. Espera un momento e inténtalo nuevamente.",
+          "#ff5b5b"
+        );
+
+        btnReenviarSmsCambioTelefono.disabled =
+          false;
+
+        btnReenviarSmsCambioTelefono.textContent =
+          textoOriginalBotonReenvio;
+
+        btnReenviarSmsCambioTelefono.style.cursor =
+          "pointer";
+
+        btnReenviarSmsCambioTelefono.style.opacity =
+          "1";
       }
     };
 }  
