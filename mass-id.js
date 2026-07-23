@@ -544,7 +544,23 @@ const vigenciaDocumentoLegal =
 const contenidoDocumentoLegal =
   document.getElementById(
     "massIdDocumentoLegalContenido"
-  ); 
+  );
+
+  /* Elementos de Actividad de la cuenta */
+const btnActividadCuenta =
+  document.getElementById(
+    "btnMassIdActividadCuenta"
+  );
+
+const seccionActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuenta"
+  );
+
+const btnActualizarActividadCuenta =
+  document.getElementById(
+    "btnActualizarActividadCuentaMassId"
+  );
 
 /* Catálogo oficial del MASS ID Legal Center */
 const catalogoDocumentosLegalesMassId =
