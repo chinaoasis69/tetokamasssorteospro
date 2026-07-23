@@ -220,10 +220,14 @@
   <span>›</span>
 </button>      
 
-      <button type="button" class="mass-id-menu-button">
-        <span>🕘 Actividad de la cuenta</span>
-        <span>›</span>
-      </button>
+<button
+  id="btnMassIdActividadCuenta"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>🕘 Actividad de la cuenta</span>
+  <span>›</span>
+</button>      
 
       <button type="button" class="mass-id-menu-button">
         <span>💻 Dispositivos conectados</span>
@@ -2768,7 +2772,201 @@ el nuevo correo electrónico.
       text-align:center;
     "
   ></div>
-</div>  
+</div>
+
+  <!-- ACTIVIDAD DE LA CUENTA -->
+<div
+  id="massIdActividadCuenta"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        🕘 Actividad de la cuenta
+      </h3>
+
+      <p
+        style="
+          margin:7px 0 0;
+          color:#bbb;
+          font-size:14px;
+          line-height:1.5;
+        "
+      >
+        Consulta los eventos importantes y acciones de seguridad
+        realizadas en tu MASS ID.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverActividadCuentaMassId"
+      type="button"
+      aria-label="Volver al menú de Mi MASS ID"
+      style="
+        min-width:90px;
+        padding:10px 14px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#141414;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    style="
+      margin-bottom:18px;
+      padding:14px;
+      border:1px solid rgba(57,255,20,.35);
+      border-radius:12px;
+      background:#101010;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.6;
+      text-align:center;
+    "
+  >
+    🔐 Este historial es privado y solamente puede ser consultado
+    desde tu cuenta autenticada.
+  </div>
+
+  <div
+    id="massIdActividadCuentaResumen"
+    style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+      gap:12px;
+      margin-bottom:18px;
+    "
+  >
+    <div
+      style="
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+      "
+    >
+      <div
+        style="
+          color:#999;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      >
+        ÚLTIMO EVENTO REGISTRADO
+      </div>
+
+      <strong
+        id="massIdActividadCuentaUltimoEvento"
+        style="
+          color:#fff;
+          font-size:14px;
+        "
+      >
+        Cargando...
+      </strong>
+    </div>
+
+    <div
+      style="
+        padding:15px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+      "
+    >
+      <div
+        style="
+          color:#999;
+          font-size:12px;
+          margin-bottom:6px;
+        "
+      >
+        EVENTOS RECIENTES
+      </div>
+
+      <strong
+        id="massIdActividadCuentaTotalEventos"
+        style="
+          color:#39ff14;
+          font-size:18px;
+        "
+      >
+        0
+      </strong>
+    </div>
+  </div>
+
+  <div
+    id="massIdActividadCuentaLista"
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    "
+  ></div>
+
+  <div
+    id="massIdActividadCuentaMensaje"
+    style="
+      display:none;
+      margin-top:15px;
+      padding:12px 14px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      font-size:14px;
+      line-height:1.5;
+      text-align:center;
+    "
+  ></div>
+
+  <div
+    style="
+      display:flex;
+      justify-content:center;
+      margin-top:18px;
+    "
+  >
+    <button
+      id="btnActualizarActividadCuentaMassId"
+      type="button"
+      style="
+        min-width:220px;
+        padding:12px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      🔄 Actualizar actividad
+    </button>
+  </div>
+</div>
 
   <!-- FOTO DE PERFIL -->
   <div
