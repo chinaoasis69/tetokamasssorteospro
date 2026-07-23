@@ -97,7 +97,24 @@ if (
       "mass_email",
       correoOficialAuth
     );
-  }
+
+const {
+  error: errorRegistrarCorreoActualizado
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "correo_actualizado"
+    }
+  );
+
+if (errorRegistrarCorreoActualizado) {
+  console.error(
+    "ERROR REGISTRANDO CORREO ACTUALIZADO:",
+    errorRegistrarCorreoActualizado
+   );
+  }  
 }  
 
 const nombrePerfil = document.getElementById("massIdNombre");
