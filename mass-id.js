@@ -652,7 +652,41 @@ const mensajeDispositivosConectados =
 const listaDispositivosConectados =
   document.getElementById(
     "massIdDispositivosConectadosLista"
-  );  
+  );
+
+/* Obtener o crear identificador único del dispositivo */
+function obtenerDispositivoIdMass() {
+  const claveDispositivo =
+    "mass_dispositivo_id";
+
+  let dispositivoId =
+    localStorage.getItem(claveDispositivo);
+
+  if (!dispositivoId) {
+    if (
+      window.crypto &&
+      typeof window.crypto.randomUUID === "function"
+    ) {
+      dispositivoId =
+        window.crypto.randomUUID();
+    } else {
+      dispositivoId =
+        "mass-device-" +
+        Date.now() +
+        "-" +
+        Math.random()
+          .toString(36)
+          .substring(2, 12);
+    }
+
+    localStorage.setItem(
+      claveDispositivo,
+      dispositivoId
+    );
+  }
+
+  return dispositivoId;
+}  
 
 /* Catálogo oficial del MASS ID Legal Center */
 const catalogoDocumentosLegalesMassId =
@@ -12735,87 +12769,205 @@ async function cargarDispositivosConectadosMassId() {
       navegador = "Safari";
     } else if (agenteUsuario.includes("Firefox/")) {
       navegador = "Mozilla Firefox";
+
+    const dispositivoId =
+  obtenerDispositivoIdMass();
+
+const fechaActualDispositivo =
+  new Date().toISOString();
+
+const {
+  error: errorGuardarDispositivo
+} = await supabaseClient
+  .from("dispositivos_mass_id")
+  .upsert(
+    {
+      auth_user_id: session.user.id,
+      dispositivo_id: dispositivoId,
+      navegador: navegador,
+      plataforma: plataforma,
+      user_agent: agenteUsuario,
+      ultimo_acceso: fechaActualDispositivo,
+      updated_at: fechaActualDispositivo,
+      activo: true
+    },
+    {
+      onConflict:
+        "auth_user_id,dispositivo_id"
+    }
+  );
+
+if (errorGuardarDispositivo) {
+  console.error(
+    "ERROR REGISTRANDO DISPOSITIVO MASS ID:",
+    errorGuardarDispositivo
+  );
+}  
     }
 
-    const fechaInicioSesion = session.user.last_sign_in_at
-      ? new Date(
-          session.user.last_sign_in_at
-        ).toLocaleString("es-US", {
-          dateStyle: "medium",
-          timeStyle: "short"
-        })
-      : "No disponible";
+    const {
+  data: dispositivosRegistrados,
+  error: errorConsultarDispositivos
+} = await supabaseClient
+  .from("dispositivos_mass_id")
+  .select(
+    "dispositivo_id, navegador, plataforma, user_agent, ultimo_acceso, activo"
+  )
+  .eq(
+    "auth_user_id",
+    session.user.id
+  )
+  .order(
+    "ultimo_acceso",
+    {
+      ascending: false
+    }
+  );
 
-    listaDispositivosConectados.innerHTML = `
-      <div
-        style="
-          padding:18px;
-          border:1px solid #39ff14;
-          border-radius:12px;
-          background:#101010;
-          color:#fff;
-        "
-      >
-        <div
-          style="
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            gap:12px;
-            flex-wrap:wrap;
-            margin-bottom:12px;
-          "
-        >
-          <strong style="font-size:16px;">
-            💻 ${navegador}
-          </strong>
+if (errorConsultarDispositivos) {
+  throw errorConsultarDispositivos;
+}
 
-          <span
+    const dispositivosParaMostrar =
+  dispositivosRegistrados || [];
+
+if (dispositivosParaMostrar.length === 0) {
+  listaDispositivosConectados.innerHTML = `
+    <div
+      style="
+        padding:18px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+        color:#bbb;
+        text-align:center;
+      "
+    >
+      No hay dispositivos registrados.
+    </div>
+  `;
+} else {
+  listaDispositivosConectados.innerHTML =
+    dispositivosParaMostrar
+      .map(function (dispositivo) {
+        const esEsteDispositivo =
+          dispositivo.dispositivo_id === dispositivoId;
+
+        const fechaUltimoAcceso =
+          dispositivo.ultimo_acceso
+            ? new Date(
+                dispositivo.ultimo_acceso
+              ).toLocaleString("es-US", {
+                dateStyle: "medium",
+                timeStyle: "short"
+              })
+            : "No disponible";
+
+        const nombreNavegador =
+          dispositivo.navegador ||
+          "Navegador desconocido";
+
+        const nombrePlataforma =
+          dispositivo.plataforma ||
+          "No disponible";
+
+        const estadoDispositivo =
+          dispositivo.activo
+            ? "Sesión activa"
+            : "Sesión cerrada";
+
+        const colorEstado =
+          dispositivo.activo
+            ? "#39ff14"
+            : "#ff5b5b";
+
+        const bordeTarjeta =
+          esEsteDispositivo
+            ? "#39ff14"
+            : "#333";
+
+        const etiquetaEsteDispositivo =
+          esEsteDispositivo
+            ? `
+              <span
+                style="
+                  padding:5px 10px;
+                  border:1px solid #39ff14;
+                  border-radius:999px;
+                  color:#39ff14;
+                  font-size:12px;
+                  font-weight:bold;
+                "
+              >
+                Este dispositivo
+              </span>
+            `
+            : "";
+
+        return `
+          <div
             style="
-              padding:5px 10px;
-              border:1px solid #39ff14;
-              border-radius:999px;
-              color:#39ff14;
-              font-size:12px;
-              font-weight:bold;
+              padding:18px;
+              border:1px solid ${bordeTarjeta};
+              border-radius:12px;
+              background:#101010;
+              color:#fff;
             "
           >
-            Este dispositivo
-          </span>
-        </div>
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                flex-wrap:wrap;
+                margin-bottom:12px;
+              "
+            >
+              <strong style="font-size:16px;">
+                💻 ${nombreNavegador}
+              </strong>
 
-        <div
-          style="
-            color:#bbb;
-            font-size:14px;
-            line-height:1.7;
-          "
-        >
-          <div>
-            <strong style="color:#fff;">
-              Sistema o plataforma:
-            </strong>
-            ${plataforma}
-          </div>
+              ${etiquetaEsteDispositivo}
+            </div>
 
-          <div>
-            <strong style="color:#fff;">
-              Último acceso:
-            </strong>
-            ${fechaInicioSesion}
-          </div>
+            <div
+              style="
+                color:#bbb;
+                font-size:14px;
+                line-height:1.7;
+              "
+            >
+              <div>
+                <strong style="color:#fff;">
+                  Sistema o plataforma:
+                </strong>
+                ${nombrePlataforma}
+              </div>
 
-          <div>
-            <strong style="color:#fff;">
-              Estado:
-            </strong>
-            <span style="color:#39ff14;">
-              Sesión activa
-            </span>
+              <div>
+                <strong style="color:#fff;">
+                  Último acceso:
+                </strong>
+                ${fechaUltimoAcceso}
+              </div>
+
+              <div>
+                <strong style="color:#fff;">
+                  Estado:
+                </strong>
+
+                <span style="color:${colorEstado};">
+                  ${estadoDispositivo}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    `;
+        `;
+      })
+      .join("");
+}
+    
   } catch (error) {
     console.error(
       "ERROR CARGANDO DISPOSITIVOS CONECTADOS:",
