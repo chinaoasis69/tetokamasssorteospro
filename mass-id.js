@@ -12739,6 +12739,9 @@ const {
       error: errorSesion
     } = await supabaseClient.auth.getSession();
 
+    console.log("SESIÓN DISPOSITIVOS:", session);
+    console.log("ERROR SESIÓN DISPOSITIVOS:", errorSesion);
+
     if (errorSesion) {
       throw errorSesion;
     }
