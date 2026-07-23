@@ -13589,6 +13589,24 @@ if (
   inputConfirmarNuevaContrasena.value =
     "";
 
+ const {
+  error: errorRegistrarActividadContrasena
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "contrasena_actualizada"
+    }
+  );
+
+if (errorRegistrarActividadContrasena) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE CONTRASEÑA:",
+    errorRegistrarActividadContrasena
+  );
+}        
+
   mostrarMensajeCambioContrasena(
     "✅ Tu contraseña fue actualizada correctamente.",
     "#39ff14"
