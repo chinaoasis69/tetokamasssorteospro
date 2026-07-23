@@ -626,6 +626,32 @@ const totalEventosActividadCuenta =
 const filtroActividadCuenta =
   document.getElementById(
     "massIdActividadCuentaFiltro"
+  );
+
+/* Elementos de Dispositivos conectados */
+const btnMassIdDispositivosConectados =
+  document.getElementById(
+    "btnMassIdDispositivosConectados"
+  );
+
+const seccionDispositivosConectados =
+  document.getElementById(
+    "massIdDispositivosConectados"
+  );
+
+const btnVolverDispositivosConectados =
+  document.getElementById(
+    "btnVolverDispositivosConectados"
+  );
+
+const mensajeDispositivosConectados =
+  document.getElementById(
+    "massIdDispositivosConectadosMensaje"
+  );
+
+const listaDispositivosConectados =
+  document.getElementById(
+    "massIdDispositivosConectadosLista"
   );  
 
 /* Catálogo oficial del MASS ID Legal Center */
@@ -12643,6 +12669,169 @@ const {
         "1";
     }
   }
+} 
+
+/* Cargar Dispositivos conectados */
+async function cargarDispositivosConectadosMassId() {
+  if (!listaDispositivosConectados) {
+    return;
+  }
+
+  listaDispositivosConectados.innerHTML = `
+    <div
+      style="
+        padding:18px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+        color:#bbb;
+        text-align:center;
+      "
+    >
+      ⏳ Cargando dispositivos conectados...
+    </div>
+  `;
+
+  if (mensajeDispositivosConectados) {
+    mensajeDispositivosConectados.style.display = "none";
+    mensajeDispositivosConectados.textContent = "";
+  }
+
+  try {
+    const {
+      data: { session },
+      error: errorSesion
+    } = await supabaseClient.auth.getSession();
+
+    if (errorSesion) {
+      throw errorSesion;
+    }
+
+    if (!session?.user) {
+      throw new Error(
+        "No fue posible identificar la sesión activa."
+      );
+    }
+
+    const agenteUsuario = navigator.userAgent || "";
+    const plataforma =
+      navigator.userAgentData?.platform ||
+      navigator.platform ||
+      "No disponible";
+
+    let navegador = "Navegador desconocido";
+
+    if (agenteUsuario.includes("Edg/")) {
+      navegador = "Microsoft Edge";
+    } else if (
+      agenteUsuario.includes("Chrome/") &&
+      !agenteUsuario.includes("Edg/")
+    ) {
+      navegador = "Google Chrome";
+    } else if (
+      agenteUsuario.includes("Safari/") &&
+      !agenteUsuario.includes("Chrome/")
+    ) {
+      navegador = "Safari";
+    } else if (agenteUsuario.includes("Firefox/")) {
+      navegador = "Mozilla Firefox";
+    }
+
+    const fechaInicioSesion = session.user.last_sign_in_at
+      ? new Date(
+          session.user.last_sign_in_at
+        ).toLocaleString("es-US", {
+          dateStyle: "medium",
+          timeStyle: "short"
+        })
+      : "No disponible";
+
+    listaDispositivosConectados.innerHTML = `
+      <div
+        style="
+          padding:18px;
+          border:1px solid #39ff14;
+          border-radius:12px;
+          background:#101010;
+          color:#fff;
+        "
+      >
+        <div
+          style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+            margin-bottom:12px;
+          "
+        >
+          <strong style="font-size:16px;">
+            💻 ${navegador}
+          </strong>
+
+          <span
+            style="
+              padding:5px 10px;
+              border:1px solid #39ff14;
+              border-radius:999px;
+              color:#39ff14;
+              font-size:12px;
+              font-weight:bold;
+            "
+          >
+            Este dispositivo
+          </span>
+        </div>
+
+        <div
+          style="
+            color:#bbb;
+            font-size:14px;
+            line-height:1.7;
+          "
+        >
+          <div>
+            <strong style="color:#fff;">
+              Sistema o plataforma:
+            </strong>
+            ${plataforma}
+          </div>
+
+          <div>
+            <strong style="color:#fff;">
+              Último acceso:
+            </strong>
+            ${fechaInicioSesion}
+          </div>
+
+          <div>
+            <strong style="color:#fff;">
+              Estado:
+            </strong>
+            <span style="color:#39ff14;">
+              Sesión activa
+            </span>
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (error) {
+    console.error(
+      "ERROR CARGANDO DISPOSITIVOS CONECTADOS:",
+      error
+    );
+
+    listaDispositivosConectados.innerHTML = "";
+
+    if (mensajeDispositivosConectados) {
+      mensajeDispositivosConectados.textContent =
+        "❌ No fue posible cargar los dispositivos conectados.";
+
+      mensajeDispositivosConectados.style.display =
+        "block";
+    }
+  }
 }  
 
 /* Mostrar mensajes del panel Documentos legales */
@@ -13134,6 +13323,64 @@ if (
         block: "start"
       });
     };
+
+  /* Abrir Dispositivos conectados */
+if (
+  btnMassIdDispositivosConectados &&
+  menuPrincipal &&
+  seccionDispositivosConectados
+) {
+  btnMassIdDispositivosConectados.onclick =
+    function () {
+      menuPrincipal.style.display = "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display = "none";
+      }
+
+      if (seccionPrivacidad) {
+        seccionPrivacidad.style.display = "none";
+      }
+
+      if (seccionDocumentosLegales) {
+        seccionDocumentosLegales.style.display = "none";
+      }
+
+      if (seccionActividadCuenta) {
+        seccionActividadCuenta.style.display = "none";
+      }
+
+      seccionDispositivosConectados.style.display =
+        "block";
+
+      cargarDispositivosConectadosMassId();
+
+      seccionDispositivosConectados.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
+
+/* Volver desde Dispositivos conectados */
+if (
+  btnVolverDispositivosConectados &&
+  menuPrincipal &&
+  seccionDispositivosConectados
+) {
+  btnVolverDispositivosConectados.onclick =
+    function () {
+      seccionDispositivosConectados.style.display =
+        "none";
+
+      menuPrincipal.style.display = "block";
+
+      panel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
 }
 
 /* Actualizar Actividad de la cuenta */
