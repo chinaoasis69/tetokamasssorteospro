@@ -12790,6 +12790,7 @@ const {
       navegador = "Safari";
     } else if (agenteUsuario.includes("Firefox/")) {
       navegador = "Mozilla Firefox";
+    }
 
       console.log(
   "NAVEGADOR DETECTADO:",
