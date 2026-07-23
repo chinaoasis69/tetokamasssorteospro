@@ -621,6 +621,11 @@ const ultimoEventoActividadCuenta =
 const totalEventosActividadCuenta =
   document.getElementById(
     "massIdActividadCuentaTotalEventos"
+  );
+
+const filtroActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuentaFiltro"
   );  
 
 /* Catálogo oficial del MASS ID Legal Center */
@@ -12534,20 +12539,65 @@ async function cargarActividadCuentaMassId() {
       );
     }
 
-    const {
-      data: eventosActividad,
-      error: errorActividad
-    } =
-      await supabaseClient
-        .from("actividad_cuenta_mass")
-        .select(
-          "id, tipo_evento, titulo, descripcion, created_at"
-        )
-        .eq("auth_user_id", user.id)
-        .order("created_at", {
-          ascending: false
-        })
-        .limit(25);
+    const periodoSeleccionado =
+  filtroActividadCuenta?.value || "30d";
+
+let consultaActividad =
+  supabaseClient
+    .from("actividad_cuenta_mass")
+    .select(
+      "id, tipo_evento, titulo, descripcion, created_at"
+    )
+    .eq("auth_user_id", user.id)
+    .order("created_at", {
+      ascending: false
+    });
+
+const fechaDesde = new Date();
+
+if (periodoSeleccionado === "24h") {
+  fechaDesde.setHours(
+    fechaDesde.getHours() - 24
+  );
+
+  consultaActividad =
+    consultaActividad.gte(
+      "created_at",
+      fechaDesde.toISOString()
+    );
+}
+
+if (periodoSeleccionado === "7d") {
+  fechaDesde.setDate(
+    fechaDesde.getDate() - 7
+  );
+
+  consultaActividad =
+    consultaActividad.gte(
+      "created_at",
+      fechaDesde.toISOString()
+    );
+}
+
+if (periodoSeleccionado === "30d") {
+  fechaDesde.setDate(
+    fechaDesde.getDate() - 30
+  );
+
+  consultaActividad =
+    consultaActividad.gte(
+      "created_at",
+      fechaDesde.toISOString()
+    );
+}
+
+consultaActividad =
+  consultaActividad.limit(100);
+
+const {
+  data: eventosActividad,
+  error: errorActividad
+} = await consultaActividad;
 
     if (errorActividad) {
       throw errorActividad;
@@ -13092,7 +13142,13 @@ if (btnActualizarActividadCuenta) {
     function () {
       cargarActividadCuentaMassId();
     };
-}  
+}
+
+  if (filtroActividadCuenta) {
+  filtroActividadCuenta.onchange = function () {
+    cargarActividadCuentaMassId();
+  };
+}
 
 /* Limpiar formulario de Cambiar contraseña */
 function limpiarFormularioCambioContrasena() {
