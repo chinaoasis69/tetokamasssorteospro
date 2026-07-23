@@ -16917,7 +16917,25 @@ const { error: errorEliminar } =
 
 if (errorEliminar) {
   throw errorEliminar;
-} 
+}
+
+const {
+  error: errorRegistrarActividadMfaDesactivado
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "mfa_desactivado"
+    }
+  );
+
+if (errorRegistrarActividadMfaDesactivado) {
+  console.error(
+    "ERROR REGISTRANDO DESACTIVACIÓN DE MFA:",
+    errorRegistrarActividadMfaDesactivado
+  );
+}    
 
     await supabaseClient.auth.refreshSession();
 
