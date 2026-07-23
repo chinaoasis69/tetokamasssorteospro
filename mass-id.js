@@ -17407,7 +17407,25 @@ if (
 
   fotoPrincipalIcono.style.display =
     "none";
-} 
+}
+
+ const {
+  error: errorRegistrarActividadFoto
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "foto_perfil_actualizada"
+    }
+  );
+
+if (errorRegistrarActividadFoto) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE FOTO:",
+    errorRegistrarActividadFoto
+  );
+}     
 
       archivoFotoSeleccionado = null;
       fotoInput.value = "";
