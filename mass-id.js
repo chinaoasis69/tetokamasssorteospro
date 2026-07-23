@@ -3552,13 +3552,819 @@ FIN DEL DOCUMENTO MASS-LC-004
 `
 },
     {
-      codigo: "MASS-LC-005",
-      titulo: "Política de cookies",
-      descripcion:
-        "Explica el uso de cookies, almacenamiento local y tecnologías relacionadas.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-005",
+  titulo: "Política de cookies",
+  descripcion:
+    "Explica el uso de cookies, almacenamiento local y tecnologías relacionadas.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-005
+POLÍTICA DE COOKIES Y TECNOLOGÍAS RELACIONADAS DE MASS ID
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política explica cómo TE-TO-KA SOLUTIONS® LLC podrá utilizar cookies, almacenamiento local, identificadores de sesión, píxeles, caché, registros técnicos, identificadores de dispositivos, kits de desarrollo y otras tecnologías semejantes dentro de MASS ID y del ecosistema MASS.
+
+Esta Política deberá leerse junto con:
+
+a. MASS-LC-002, Acuerdo de usuario MASS ID.
+b. MASS-LC-003, Aviso de privacidad.
+c. MASS-LC-004, Política de seguridad.
+d. Las políticas específicas de cada servicio.
+e. Los avisos de consentimiento que aparezcan en un sitio, aplicación o dispositivo.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Explicar qué son estas tecnologías.
+b. Identificar sus categorías principales.
+c. Informar por qué pueden utilizarse.
+d. Explicar las opciones del usuario.
+e. Proteger la seguridad de MASS ID.
+f. Mantener preferencias autorizadas.
+g. Cumplir obligaciones legales.
+h. Proporcionar transparencia.
+i. Evitar tecnologías innecesarias.
+j. Mantener un inventario actualizado antes de la publicación definitiva.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Face ID.
+j. Central IA.
+k. TOKAYO IA.
+l. Sitios web MASS.
+m. Aplicaciones móviles.
+n. Aplicaciones para computadoras.
+o. Paneles administrativos.
+p. Portales para organizadores.
+q. Servicios conectados.
+r. Productos futuros integrados con MASS ID.
+
+3. DEFINICIÓN DE COOKIE
+
+Una cookie es un archivo o identificador que un sitio web puede guardar en un navegador o dispositivo para reconocer una sesión, recordar información o permitir determinadas funciones.
+
+Dependiendo de su diseño, una cookie puede conservar:
+
+a. Un identificador aleatorio.
+b. Estado de sesión.
+c. Preferencias.
+d. Opciones de idioma.
+e. Configuración de seguridad.
+f. Información técnica.
+g. Actividad dentro del servicio.
+h. Consentimientos.
+i. Información necesaria para una compra o solicitud.
+
+4. TECNOLOGÍAS RELACIONADAS
+
+Esta Política también cubre tecnologías que almacenan información o acceden a información almacenada en un dispositivo, incluyendo:
+
+a. Local Storage.
+b. Session Storage.
+c. IndexedDB.
+d. Caché del navegador.
+e. Service Workers.
+f. Píxeles.
+g. Balizas web.
+h. Etiquetas.
+i. Scripts.
+j. Identificadores de dispositivo.
+k. Identificadores publicitarios.
+l. Kits de desarrollo de software.
+m. Enlaces con parámetros.
+n. Huellas técnicas del navegador.
+o. Almacenamiento dentro de aplicaciones.
+p. Tokens de autenticación.
+q. Tecnologías futuras con funciones semejantes.
+
+5. COOKIES PROPIAS
+
+Las cookies propias son establecidas directamente por un sitio, aplicación o dominio administrado por MASS.
+
+Podrán utilizarse para:
+
+a. Mantener una sesión.
+b. Recordar preferencias.
+c. Proteger una cuenta.
+d. Completar una operación.
+e. Mantener el funcionamiento del servicio.
+f. Registrar una elección de privacidad.
+g. Evitar solicitudes repetidas.
+h. Conservar temporalmente información necesaria.
+
+6. COOKIES DE TERCEROS
+
+Las cookies de terceros pueden ser establecidas por proveedores integrados con MASS.
+
+Estos proveedores podrán apoyar funciones como:
+
+a. Autenticación.
+b. Bases de datos.
+c. Pagos.
+d. Mapas.
+e. Mensajería.
+f. Notificaciones.
+g. Soporte.
+h. Prevención de fraude.
+i. Seguridad.
+j. Análisis técnico.
+k. Contenido multimedia.
+l. Servicios de inteligencia artificial.
+
+Antes de la publicación definitiva deberá identificarse cada proveedor que realmente coloque o utilice estas tecnologías.
+
+7. COOKIES DE SESIÓN
+
+Las cookies de sesión normalmente existen durante una visita o sesión activa.
+
+Podrán utilizarse para:
+
+a. Navegación.
+b. Autenticación temporal.
+c. Seguridad.
+d. Conservación de formularios.
+e. Procesamiento de una solicitud.
+f. Prevención de operaciones duplicadas.
+g. Continuidad entre páginas.
+h. Confirmación temporal de permisos.
+
+Podrán eliminarse cuando termine la sesión, expire el tiempo establecido o se cierre el navegador, dependiendo de la tecnología utilizada.
+
+8. COOKIES PERSISTENTES
+
+Las cookies persistentes pueden permanecer durante un periodo determinado después de terminar una sesión.
+
+Podrán utilizarse para:
+
+a. Recordar preferencias.
+b. Mantener una sesión autorizada.
+c. Reconocer un dispositivo.
+d. Conservar una elección de privacidad.
+e. Recordar idioma o región.
+f. Facilitar accesos futuros.
+g. Aplicar medidas antifraude.
+h. Medir funcionamiento durante un periodo.
+
+Cada cookie persistente deberá tener una duración razonable y proporcional a su propósito.
+
+9. TECNOLOGÍAS ESTRICTAMENTE NECESARIAS
+
+Las tecnologías estrictamente necesarias permiten proporcionar una función solicitada o mantener la seguridad esencial del servicio.
+
+Podrán utilizarse para:
+
+a. Iniciar sesión.
+b. Mantener autenticación.
+c. Proteger formularios.
+d. Prevenir ataques.
+e. Distribuir tráfico.
+f. Recordar artículos o números seleccionados.
+g. Procesar una compra.
+h. Conservar una solicitud activa.
+i. Aplicar preferencias de privacidad.
+j. Prevenir operaciones duplicadas.
+k. Proteger pagos.
+l. Cumplir funciones esenciales.
+
+Estas tecnologías podrían no poder desactivarse desde MASS cuando sean indispensables para prestar el servicio solicitado.
+
+10. AUTENTICACIÓN Y SESIONES
+
+MASS podrá utilizar identificadores o almacenamiento para:
+
+a. Reconocer una sesión autenticada.
+b. Mantener al usuario conectado.
+c. Renovar credenciales autorizadas.
+d. Detectar sesiones vencidas.
+e. Identificar dispositivos conectados.
+f. Cerrar sesiones.
+g. Aplicar autenticación multifactor.
+h. Evitar suplantación.
+i. Proteger cambios de correo, teléfono o contraseña.
+j. Confirmar el identificador interno de autenticación.
+
+Los tokens y credenciales deberán protegerse mediante controles razonables.
+
+11. SEGURIDAD
+
+Las tecnologías de seguridad podrán apoyar:
+
+a. Detección de actividad sospechosa.
+b. Prevención de fraude.
+c. Protección contra solicitudes automatizadas.
+d. Control de intentos de acceso.
+e. Identificación de sesiones anormales.
+f. Validación de integridad.
+g. Protección contra falsificación de solicitudes.
+h. Registro de errores.
+i. Protección de paneles administrativos.
+j. Investigación de incidentes.
+
+12. PREFERENCIAS
+
+MASS podrá conservar preferencias relacionadas con:
+
+a. Idioma.
+b. Apariencia.
+c. Privacidad.
+d. Personalización.
+e. Notificaciones.
+f. Promociones.
+g. Perfil visible.
+h. Mostrar teléfono.
+i. Mostrar correo.
+j. Organización seleccionada.
+k. Servicio seleccionado.
+l. Accesibilidad.
+m. Consentimientos.
+
+13. FUNCIONALIDAD
+
+Las tecnologías funcionales podrán facilitar:
+
+a. Navegación.
+b. Formularios.
+c. Direcciones guardadas.
+d. Selección de números.
+e. Carritos.
+f. Historial visible.
+g. Paneles personalizados.
+h. Preferencias de organizadores.
+i. Reproducción multimedia.
+j. Integraciones de soporte.
+k. Recuperación de estados temporales.
+l. Funciones solicitadas por el usuario.
+
+14. ALMACENAMIENTO LOCAL
+
+MASS podrá utilizar almacenamiento local para conservar información directamente en el navegador o aplicación.
+
+Esta información podrá incluir:
+
+a. Preferencias.
+b. Identificadores de sesión.
+c. Datos temporales de navegación.
+d. Estado de una función.
+e. Selecciones pendientes.
+f. Configuración de privacidad.
+g. Información necesaria para cargar un módulo.
+h. Identificadores técnicos.
+i. Confirmaciones de interfaz.
+j. Datos utilizados para mantener continuidad.
+
+El almacenamiento local podrá permanecer hasta que sea eliminado por MASS, el usuario, el navegador, la aplicación o el dispositivo.
+
+15. ALMACENAMIENTO DE SESIÓN
+
+El almacenamiento de sesión podrá conservar información temporal mientras una pestaña, ventana o sesión permanezca activa.
+
+Podrá utilizarse para:
+
+a. Formularios incompletos.
+b. Navegación temporal.
+c. Confirmaciones.
+d. Estados de autenticación.
+e. Prevención de repeticiones.
+f. Datos necesarios entre pantallas.
+g. Procesos de verificación.
+
+16. INDEXEDDB Y BASES LOCALES
+
+Algunas aplicaciones podrán utilizar bases de datos locales para:
+
+a. Funcionamiento sin conexión.
+b. Caché de información.
+c. Sincronización.
+d. Rendimiento.
+e. Conservación temporal de archivos.
+f. Recuperación de una operación.
+g. Reducción de transferencias repetidas.
+
+La información sensible deberá limitarse y protegerse conforme al riesgo.
+
+17. CACHÉ
+
+La caché permite conservar temporalmente archivos o respuestas para cargar un servicio con mayor rapidez.
+
+Podrá incluir:
+
+a. Hojas de estilo.
+b. Archivos JavaScript.
+c. Imágenes.
+d. Fuentes.
+e. Interfaces.
+f. Respuestas temporales.
+g. Recursos de una aplicación.
+h. Contenido necesario para funcionamiento sin conexión.
+
+La caché no deberá utilizarse intencionalmente para evadir las preferencias de privacidad del usuario.
+
+18. SERVICE WORKERS
+
+Los Service Workers podrán utilizarse para:
+
+a. Cargar aplicaciones.
+b. Proporcionar funciones sin conexión.
+c. Administrar caché.
+d. Recibir notificaciones.
+e. Sincronizar información.
+f. Mejorar rendimiento.
+g. Mantener ciertas funciones web instalables.
+
+El usuario podrá eliminar estas tecnologías mediante los controles del navegador o de la aplicación.
+
+19. ANÁLISIS Y RENDIMIENTO
+
+Conforme a las preferencias y leyes aplicables, MASS podrá utilizar tecnologías de análisis para:
+
+a. Medir visitas.
+b. Identificar páginas utilizadas.
+c. Detectar errores.
+d. Analizar tiempos de carga.
+e. Evaluar funcionamiento.
+f. Conocer tipos generales de dispositivos.
+g. Mejorar accesibilidad.
+h. Medir adopción de funciones.
+i. Identificar problemas de navegación.
+j. Generar estadísticas agregadas.
+
+Cuando sea posible, MASS procurará limitar, agregar o desidentificar la información utilizada para análisis.
+
+20. PÍXELES Y BALIZAS
+
+Un píxel o baliza puede registrar que una página, mensaje o elemento fue cargado.
+
+Podrá utilizarse para:
+
+a. Confirmar entrega de comunicaciones.
+b. Medir interacción.
+c. Detectar errores.
+d. Prevenir fraude.
+e. Generar estadísticas.
+f. Evaluar campañas autorizadas.
+g. Confirmar funcionamiento técnico.
+
+Las funciones promocionales deberán respetar las preferencias del usuario.
+
+21. PUBLICIDAD Y PROMOCIONES
+
+MASS no deberá activar tecnologías de publicidad dirigida sin las divulgaciones, elecciones y autorizaciones requeridas.
+
+Cuando se implementen, estas tecnologías podrán utilizarse para:
+
+a. Medir campañas.
+b. Evitar mostrar repetidamente un anuncio.
+c. Mostrar promociones autorizadas.
+d. Calcular conversiones.
+e. Limitar fraude publicitario.
+f. Personalizar contenido cuando exista autorización.
+
+Antes de su uso deberán identificarse los proveedores, propósitos, datos y periodos de conservación correspondientes.
+
+22. REDES SOCIALES
+
+Las funciones de redes sociales podrán permitir:
+
+a. Compartir contenido.
+b. Abrir una página externa.
+c. Reproducir contenido.
+d. Mostrar publicaciones.
+e. Autenticarse mediante un tercero.
+
+El tercero podrá recopilar información conforme a su propia política, incluso cuando el usuario tenga una cuenta activa con dicho proveedor.
+
+23. PAGOS
+
+Los proveedores de pagos podrán utilizar tecnologías para:
+
+a. Procesar transacciones.
+b. Prevenir fraude.
+c. Recordar un método autorizado.
+d. Mantener seguridad.
+e. Confirmar estados.
+f. Cumplir obligaciones financieras.
+g. Resolver disputas.
+h. Aplicar controles regulatorios.
+
+MASS no deberá controlar las tecnologías establecidas directamente por un proveedor independiente fuera de sus propios servicios.
+
+24. MAPAS Y UBICACIÓN
+
+Las integraciones de mapas podrán utilizar tecnologías para:
+
+a. Mostrar direcciones.
+b. Calcular rutas.
+c. Conservar una ubicación temporal.
+d. Coordinar servicios.
+e. Mostrar puntos cercanos.
+f. Recordar preferencias de mapas.
+g. Proteger operaciones.
+
+La ubicación precisa requerirá los permisos y autorizaciones aplicables.
+
+25. NOTIFICACIONES Y MENSAJERÍA
+
+Las tecnologías relacionadas con notificaciones podrán:
+
+a. Registrar un dispositivo.
+b. Entregar mensajes.
+c. Confirmar recepción.
+d. Mantener preferencias.
+e. Identificar una suscripción.
+f. Proteger contra envíos no autorizados.
+g. Administrar alertas esenciales.
+h. Medir funcionamiento técnico.
+
+26. INTELIGENCIA ARTIFICIAL
+
+Las funciones de inteligencia artificial podrán utilizar almacenamiento o identificadores técnicos para:
+
+a. Mantener una conversación.
+b. Conservar contexto autorizado.
+c. Aplicar preferencias.
+d. Prevenir abuso.
+e. Limitar solicitudes automatizadas.
+f. Medir rendimiento.
+g. Proteger sistemas.
+h. Mejorar respuestas.
+
+El tratamiento de información mediante inteligencia artificial también estará sujeto a MASS-LC-006.
+
+27. IDENTIFICADORES DE DISPOSITIVOS
+
+Las aplicaciones podrán recibir o generar identificadores relacionados con:
+
+a. Instalación.
+b. Dispositivo.
+c. Navegador.
+d. Suscripción de notificación.
+e. Sesión.
+f. Seguridad.
+g. Prevención de fraude.
+h. Configuración.
+
+MASS procurará no utilizar identificadores permanentes cuando un identificador temporal sea suficiente.
+
+28. KITS DE DESARROLLO
+
+Las aplicaciones podrán integrar kits de desarrollo proporcionados por terceros.
+
+Estos kits podrán apoyar:
+
+a. Autenticación.
+b. Pagos.
+c. Notificaciones.
+d. Mapas.
+e. Análisis.
+f. Seguridad.
+g. Soporte.
+h. Multimedia.
+i. Inteligencia artificial.
+j. Redes sociales.
+
+Antes de la publicación deberá verificarse qué información recibe cada kit y si utiliza almacenamiento o seguimiento.
+
+29. HUELLA DIGITAL DEL DISPOSITIVO
+
+La huella digital puede combinar características técnicas para diferenciar un navegador o dispositivo.
+
+MASS no deberá utilizar huellas digitales para seguimiento oculto o publicidad dirigida sin una base legal, aviso y elección apropiados.
+
+Podrá utilizar señales técnicas limitadas para:
+
+a. Seguridad.
+b. Prevención de fraude.
+c. Detección de automatización maliciosa.
+d. Protección contra abuso.
+e. Investigación de incidentes.
+
+30. INFORMACIÓN RECOPILADA
+
+Estas tecnologías podrán recopilar o generar:
+
+a. Identificador de sesión.
+b. Dirección IP.
+c. Fecha y hora.
+d. Navegador.
+e. Sistema operativo.
+f. Tipo de dispositivo.
+g. Página o función utilizada.
+h. Fuente de navegación.
+i. Errores.
+j. Preferencias.
+k. Idioma.
+l. Región aproximada.
+m. Interacción con comunicaciones.
+n. Estado de autenticación.
+o. Identificadores técnicos.
+p. Información de seguridad.
+q. Consentimientos.
+
+31. CONSENTIMIENTO
+
+Cuando la legislación lo requiera, MASS solicitará consentimiento antes de activar tecnologías no esenciales.
+
+El consentimiento deberá procurar ser:
+
+a. Informado.
+b. Específico.
+c. Libre.
+d. Comprensible.
+e. Otorgado mediante una acción afirmativa.
+f. Retirable.
+g. Registrado cuando corresponda.
+
+No se considerará consentimiento válido el silencio cuando la ley exija una elección activa.
+
+32. PANEL DE PREFERENCIAS
+
+Cuando resulte necesario, MASS podrá ofrecer controles para:
+
+a. Aceptar todas las categorías autorizables.
+b. Rechazar tecnologías no esenciales.
+c. Elegir categorías.
+d. Cambiar una decisión.
+e. Retirar consentimiento.
+f. Consultar proveedores.
+g. Consultar propósitos.
+h. Conocer periodos aproximados.
+
+Las tecnologías estrictamente necesarias podrán permanecer activas cuando sean indispensables.
+
+33. CAMBIO DE PREFERENCIAS
+
+El usuario podrá cambiar sus preferencias mediante:
+
+a. MASS ID.
+b. Un panel de cookies.
+c. Configuración del navegador.
+d. Configuración del dispositivo.
+e. Configuración de la aplicación.
+f. Un enlace publicado.
+g. Un canal oficial de privacidad.
+
+Un cambio podrá aplicarse únicamente al navegador, dispositivo o cuenta donde fue realizado, dependiendo de la tecnología.
+
+34. CONTROLES DEL NAVEGADOR
+
+La mayoría de los navegadores permiten:
+
+a. Consultar cookies.
+b. Eliminar cookies.
+c. Bloquear cookies.
+d. Limitar cookies de terceros.
+e. Eliminar almacenamiento local.
+f. Borrar caché.
+g. Desactivar permisos.
+h. Administrar notificaciones.
+i. Navegar en modo privado.
+
+Bloquear tecnologías necesarias puede impedir que algunas funciones trabajen correctamente.
+
+35. GLOBAL PRIVACY CONTROL
+
+Cuando resulte legalmente obligatorio y técnicamente aplicable, MASS deberá reconocer una señal válida de Global Privacy Control como una solicitud de exclusión respecto de la venta o intercambio de datos personales cubiertos por la ley correspondiente.
+
+Una señal podrá aplicarse al navegador o dispositivo desde el cual se reciba.
+
+Cuando el usuario esté autenticado y la legislación lo requiera, MASS deberá evaluar si la elección también debe asociarse con la cuenta.
+
+36. DO NOT TRACK
+
+Algunos navegadores transmiten una señal denominada Do Not Track.
+
+Debido a que esta señal no tiene una interpretación técnica uniforme en todas las jurisdicciones, MASS podrá no responder a ella de manera independiente, salvo cuando exista una obligación aplicable.
+
+Esto no limita el reconocimiento de Global Privacy Control u otras señales legalmente válidas.
+
+37. VENTA O INTERCAMBIO DE DATOS
+
+Conforme a las prácticas actuales declaradas en el Aviso de privacidad, MASS no vende datos personales, datos sensibles ni datos biométricos.
+
+Si una futura integración se considerara venta o intercambio conforme a una legislación aplicable, MASS deberá:
+
+a. Actualizar sus avisos.
+b. Proporcionar opciones de exclusión.
+c. Respetar señales legalmente válidas.
+d. Obtener consentimiento cuando sea necesario.
+e. Actualizar esta Política.
+f. Identificar a los terceros participantes.
+
+38. MENORES
+
+Las tecnologías utilizadas en servicios destinados a menores deberán aplicar medidas reforzadas.
+
+Cuando corresponda, MASS deberá:
+
+a. Obtener consentimiento parental verificable.
+b. Limitar seguimiento.
+c. Evitar publicidad conductual prohibida.
+d. Minimizar datos.
+e. Proteger identificadores.
+f. Proporcionar controles parentales.
+g. Eliminar información conforme a solicitudes válidas.
+h. Respetar restricciones de edad.
+i. Evaluar proveedores.
+
+39. TERCEROS
+
+Los terceros podrán administrar sus propias tecnologías conforme a sus políticas.
+
+MASS procurará:
+
+a. Identificar proveedores.
+b. Revisar sus propósitos.
+c. Limitar información.
+d. Celebrar contratos apropiados.
+e. Evaluar seguridad.
+f. Desactivar integraciones innecesarias.
+g. Mantener vínculos a políticas aplicables.
+h. Revisar cambios importantes.
+
+40. CONSERVACIÓN
+
+Las cookies y tecnologías relacionadas deberán conservarse solamente durante el tiempo razonablemente necesario para su propósito.
+
+Los periodos podrán depender de:
+
+a. Tipo de tecnología.
+b. Función.
+c. Seguridad.
+d. Elección del usuario.
+e. Duración de la sesión.
+f. Obligación legal.
+g. Configuración del proveedor.
+h. Prevención de fraude.
+i. Necesidad operativa.
+
+Antes de la publicación definitiva deberá incorporarse un inventario con periodos específicos cuando corresponda.
+
+41. SEGURIDAD
+
+MASS procurará proteger estas tecnologías mediante:
+
+a. Atributos seguros.
+b. Restricciones de acceso.
+c. Cifrado en tránsito.
+d. Límites de duración.
+e. Renovación de identificadores.
+f. Revocación.
+g. Separación por entorno.
+h. Validación de sesiones.
+i. Prevención de scripts no autorizados.
+j. Revisión de proveedores.
+k. Configuración apropiada de dominios.
+l. Protección contra acceso cruzado.
+
+42. INCIDENTES
+
+Si una cookie, token o tecnología relacionada fuera comprometida, MASS podrá:
+
+a. Revocarla.
+b. Cerrar sesiones.
+c. Cambiar credenciales.
+d. Bloquear dispositivos.
+e. Investigar registros.
+f. Corregir configuraciones.
+g. Suspender integraciones.
+h. Notificar a usuarios.
+i. Notificar a autoridades.
+j. Exigir nueva autenticación.
+
+43. DERECHOS DE PRIVACIDAD
+
+Dependiendo de la jurisdicción, el usuario podrá ejercer derechos relacionados con datos obtenidos mediante estas tecnologías, incluyendo:
+
+a. Acceso.
+b. Corrección.
+c. Eliminación.
+d. Portabilidad.
+e. Retiro de consentimiento.
+f. Exclusión de publicidad dirigida.
+g. Exclusión de venta o intercambio.
+h. Limitación de determinados usos.
+i. Apelación.
+j. No discriminación.
+
+Las solicitudes deberán enviarse mediante los canales oficiales de privacidad.
+
+44. INVENTARIO DE TECNOLOGÍAS
+
+Antes de publicar esta Política, MASS deberá completar un inventario que identifique, cuando corresponda:
+
+a. Nombre de la cookie o tecnología.
+b. Proveedor.
+c. Dominio.
+d. Categoría.
+e. Propósito.
+f. Información procesada.
+g. Duración.
+h. Primera o tercera parte.
+i. Si requiere consentimiento.
+j. Método para desactivarla.
+k. Servicios donde se utiliza.
+l. Enlace a la política del proveedor.
+
+45. AUDITORÍA
+
+MASS deberá revisar periódicamente:
+
+a. Tecnologías activas.
+b. Scripts.
+c. Proveedores.
+d. Cookies inesperadas.
+e. Duraciones.
+f. Categorías.
+g. Consentimientos.
+h. Transferencias.
+i. Integraciones eliminadas.
+j. Cumplimiento de preferencias.
+k. Señales de exclusión.
+l. Cambios en aplicaciones.
+
+46. CAMBIOS A ESTA POLÍTICA
+
+Esta Política podrá actualizarse debido a:
+
+a. Nuevas tecnologías.
+b. Nuevos servicios.
+c. Nuevos proveedores.
+d. Cambios legales.
+e. Cambios de consentimiento.
+f. Cambios de publicidad.
+g. Cambios de seguridad.
+h. Nuevas aplicaciones.
+i. Correcciones.
+j. Resultados de auditorías.
+
+Cada versión deberá mostrar su identificación y fecha de vigencia.
+
+47. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-006, Política de inteligencia artificial.
+g. Políticas específicas de cada servicio.
+
+48. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Requisitos regulatorios.
+c. Aviso específico del servicio.
+d. Preferencia o consentimiento válido del usuario.
+e. Esta Política.
+f. Aviso de privacidad.
+g. Acuerdo de usuario MASS ID.
+h. Definiciones generales del MASS ID Legal Center.
+
+49. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial de privacidad.
+b. Dirección postal.
+c. Enlace al panel de preferencias.
+d. Método para retirar consentimiento.
+e. Método para ejercer derechos.
+f. Canal para reportar problemas.
+g. Lista de proveedores.
+h. Inventario de cookies y tecnologías.
+
+50. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-005 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien las tecnologías, proveedores, prácticas reales, configuraciones, consentimientos, aplicaciones, servicios u obligaciones legales del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-005
+`
+},
     {
       codigo: "MASS-LC-006",
       titulo: "Política de inteligencia artificial",
