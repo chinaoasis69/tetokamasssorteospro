@@ -1774,13 +1774,791 @@ FIN DEL DOCUMENTO MASS-LC-002
 `
 },
     {
-      codigo: "MASS-LC-003",
-      titulo: "Aviso de privacidad",
-      descripcion:
-        "Explica cómo se recopilan, utilizan, protegen y administran los datos personales.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-003",
+  titulo: "Aviso de privacidad",
+  descripcion:
+    "Explica cómo se recopilan, utilizan, protegen y administran los datos personales.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-003
+AVISO DE PRIVACIDAD DE MASS ID
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Este Aviso de privacidad explica cómo TE-TO-KA SOLUTIONS® LLC recopila, utiliza, conserva, comparte, protege y administra datos personales relacionados con MASS ID y el ecosistema MASS.
+
+Debes leer este Aviso junto con el Acuerdo de usuario MASS ID y las políticas particulares de cada producto o servicio.
+
+1. RESPONSABLE DE LOS DATOS
+
+TE-TO-KA SOLUTIONS® LLC administra MASS ID y determina los propósitos principales para los cuales se tratan los datos personales dentro del ecosistema MASS, salvo cuando un tercero independiente actúe como responsable de sus propias operaciones.
+
+En este documento, las expresiones “MASS”, “Empresa”, “nosotros” o “nuestro” se refieren a TE-TO-KA SOLUTIONS® LLC y a los servicios que esta administre directamente.
+
+2. ALCANCE
+
+Este Aviso se aplica a los datos tratados mediante:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. Sitios web y aplicaciones MASS.
+j. Paneles administrativos.
+k. Servicios de atención al usuario.
+l. Sistemas de autenticación y seguridad.
+m. Productos, módulos y servicios futuros integrados con MASS ID.
+
+Un producto específico podrá tener un aviso complementario cuando sus operaciones requieran información o tratamientos adicionales.
+
+3. DATOS QUE EL USUARIO PROPORCIONA
+
+Podemos recopilar información proporcionada directamente por el usuario, incluyendo:
+
+a. Nombre y apellidos.
+b. Correo electrónico.
+c. Número telefónico.
+d. Contraseña cifrada o credenciales administradas por proveedores de autenticación.
+e. PIN y códigos de verificación.
+f. Dirección residencial, comercial o de entrega.
+g. Fotografía de perfil.
+h. Fecha de nacimiento o confirmación de edad.
+i. Idioma y preferencias.
+j. Información de soporte.
+k. Mensajes y comunicaciones.
+l. Contenido publicado o cargado.
+m. Información de una organización o negocio.
+n. Documentos proporcionados para verificaciones.
+o. Información necesaria para contratar, comprar o utilizar un servicio.
+
+4. INFORMACIÓN DE CUENTA Y MASS ID
+
+Podemos mantener datos relacionados con la cuenta, incluyendo:
+
+a. Número MASS ID.
+b. Identificador interno de autenticación.
+c. Estado de la cuenta.
+d. Fecha de registro.
+e. Fecha de verificación.
+f. Roles y permisos.
+g. Organizaciones asociadas.
+h. Historial de cambios importantes.
+i. Preferencias de privacidad.
+j. Configuración de seguridad.
+k. Direcciones registradas.
+l. Sesiones y dispositivos autorizados.
+
+5. DATOS RECOPILADOS AUTOMÁTICAMENTE
+
+Cuando se utiliza MASS podemos recibir automáticamente:
+
+a. Dirección IP.
+b. Tipo de navegador.
+c. Sistema operativo.
+d. Tipo de dispositivo.
+e. Identificadores técnicos.
+f. Fecha y hora de acceso.
+g. Páginas o funciones utilizadas.
+h. Errores técnicos.
+i. Registros de seguridad.
+j. Información de sesión.
+k. Interacciones con notificaciones.
+l. Datos aproximados de ubicación derivados de la red.
+m. Información almacenada mediante cookies o almacenamiento local.
+
+6. UBICACIÓN
+
+Algunos servicios pueden requerir datos de ubicación para:
+
+a. Mostrar rutas.
+b. Coordinar entregas.
+c. Asignar servicios.
+d. Confirmar puntos de origen o destino.
+e. Mostrar operadores cercanos.
+f. Prevenir fraude.
+g. Proteger cuentas.
+h. Proporcionar funciones solicitadas.
+
+La ubicación precisa solamente deberá utilizarse cuando sea necesaria para una función autorizada y cuando exista el permiso requerido.
+
+El usuario podrá administrar los permisos de ubicación mediante su dispositivo, aunque desactivarlos puede impedir que determinadas funciones trabajen correctamente.
+
+7. INFORMACIÓN DE PAGOS
+
+Cuando se realizan pagos, recargas, compras o transacciones, podemos tratar:
+
+a. Nombre del pagador.
+b. Monto.
+c. Moneda.
+d. Fecha.
+e. Descripción.
+f. Estado de la transacción.
+g. Identificador del procesador de pagos.
+h. Últimos dígitos o descripción limitada del método de pago.
+i. Historial de reembolsos o disputas.
+j. Señales de prevención de fraude.
+
+Los números completos de tarjetas y credenciales financieras sensibles podrán ser procesados directamente por proveedores de pagos independientes.
+
+MASS no deberá almacenar información financiera completa cuando no sea necesaria para operar el servicio.
+
+8. MASS CASH, SALDOS Y BENEFICIOS
+
+Podemos mantener registros relacionados con:
+
+a. Saldo MASS.
+b. Recargas.
+c. Compras.
+d. Créditos.
+e. Beneficios.
+f. Premios.
+g. Cupones.
+h. Canjes.
+i. Movimientos.
+j. Organizador asociado.
+k. Estado de aprobación.
+l. Historial de transacciones.
+
+Estos datos se utilizarán para administrar las funciones correspondientes, resolver disputas, prevenir fraude y cumplir obligaciones legales.
+
+9. DATOS DE SERVICIOS DE TRANSPORTE Y LOGÍSTICA
+
+Cuando se utilicen servicios como MASS Ruta, podremos tratar:
+
+a. Dirección de origen.
+b. Dirección de destino.
+c. Información del paquete.
+d. Peso o dimensiones.
+e. Fotografías.
+f. Datos del remitente.
+g. Datos del destinatario.
+h. Ubicación del operador.
+i. Estado de la entrega.
+j. Comprobantes.
+k. Comunicaciones relacionadas.
+l. Incidentes o reclamaciones.
+
+10. DATOS DE ORGANIZADORES Y OPERADORES
+
+Para funciones comerciales, administrativas o profesionales podremos solicitar:
+
+a. Nombre legal.
+b. Nombre comercial.
+c. Identificación.
+d. Información de contacto.
+e. Licencias.
+f. Seguros.
+g. Fotografías.
+h. Información del vehículo.
+i. Datos fiscales.
+j. Información bancaria para pagos autorizados.
+k. Historial de servicios.
+l. Evaluaciones.
+m. Documentos de cumplimiento.
+n. Roles y permisos administrativos.
+
+11. DATOS SENSIBLES
+
+Dependiendo del servicio, MASS podría tratar datos considerados sensibles, incluyendo:
+
+a. Ubicación precisa.
+b. Identificaciones oficiales.
+c. Información financiera.
+d. Datos de menores.
+e. Información biométrica.
+f. Información médica cuando una función autorizada lo requiera.
+g. Credenciales y códigos de seguridad.
+h. Información relacionada con seguros.
+i. Datos protegidos por leyes especiales.
+
+Los datos sensibles solamente deberán tratarse cuando exista una necesidad legítima, medidas de protección reforzadas y el consentimiento o autorización exigidos por la legislación aplicable.
+
+12. FOTOGRAFÍAS Y VERIFICACIÓN FACIAL
+
+Las fotografías podrán utilizarse para:
+
+a. Mostrar una imagen de perfil.
+b. Verificar una cuenta.
+c. Comparar un documento con una persona.
+d. Prevenir suplantación.
+e. Confirmar identidad en operaciones sensibles.
+f. Proteger a usuarios y servicios.
+
+Una fotografía no deberá considerarse automáticamente un dato biométrico procesado.
+
+Cuando MASS genere, utilice o conserve una plantilla, geometría facial u otro identificador biométrico para reconocer a una persona, deberá proporcionar los avisos y obtener los consentimientos que correspondan antes de dicho tratamiento.
+
+13. BIOMETRÍA
+
+MASS no venderá ni comercializará datos biométricos.
+
+Antes de recopilar o utilizar un identificador biométrico, MASS deberá informar, según resulte aplicable:
+
+a. Qué información se recopilará.
+b. El propósito.
+c. El tiempo de conservación.
+d. Los proveedores participantes.
+e. El método para retirar el consentimiento.
+f. El proceso de eliminación.
+
+La utilización de funciones biométricas podrá estar sujeta a una política y consentimiento separados.
+
+14. MENORES DE EDAD
+
+MASS ID de uso general no está dirigido a menores de trece años.
+
+No recopilaremos conscientemente datos personales de un menor de trece años mediante un servicio general sin el consentimiento parental verificable requerido.
+
+Los productos específicamente diseñados para menores deberán contar con:
+
+a. Aviso directo para padres o tutores.
+b. Consentimiento parental verificable.
+c. Controles de acceso.
+d. Recopilación limitada.
+e. Medidas de seguridad apropiadas.
+f. Derechos de revisión y eliminación.
+g. Restricciones de publicidad y perfilamiento aplicables.
+
+Si identificamos una cuenta creada por un menor sin la autorización necesaria, podremos restringirla y eliminar la información conforme a la ley.
+
+15. FUENTES DE INFORMACIÓN
+
+Podemos obtener datos de:
+
+a. El propio usuario.
+b. Padres o tutores autorizados.
+c. Representantes de una organización.
+d. Otros usuarios participantes en una operación.
+e. Proveedores tecnológicos.
+f. Procesadores de pagos.
+g. Proveedores de verificación.
+h. Sistemas de seguridad.
+i. Fuentes públicas legalmente accesibles.
+j. Dispositivos y navegadores.
+k. Servicios integrados autorizados por el usuario.
+
+16. PROPÓSITOS DEL TRATAMIENTO
+
+Podemos utilizar los datos para:
+
+a. Crear y administrar MASS ID.
+b. Autenticar usuarios.
+c. Verificar información.
+d. Proporcionar servicios.
+e. Procesar solicitudes.
+f. Administrar pagos.
+g. Mostrar saldos e historiales.
+h. Coordinar operaciones.
+i. Enviar comunicaciones esenciales.
+j. Proporcionar soporte.
+k. Personalizar funciones autorizadas.
+l. Mantener preferencias.
+m. Prevenir fraude.
+n. Proteger cuentas.
+o. Investigar incidentes.
+p. Cumplir obligaciones legales.
+q. Mantener registros.
+r. Mejorar rendimiento y accesibilidad.
+s. Desarrollar nuevas funciones.
+t. Resolver disputas.
+u. Aplicar acuerdos y políticas.
+v. Generar análisis estadísticos.
+w. Proteger los derechos de MASS y de terceros.
+
+17. BASES Y AUTORIZACIONES
+
+Cuando una legislación requiera identificar una base para el tratamiento, MASS podrá apoyarse en:
+
+a. La ejecución de un contrato.
+b. El consentimiento.
+c. El cumplimiento de una obligación legal.
+d. La protección de una persona.
+e. Un interés legítimo que no prevalezca sobre los derechos del usuario.
+f. El establecimiento, defensa o ejercicio de reclamaciones.
+g. La prestación de un servicio solicitado.
+
+El usuario podrá retirar un consentimiento cuando la legislación lo permita, sin afectar el tratamiento realizado previamente de manera válida.
+
+18. PERFIL PÚBLICO Y VISIBILIDAD
+
+El usuario podrá controlar determinadas preferencias, como:
+
+a. Perfil visible.
+b. Mostrar teléfono.
+c. Mostrar correo.
+d. Recibir promociones.
+e. Permitir personalización.
+
+El usuario siempre podrá consultar sus propios datos autenticados.
+
+Activar un perfil visible no autoriza a otros usuarios a utilizar la información para acoso, fraude, vigilancia, comercialización no solicitada o actividades prohibidas.
+
+19. COMUNICACIONES ESENCIALES
+
+Podemos enviar comunicaciones necesarias sobre:
+
+a. Seguridad.
+b. Inicio de sesión.
+c. Verificación.
+d. Cambios de contraseña.
+e. Cambios de correo o teléfono.
+f. Pagos.
+g. Operaciones solicitadas.
+h. Actualizaciones legales.
+i. Incidentes.
+j. Soporte.
+k. Suspensión o cierre de cuenta.
+
+Estas comunicaciones podrán permanecer activas aunque el usuario no acepte mensajes promocionales.
+
+20. PROMOCIONES
+
+Solamente enviaremos comunicaciones promocionales conforme a las preferencias del usuario y la legislación aplicable.
+
+El usuario podrá desactivar promociones mediante:
+
+a. Las preferencias de MASS ID.
+b. Un enlace para cancelar suscripción.
+c. Los ajustes de notificaciones.
+d. Una solicitud enviada por un canal oficial.
+
+Desactivar promociones no desactiva alertas esenciales.
+
+21. PERSONALIZACIÓN
+
+Cuando el usuario lo autorice, podremos utilizar actividad e intereses para:
+
+a. Organizar contenido.
+b. Recomendar funciones.
+c. Mostrar servicios relevantes.
+d. Mejorar la experiencia.
+e. Recordar preferencias.
+f. Adaptar comunicaciones.
+
+El usuario podrá desactivar la personalización desde sus preferencias cuando la función esté disponible.
+
+22. INTELIGENCIA ARTIFICIAL
+
+MASS podrá utilizar sistemas automatizados o de inteligencia artificial para:
+
+a. Atención al usuario.
+b. Detección de fraude.
+c. Seguridad.
+d. Clasificación.
+e. Moderación.
+f. Recomendaciones.
+g. Traducción.
+h. Resúmenes.
+i. Procesamiento de solicitudes.
+j. Mejora de servicios.
+
+Los sistemas automatizados pueden producir resultados incorrectos.
+
+Cuando una decisión automatizada produzca efectos importantes sobre una persona, MASS aplicará los derechos de revisión, información u oposición requeridos por la legislación aplicable.
+
+23. DATOS DESIDENTIFICADOS Y AGREGADOS
+
+Podemos transformar información para crear datos desidentificados o agregados.
+
+Estos datos podrán utilizarse para:
+
+a. Estadísticas.
+b. Seguridad.
+c. Investigación.
+d. Mejora del servicio.
+e. Planeación.
+f. Análisis de desempeño.
+
+MASS deberá mantener medidas razonables para evitar que los datos desidentificados se utilicen para volver a identificar a una persona.
+
+24. PROVEEDORES DE SERVICIOS
+
+Podemos compartir información necesaria con proveedores que apoyen:
+
+a. Alojamiento.
+b. Bases de datos.
+c. Autenticación.
+d. Correo electrónico.
+e. SMS.
+f. Notificaciones.
+g. Pagos.
+h. Mapas.
+i. Seguridad.
+j. Almacenamiento.
+k. Verificación.
+l. Análisis técnico.
+m. Soporte.
+n. Servicios jurídicos y contables.
+
+Estos proveedores solamente deberán recibir los datos necesarios para realizar sus funciones y estarán sujetos a obligaciones contractuales o legales de protección.
+
+25. OTROS USUARIOS
+
+Cierta información podrá compartirse con otros usuarios cuando sea necesaria para completar una operación, por ejemplo:
+
+a. Nombre.
+b. Información de contacto autorizada.
+c. Dirección de entrega.
+d. Estado de un servicio.
+e. Fotografía de perfil.
+f. Información del organizador.
+g. Información del operador.
+h. Datos necesarios para una transacción.
+
+La información compartida dependerá de las preferencias, funciones y necesidades del servicio.
+
+26. TERCEROS INDEPENDIENTES
+
+Algunos servicios integrados pueden ser operados por terceros independientes que determinan sus propias prácticas de privacidad.
+
+Estos terceros podrán incluir:
+
+a. Instituciones financieras.
+b. Procesadores de pagos.
+c. Aseguradoras.
+d. Comercios.
+e. Operadores.
+f. Organizadores.
+g. Servicios profesionales.
+h. Proveedores de telecomunicaciones.
+i. Autoridades públicas.
+
+El usuario deberá revisar los avisos de privacidad de dichos terceros.
+
+27. VENTA DE DATOS
+
+Conforme al diseño y prácticas actuales de MASS, no vendemos datos personales, datos sensibles ni datos biométricos.
+
+Tampoco intercambiamos datos personales por dinero con empresas de publicidad.
+
+Si estas prácticas fueran a cambiar, MASS deberá actualizar este Aviso, proporcionar las divulgaciones requeridas y habilitar los mecanismos de consentimiento u oposición antes de implementar el cambio.
+
+28. PUBLICIDAD DIRIGIDA
+
+MASS no deberá utilizar datos sensibles para publicidad dirigida sin la autorización legal correspondiente.
+
+Cuando una función utilice datos personales para publicidad dirigida, el usuario recibirá un aviso y un mecanismo para oponerse cuando la legislación lo requiera.
+
+29. DIVULGACIONES LEGALES
+
+Podemos divulgar información cuando resulte razonablemente necesario para:
+
+a. Cumplir una ley.
+b. Responder a una orden válida.
+c. Cooperar con autoridades competentes.
+d. Proteger la seguridad de una persona.
+e. Investigar fraude.
+f. Defender derechos legales.
+g. Aplicar contratos.
+h. Responder a una emergencia.
+i. Prevenir daños.
+j. Cumplir obligaciones regulatorias.
+
+Cuando sea legalmente permitido, intentaremos limitar la divulgación a la información razonablemente necesaria.
+
+30. TRANSACCIONES EMPRESARIALES
+
+La información podrá transferirse como parte de:
+
+a. Una fusión.
+b. Una adquisición.
+c. Una reorganización.
+d. Una financiación.
+e. Una venta de activos.
+f. Un cambio de operador.
+g. Un procedimiento de insolvencia.
+
+El nuevo responsable deberá respetar las obligaciones legales aplicables y proporcionar avisos sobre cambios materiales.
+
+31. CONSERVACIÓN
+
+Conservaremos datos solamente durante el tiempo razonablemente necesario para:
+
+a. Proporcionar servicios.
+b. Mantener una cuenta.
+c. Cumplir contratos.
+d. Cumplir obligaciones legales.
+e. Prevenir fraude.
+f. Resolver disputas.
+g. Proteger la seguridad.
+h. Mantener registros financieros.
+i. Defender reclamaciones.
+j. Cumplir solicitudes válidas.
+
+Los periodos podrán variar según el tipo de información, servicio, riesgo y obligación legal.
+
+32. ELIMINACIÓN
+
+Cuando los datos ya no sean necesarios, podrán:
+
+a. Eliminarse.
+b. Anonimizarse.
+c. Desidentificarse.
+d. Mantenerse bloqueados durante un periodo legal.
+e. Conservarse en respaldos hasta su eliminación programada.
+
+Una solicitud de eliminación no exige borrar información que deba conservarse legalmente o que sea necesaria para prevenir fraude, completar una transacción o defender derechos.
+
+33. SEGURIDAD
+
+MASS utilizará medidas administrativas, técnicas y organizacionales razonables, incluyendo según corresponda:
+
+a. Controles de acceso.
+b. Autenticación.
+c. Autenticación multifactor.
+d. Cifrado en tránsito.
+e. Restricciones de permisos.
+f. Registro de actividad.
+g. Copias de seguridad.
+h. Actualizaciones.
+i. Evaluaciones de proveedores.
+j. Procedimientos de respuesta a incidentes.
+k. Separación de funciones administrativas.
+l. Verificación de operaciones sensibles.
+
+Ninguna medida garantiza seguridad absoluta.
+
+34. RESPONSABILIDADES DEL USUARIO
+
+El usuario debe:
+
+a. Proteger su contraseña.
+b. Proteger sus códigos.
+c. Mantener sus dispositivos seguros.
+d. Cerrar sesiones no reconocidas.
+e. Mantener actualizados sus datos.
+f. Informar accesos sospechosos.
+g. No compartir credenciales.
+h. Revisar sus preferencias.
+i. Proteger información descargada.
+j. Evitar publicar datos sensibles innecesarios.
+
+35. INCIDENTES DE SEGURIDAD
+
+Cuando ocurra un incidente, MASS podrá:
+
+a. Investigar.
+b. Contener la situación.
+c. Cambiar credenciales.
+d. Cerrar sesiones.
+e. Suspender funciones.
+f. Solicitar verificaciones.
+g. Notificar a usuarios.
+h. Notificar a autoridades.
+i. Restaurar sistemas.
+j. Mejorar controles.
+
+Las notificaciones se realizarán cuando lo requiera la legislación aplicable.
+
+36. DERECHOS DE PRIVACIDAD
+
+Dependiendo de la jurisdicción, el usuario podrá tener derecho a:
+
+a. Confirmar si tratamos sus datos.
+b. Acceder a sus datos.
+c. Obtener una copia.
+d. Corregir datos inexactos.
+e. Solicitar eliminación.
+f. Retirar consentimiento.
+g. Oponerse a determinados tratamientos.
+h. Limitar ciertos usos.
+i. Optar por no participar en publicidad dirigida.
+j. Optar por no participar en una venta de datos.
+k. Oponerse a determinados perfiles automatizados.
+l. Presentar una apelación.
+m. No sufrir discriminación por ejercer sus derechos.
+n. Presentar una queja ante una autoridad competente.
+
+Los derechos disponibles dependerán de la residencia del usuario y de la legislación aplicable.
+
+37. SOLICITUDES DE PRIVACIDAD
+
+Las solicitudes deberán enviarse mediante los canales oficiales publicados por MASS.
+
+La solicitud deberá proporcionar suficiente información para:
+
+a. Identificar la cuenta.
+b. Verificar la identidad.
+c. Comprender la solicitud.
+d. Localizar los datos.
+e. Proteger la información contra accesos no autorizados.
+
+MASS podrá solicitar verificación adicional antes de revelar, corregir o eliminar información.
+
+38. REPRESENTANTES AUTORIZADOS
+
+Cuando la legislación lo permita, un representante autorizado podrá presentar una solicitud en nombre del usuario.
+
+Podremos solicitar:
+
+a. Prueba de autorización.
+b. Verificación directa del usuario.
+c. Identificación del representante.
+d. Documentación legal aplicable.
+
+39. APELACIONES
+
+Cuando MASS rechace total o parcialmente una solicitud de privacidad y la ley otorgue derecho de apelación, el usuario podrá solicitar una revisión mediante el canal indicado en la respuesta.
+
+La apelación deberá identificar la decisión impugnada y explicar por qué debe reconsiderarse.
+
+40. TIEMPOS DE RESPUESTA
+
+MASS responderá dentro del plazo establecido por la legislación aplicable.
+
+Cuando sea permitido, el plazo podrá ampliarse debido a la complejidad, cantidad de solicitudes o necesidad de verificación.
+
+El usuario será informado cuando una ampliación resulte necesaria.
+
+41. NO DISCRIMINACIÓN
+
+MASS no discriminará ilegalmente contra una persona por ejercer un derecho de privacidad.
+
+El ejercicio de derechos no impide que MASS:
+
+a. Requiera datos necesarios para un servicio.
+b. Limite una función que no pueda operar sin esos datos.
+c. Mantenga información legalmente necesaria.
+d. Proteja cuentas y operaciones.
+e. Cumpla obligaciones contractuales o legales.
+
+42. TEXAS
+
+Los residentes de Texas podrán tener derechos relacionados con:
+
+a. Confirmación del tratamiento.
+b. Acceso.
+c. Corrección.
+d. Eliminación.
+e. Portabilidad.
+f. Exclusión de publicidad dirigida.
+g. Exclusión de venta de datos.
+h. Exclusión de ciertos perfiles automatizados.
+i. Apelación.
+j. No discriminación.
+
+MASS proporcionará métodos seguros para presentar solicitudes conforme a los requisitos aplicables.
+
+43. OTROS ESTADOS DE ESTADOS UNIDOS
+
+Los residentes de otros estados podrán tener derechos adicionales conforme a las leyes aplicables en su lugar de residencia.
+
+MASS evaluará cada solicitud conforme a:
+
+a. La residencia verificada.
+b. La ley correspondiente.
+c. Las excepciones aplicables.
+d. La naturaleza del servicio.
+e. El tipo de datos involucrados.
+
+44. USUARIOS INTERNACIONALES
+
+MASS está administrado desde Estados Unidos.
+
+Cuando se ofrezcan servicios en otros países, los datos podrán transferirse y tratarse en Estados Unidos u otros lugares donde operen proveedores autorizados.
+
+MASS implementará los avisos, contratos, consentimientos y mecanismos de transferencia exigidos por la legislación aplicable.
+
+45. COOKIES Y ALMACENAMIENTO LOCAL
+
+MASS podrá utilizar:
+
+a. Cookies esenciales.
+b. Almacenamiento local.
+c. Identificadores de sesión.
+d. Preferencias.
+e. tecnologías de seguridad.
+f. Herramientas de rendimiento.
+g. Notificaciones.
+
+La información detallada se encontrará en MASS-LC-005, Política de cookies.
+
+46. SEÑALES DE PREFERENCIA
+
+Cuando la legislación aplicable requiera reconocer una señal tecnológica válida de exclusión, MASS deberá evaluar y aplicar dicha señal conforme a los requisitos correspondientes.
+
+Las preferencias vinculadas a una cuenta podrán prevalecer dentro de las funciones autenticadas cuando reflejen una elección verificable del usuario.
+
+47. ENLACES EXTERNOS
+
+Los servicios MASS pueden incluir enlaces a sitios o aplicaciones externas.
+
+MASS no controla las prácticas independientes de esos terceros.
+
+El usuario debe revisar sus políticas antes de proporcionar información.
+
+48. CAMBIOS AL AVISO
+
+Podremos actualizar este Aviso para reflejar:
+
+a. Cambios legales.
+b. Nuevos servicios.
+c. Nuevas categorías de datos.
+d. Nuevos proveedores.
+e. Cambios de seguridad.
+f. Nuevas tecnologías.
+g. Cambios empresariales.
+h. Correcciones o aclaraciones.
+
+Cada versión mostrará su número y fecha de vigencia.
+
+Cuando un cambio sea material, proporcionaremos el aviso o consentimiento exigido.
+
+49. VERSIONES ANTERIORES
+
+MASS podrá conservar copias de versiones anteriores para:
+
+a. Cumplimiento.
+b. Auditoría.
+c. Resolución de disputas.
+d. Historial de consentimiento.
+e. Administración legal.
+
+La versión publicada más reciente será la aplicable a partir de su fecha de vigencia, salvo que la ley establezca otra cosa.
+
+50. CONFLICTOS
+
+En caso de conflicto se aplicará el siguiente orden:
+
+a. Legislación obligatoria.
+b. Aviso específico de un servicio.
+c. Este Aviso de privacidad.
+d. Acuerdo de usuario MASS ID.
+e. Definiciones generales del MASS ID Legal Center.
+
+51. CONTACTO
+
+Las preguntas, solicitudes y avisos de privacidad deberán enviarse mediante los canales oficiales publicados por TE-TO-KA SOLUTIONS® LLC.
+
+Antes de la publicación definitiva deberán incorporarse como mínimo:
+
+a. Correo electrónico oficial de privacidad.
+b. Dirección postal oficial.
+c. Método para ejercer derechos.
+d. Método para presentar apelaciones.
+e. Canal para reportar incidentes.
+f. Información de contacto adicional exigida por la ley.
+
+52. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-003 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá actualizarse cuando cambien las prácticas reales de recopilación, uso, conservación, intercambio, seguridad o derechos de privacidad.
+
+FIN DEL DOCUMENTO MASS-LC-003
+`
+},
     {
       codigo: "MASS-LC-004",
       titulo: "Política de seguridad",
