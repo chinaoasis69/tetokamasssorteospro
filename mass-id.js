@@ -7750,13 +7750,1388 @@ FIN DEL DOCUMENTO MASS-LC-008
 `
 },
     {
-      codigo: "MASS-LC-009",
-      titulo: "Política antifraude",
-      descripcion:
-        "Establece medidas para prevenir abuso, suplantación de identidad, fraude y actividades sospechosas.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-009",
+  titulo: "Política antifraude",
+  descripcion:
+    "Establece medidas para prevenir abuso, suplantación de identidad, fraude y actividades sospechosas.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-009
+POLÍTICA ANTIFRAUDE DEL ECOSISTEMA MASS
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política establece principios, responsabilidades, controles y procedimientos generales para prevenir, detectar, investigar, contener y responder a fraude, abuso, suplantación de identidad, manipulación de sistemas, operaciones no autorizadas y actividades sospechosas dentro de MASS ID y del ecosistema MASS.
+
+TE-TO-KA SOLUTIONS® LLC podrá aplicar medidas razonables y proporcionales al riesgo, incluyendo verificación adicional, limitación temporal de funciones, preservación de evidencia, suspensión de operaciones o cierre de cuentas cuando resulte necesario.
+
+Ninguna medida antifraude garantiza la eliminación absoluta del fraude. MASS procurará actualizar continuamente sus controles de acuerdo con los riesgos, tecnologías, productos y prácticas reales del ecosistema.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Proteger a los usuarios.
+b. Proteger identidades y cuentas.
+c. Proteger pagos y saldos.
+d. Proteger organizadores y operadores.
+e. Proteger premios y beneficios.
+f. Prevenir suplantación.
+g. Detectar patrones sospechosos.
+h. Evitar manipulación de sistemas.
+i. Investigar incidentes.
+j. Preservar evidencia.
+k. Facilitar correcciones.
+l. Reducir pérdidas.
+m. Cumplir obligaciones legales.
+n. Cooperar con proveedores y autoridades.
+o. Mantener confianza en el ecosistema MASS.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Contract.
+j. MASS Points.
+k. MASS Real Estate.
+l. MASS Fit.
+m. MASS Face ID.
+n. Central IA.
+o. TOKAYO IA.
+p. Usuarios.
+q. Organizadores.
+r. Operadores.
+s. Administradores.
+t. Empleados.
+u. Contratistas.
+v. Proveedores.
+w. Integraciones.
+x. Aplicaciones y servicios futuros.
+
+3. DEFINICIÓN GENERAL DE FRAUDE
+
+Para esta Política, fraude incluye cualquier conducta intencional o engañosa destinada a obtener un beneficio indebido, causar una pérdida, evadir controles o perjudicar a MASS, usuarios o terceros.
+
+El fraude puede involucrar:
+
+a. Dinero.
+b. Saldo.
+c. Identidad.
+d. Premios.
+e. Boletos.
+f. Beneficios.
+g. Productos.
+h. Servicios.
+i. Datos.
+j. Acceso.
+k. Reputación.
+l. Propiedad intelectual.
+m. Recursos tecnológicos.
+n. Documentos.
+o. Información confidencial.
+
+4. ABUSO
+
+El abuso incluye el uso indebido de una función aunque no produzca una pérdida económica inmediata.
+
+Podrá incluir:
+
+a. Creación masiva de cuentas.
+b. Uso de automatización no autorizada.
+c. Explotación de errores.
+d. Manipulación de promociones.
+e. Uso repetido de beneficios.
+f. Acoso.
+g. Evasión de límites.
+h. Alteración de registros.
+i. Uso compartido indebido de credenciales.
+j. Intentos de obtener ventajas injustas.
+
+5. PRINCIPIOS GENERALES
+
+Las medidas antifraude deberán procurar:
+
+a. Legalidad.
+b. Proporcionalidad.
+c. Necesidad.
+d. Seguridad.
+e. Privacidad.
+f. Equidad.
+g. Documentación.
+h. Trazabilidad.
+i. Supervisión humana.
+j. Confidencialidad.
+k. Rapidez.
+l. Corrección.
+m. Derecho a revisión cuando corresponda.
+n. No discriminación.
+o. Actualización continua.
+
+6. GOBIERNO ANTIFRAUDE
+
+TE-TO-KA SOLUTIONS® LLC conservará autoridad administrativa para:
+
+a. Aprobar controles.
+b. Definir niveles de riesgo.
+c. Designar responsables.
+d. Investigar incidentes.
+e. Limitar operaciones.
+f. Suspender cuentas.
+g. Solicitar verificación.
+h. Preservar registros.
+i. Coordinar con proveedores.
+j. Corregir saldos.
+k. Revertir beneficios indebidos.
+l. Notificar a usuarios.
+m. Cooperar con autoridades.
+n. Actualizar esta Política.
+
+7. RESPONSABILIDADES
+
+Las responsabilidades podrán distribuirse entre:
+
+a. Dirección administrativa.
+b. Seguridad.
+c. Privacidad.
+d. Tecnología.
+e. Pagos.
+f. Soporte.
+g. Personal jurídico.
+h. Administradores.
+i. Organizadores.
+j. Operadores.
+k. Proveedores financieros.
+l. Proveedores tecnológicos.
+m. Auditores.
+n. Usuarios.
+
+8. PROGRAMA DE SEÑALES DE ALERTA
+
+MASS procurará mantener procedimientos para:
+
+a. Identificar señales de alerta.
+b. Detectar señales.
+c. Evaluar el riesgo.
+d. Responder apropiadamente.
+e. Mitigar daños.
+f. Documentar decisiones.
+g. Revisar la eficacia.
+h. Actualizar señales.
+i. Capacitar responsables.
+j. Adaptar controles a nuevos servicios.
+
+9. FUENTES DE SEÑALES DE ALERTA
+
+Las señales podrán originarse en:
+
+a. Registros de acceso.
+b. Transacciones.
+c. Dispositivos.
+d. Ubicación.
+e. Cambios de perfil.
+f. Métodos de pago.
+g. Documentos.
+h. Quejas.
+i. Contracargos.
+j. Proveedores.
+k. Autoridades.
+l. Usuarios afectados.
+m. Sistemas de seguridad.
+n. Patrones históricos.
+o. Investigación interna.
+
+10. NIVELES DE RIESGO
+
+Una actividad podrá clasificarse como:
+
+a. Riesgo bajo.
+b. Riesgo moderado.
+c. Riesgo alto.
+d. Riesgo crítico.
+e. Fraude confirmado.
+f. Falso positivo.
+g. Actividad legítima verificada.
+
+La clasificación podrá cambiar cuando aparezca nueva información.
+
+11. FACTORES DE RIESGO
+
+MASS podrá considerar:
+
+a. Importe.
+b. Frecuencia.
+c. Historial.
+d. Ubicación.
+e. Dispositivo.
+f. Identidad.
+g. Método de pago.
+h. Organizador.
+i. Número de cuentas relacionadas.
+j. Cambios recientes.
+k. Intentos fallidos.
+l. Velocidad de operaciones.
+m. Tipo de producto.
+n. Posible impacto.
+o. Evidencia disponible.
+
+12. SUPERVISIÓN HUMANA
+
+Las decisiones importantes deberán permitir revisión humana cuando resulte razonable o legalmente necesario.
+
+La persona revisora podrá:
+
+a. Confirmar la medida.
+b. Solicitar información.
+c. Modificar la medida.
+d. Liberar una operación.
+e. Mantener una restricción.
+f. Escalar el caso.
+g. Corregir un error.
+h. Cerrar la investigación.
+i. Documentar la decisión.
+j. Notificar al usuario.
+
+13. SUPLANTACIÓN DE IDENTIDAD
+
+La suplantación podrá incluir:
+
+a. Usar datos de otra persona.
+b. Crear una cuenta a nombre de otra persona.
+c. Utilizar documentos falsos.
+d. Alterar una fotografía.
+e. Utilizar biometría sin autorización.
+f. Tomar control de una cuenta.
+g. Engañar al soporte.
+h. Fingir ser un administrador.
+i. Fingir ser un organizador.
+j. Fingir ser un operador.
+k. Utilizar una identidad fallecida.
+l. Utilizar información robada.
+
+14. DOCUMENTOS SOSPECHOSOS
+
+Una señal de alerta podrá existir cuando:
+
+a. El documento parece alterado.
+b. La fotografía no coincide.
+c. Los datos son inconsistentes.
+d. El documento está vencido.
+e. El formato no corresponde.
+f. El número ya fue utilizado.
+g. La imagen contiene modificaciones.
+h. La información no coincide con la cuenta.
+i. El documento pertenece a otra persona.
+j. El documento fue reportado como robado.
+
+15. INFORMACIÓN INCONSISTENTE
+
+Podrán revisarse inconsistencias entre:
+
+a. Nombre.
+b. Teléfono.
+c. Correo.
+d. Dirección.
+e. Fecha de nacimiento.
+f. Documento.
+g. Cuenta bancaria.
+h. Tarjeta.
+i. Dispositivo.
+j. Ubicación.
+k. Organizador.
+l. Historial de acceso.
+
+16. TOMA DE CONTROL DE CUENTAS
+
+Una toma de control podrá involucrar:
+
+a. Contraseña robada.
+b. Código MFA interceptado.
+c. Sesión secuestrada.
+d. Recuperación fraudulenta.
+e. Cambio no autorizado de correo.
+f. Cambio no autorizado de teléfono.
+g. Dispositivo desconocido.
+h. Ingeniería social.
+i. Malware.
+j. Reutilización de credenciales.
+
+17. SEÑALES DE CUENTA COMPROMETIDA
+
+Podrán incluir:
+
+a. Inicio desde ubicación inusual.
+b. Dispositivo nuevo.
+c. Muchos intentos fallidos.
+d. Cambio inmediato de datos.
+e. Cambio de contraseña seguido de pagos.
+f. Desactivación de seguridad.
+g. Solicitud urgente de retiro.
+h. Compras atípicas.
+i. Cambio de organizador.
+j. Acceso simultáneo incompatible.
+k. Queja del titular.
+l. Código MFA rechazado repetidamente.
+
+18. RESPUESTA A CUENTA COMPROMETIDA
+
+MASS podrá:
+
+a. Cerrar sesiones.
+b. Revocar tokens.
+c. Restablecer credenciales.
+d. Exigir MFA.
+e. Bloquear temporalmente pagos.
+f. Verificar identidad.
+g. Preservar registros.
+h. Notificar al titular.
+i. Revisar cambios recientes.
+j. Revertir cambios no autorizados.
+k. Coordinar con procesadores.
+l. Abrir una investigación.
+
+19. CONTRASEÑAS Y CÓDIGOS
+
+Los usuarios no deberán compartir:
+
+a. Contraseñas.
+b. PIN.
+c. Código MFA.
+d. Código de recuperación.
+e. Enlaces de acceso.
+f. Código de verificación.
+g. Llaves de seguridad.
+h. Sesiones.
+i. Credenciales administrativas.
+
+MASS no deberá solicitar contraseñas completas mediante mensajes no seguros.
+
+20. PHISHING
+
+El phishing puede presentarse mediante:
+
+a. Correo falso.
+b. Mensaje de texto.
+c. WhatsApp.
+d. Llamada.
+e. Sitio web falso.
+f. Código QR.
+g. Enlace acortado.
+h. Perfil falso.
+i. Soporte falso.
+j. Premio falso.
+k. Oferta falsa.
+l. Solicitud urgente de pago.
+
+21. PREVENCIÓN DE PHISHING
+
+MASS procurará:
+
+a. Publicar canales oficiales.
+b. Utilizar dominios oficiales.
+c. Evitar solicitar secretos.
+d. Proporcionar avisos.
+e. Capacitar personal.
+f. Revisar enlaces.
+g. Proteger correos.
+h. Facilitar reportes.
+i. Retirar contenido falso cuando sea posible.
+j. Preservar evidencia.
+
+22. INGENIERÍA SOCIAL
+
+Ninguna persona deberá utilizar engaño para obtener:
+
+a. Credenciales.
+b. Cambios de cuenta.
+c. Acceso administrativo.
+d. Información privada.
+e. Liberación de fondos.
+f. Aprobación de recarga.
+g. Reembolso.
+h. Cambio de organizador.
+i. Código MFA.
+j. Documento interno.
+
+23. FRAUDE DE PAGOS
+
+Podrá incluir:
+
+a. Tarjeta robada.
+b. Cuenta bancaria ajena.
+c. Pago falsificado.
+d. Comprobante alterado.
+e. Pago duplicado intencional.
+f. Reembolso fraudulento.
+g. Contracargo falso.
+h. Manipulación de moneda.
+i. Cambio de importe.
+j. Uso de método no autorizado.
+k. Lavado de transacciones.
+l. Uso de cuentas intermediarias.
+
+24. COMPROBANTES FALSOS
+
+MASS podrá verificar:
+
+a. Identificador.
+b. Fecha.
+c. Importe.
+d. Beneficiario.
+e. Institución.
+f. Estado.
+g. Metadatos.
+h. Duplicidad.
+i. Correspondencia con registros.
+j. Confirmación del proveedor.
+
+Una imagen de un comprobante no constituye por sí sola confirmación definitiva del pago.
+
+25. PAGOS PENDIENTES
+
+Un estado pendiente no deberá tratarse automáticamente como pago completado.
+
+Antes de entregar saldo, producto o beneficio podrá requerirse:
+
+a. Confirmación bancaria.
+b. Confirmación del procesador.
+c. Aprobación administrativa.
+d. Conciliación.
+e. Identificador válido.
+f. Verificación antifraude.
+
+26. CONTRACARGOS
+
+Los contracargos podrán revisarse para identificar:
+
+a. Compra no autorizada.
+b. Error.
+c. Producto no entregado.
+d. Servicio no prestado.
+e. Fraude amistoso.
+f. Disputa duplicada.
+g. Reclamación falsa.
+h. Uso después de solicitar devolución.
+i. Colusión.
+j. Abuso recurrente.
+
+27. FRAUDE AMISTOSO
+
+El fraude amistoso puede ocurrir cuando una persona legítimamente realiza o recibe una compra y posteriormente niega falsamente la operación.
+
+La investigación podrá considerar:
+
+a. Autorización.
+b. Dispositivo.
+c. Ubicación.
+d. Historial.
+e. Entrega.
+f. Uso.
+g. Comunicaciones.
+h. Confirmaciones.
+i. Reembolsos previos.
+j. Evidencia del organizador.
+
+28. REEMBOLSOS FRAUDULENTOS
+
+Podrá existir fraude cuando se solicite:
+
+a. Reembolso duplicado.
+b. Reembolso y contracargo simultáneo.
+c. Devolución de un artículo distinto.
+d. Reembolso después de consumir el servicio.
+e. Reembolso con evidencia alterada.
+f. Reembolso usando otra identidad.
+g. Reembolso de una transacción inexistente.
+h. Reembolso a un método ajeno.
+
+29. MASS CASH Y SALDOS
+
+Los controles sobre saldos podrán incluir:
+
+a. Separación por organizador.
+b. Identificadores únicos.
+c. Registro de saldo anterior.
+d. Registro de saldo posterior.
+e. Prevención de duplicados.
+f. Aprobación por rol.
+g. Límites.
+h. Alertas.
+i. Conciliación.
+j. Historial inalterable.
+k. Reversión documentada.
+l. Auditoría.
+
+30. MANIPULACIÓN DE SALDO
+
+Se prohíbe:
+
+a. Cambiar saldos sin autorización.
+b. Duplicar recargas.
+c. Reutilizar comprobantes.
+d. Alterar solicitudes.
+e. Aprobarse a sí mismo sin autorización.
+f. Cambiar organizadores.
+g. Borrar movimientos.
+h. Crear créditos falsos.
+i. Ocultar reversos.
+j. Explorar errores para aumentar saldo.
+
+31. TRANSFERENCIAS Y RETIROS
+
+Las transferencias generales entre usuarios o retiros de efectivo permanecerán deshabilitados salvo que exista:
+
+a. Revisión jurídica.
+b. Evaluación regulatoria.
+c. Verificación de identidad.
+d. Monitoreo.
+e. Límites.
+f. Conservación de registros.
+g. Procedimientos de error.
+h. Controles contra fraude.
+i. Proveedores autorizados.
+j. Políticas específicas.
+
+32. MASS SORTEOS PRO
+
+En MASS Sorteos Pro se prohíbe:
+
+a. Alterar números.
+b. Cambiar estados sin autorización.
+c. Vender el mismo boleto indebidamente.
+d. Manipular resultados.
+e. Cambiar ganadores.
+f. Crear premios inexistentes.
+g. Usar giros repetidos.
+h. Reutilizar PIN de giro.
+i. Alterar probabilidades sin autorización.
+j. Manipular saldos.
+k. Crear organizadores falsos.
+l. Ocultar compras.
+m. Borrar historial.
+n. Falsificar comprobantes.
+o. Colusión entre participantes.
+
+33. BOLETOS
+
+Cada boleto deberá procurar mantener:
+
+a. Identificador.
+b. Sorteo.
+c. Organizador.
+d. Usuario.
+e. Estado.
+f. Precio.
+g. Fecha.
+h. Método de pago.
+i. Historial.
+j. Giro utilizado.
+k. Resultado relacionado.
+l. Evidencia de asignación.
+
+34. NÚMEROS DUPLICADOS
+
+Cuando se detecten números duplicados, MASS podrá:
+
+a. Bloquear temporalmente la venta.
+b. Comparar identificadores.
+c. Revisar concurrencia.
+d. Corregir registros.
+e. Determinar la operación válida.
+f. Reembolsar cuando corresponda.
+g. Notificar a afectados.
+h. Documentar el incidente.
+
+35. RESULTADOS Y GANADORES
+
+Los resultados deberán protegerse mediante:
+
+a. Fuentes autorizadas.
+b. Registro de fecha.
+c. Identificador del sorteo.
+d. Evidencia.
+e. Restricción de permisos.
+f. Historial.
+g. Revisión.
+h. Publicación consistente.
+i. Prohibición de edición oculta.
+j. Conservación de versiones.
+
+36. PREMIOS Y BENEFICIOS
+
+Se prohíbe:
+
+a. Reclamar un premio ajeno.
+b. Duplicar un canje.
+c. Alterar un beneficio.
+d. Reutilizar un código.
+e. Falsificar identidad.
+f. Transferir sin autorización.
+g. Crear premios falsos.
+h. Marcar entregado sin entrega.
+i. Borrar evidencia.
+j. Colusión con administradores.
+
+37. ORGANIZADORES FALSOS
+
+MASS podrá verificar a organizadores mediante:
+
+a. Identidad.
+b. Correo.
+c. Teléfono.
+d. Empresa.
+e. Dirección.
+f. Cuenta bancaria.
+g. Documentos.
+h. Referencias.
+i. Historial.
+j. Autorización contractual.
+
+38. RESPONSABILIDAD DE ORGANIZADORES
+
+Los organizadores deberán:
+
+a. Proporcionar información verdadera.
+b. Publicar ofertas reales.
+c. Respetar reglas.
+d. Mantener fondos suficientes.
+e. Entregar premios.
+f. Mantener registros.
+g. Cooperar en investigaciones.
+h. Evitar publicidad engañosa.
+i. Proteger cuentas.
+j. Informar incidentes.
+k. Cumplir obligaciones legales.
+l. No manipular resultados.
+
+39. MASS RUTA
+
+En MASS Ruta podrán considerarse señales como:
+
+a. Chofer falso.
+b. Licencia alterada.
+c. Seguro vencido.
+d. Ubicación falsa.
+e. Paquete inexistente.
+f. Entrega simulada.
+g. Comprobante falso.
+h. Cambio no autorizado de destino.
+i. Colusión.
+j. Solicitud de pago externo sospechosa.
+k. Uso indebido de identidad.
+l. Manipulación del rastreo.
+
+40. PRUEBA DE ENTREGA
+
+La prueba podrá incluir:
+
+a. Firma.
+b. Fotografía.
+c. Código.
+d. Geolocalización.
+e. Fecha.
+f. Hora.
+g. Identificador.
+h. Confirmación del cliente.
+i. Estado del paquete.
+j. Observaciones.
+
+41. MASS REAL ESTATE
+
+Se prohíbe publicar:
+
+a. Propiedad inexistente.
+b. Propiedad sin autorización.
+c. Fotografías engañosas.
+d. Precio falso.
+e. Identidad falsa.
+f. Documentos falsos.
+g. Solicitud fraudulenta de depósito.
+h. Dirección manipulada.
+i. Oferta discriminatoria ilegal.
+j. Información material deliberadamente falsa.
+
+42. MASS VPN
+
+Se prohíbe utilizar MASS VPN para:
+
+a. Fraude.
+b. Acceso no autorizado.
+c. Robo de credenciales.
+d. Ataques.
+e. Distribución de malware.
+f. Suplantación.
+g. Evasión de controles de MASS.
+h. Operaciones ilegales.
+i. Abuso de cuentas.
+j. Ocultamiento de fraude.
+
+43. MASS LEARN
+
+Se prohíbe:
+
+a. Falsificar identidad académica.
+b. Alterar certificados.
+c. Manipular calificaciones.
+d. Vender accesos.
+e. Copiar evaluaciones sin autorización.
+f. Suplantar estudiantes.
+g. Crear instructores falsos.
+h. Publicar cursos inexistentes.
+i. Falsificar acreditaciones.
+j. Manipular pagos.
+
+44. MASS TV
+
+Se prohíbe:
+
+a. Distribuir contenido sin derechos.
+b. Falsificar licencias.
+c. Manipular métricas.
+d. Crear suscripciones falsas.
+e. Revender cuentas sin autorización.
+f. Utilizar pagos robados.
+g. Publicar contenido fraudulento.
+h. Suplantar creadores.
+i. Alterar regalías.
+j. Generar reproducciones automatizadas indebidas.
+
+45. INTELIGENCIA ARTIFICIAL
+
+Los sistemas de inteligencia artificial podrán apoyar:
+
+a. Detección de patrones.
+b. Clasificación de alertas.
+c. Análisis de transacciones.
+d. Detección de duplicados.
+e. Revisión documental.
+f. Detección de automatización.
+g. Priorización de casos.
+h. Identificación de anomalías.
+
+No deberán ser la única base de una decisión importante cuando se requiera revisión humana.
+
+46. LIMITACIONES DE LOS MODELOS
+
+Un sistema automatizado puede producir:
+
+a. Falsos positivos.
+b. Falsos negativos.
+c. Resultados sesgados.
+d. Errores.
+e. Interpretaciones incorrectas.
+f. Alertas incompletas.
+g. Coincidencias accidentales.
+
+Las alertas deberán evaluarse según el contexto.
+
+47. DISPOSITIVOS
+
+MASS podrá registrar información limitada relacionada con:
+
+a. Tipo de dispositivo.
+b. Navegador.
+c. Sistema.
+d. Dirección de red.
+e. Identificador de sesión.
+f. Fecha.
+g. Hora.
+h. Cambios relevantes.
+i. Señales de automatización.
+j. Riesgo de seguridad.
+
+El tratamiento estará sujeto al Aviso de privacidad.
+
+48. UBICACIÓN
+
+La ubicación podrá utilizarse, cuando corresponda, para:
+
+a. Verificar entregas.
+b. Detectar accesos incompatibles.
+c. Prevenir fraude.
+d. Confirmar operación.
+e. Proteger cuentas.
+f. Investigar incidentes.
+
+No deberá utilizarse más allá del propósito autorizado.
+
+49. AUTOMATIZACIÓN
+
+Se prohíbe utilizar bots o automatización para:
+
+a. Crear cuentas masivas.
+b. Comprar boletos injustamente.
+c. Repetir giros.
+d. Acaparar promociones.
+e. Probar credenciales.
+f. Manipular métricas.
+g. Enviar solicitudes abusivas.
+h. Extraer datos.
+i. Evadir límites.
+j. Atacar servicios.
+
+50. MANIPULACIÓN TÉCNICA
+
+Se prohíbe:
+
+a. Alterar código.
+b. Manipular solicitudes.
+c. Cambiar parámetros.
+d. Falsificar respuestas del servidor.
+e. Modificar almacenamiento local para obtener beneficios.
+f. Interferir con bases de datos.
+g. Evadir controles de acceso.
+h. Utilizar llaves robadas.
+i. Explotar vulnerabilidades.
+j. Borrar registros.
+k. Interceptar comunicaciones.
+l. Inyectar instrucciones maliciosas.
+
+51. ERRORES Y VULNERABILIDADES
+
+El usuario deberá reportar responsablemente cualquier error que permita:
+
+a. Obtener saldo.
+b. Acceder a otra cuenta.
+c. Ver datos privados.
+d. Manipular resultados.
+e. Evitar pagos.
+f. Duplicar beneficios.
+g. Cambiar permisos.
+h. Ejecutar acciones administrativas.
+i. Alterar documentos.
+j. Interrumpir servicios.
+
+La explotación deliberada podrá considerarse abuso o fraude.
+
+52. PERSONAL INTERNO
+
+Los empleados, administradores y contratistas no deberán:
+
+a. Aprobar operaciones propias sin autorización.
+b. Manipular saldos.
+c. Crear usuarios falsos.
+d. Borrar evidencia.
+e. Favorecer a relacionados.
+f. Compartir credenciales.
+g. Revelar investigaciones.
+h. Usar datos para beneficio personal.
+i. Alterar resultados.
+j. Evadir controles.
+k. Aceptar sobornos.
+l. Colaborar con fraude externo.
+
+53. CONFLICTOS DE INTERÉS
+
+Las personas responsables deberán revelar:
+
+a. Relación familiar.
+b. Relación comercial.
+c. Beneficio económico.
+d. Participación en la operación.
+e. Interés en el organizador.
+f. Regalo o incentivo.
+g. Otra circunstancia que afecte objetividad.
+
+54. SEPARACIÓN DE FUNCIONES
+
+Cuando resulte posible, las operaciones sensibles deberán separar:
+
+a. Solicitud.
+b. Aprobación.
+c. Ejecución.
+d. Conciliación.
+e. Revisión.
+f. Auditoría.
+g. Reversión.
+
+55. MÍNIMO PRIVILEGIO
+
+Cada rol deberá recibir solamente los permisos necesarios.
+
+Los permisos deberán:
+
+a. Estar vinculados con auth_user_id.
+b. Revisarse periódicamente.
+c. Revocarse al terminar funciones.
+d. Registrarse.
+e. Evitar cuentas compartidas.
+f. Requerir seguridad reforzada.
+g. Separar Super Admin y organizadores.
+h. Aplicar controles de base de datos.
+
+56. REGISTROS DE AUDITORÍA
+
+MASS podrá registrar:
+
+a. Inicio de sesión.
+b. Cambio de contraseña.
+c. Cambio de correo.
+d. Cambio de teléfono.
+e. MFA.
+f. Cambio de rol.
+g. Aprobación.
+h. Recarga.
+i. Compra.
+j. Reembolso.
+k. Premio.
+l. Beneficio.
+m. Cambio de configuración.
+n. Eliminación.
+o. Suspensión.
+p. Acción administrativa.
+
+57. INTEGRIDAD DE REGISTROS
+
+Los registros deberán procurar:
+
+a. Identificador único.
+b. Fecha.
+c. Hora.
+d. Usuario.
+e. Acción.
+f. Resultado.
+g. Objeto afectado.
+h. Estado anterior.
+i. Estado posterior.
+j. Fuente.
+k. Evidencia relacionada.
+l. Protección contra alteración.
+
+58. CONSERVACIÓN DE EVIDENCIA
+
+La evidencia podrá incluir:
+
+a. Registros.
+b. Comunicaciones.
+c. Recibos.
+d. Fotografías.
+e. Videos.
+f. Documentos.
+g. Direcciones de red.
+h. Dispositivos.
+i. Ubicación.
+j. Historial de cambios.
+k. Respuestas de proveedores.
+l. Reportes.
+
+La conservación deberá respetar privacidad y obligaciones legales.
+
+59. INVESTIGACIÓN
+
+Una investigación podrá incluir:
+
+a. Apertura de caso.
+b. Clasificación.
+c. Preservación de evidencia.
+d. Revisión de cuenta.
+e. Revisión de transacciones.
+f. Entrevistas.
+g. Consulta a proveedores.
+h. Confirmación con usuarios.
+i. Evaluación técnica.
+j. Evaluación legal.
+k. Determinación.
+l. Medidas correctivas.
+m. Cierre documentado.
+
+60. CONFIDENCIALIDAD
+
+La información de una investigación deberá limitarse a personas autorizadas.
+
+No deberá divulgarse cuando pudiera:
+
+a. Perjudicar la investigación.
+b. Alertar al responsable.
+c. Exponer datos.
+d. Comprometer seguridad.
+e. Violar derechos.
+f. Incumplir obligaciones legales.
+
+61. MEDIDAS TEMPORALES
+
+Mientras se investiga, MASS podrá:
+
+a. Retener una operación.
+b. Suspender pagos.
+c. Limitar recargas.
+d. Cerrar sesiones.
+e. Bloquear cambios.
+f. Solicitar verificación.
+g. Congelar beneficios.
+h. Evitar eliminación de evidencia.
+i. Separar permisos.
+j. Contactar al titular.
+
+62. PROPORCIONALIDAD
+
+Una restricción deberá considerar:
+
+a. Riesgo.
+b. Importe.
+c. Evidencia.
+d. Historial.
+e. Urgencia.
+f. Daño posible.
+g. Derechos del usuario.
+h. Alternativas.
+i. Duración.
+j. Capacidad de revisión.
+
+63. MEDIDAS CORRECTIVAS
+
+Cuando exista abuso o fraude, MASS podrá:
+
+a. Advertir.
+b. Solicitar verificación.
+c. Revertir beneficios.
+d. Corregir saldos.
+e. Cancelar operaciones.
+f. Limitar funciones.
+g. Suspender temporalmente.
+h. Cerrar una cuenta.
+i. Terminar relación con organizadores.
+j. Recuperar pérdidas.
+k. Reportar al proveedor.
+l. Cooperar con autoridades.
+m. Iniciar acciones legales.
+
+64. FALSO POSITIVO
+
+Cuando se determine que una actividad era legítima, MASS procurará:
+
+a. Retirar restricciones.
+b. Restaurar acceso.
+c. Corregir registros.
+d. Liberar operaciones.
+e. Informar al usuario.
+f. Documentar el resultado.
+g. Mejorar controles cuando corresponda.
+
+65. DERECHO A REVISIÓN
+
+Una persona afectada podrá, cuando corresponda:
+
+a. Solicitar explicación general.
+b. Proporcionar información.
+c. Corregir datos.
+d. Solicitar revisión humana.
+e. Presentar evidencia.
+f. Apelar.
+g. Reportar error.
+h. Recibir una respuesta.
+
+66. APELACIONES
+
+La apelación deberá procurar incluir:
+
+a. Número de caso.
+b. Cuenta.
+c. Operación.
+d. Motivo de desacuerdo.
+e. Evidencia.
+f. Explicación.
+g. Solución solicitada.
+
+La apelación no garantiza que se retire una restricción.
+
+67. REPORTE DE FRAUDE
+
+Los usuarios podrán reportar:
+
+a. Cuenta comprometida.
+b. Pago no reconocido.
+c. Organizador falso.
+d. Operador falso.
+e. Premio falso.
+f. Phishing.
+g. Suplantación.
+h. Comprobante falso.
+i. Manipulación.
+j. Vulnerabilidad.
+k. Actividad sospechosa.
+l. Fraude interno.
+
+68. INFORMACIÓN DEL REPORTE
+
+El reporte podrá incluir:
+
+a. Nombre.
+b. MASS ID.
+c. Correo.
+d. Teléfono.
+e. Fecha.
+f. Operación.
+g. Organizador.
+h. Importe.
+i. Descripción.
+j. Evidencia.
+k. Personas relacionadas.
+l. Acción solicitada.
+
+69. PROTECCIÓN DEL REPORTANTE
+
+MASS procurará evitar represalias contra una persona que reporte de buena fe.
+
+Los reportes deliberadamente falsos podrán ser investigados.
+
+70. COOPERACIÓN CON PROVEEDORES
+
+MASS podrá cooperar con:
+
+a. Procesadores de pago.
+b. Bancos.
+c. Redes de tarjetas.
+d. Proveedores de identidad.
+e. Proveedores de almacenamiento.
+f. Proveedores de seguridad.
+g. Plataformas tecnológicas.
+h. Aseguradoras.
+i. Organizadores.
+j. Operadores.
+
+71. AUTORIDADES
+
+MASS podrá cooperar con autoridades cuando:
+
+a. La ley lo exija.
+b. Exista una orden válida.
+c. Sea necesario reportar un delito.
+d. Sea necesario proteger derechos.
+e. Exista peligro.
+f. Se investigue fraude.
+g. Se requiera preservar evidencia.
+h. Se atienda una solicitud legal válida.
+
+72. PREVENCIÓN DE LAVADO DE DINERO
+
+Antes de habilitar funciones que pudieran convertir a MASS en un proveedor regulado de servicios monetarios, deberán evaluarse:
+
+a. Registro aplicable.
+b. Programa de cumplimiento.
+c. Verificación de clientes.
+d. Monitoreo.
+e. Conservación.
+f. Reportes.
+g. Límites.
+h. Sanciones.
+i. Transferencias.
+j. Retiros.
+k. Responsables.
+l. Auditorías.
+
+Esta sección no declara que MASS opere actualmente como institución financiera o negocio de servicios monetarios.
+
+73. SANCIONES Y RESTRICCIONES
+
+Cuando resulte aplicable, MASS podrá revisar operaciones relacionadas con:
+
+a. Personas restringidas.
+b. Jurisdicciones restringidas.
+c. Métodos prohibidos.
+d. Proveedores no autorizados.
+e. Actividades ilegales.
+f. Órdenes gubernamentales.
+
+74. CAPACITACIÓN
+
+Las personas responsables deberán recibir orientación sobre:
+
+a. Señales de alerta.
+b. Identidad.
+c. Pagos.
+d. Phishing.
+e. Ingeniería social.
+f. Evidencia.
+g. Privacidad.
+h. Seguridad.
+i. Escalamiento.
+j. Conflictos de interés.
+k. Reportes.
+l. Respuesta a incidentes.
+
+75. PRUEBAS DE CONTROLES
+
+MASS podrá realizar:
+
+a. Pruebas de acceso.
+b. Pruebas de roles.
+c. Pruebas de duplicidad.
+d. Pruebas de concurrencia.
+e. Pruebas de saldos.
+f. Pruebas de pagos.
+g. Pruebas de recuperación.
+h. Pruebas de MFA.
+i. Pruebas antifraude.
+j. Simulaciones de phishing.
+k. Auditorías.
+l. Revisiones de código.
+
+76. MÉTRICAS
+
+Las métricas podrán incluir:
+
+a. Alertas.
+b. Casos confirmados.
+c. Falsos positivos.
+d. Pérdidas.
+e. Recuperaciones.
+f. Contracargos.
+g. Cuentas comprometidas.
+h. Tiempo de detección.
+i. Tiempo de respuesta.
+j. Apelaciones.
+k. Reincidencia.
+l. Vulnerabilidades.
+
+77. AUDITORÍAS
+
+MASS podrá realizar:
+
+a. Auditorías internas.
+b. Revisiones independientes.
+c. Revisión de permisos.
+d. Revisión de proveedores.
+e. Revisión de organizadores.
+f. Revisión de saldos.
+g. Conciliaciones.
+h. Muestreo de transacciones.
+i. Revisión de casos cerrados.
+j. Verificación de controles.
+
+78. PRIVACIDAD
+
+La prevención de fraude deberá cumplir MASS-LC-003.
+
+MASS procurará:
+
+a. Limitar datos.
+b. Restringir acceso.
+c. Evitar recopilación excesiva.
+d. Proteger evidencia.
+e. Definir conservación.
+f. Cumplir solicitudes válidas.
+g. Evitar discriminación.
+h. Utilizar datos para fines legítimos.
+
+79. SEGURIDAD
+
+Los controles deberán coordinarse con MASS-LC-004.
+
+Podrán incluir:
+
+a. MFA.
+b. Cifrado.
+c. Sesiones seguras.
+d. Políticas de acceso.
+e. RLS.
+f. Registros.
+g. Respaldos.
+h. Alertas.
+i. Gestión de secretos.
+j. Respuesta a incidentes.
+
+80. INTELIGENCIA ARTIFICIAL
+
+El uso de inteligencia artificial para fraude deberá cumplir MASS-LC-006.
+
+Deberá procurar:
+
+a. Evaluar sesgos.
+b. Documentar modelos.
+c. Mantener supervisión.
+d. Revisar errores.
+e. Proteger datos.
+f. Proporcionar apelación cuando corresponda.
+g. Evitar decisiones injustas.
+h. Actualizar modelos.
+
+81. CAMBIOS A ESTA POLÍTICA
+
+Esta Política podrá actualizarse por:
+
+a. Nuevos fraudes.
+b. Nuevos productos.
+c. Nuevas tecnologías.
+d. Nuevos métodos de pago.
+e. Nuevos organizadores.
+f. Cambios legales.
+g. Incidentes.
+h. Auditorías.
+i. Cambios de proveedores.
+j. Experiencia operativa.
+k. Nuevas jurisdicciones.
+l. Correcciones.
+
+82. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-005, Política de cookies.
+g. MASS-LC-006, Política de inteligencia artificial.
+h. MASS-LC-007, Política de pagos.
+i. MASS-LC-008, Política de reembolsos.
+j. MASS-LC-010, Normas de la comunidad.
+k. Condiciones específicas de cada servicio.
+
+83. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Orden válida de una autoridad.
+c. Requisitos regulatorios.
+d. Política específica del servicio.
+e. Esta Política.
+f. Política de seguridad.
+g. Política de pagos.
+h. Política de reembolsos.
+i. Acuerdo de usuario MASS ID.
+j. Definiciones del MASS ID Legal Center.
+
+84. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial antifraude.
+b. Formulario de reporte.
+c. Canal para cuentas comprometidas.
+d. Canal para pagos no reconocidos.
+e. Canal para organizadores.
+f. Canal para vulnerabilidades.
+g. Canal de apelaciones.
+h. Dirección postal.
+i. Plazos de respuesta.
+j. Información legal adicional.
+
+85. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-009 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los productos, amenazas, métodos de fraude, sistemas, proveedores, organizadores, prácticas reales, controles, obligaciones legales o modelos de operación del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-009
+`
+},
     {
       codigo: "MASS-LC-010",
       titulo: "Normas de la comunidad",
