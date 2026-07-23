@@ -5741,13 +5741,875 @@ FIN DEL DOCUMENTO MASS-LC-006
 `
 },
     {
-      codigo: "MASS-LC-007",
-      titulo: "Política de pagos",
-      descripcion:
-        "Establece las reglas relacionadas con cargos, autorizaciones y procesamiento de pagos.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-007",
+  titulo: "Política de pagos",
+  descripcion:
+    "Establece las reglas relacionadas con cargos, autorizaciones y procesamiento de pagos.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-007
+POLÍTICA DE PAGOS DEL ECOSISTEMA MASS
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política establece las reglas generales aplicables a precios, cargos, autorizaciones, suscripciones, saldos, recargas, pagos a organizadores, disputas y procesamiento de transacciones dentro de MASS ID y del ecosistema MASS.
+
+Las condiciones específicas mostradas antes de cada compra formarán parte de esta Política.
+
+Los pagos podrán ser procesados por proveedores financieros independientes. TE-TO-KA SOLUTIONS® LLC no controla las decisiones de bancos, emisores de tarjetas, redes de pago o procesadores externos.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Informar cómo se realizan los pagos.
+b. Exigir autorización antes de cobrar.
+c. Mostrar precios y cargos aplicables.
+d. Regular suscripciones y renovaciones.
+e. Proteger transacciones y saldos.
+f. Establecer responsabilidades.
+g. Prevenir fraude.
+h. Mantener registros.
+i. Administrar disputas.
+j. Cumplir obligaciones legales.
+k. Proteger a usuarios, organizadores y operadores.
+l. Coordinar esta Política con la Política de reembolsos.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Contract.
+j. MASS Points.
+k. MASS Real Estate.
+l. MASS Fit.
+m. Central IA.
+n. TOKAYO IA.
+o. Membresías.
+p. Suscripciones.
+q. Recargas.
+r. Compras individuales.
+s. Pagos a organizadores.
+t. Comisiones de plataforma.
+u. Productos y servicios futuros.
+
+3. PARTES DE UNA TRANSACCIÓN
+
+Una transacción podrá involucrar:
+
+a. Usuario comprador.
+b. Organizador.
+c. Operador o prestador.
+d. TE-TO-KA SOLUTIONS® LLC.
+e. Procesador de pagos.
+f. Banco adquirente.
+g. Emisor de tarjeta.
+h. Red de pagos.
+i. Proveedor de billetera digital.
+j. Autoridad fiscal.
+k. Proveedor externo.
+
+La participación de MASS podrá variar según el servicio.
+
+4. VENDEDOR O PRESTADOR
+
+Antes del pago deberá identificarse, cuando corresponda:
+
+a. Quién vende el producto.
+b. Quién presta el servicio.
+c. Quién recibe el pago.
+d. Quién administra la transacción.
+e. Quién responde por la entrega.
+f. Quién administra reembolsos.
+g. Qué políticas específicas resultan aplicables.
+
+Un organizador independiente podrá ser responsable de sus propias ofertas, entregas, impuestos y obligaciones.
+
+5. PRECIOS
+
+Antes de confirmar una compra, MASS procurará mostrar:
+
+a. Precio principal.
+b. Moneda.
+c. Impuestos conocidos.
+d. Tarifas obligatorias.
+e. Comisión de servicio.
+f. Cargos de entrega.
+g. Cargos de procesamiento.
+h. Descuentos.
+i. Créditos aplicados.
+j. Saldo utilizado.
+k. Total estimado o definitivo.
+
+Los precios podrán variar por servicio, organizador, ubicación, disponibilidad o promoción.
+
+6. MONEDA
+
+Los precios podrán mostrarse en:
+
+a. Dólares estadounidenses.
+b. Pesos mexicanos.
+c. Otra moneda autorizada.
+
+Cuando exista conversión de moneda:
+
+a. El proveedor podrá establecer el tipo de cambio.
+b. El banco podrá cobrar cargos adicionales.
+c. El total final podrá variar.
+d. MASS deberá identificar la moneda antes del pago.
+e. El usuario es responsable de revisar la moneda seleccionada.
+
+7. IMPUESTOS
+
+Los impuestos podrán depender de:
+
+a. Ubicación.
+b. Producto.
+c. Servicio.
+d. Organizador.
+e. Situación fiscal.
+f. Legislación aplicable.
+g. Proveedor de pagos.
+
+MASS podrá calcular, recaudar o transferir impuestos cuando resulte obligatorio o contractualmente acordado.
+
+8. AUTORIZACIÓN
+
+Al confirmar una transacción, el usuario autoriza:
+
+a. El cargo mostrado.
+b. El método de pago seleccionado.
+c. El procesamiento por proveedores autorizados.
+d. La verificación antifraude.
+e. La conservación de registros.
+f. La entrega de información necesaria al procesador.
+g. Los cargos recurrentes expresamente aceptados.
+h. La aplicación de créditos o saldos seleccionados.
+
+No deberá realizarse un cargo sin una autorización válida o una base legal aplicable.
+
+9. CONFIRMACIÓN FINAL
+
+Antes de cobrar, la interfaz deberá procurar mostrar:
+
+a. Producto o servicio.
+b. Cantidad.
+c. Organizador o proveedor.
+d. Precio.
+e. Cargos adicionales.
+f. Total.
+g. Moneda.
+h. Método de pago.
+i. Condiciones de cancelación.
+j. Condiciones de reembolso.
+k. Si el cargo es único o recurrente.
+
+10. MÉTODOS DE PAGO
+
+MASS podrá aceptar:
+
+a. Tarjetas de crédito.
+b. Tarjetas de débito.
+c. Transferencias.
+d. Billeteras digitales.
+e. Enlaces de pago.
+f. Pagos bancarios.
+g. Saldo MASS autorizado.
+h. Créditos promocionales.
+i. Métodos locales.
+j. Otros métodos publicados.
+
+La disponibilidad dependerá del país, servicio y proveedor.
+
+11. PROCESADORES EXTERNOS
+
+Los procesadores podrán:
+
+a. Recibir datos de pago.
+b. Autorizar cargos.
+c. Rechazar operaciones.
+d. Aplicar controles antifraude.
+e. Convertir monedas.
+f. Retener fondos.
+g. Administrar disputas.
+h. Solicitar verificación.
+i. Aplicar sus términos.
+j. Conservar información conforme a sus políticas.
+
+MASS no deberá almacenar números completos de tarjeta cuando no sea necesario.
+
+12. RECHAZO DE PAGOS
+
+Un pago podrá rechazarse por:
+
+a. Fondos insuficientes.
+b. Tarjeta vencida.
+c. Información incorrecta.
+d. Restricción bancaria.
+e. Riesgo de fraude.
+f. Límite excedido.
+g. Ubicación inusual.
+h. Fallo técnico.
+i. Cuenta restringida.
+j. Decisión del procesador.
+
+Un rechazo no garantiza que no exista una autorización temporal bancaria.
+
+13. AUTORIZACIONES TEMPORALES
+
+Un proveedor podrá colocar una autorización temporal para:
+
+a. Verificar el método.
+b. Reservar el importe.
+c. Confirmar disponibilidad.
+d. Prevenir fraude.
+e. Preparar una transacción futura.
+
+La duración de la autorización dependerá del banco o proveedor.
+
+14. RECIBOS
+
+Después de una operación exitosa, MASS procurará proporcionar:
+
+a. Número de transacción.
+b. Fecha y hora.
+c. Importe.
+d. Moneda.
+e. Método parcialmente identificado.
+f. Producto o servicio.
+g. Organizador.
+h. Estado.
+i. Cargos aplicados.
+j. Canal de soporte.
+
+El usuario deberá conservar sus comprobantes.
+
+15. SUSCRIPCIONES
+
+Una suscripción podrá otorgar acceso durante un periodo determinado.
+
+Antes de contratarla deberán mostrarse:
+
+a. Precio.
+b. Periodicidad.
+c. Fecha aproximada de cobro.
+d. Renovación automática.
+e. Duración mínima, si existe.
+f. Beneficios.
+g. Restricciones.
+h. Procedimiento de cancelación.
+i. Política de reembolso.
+j. Cargos por terminación, si fueran legales y aplicables.
+
+16. RENOVACIÓN AUTOMÁTICA
+
+MASS no deberá activar una renovación automática sin informar claramente:
+
+a. Que el cargo se repetirá.
+b. La cantidad o método para calcularla.
+c. La frecuencia.
+d. Cómo cancelar.
+e. Cuándo debe cancelarse para evitar otro cargo.
+f. Si el precio puede cambiar.
+g. Qué ocurre al terminar una prueba gratuita.
+
+La autorización deberá conservarse cuando corresponda.
+
+17. PRUEBAS GRATUITAS
+
+Una prueba gratuita deberá informar:
+
+a. Duración.
+b. Funciones incluidas.
+c. Fecha de conversión.
+d. Precio posterior.
+e. Frecuencia de cobro.
+f. Método de cancelación.
+g. Restricciones.
+h. Si se requiere método de pago.
+
+No deberá presentarse una oferta como gratuita ocultando un cargo obligatorio.
+
+18. CANCELACIÓN DE SUSCRIPCIONES
+
+El usuario podrá cancelar mediante el procedimiento publicado.
+
+La cancelación:
+
+a. Detendrá renovaciones futuras.
+b. No necesariamente elimina cargos ya procesados.
+c. Podrá mantener acceso hasta terminar el periodo pagado.
+d. Deberá generar confirmación.
+e. Deberá conservarse en los registros.
+f. No deberá requerir obstáculos injustificados.
+
+19. CAMBIOS DE PRECIO
+
+Antes de aplicar un aumento a una suscripción, MASS procurará:
+
+a. Notificar el nuevo precio.
+b. Informar la fecha de aplicación.
+c. Explicar opciones.
+d. Permitir cancelación cuando corresponda.
+e. Obtener nueva autorización si la ley lo exige.
+f. Conservar evidencia del aviso.
+
+20. MEMBRESÍAS
+
+Las membresías podrán tener:
+
+a. Tarifa mensual.
+b. Tarifa anual.
+c. Beneficios.
+d. Límites.
+e. Requisitos.
+f. Renovación.
+g. Periodos mínimos.
+h. Condiciones específicas.
+
+Los beneficios podrán cambiar con aviso razonable, salvo derechos ya adquiridos.
+
+21. MASS CASH
+
+MASS Cash podrá funcionar como un sistema interno de saldo, crédito o registro de valor únicamente bajo las condiciones publicadas.
+
+MASS no deberá presentar MASS Cash como:
+
+a. Cuenta bancaria.
+b. Depósito bancario.
+c. Moneda de curso legal.
+d. Inversión.
+e. Cuenta que produce intereses.
+f. Producto asegurado por el gobierno.
+g. Criptomoneda, salvo que se establezca expresamente mediante una estructura legal distinta.
+
+22. LANZAMIENTO DE MASS CASH
+
+Antes de habilitar transferencias generales, retiro de efectivo o uso entre múltiples comercios, deberá realizarse una revisión jurídica, financiera y regulatoria.
+
+MASS podrá limitar inicialmente MASS Cash a:
+
+a. Créditos internos.
+b. Recargas para un organizador específico.
+c. Reembolsos internos.
+d. Beneficios.
+e. Premios permitidos.
+f. Compras dentro de un servicio definido.
+
+23. SALDO POR ORGANIZADOR
+
+Cuando el saldo esté vinculado con un organizador:
+
+a. Solamente podrá utilizarse con ese organizador.
+b. No podrá transferirse automáticamente a otro organizador.
+c. La interfaz deberá identificar al organizador.
+d. La recarga deberá mostrar esta limitación.
+e. Cada movimiento deberá registrar el organizador.
+f. No deberá mezclarse con otros saldos sin autorización.
+
+24. RECARGAS
+
+Una solicitud de recarga podrá requerir:
+
+a. Usuario autenticado.
+b. Organizador seleccionado.
+c. Importe.
+d. Método de pago.
+e. Comprobante.
+f. Aprobación.
+g. Verificación antifraude.
+h. Registro de fecha.
+i. Identificador único.
+
+Una recarga pendiente no constituye saldo disponible hasta su aprobación.
+
+25. APROBACIÓN DE RECARGAS
+
+La aprobación deberá:
+
+a. Identificar al administrador.
+b. Identificar al usuario.
+c. Identificar al organizador.
+d. Registrar el importe.
+e. Evitar acreditación duplicada.
+f. Generar historial.
+g. Notificar al usuario.
+h. Conservar evidencia.
+
+26. MOVIMIENTOS DE SALDO
+
+Cada movimiento deberá procurar registrar:
+
+a. Identificador.
+b. Usuario.
+c. Organizador.
+d. Importe.
+e. Tipo de operación.
+f. Saldo anterior.
+g. Saldo posterior.
+h. Fecha.
+i. Estado.
+j. Referencia.
+k. Administrador, cuando corresponda.
+
+27. SALDOS PROMOCIONALES
+
+Los créditos promocionales podrán:
+
+a. Tener fecha de vencimiento.
+b. Limitarse a un servicio.
+c. Limitarse a un organizador.
+d. No ser transferibles.
+e. No ser canjeables por efectivo.
+f. Requerir una compra mínima.
+g. Excluir determinados cargos.
+h. Estar sujetos a prevención de fraude.
+
+Las condiciones deberán mostrarse al otorgarlos.
+
+28. PREMIOS Y BENEFICIOS
+
+Los premios, beneficios o boletos gratuitos:
+
+a. No equivaldrán necesariamente a efectivo.
+b. Podrán tener restricciones.
+c. Podrán estar vinculados con un organizador.
+d. Podrán requerir verificación.
+e. Podrán vencer.
+f. No deberán venderse o transferirse sin autorización.
+g. Deberán conservar historial de entrega y canje.
+
+29. TRANSFERENCIAS ENTRE USUARIOS
+
+Las transferencias de saldo entre usuarios permanecerán deshabilitadas salvo que MASS implemente:
+
+a. Revisión regulatoria.
+b. Verificación de identidad.
+c. Prevención de lavado de dinero cuando corresponda.
+d. Límites.
+e. Monitoreo.
+f. Registros.
+g. Procedimientos de error.
+h. Controles de fraude.
+i. Términos específicos.
+
+30. RETIRO DE EFECTIVO
+
+El saldo interno no será canjeable por efectivo salvo que:
+
+a. La función sea publicada expresamente.
+b. Exista estructura legal apropiada.
+c. Se cumplan verificaciones.
+d. Se identifiquen tarifas.
+e. Se apliquen límites.
+f. Se cumplan obligaciones regulatorias.
+g. El retiro sea exigido por la ley.
+
+31. COMISIONES
+
+MASS podrá cobrar:
+
+a. Comisión de plataforma.
+b. Comisión por transacción.
+c. Cuota de membresía.
+d. Cargo tecnológico.
+e. Cargo administrativo.
+f. Cargo de entrega.
+g. Cargo por servicio.
+h. Otro cargo informado.
+
+Ningún cargo obligatorio deberá ocultarse antes de la confirmación.
+
+32. PAGOS A ORGANIZADORES
+
+Los pagos a organizadores podrán estar sujetos a:
+
+a. Verificación.
+b. Periodo de procesamiento.
+c. Reservas.
+d. Comisiones.
+e. Reembolsos.
+f. Disputas.
+g. Contracargos.
+h. Impuestos.
+i. Límites.
+j. Retenciones legales.
+k. Revisión antifraude.
+
+33. RESERVAS Y RETENCIONES
+
+MASS o el procesador podrá mantener una reserva razonable cuando exista:
+
+a. Riesgo de contracargos.
+b. Actividad inusual.
+c. Servicio pendiente.
+d. Quejas.
+e. Obligación de reembolso.
+f. Investigación.
+g. Requisito del procesador.
+h. Riesgo de fraude.
+i. Incumplimiento contractual.
+
+La reserva no deberá utilizarse como sanción arbitraria.
+
+34. ENTREGA DEL PRODUCTO O SERVICIO
+
+El cobro no sustituye la obligación de entregar lo ofrecido.
+
+El vendedor o prestador deberá:
+
+a. Cumplir la descripción.
+b. Respetar el precio.
+c. Informar retrasos.
+d. Conservar evidencia de entrega.
+e. Atender problemas.
+f. Aplicar la política de reembolso.
+g. Cumplir la legislación correspondiente.
+
+35. PAGOS PENDIENTES
+
+Una transacción podrá aparecer como pendiente mientras:
+
+a. Se confirma el banco.
+b. Se valida el procesador.
+c. Se revisa fraude.
+d. Se confirma el organizador.
+e. Se completa una transferencia.
+f. Se concilian registros.
+g. Se resuelve un error técnico.
+
+Un estado pendiente no garantiza aprobación final.
+
+36. PAGOS DUPLICADOS
+
+Cuando se detecte un posible pago duplicado, MASS podrá:
+
+a. Detener una segunda operación.
+b. Revisar identificadores.
+c. Comparar fecha e importe.
+d. Consultar al procesador.
+e. Corregir el saldo.
+f. Reembolsar cuando corresponda.
+g. Conservar evidencia.
+h. Notificar al usuario.
+
+37. TRANSACCIONES NO RECONOCIDAS
+
+El usuario deberá reportar inmediatamente:
+
+a. Cargos no reconocidos.
+b. Uso de saldo no autorizado.
+c. Recargas desconocidas.
+d. Cambios en métodos de pago.
+e. Acceso sospechoso.
+f. Suscripciones no autorizadas.
+
+También deberá contactar oportunamente a su banco, emisor o proveedor de pago cuando corresponda.
+
+38. ERRORES
+
+Un error podrá incluir:
+
+a. Importe incorrecto.
+b. Doble cargo.
+c. Cargo después de cancelación.
+d. Saldo incorrecto.
+e. Pago aplicado al organizador equivocado.
+f. Producto no entregado.
+g. Estado inconsistente.
+h. Reembolso no reflejado.
+i. Movimiento no reconocido.
+
+MASS podrá solicitar comprobantes para investigar.
+
+39. DISPUTAS
+
+Antes de presentar una disputa externa, el usuario podrá contactar el canal oficial de soporte para intentar resolverla.
+
+La solicitud deberá incluir:
+
+a. Identificador de transacción.
+b. Fecha.
+c. Importe.
+d. Organizador.
+e. Explicación.
+f. Evidencia.
+g. Solución solicitada.
+
+Esto no limita derechos legales que requieran acudir directamente al proveedor financiero.
+
+40. CONTRACARGOS
+
+Un contracargo ocurre cuando un usuario disputa un pago mediante su banco o emisor.
+
+MASS o el vendedor podrá presentar:
+
+a. Confirmación de compra.
+b. Autorización.
+c. Comprobante de entrega.
+d. Registros de acceso.
+e. Comunicaciones.
+f. Política aceptada.
+g. Comprobante de cancelación.
+h. Evidencia antifraude.
+
+La decisión final podrá corresponder al banco, red o procesador.
+
+41. CONTRACARGOS ABUSIVOS
+
+La presentación deliberada de una disputa falsa podrá producir:
+
+a. Investigación.
+b. Suspensión.
+c. Limitación de pagos.
+d. Retención de evidencia.
+e. Cancelación de beneficios.
+f. Recuperación de importes.
+g. Acción contractual.
+h. Reporte a autoridades cuando corresponda.
+
+Una disputa legítima no deberá generar represalias.
+
+42. REEMBOLSOS
+
+Los reembolsos estarán sujetos a:
+
+a. MASS-LC-008.
+b. Condiciones específicas del servicio.
+c. Estado de entrega.
+d. Método de pago.
+e. Legislación aplicable.
+f. Reglas del procesador.
+g. Evidencia disponible.
+h. Motivo de la solicitud.
+
+La aprobación de un reembolso no garantiza que el banco lo refleje inmediatamente.
+
+43. TIEMPO DE REEMBOLSO
+
+El tiempo para recibir un reembolso podrá depender de:
+
+a. Procesador.
+b. Banco.
+c. Método.
+d. Moneda.
+e. País.
+f. Fines de semana.
+g. Revisiones.
+h. Conversión.
+i. Estado de la cuenta.
+
+44. DEVOLUCIÓN A MÉTODO ORIGINAL
+
+Cuando sea posible, el reembolso se enviará al método original.
+
+MASS podrá utilizar otro método cuando:
+
+a. El método original esté cerrado.
+b. El procesador lo requiera.
+c. La ley lo exija.
+d. Exista acuerdo documentado.
+e. Se trate de crédito interno permitido.
+
+45. SEGURIDAD DE PAGOS
+
+MASS podrá aplicar:
+
+a. Autenticación.
+b. Verificación multifactor.
+c. Confirmación de contraseña.
+d. Códigos.
+e. Límites.
+f. Monitoreo.
+g. Revisión manual.
+h. Protección de sesiones.
+i. Validación de identificadores.
+j. Registros de auditoría.
+k. Restricción por rol.
+l. Cierre de sesiones sospechosas.
+
+46. FRAUDE
+
+Las señales de fraude podrán incluir:
+
+a. Múltiples intentos fallidos.
+b. Métodos robados.
+c. Identidad inconsistente.
+d. Recargas repetidas.
+e. Contracargos excesivos.
+f. Manipulación de saldo.
+g. Cuentas relacionadas.
+h. Ubicaciones incompatibles.
+i. Dispositivos desconocidos.
+j. Automatización.
+k. Documentos falsos.
+l. Colusión.
+
+MASS podrá suspender temporalmente una operación mientras investiga.
+
+47. VERIFICACIÓN DE IDENTIDAD
+
+Una transacción de riesgo podrá requerir:
+
+a. MASS ID verificado.
+b. Correo verificado.
+c. Teléfono verificado.
+d. Autenticación multifactor.
+e. Documento.
+f. Confirmación bancaria.
+g. Evidencia de titularidad.
+h. Revisión administrativa.
+i. Información fiscal.
+j. Verificación adicional permitida.
+
+48. MENORES
+
+Los menores no deberán realizar pagos sin la autorización requerida.
+
+Cuando un servicio admita menores, MASS podrá requerir:
+
+a. Consentimiento parental.
+b. Método controlado.
+c. Límites.
+d. Confirmación.
+e. Reembolso conforme a la ley.
+f. Restricciones de compra.
+g. Protección contra cargos accidentales.
+
+49. CONSERVACIÓN DE REGISTROS
+
+MASS podrá conservar:
+
+a. Transacciones.
+b. Autorizaciones.
+c. Recibos.
+d. Reembolsos.
+e. Disputas.
+f. Contracargos.
+g. Recargas.
+h. Saldos.
+i. Aprobaciones.
+j. Impuestos.
+k. Comunicaciones.
+l. Evidencia antifraude.
+
+La conservación estará sujeta al Aviso de privacidad y obligaciones aplicables.
+
+50. PRIVACIDAD
+
+Los datos de pago deberán tratarse conforme a MASS-LC-003.
+
+MASS procurará:
+
+a. Minimizar datos.
+b. Limitar acceso.
+c. Utilizar proveedores apropiados.
+d. Proteger registros.
+e. Evitar mostrar datos completos.
+f. Eliminar información innecesaria.
+g. Cumplir solicitudes válidas.
+h. Mantener contratos con proveedores.
+
+51. DISPONIBILIDAD
+
+Una función de pago podrá suspenderse por:
+
+a. Mantenimiento.
+b. Fraude.
+c. Fallos.
+d. Procesador.
+e. Banco.
+f. Revisión.
+g. Obligación legal.
+h. Riesgo de seguridad.
+i. Falta de disponibilidad regional.
+j. Terminación de un proveedor.
+
+52. CAMBIOS A ESTA POLÍTICA
+
+Esta Política podrá actualizarse por:
+
+a. Nuevos métodos.
+b. Nuevos servicios.
+c. Cambios de precios.
+d. Nuevos procesadores.
+e. Cambios legales.
+f. Riesgos.
+g. Fraude.
+h. Cambios en MASS Cash.
+i. Nuevas monedas.
+j. Nuevas jurisdicciones.
+k. Auditorías.
+l. Correcciones.
+
+53. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-006, Política de inteligencia artificial.
+g. MASS-LC-008, Política de reembolsos.
+h. MASS-LC-009, Política antifraude.
+i. Condiciones específicas de cada servicio.
+j. Condiciones mostradas antes del pago.
+
+54. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Requisitos regulatorios.
+c. Reglas del proveedor financiero aplicables.
+d. Condiciones específicas mostradas al pagar.
+e. Política específica del servicio.
+f. Esta Política.
+g. Política de reembolsos.
+h. Acuerdo de usuario MASS ID.
+i. Definiciones del MASS ID Legal Center.
+
+55. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial de pagos.
+b. Canal de soporte.
+c. Canal para transacciones no reconocidas.
+d. Canal para disputas.
+e. Canal para organizadores.
+f. Dirección postal.
+g. Proveedores de pago activos.
+h. Plazos de respuesta.
+i. Monedas admitidas.
+j. Información legal adicional.
+
+56. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-007 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los métodos de pago, proveedores, saldos, comisiones, productos, suscripciones, prácticas reales, riesgos u obligaciones legales del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-007
+`
+},
     {
       codigo: "MASS-LC-008",
       titulo: "Política de reembolsos",
@@ -5770,7 +6632,7 @@ FIN DEL DOCUMENTO MASS-LC-006
       descripcion:
         "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     }
   ]);  
 
