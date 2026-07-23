@@ -16078,6 +16078,24 @@ if (
           "#39ff14"
         );
 
+        const {
+  error: errorRegistrarSolicitudCambioCorreo
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "solicitud_cambio_correo"
+    }
+  );
+
+if (errorRegistrarSolicitudCambioCorreo) {
+  console.error(
+    "ERROR REGISTRANDO SOLICITUD DE CAMBIO DE CORREO:",
+    errorRegistrarSolicitudCambioCorreo
+  );
+}
+
         mostrarMensajeCambioCorreo(
           "📧 El cambio está pendiente de confirmación. Tu correo actual seguirá activo hasta completar la verificación.",
           "#39ff14"
