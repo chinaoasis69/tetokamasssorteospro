@@ -6611,13 +6611,1144 @@ FIN DEL DOCUMENTO MASS-LC-007
 `
 },
     {
-      codigo: "MASS-LC-008",
-      titulo: "Política de reembolsos",
-      descripcion:
-        "Define las condiciones, requisitos y procedimientos aplicables a reembolsos.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-008",
+  titulo: "Política de reembolsos",
+  descripcion:
+    "Define las condiciones, requisitos y procedimientos aplicables a reembolsos.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-008
+POLÍTICA DE REEMBOLSOS DEL ECOSISTEMA MASS
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política establece las reglas generales aplicables a solicitudes de reembolso, cancelaciones, devoluciones, créditos, pagos duplicados, servicios no prestados y otros ajustes económicos relacionados con MASS ID y el ecosistema MASS.
+
+Las condiciones específicas mostradas antes de cada compra, suscripción, recarga o contratación formarán parte de esta Política.
+
+Nada de esta Política limitará derechos obligatorios que correspondan al usuario conforme a la legislación aplicable.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Explicar cuándo podrá solicitarse un reembolso.
+b. Establecer procedimientos claros.
+c. Identificar quién debe resolver la solicitud.
+d. Evitar reembolsos duplicados.
+e. Proteger a usuarios, organizadores y prestadores.
+f. Prevenir fraude.
+g. Mantener registros.
+h. Coordinar reembolsos con procesadores financieros.
+i. Diferenciar reembolsos de contracargos.
+j. Regular créditos y saldos internos.
+k. Cumplir obligaciones legales.
+l. Proporcionar decisiones consistentes.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Contract.
+j. MASS Points.
+k. MASS Real Estate.
+l. MASS Fit.
+m. Central IA.
+n. TOKAYO IA.
+o. Membresías.
+p. Suscripciones.
+q. Recargas.
+r. Productos.
+s. Servicios.
+t. Beneficios.
+u. Compras futuras integradas con MASS ID.
+
+3. RELACIÓN CON LA POLÍTICA DE PAGOS
+
+Esta Política deberá interpretarse junto con MASS-LC-007, Política de pagos.
+
+La Política de pagos regula principalmente:
+
+a. Autorizaciones.
+b. Precios.
+c. Métodos de pago.
+d. Suscripciones.
+e. Procesamiento.
+f. Saldos.
+g. Disputas.
+h. Contracargos.
+
+Esta Política regula principalmente la devolución o ajuste de importes después de una transacción.
+
+4. PARTES RESPONSABLES
+
+Una solicitud podrá involucrar:
+
+a. Usuario comprador.
+b. Organizador.
+c. Prestador de servicios.
+d. Vendedor.
+e. TE-TO-KA SOLUTIONS® LLC.
+f. Procesador de pagos.
+g. Banco.
+h. Emisor de tarjeta.
+i. Proveedor de billetera digital.
+j. Proveedor externo.
+
+La responsabilidad dependerá de quién vendió, cobró, entregó o administró el producto o servicio.
+
+5. IDENTIFICACIÓN DEL VENDEDOR
+
+Antes de decidir una solicitud deberá determinarse:
+
+a. Quién ofreció el producto.
+b. Quién recibió el pago.
+c. Quién debía entregar.
+d. Qué condiciones fueron aceptadas.
+e. Qué servicio de MASS se utilizó.
+f. Qué procesador intervino.
+g. Si el organizador actuó independientemente.
+h. Si MASS fue vendedor, intermediario o proveedor tecnológico.
+
+6. DERECHO OBLIGATORIO
+
+Cuando la legislación otorgue un derecho obligatorio de devolución, cancelación o reembolso, dicho derecho tendrá prioridad sobre cualquier condición incompatible.
+
+La aplicación podrá depender de:
+
+a. Jurisdicción.
+b. Tipo de producto.
+c. Tipo de servicio.
+d. Lugar de la venta.
+e. Forma de contratación.
+f. Edad del consumidor.
+g. Existencia de defecto.
+h. Incumplimiento.
+i. Plazo legal.
+j. Otras circunstancias.
+
+7. AUSENCIA DE DERECHO UNIVERSAL
+
+No toda compra genera automáticamente un derecho general de cancelación o reembolso.
+
+La elegibilidad dependerá de:
+
+a. Legislación.
+b. Condiciones mostradas antes del pago.
+c. Naturaleza del producto.
+d. Estado de entrega.
+e. Uso realizado.
+f. Motivo de la solicitud.
+g. Evidencia.
+h. Política específica del servicio.
+i. Participación de terceros.
+
+8. CONDICIONES ESPECÍFICAS
+
+Antes de cada operación podrán mostrarse condiciones como:
+
+a. Reembolsable.
+b. Parcialmente reembolsable.
+c. No reembolsable, salvo derechos obligatorios.
+d. Cancelable antes de determinada fecha.
+e. Crédito interno únicamente.
+f. Reembolso sujeto a revisión.
+g. Tarifa administrativa aplicable.
+h. Reembolso proporcional.
+i. Reembolso condicionado a devolución.
+j. Reembolso administrado por el organizador.
+
+9. MOTIVOS POSIBLES
+
+Una solicitud podrá considerarse cuando exista:
+
+a. Cobro duplicado.
+b. Importe incorrecto.
+c. Producto no entregado.
+d. Servicio no prestado.
+e. Cancelación válida.
+f. Compra no autorizada.
+g. Error técnico confirmado.
+h. Saldo acreditado incorrectamente.
+i. Producto sustancialmente distinto.
+j. Servicio cancelado por el prestador.
+k. Incumplimiento material.
+l. Defecto.
+m. Obligación legal.
+n. Acuerdo documentado entre las partes.
+
+10. PAGOS DUPLICADOS
+
+Cuando exista un posible pago duplicado, MASS podrá:
+
+a. Comparar identificadores.
+b. Revisar fecha y hora.
+c. Revisar importe.
+d. Consultar al procesador.
+e. Verificar si ambas operaciones fueron capturadas.
+f. Anular una autorización pendiente.
+g. Reembolsar el cargo duplicado confirmado.
+h. Corregir saldo interno.
+i. Conservar evidencia.
+j. Notificar el resultado.
+
+11. IMPORTE INCORRECTO
+
+Si el importe cobrado difiere del autorizado, la revisión podrá considerar:
+
+a. Precio mostrado.
+b. Impuestos.
+c. Tarifas.
+d. Descuentos.
+e. Saldo aplicado.
+f. Moneda.
+g. Cantidad.
+h. Comprobante.
+i. Registro del procesador.
+j. Confirmación final del usuario.
+
+12. PRODUCTO NO ENTREGADO
+
+Una solicitud por producto no entregado podrá requerir:
+
+a. Comprobante de compra.
+b. Fecha esperada.
+c. Dirección.
+d. Seguimiento.
+e. Comunicación con el vendedor.
+f. Evidencia del transportista.
+g. Confirmación del destinatario.
+h. Resultado de investigación.
+i. Plazo razonable adicional cuando corresponda.
+
+13. PRODUCTO DEFECTUOSO
+
+Cuando un producto sea defectuoso podrán ofrecerse, según corresponda:
+
+a. Reparación.
+b. Reemplazo.
+c. Reenvío.
+d. Crédito.
+e. Reembolso parcial.
+f. Reembolso total.
+g. Garantía del fabricante.
+h. Otra solución exigida por la ley.
+
+Podrán solicitarse fotografías, videos, números de serie o devolución del producto.
+
+14. PRODUCTO DISTINTO
+
+Si el producto recibido es sustancialmente distinto del solicitado, el usuario deberá reportarlo con evidencia razonable.
+
+La solución podrá incluir:
+
+a. Sustitución.
+b. Devolución.
+c. Reembolso.
+d. Ajuste de precio.
+e. Crédito.
+f. Reenvío.
+
+15. DEVOLUCIÓN FÍSICA
+
+Cuando se requiera devolver un producto deberán informarse:
+
+a. Dirección.
+b. Plazo.
+c. Condición requerida.
+d. Empaque.
+e. Accesorios.
+f. Etiqueta.
+g. Costo del envío.
+h. Número de autorización.
+i. Método de seguimiento.
+j. Consecuencias de una devolución incompleta.
+
+16. CONDICIÓN DEL PRODUCTO
+
+La elegibilidad podrá depender de que el producto se encuentre:
+
+a. Sin uso.
+b. En condición original.
+c. Con empaque.
+d. Con accesorios.
+e. Sin alteraciones.
+f. Sin daño causado por el usuario.
+g. Dentro del plazo aplicable.
+
+Esto no limitará derechos relacionados con productos defectuosos o no conformes.
+
+17. COSTOS DE DEVOLUCIÓN
+
+El costo de devolución podrá corresponder:
+
+a. Al vendedor, cuando exista error o defecto atribuible.
+b. Al comprador, cuando la devolución sea voluntaria y así se hubiera informado.
+c. Al transportista, conforme a sus reglas.
+d. A otra parte, conforme a la ley o acuerdo aplicable.
+
+18. SERVICIO NO PRESTADO
+
+Un servicio no prestado podrá generar:
+
+a. Reprogramación.
+b. Crédito.
+c. Reembolso parcial.
+d. Reembolso total.
+e. Sustitución del prestador.
+f. Otra solución acordada.
+
+La decisión considerará si el usuario estuvo disponible y cumplió sus obligaciones.
+
+19. SERVICIO PARCIALMENTE PRESTADO
+
+Cuando un servicio haya comenzado o se haya prestado parcialmente, el ajuste podrá calcularse considerando:
+
+a. Parte completada.
+b. Costos incurridos.
+c. Tiempo reservado.
+d. Materiales utilizados.
+e. Beneficio recibido.
+f. Incumplimiento.
+g. Condiciones específicas.
+h. Legislación aplicable.
+
+20. CANCELACIÓN POR EL USUARIO
+
+Una cancelación solicitada por el usuario podrá estar sujeta a:
+
+a. Plazo de cancelación.
+b. Costos ya incurridos.
+c. Trabajo realizado.
+d. Reservación de personal.
+e. Materiales.
+f. Tarifas informadas.
+g. Condiciones del prestador.
+h. Derechos obligatorios.
+
+21. CANCELACIÓN POR EL PRESTADOR
+
+Cuando el vendedor, organizador u operador cancele, podrá ofrecerse:
+
+a. Reprogramación.
+b. Sustitución.
+c. Crédito.
+d. Reembolso.
+e. Solución equivalente.
+
+El usuario no deberá soportar cargos por un servicio que el prestador canceló sin entregar, salvo condiciones legales distintas.
+
+22. CANCELACIÓN POR MASS
+
+MASS podrá cancelar una operación por:
+
+a. Error de precio.
+b. Falta de disponibilidad.
+c. Riesgo de fraude.
+d. Incumplimiento.
+e. Problema técnico.
+f. Restricción legal.
+g. Seguridad.
+h. Error de inventario.
+i. Terminación del proveedor.
+j. Imposibilidad de prestación.
+
+Cuando se haya capturado un pago sin entrega, deberá realizarse el ajuste correspondiente.
+
+23. SUSCRIPCIONES
+
+Cancelar una suscripción normalmente detendrá renovaciones futuras.
+
+La cancelación no necesariamente genera devolución del periodo ya pagado cuando:
+
+a. El acceso fue habilitado.
+b. El usuario utilizó el servicio.
+c. La condición fue informada.
+d. No existe obligación legal de devolución.
+
+Podrán aplicarse reembolsos proporcionales cuando así se publique o exija la ley.
+
+24. RENOVACIONES NO DESEADAS
+
+Una solicitud relacionada con renovación automática podrá evaluarse considerando:
+
+a. Divulgación previa.
+b. Autorización.
+c. Avisos enviados.
+d. Fecha de cancelación.
+e. Uso posterior.
+f. Cambio de precio.
+g. Problemas técnicos.
+h. Legislación aplicable.
+
+25. PRUEBAS GRATUITAS
+
+Cuando una prueba gratuita se convierta en una suscripción, la revisión considerará:
+
+a. Si se informó el cargo.
+b. Si se informó la fecha.
+c. Si se informó cómo cancelar.
+d. Si existió autorización.
+e. Si el usuario canceló a tiempo.
+f. Si hubo error técnico.
+g. Si el servicio fue utilizado después del cobro.
+
+26. CONTENIDO DIGITAL
+
+El contenido digital podrá incluir:
+
+a. Videos.
+b. Cursos.
+c. Descargas.
+d. Documentos.
+e. Acceso premium.
+f. Software.
+g. Suscripciones.
+h. Licencias.
+i. Contenido generado.
+j. Servicios de inteligencia artificial.
+
+La elegibilidad podrá limitarse después de iniciar descarga, reproducción, acceso o utilización, salvo derechos obligatorios.
+
+27. SERVICIOS PERSONALIZADOS
+
+Los productos o servicios personalizados podrán no ser reembolsables cuando:
+
+a. El trabajo ya comenzó.
+b. Se utilizaron datos proporcionados por el usuario.
+c. Se creó contenido específico.
+d. Se compraron materiales.
+e. La condición fue informada.
+
+Podrá existir ajuste si el resultado incumple materialmente lo acordado.
+
+28. MASS VPN
+
+Las solicitudes relacionadas con MASS VPN podrán considerar:
+
+a. Activación.
+b. Días utilizados.
+c. Dispositivos.
+d. Consumo.
+e. Problemas técnicos.
+f. Compatibilidad informada.
+g. Restricciones de red externa.
+h. Condiciones del proveedor.
+i. Periodo promocional.
+j. Plan contratado.
+
+MASS no garantiza que todas las redes permitan todas las conexiones VPN.
+
+29. MASS LEARN
+
+Los reembolsos de cursos o membresías podrán depender de:
+
+a. Inicio del curso.
+b. Porcentaje completado.
+c. Material descargado.
+d. Certificados.
+e. Sesiones utilizadas.
+f. Condiciones del instructor.
+g. Cancelación de la clase.
+h. Acceso otorgado.
+
+30. MASS TV
+
+Las solicitudes relacionadas con MASS TV podrán considerar:
+
+a. Periodo de acceso.
+b. Contenido reproducido.
+c. Evento cancelado.
+d. Interrupción importante.
+e. Restricciones territoriales.
+f. Problemas del proveedor.
+g. Compra individual.
+h. Suscripción.
+
+31. MASS RUTA
+
+En MASS Ruta podrán considerarse:
+
+a. Cancelación antes de asignación.
+b. Cancelación después de asignación.
+c. Distancia recorrida.
+d. Recolección realizada.
+e. Entrega fallida.
+f. Información incorrecta.
+g. Espera.
+h. Costos del operador.
+i. Daño o pérdida.
+j. Condiciones específicas del envío.
+
+32. MASS SORTEOS PRO
+
+Las operaciones relacionadas con dinámicas o sorteos deberán cumplir la legislación y las reglas específicas del organizador.
+
+Una compra podrá no ser reembolsable después de que:
+
+a. El número haya sido asignado.
+b. El boleto haya sido confirmado.
+c. La dinámica haya comenzado.
+d. El resultado haya sido determinado.
+e. Se haya utilizado un beneficio relacionado.
+
+Esto no limita ajustes por cobro duplicado, operación no autorizada, cancelación de la dinámica o incumplimiento obligatorio.
+
+33. CANCELACIÓN DE UNA DINÁMICA
+
+Si una dinámica se cancela definitivamente, el organizador deberá aplicar la solución anunciada, que podrá incluir:
+
+a. Reembolso.
+b. Crédito.
+c. Sustitución autorizada.
+d. Nueva fecha aceptada conforme a las reglas.
+e. Otra solución legalmente permitida.
+
+34. MASS CASH
+
+Un reembolso podrá acreditarse como:
+
+a. Devolución al método original.
+b. Crédito MASS.
+c. Saldo del organizador.
+d. Crédito promocional.
+
+El método deberá ser informado y cumplir la legislación aplicable.
+
+35. SALDO POR ORGANIZADOR
+
+Cuando una compra utilice saldo vinculado con un organizador:
+
+a. El reembolso podrá regresar al mismo saldo.
+b. No deberá acreditarse a otro organizador.
+c. Deberá registrarse el movimiento.
+d. Deberá evitarse una doble devolución.
+e. El usuario deberá ver el saldo actualizado.
+f. El organizador deberá identificarse.
+
+36. RECARGAS
+
+Una recarga aprobada podrá no ser reembolsable automáticamente cuando el saldo ya haya sido utilizado.
+
+Una recarga no utilizada podrá revisarse considerando:
+
+a. Método original.
+b. Organizador.
+c. Fraude.
+d. Comisiones.
+e. Condiciones mostradas.
+f. Legislación aplicable.
+g. Disponibilidad técnica.
+h. Estado del saldo.
+
+37. CRÉDITOS PROMOCIONALES
+
+Los créditos promocionales:
+
+a. Podrán no tener valor en efectivo.
+b. Podrán vencer.
+c. Podrán limitarse a un servicio.
+d. Podrán limitarse a un organizador.
+e. Podrán retirarse en caso de fraude.
+f. No deberán generar reembolso monetario salvo obligación legal.
+
+38. PREMIOS Y BENEFICIOS
+
+Los premios y beneficios podrán estar sujetos a:
+
+a. Verificación.
+b. Disponibilidad.
+c. Restricciones.
+d. Vencimiento.
+e. No transferencia.
+f. Reglas del organizador.
+g. Sustitución equivalente.
+h. Legislación aplicable.
+
+39. REEMBOLSO TOTAL
+
+Un reembolso total podrá incluir:
+
+a. Precio pagado.
+b. Impuesto reembolsable.
+c. Tarifa obligatoria reembolsable.
+d. Crédito utilizado.
+e. Otro importe exigido por la ley.
+
+No necesariamente incluirá gastos independientes que no puedan recuperarse y que hayan sido informados, salvo obligación distinta.
+
+40. REEMBOLSO PARCIAL
+
+Un reembolso parcial podrá calcularse con base en:
+
+a. Parte no entregada.
+b. Tiempo restante.
+c. Cantidad afectada.
+d. Descuento aplicado.
+e. Costos utilizados.
+f. Valor recibido.
+g. Daño.
+h. Acuerdo.
+i. Requisito legal.
+
+La explicación deberá conservarse en el registro.
+
+41. TARIFAS NO REEMBOLSABLES
+
+Determinadas tarifas podrán no ser reembolsables cuando:
+
+a. Fueron claramente informadas.
+b. El servicio relacionado fue prestado.
+c. El proveedor no las devuelve.
+d. La ley lo permite.
+e. No existe error atribuible a MASS o al vendedor.
+
+No deberán ocultarse tarifas no reembolsables.
+
+42. IMPUESTOS
+
+Los impuestos se ajustarán conforme a:
+
+a. Legislación.
+b. Importe reembolsado.
+c. Tipo de producto.
+d. Jurisdicción.
+e. Procesador.
+f. Registros fiscales.
+
+43. MONEDA Y CONVERSIÓN
+
+Un reembolso podrá realizarse en la moneda original.
+
+El importe recibido podrá variar por:
+
+a. Tipo de cambio.
+b. Banco.
+c. Procesador.
+d. Fecha.
+e. Tarifa externa.
+f. Método de pago.
+
+MASS no controla cargos independientes del banco.
+
+44. MÉTODO ORIGINAL
+
+Cuando resulte posible, el reembolso se enviará al método original.
+
+Podrá utilizarse otro método cuando:
+
+a. La cuenta esté cerrada.
+b. El procesador lo exija.
+c. Exista acuerdo documentado.
+d. La ley lo permita.
+e. Se trate de crédito interno.
+f. Exista imposibilidad técnica.
+
+45. PLAZO DE SOLICITUD
+
+Cada servicio podrá establecer un plazo razonable para solicitar revisión.
+
+El plazo podrá depender de:
+
+a. Producto.
+b. Servicio.
+c. Fecha de entrega.
+d. Fecha de cargo.
+e. Fecha de descubrimiento.
+f. Garantía.
+g. Legislación.
+h. Procesador.
+
+Una solicitud tardía podrá evaluarse cuando exista una causa justificada o un derecho obligatorio.
+
+46. PRESENTACIÓN DE SOLICITUD
+
+La solicitud deberá presentarse mediante el canal oficial e incluir, cuando corresponda:
+
+a. Nombre.
+b. MASS ID.
+c. Correo.
+d. Teléfono.
+e. Número de transacción.
+f. Fecha.
+g. Importe.
+h. Organizador.
+i. Producto o servicio.
+j. Motivo.
+k. Evidencia.
+l. Solución solicitada.
+
+47. EVIDENCIA
+
+MASS podrá solicitar:
+
+a. Recibo.
+b. Captura.
+c. Fotografía.
+d. Video.
+e. Comunicación.
+f. Seguimiento.
+g. Estado bancario parcialmente oculto.
+h. Confirmación del organizador.
+i. Registro de acceso.
+j. Número de serie.
+k. Documento de identidad cuando resulte necesario.
+l. Otra evidencia razonable.
+
+No deberán solicitarse datos financieros completos innecesarios.
+
+48. ACUSE DE RECIBO
+
+Cuando sea posible, el sistema deberá confirmar:
+
+a. Recepción.
+b. Número de caso.
+c. Fecha.
+d. Canal de seguimiento.
+e. Información faltante.
+f. Tiempo estimado no vinculante.
+
+49. REVISIÓN
+
+La revisión podrá incluir:
+
+a. Validación de cuenta.
+b. Verificación de transacción.
+c. Consulta al organizador.
+d. Consulta al procesador.
+e. Revisión de entrega.
+f. Revisión de registros.
+g. Evaluación antifraude.
+h. Aplicación de la política.
+i. Evaluación legal.
+j. Solicitud de información adicional.
+
+50. TIEMPO DE DECISIÓN
+
+MASS procurará resolver solicitudes dentro de un periodo razonable.
+
+El tiempo podrá variar por:
+
+a. Complejidad.
+b. Evidencia.
+c. Procesador.
+d. Organizador.
+e. Banco.
+f. Investigación.
+g. Fraude.
+h. Días no laborables.
+i. Obligación legal.
+j. País.
+
+51. DECISIÓN
+
+La respuesta podrá indicar:
+
+a. Aprobado.
+b. Aprobado parcialmente.
+c. Reemplazo ofrecido.
+d. Crédito ofrecido.
+e. Información adicional requerida.
+f. Rechazado.
+g. Remitido al vendedor.
+h. Remitido al procesador.
+i. Bajo investigación.
+
+52. EXPLICACIÓN
+
+Cuando una solicitud sea rechazada o aprobada parcialmente, MASS procurará explicar:
+
+a. Condición aplicable.
+b. Evidencia considerada.
+c. Importe.
+d. Parte responsable.
+e. Alternativas.
+f. Método de apelación.
+g. Derechos adicionales cuando corresponda.
+
+53. APROBACIÓN
+
+Al aprobarse un reembolso deberá registrarse:
+
+a. Número de caso.
+b. Transacción original.
+c. Importe.
+d. Moneda.
+e. Motivo.
+f. Método.
+g. Responsable.
+h. Fecha.
+i. Estado.
+j. Referencia del procesador.
+
+54. TIEMPO DE REFLEJO
+
+Después de emitirse, el tiempo para reflejar el reembolso dependerá de:
+
+a. Banco.
+b. Procesador.
+c. Método.
+d. Moneda.
+e. País.
+f. Días laborables.
+g. Estado de la cuenta.
+h. Sistemas externos.
+
+La confirmación de emisión no significa que el banco ya lo haya mostrado.
+
+55. REEMBOLSO PENDIENTE
+
+Mientras esté pendiente, MASS podrá mostrar:
+
+a. Solicitado.
+b. En revisión.
+c. Aprobado.
+d. Enviado al procesador.
+e. Procesando.
+f. Completado.
+g. Rechazado.
+h. Cancelado.
+
+56. REEMBOLSO FALLIDO
+
+Si un reembolso falla, MASS podrá:
+
+a. Reintentar.
+b. Confirmar el método.
+c. Consultar al procesador.
+d. Solicitar un método alternativo permitido.
+e. Emitir crédito con autorización.
+f. Mantener el caso abierto.
+g. Notificar al usuario.
+
+57. REEMBOLSO DUPLICADO
+
+Si un usuario recibe una devolución duplicada por error:
+
+a. MASS podrá corregir registros.
+b. Podrá solicitar devolución.
+c. Podrá revertir crédito interno no utilizado.
+d. Podrá compensar importes cuando sea legal.
+e. Deberá documentar la corrección.
+
+58. COMPENSACIÓN CON SALDOS
+
+MASS no deberá retirar arbitrariamente fondos.
+
+Una compensación podrá realizarse cuando:
+
+a. Exista doble reembolso.
+b. Exista error confirmado.
+c. Exista fraude.
+d. Exista autorización.
+e. El contrato lo permita.
+f. La ley lo permita.
+g. Se proporcione explicación.
+
+59. COMPRAS NO AUTORIZADAS
+
+Una compra no autorizada deberá reportarse inmediatamente.
+
+MASS podrá:
+
+a. Proteger la cuenta.
+b. Cerrar sesiones.
+c. Solicitar cambio de contraseña.
+d. Verificar MFA.
+e. Revisar dispositivos.
+f. Suspender transacciones.
+g. Consultar al procesador.
+h. Preservar evidencia.
+i. Coordinar el ajuste.
+j. Remitir al banco cuando corresponda.
+
+60. DISPUTA BANCARIA
+
+El usuario podrá tener derechos independientes frente a su banco o emisor.
+
+Una solicitud ante MASS:
+
+a. No sustituye los avisos requeridos por el banco.
+b. No extiende plazos bancarios.
+c. No garantiza un contracargo.
+d. No limita derechos obligatorios.
+e. Puede resolverse paralelamente cuando sea apropiado.
+
+61. CONTRACARGOS
+
+Cuando exista un contracargo abierto:
+
+a. MASS podrá suspender el reembolso interno para evitar duplicidad.
+b. Podrá proporcionar evidencia al procesador.
+c. Podrá esperar la decisión.
+d. Podrá corregir saldos.
+e. Podrá cerrar el caso interno cuando el banco resuelva.
+
+62. FRAUDE
+
+MASS podrá negar, suspender o investigar una solicitud cuando existan señales de:
+
+a. Evidencia alterada.
+b. Declaración falsa.
+c. Doble reclamación.
+d. Contracargo y reembolso simultáneos.
+e. Uso completo del servicio.
+f. Devolución de producto distinto.
+g. Cuenta relacionada con fraude.
+h. Identidad inconsistente.
+i. Manipulación de saldo.
+j. Colusión.
+
+63. RECLAMACIÓN LEGÍTIMA
+
+Una reclamación legítima no deberá generar represalias.
+
+El usuario podrá:
+
+a. Solicitar revisión.
+b. Proporcionar evidencia.
+c. Apelar.
+d. Ejercer derechos legales.
+e. Contactar al proveedor financiero.
+f. Presentar una queja ante una autoridad.
+
+64. ORGANIZADORES
+
+Los organizadores deberán:
+
+a. Publicar condiciones claras.
+b. Cumplir sus ofertas.
+c. Responder solicitudes.
+d. Mantener registros.
+e. Evitar políticas engañosas.
+f. Cooperar con MASS.
+g. Proporcionar evidencia.
+h. Financiar reembolsos que les correspondan.
+i. Cumplir la ley.
+j. No castigar reclamaciones legítimas.
+
+65. INCUMPLIMIENTO DEL ORGANIZADOR
+
+MASS podrá aplicar medidas cuando un organizador:
+
+a. Ignore solicitudes.
+b. Retenga fondos indebidamente.
+c. No entregue.
+d. Proporcione información falsa.
+e. Acumule contracargos.
+f. Incumpla políticas.
+g. No mantenga reservas.
+h. Se niegue a cooperar.
+
+Las medidas podrán incluir limitación, retención, suspensión o terminación.
+
+66. RESERVAS
+
+MASS o el procesador podrá mantener reservas razonables para cubrir:
+
+a. Reembolsos.
+b. Contracargos.
+c. Entregas pendientes.
+d. Quejas.
+e. Riesgo.
+f. Fraude.
+g. Obligaciones legales.
+
+67. PROVEEDORES EXTERNOS
+
+Cuando el producto sea prestado por un tercero:
+
+a. Podrá aplicarse la política del tercero.
+b. MASS podrá facilitar comunicación.
+c. El tercero podrá decidir.
+d. El procesador podrá imponer reglas.
+e. Los derechos obligatorios permanecerán aplicables.
+f. La identidad del responsable deberá comunicarse.
+
+68. TIENDAS DE APLICACIONES
+
+Las compras realizadas mediante una tienda de aplicaciones podrán estar sujetas al sistema de facturación y reembolso de esa tienda.
+
+El usuario podrá tener que solicitar el reembolso directamente al proveedor de la tienda.
+
+69. SERVICIOS EXTERNOS
+
+Los pagos realizados fuera de MASS mediante:
+
+a. Transferencia.
+b. Efectivo.
+c. Enlace externo.
+d. Terminal independiente.
+e. Acuerdo directo.
+
+podrán requerir que la solicitud se presente ante quien recibió el pago.
+
+70. PRIVACIDAD
+
+La información de una solicitud deberá utilizarse para:
+
+a. Verificar.
+b. Investigar.
+c. Resolver.
+d. Prevenir fraude.
+e. Cumplir obligaciones.
+f. Mantener registros.
+g. Defender derechos.
+
+El tratamiento estará sujeto a MASS-LC-003.
+
+71. SEGURIDAD
+
+Las solicitudes podrán requerir:
+
+a. Sesión activa.
+b. Verificación de identidad.
+c. Contraseña.
+d. MFA.
+e. Confirmación de correo.
+f. Confirmación de teléfono.
+g. Validación del método.
+h. Revisión administrativa.
+
+72. CONSERVACIÓN
+
+MASS podrá conservar registros de:
+
+a. Solicitudes.
+b. Evidencia.
+c. Decisiones.
+d. Pagos.
+e. Ajustes.
+f. Comunicaciones.
+g. Contracargos.
+h. Fraude.
+i. Apelaciones.
+j. Obligaciones fiscales.
+
+73. APELACIÓN
+
+El usuario podrá solicitar una segunda revisión mediante el canal publicado.
+
+La apelación deberá incluir:
+
+a. Número de caso.
+b. Motivo de desacuerdo.
+c. Información nueva.
+d. Evidencia.
+e. Solución solicitada.
+
+74. REVISIÓN HUMANA
+
+Las decisiones importantes no deberán depender exclusivamente de un sistema automatizado cuando resulte necesaria una revisión humana.
+
+La revisión podrá confirmar, modificar o revertir el resultado inicial.
+
+75. ERRORES DEL SISTEMA
+
+Si un error técnico impide solicitar o recibir un reembolso, MASS podrá:
+
+a. Registrar manualmente el caso.
+b. Extender un plazo razonablemente.
+c. Corregir la transacción.
+d. Proporcionar un canal alternativo.
+e. Preservar evidencia.
+f. Notificar la solución.
+
+76. FUERZA MAYOR
+
+Cuando una interrupción resulte de una circunstancia fuera del control razonable de las partes, la solución podrá considerar:
+
+a. Reprogramación.
+b. Crédito.
+c. Reembolso.
+d. Cumplimiento posterior.
+e. Costos no recuperables.
+f. Legislación aplicable.
+
+77. CAMBIOS A ESTA POLÍTICA
+
+Esta Política podrá actualizarse por:
+
+a. Nuevos productos.
+b. Nuevos métodos.
+c. Nuevos proveedores.
+d. Cambios legales.
+e. Cambios de procesador.
+f. Nuevos modelos de saldo.
+g. Auditorías.
+h. Fraude.
+i. Quejas.
+j. Correcciones.
+k. Expansión territorial.
+
+78. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-007, Política de pagos.
+g. MASS-LC-009, Política antifraude.
+h. MASS-LC-010, Normas de la comunidad.
+i. Condiciones específicas de cada servicio.
+j. Condiciones mostradas antes del pago.
+
+79. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Requisitos regulatorios.
+c. Reglas obligatorias del proveedor financiero.
+d. Condiciones específicas mostradas al comprar.
+e. Política específica del servicio.
+f. Esta Política.
+g. Política de pagos.
+h. Acuerdo de usuario MASS ID.
+i. Definiciones del MASS ID Legal Center.
+
+80. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial de reembolsos.
+b. Formulario de solicitud.
+c. Canal para transacciones no autorizadas.
+d. Canal de apelaciones.
+e. Canal para organizadores.
+f. Dirección postal.
+g. Plazos específicos.
+h. Proveedores activos.
+i. Procedimiento de seguimiento.
+j. Información legal adicional.
+
+81. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-008 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los productos, servicios, organizadores, métodos de pago, proveedores, prácticas reales, derechos obligatorios o procedimientos del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-008
+`
+},
     {
       codigo: "MASS-LC-009",
       titulo: "Política antifraude",
