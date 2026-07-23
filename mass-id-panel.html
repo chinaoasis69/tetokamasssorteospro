@@ -2919,6 +2919,50 @@ el nuevo correo electrónico.
   </div>
 
   <div
+  style="
+    margin-top:18px;
+    margin-bottom:18px;
+    padding:14px;
+    border:1px solid #333;
+    border-radius:12px;
+    background:#101010;
+  "
+>
+  <label
+    for="massIdActividadCuentaFiltro"
+    style="
+      display:block;
+      margin-bottom:8px;
+      color:#ffffff;
+      font-size:13px;
+      font-weight:bold;
+    "
+  >
+    MOSTRAR ACTIVIDAD
+  </label>
+
+  <select
+    id="massIdActividadCuentaFiltro"
+    style="
+      width:100%;
+      padding:12px;
+      border:1px solid #39ff14;
+      border-radius:10px;
+      background:#181818;
+      color:#ffffff;
+      font-size:14px;
+      cursor:pointer;
+      outline:none;
+    "
+  >
+    <option value="24h">Últimas 24 horas</option>
+    <option value="7d">Últimos 7 días</option>
+    <option value="30d" selected>Últimos 30 días</option>
+    <option value="all">Todas las actividades</option>
+  </select>
+</div>
+
+  <div
     id="massIdActividadCuentaLista"
     style="
       display:flex;
