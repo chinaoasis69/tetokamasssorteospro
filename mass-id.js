@@ -12758,10 +12758,21 @@ const {
     console.log("ANTES DE LEER EL NAVEGADOR");
 
     const agenteUsuario = navigator.userAgent || "";
+
+    console.log(
+  "AGENTE DEL NAVEGADOR:",
+  agenteUsuario
+);
+    
     const plataforma =
       navigator.userAgentData?.platform ||
       navigator.platform ||
       "No disponible";
+
+    console.log(
+  "PLATAFORMA DETECTADA:",
+  plataforma
+);
 
     let navegador = "Navegador desconocido";
 
