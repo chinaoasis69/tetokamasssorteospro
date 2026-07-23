@@ -550,13 +550,207 @@ const contenidoDocumentoLegal =
 const catalogoDocumentosLegalesMassId =
   Object.freeze([
     {
-      codigo: "MASS-LC-000",
-      titulo: "Gobernanza del Centro Legal",
-      descripcion:
-        "Establece la estructura, autoridad, control de versiones y administración del MASS ID Legal Center.",
-      version: "1.0",
-      estado: "En preparación"
-    },
+  codigo: "MASS-LC-000",
+  titulo: "Gobernanza del Centro Legal",
+  descripcion:
+    "Establece la estructura, autoridad, control de versiones y administración del MASS ID Legal Center.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En preparación",
+  contenido: `
+MASS-LC-000
+GOBERNANZA DEL MASS ID LEGAL CENTER
+
+Versión: 1.0
+Estado: En preparación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+1. PROPÓSITO
+
+El presente documento establece la estructura oficial de gobierno, administración, publicación, actualización, conservación e interpretación del MASS ID Legal Center.
+
+El MASS ID Legal Center constituye la base organizada de políticas, acuerdos, avisos, normas y documentos legales aplicables a MASS ID y a los productos, plataformas, módulos, aplicaciones, sitios web y servicios que formen parte del ecosistema MASS.
+
+2. AUTORIDAD ADMINISTRATIVA
+
+TE-TO-KA SOLUTIONS® LLC administra el MASS ID Legal Center y conserva la autoridad para:
+
+a. Crear documentos legales nuevos.
+b. Modificar documentos existentes.
+c. Publicar nuevas versiones.
+d. Retirar o sustituir documentos obsoletos.
+e. Determinar fechas de vigencia.
+f. Establecer reglas aplicables a productos o servicios específicos.
+g. Mantener registros históricos de versiones anteriores.
+
+Ningún usuario, organizador, proveedor, contratista, afiliado o tercero podrá modificar oficialmente estos documentos sin autorización expresa de TE-TO-KA SOLUTIONS® LLC.
+
+3. ALCANCE
+
+Esta gobernanza podrá aplicarse, según corresponda, a:
+
+MASS ID.
+TE-TO-KA MASS.
+MASS Sorteos Pro.
+MASS Ruta.
+MASS VPN.
+MASS Cash.
+MASS Learn.
+MASS TV.
+MASS Face ID.
+MASS Points.
+MASS Wallet.
+MASS Real Estate.
+Los demás productos o servicios presentes y futuros integrados al ecosistema MASS.
+
+Cada servicio podrá contar con términos adicionales. Cuando existan condiciones especiales para un producto, dichas condiciones complementarán los documentos generales del MASS ID Legal Center.
+
+4. IDENTIFICACIÓN OFICIAL
+
+Cada documento deberá contar con:
+
+a. Un código oficial MASS-LC.
+b. Un título identificable.
+c. Un número de versión.
+d. Un estado de publicación.
+e. Una fecha de vigencia, cuando corresponda.
+f. Una descripción de su finalidad.
+g. Un historial de modificaciones cuando sea necesario.
+
+La numeración MASS-LC será utilizada para mantener un catálogo ordenado, permanente y reutilizable.
+
+5. ESTADOS DE LOS DOCUMENTOS
+
+Los documentos podrán mostrar alguno de los siguientes estados:
+
+En preparación: documento todavía no publicado para aplicación definitiva.
+
+En revisión: documento sujeto a revisión administrativa, técnica o legal.
+
+Vigente: documento oficialmente publicado y aplicable.
+
+Actualizado: existe una nueva versión vigente del documento.
+
+Sustituido: el documento fue reemplazado por otra versión.
+
+Retirado: el documento dejó de utilizarse sin ser sustituido directamente.
+
+Archivado: documento conservado únicamente para historial y evidencia.
+
+6. CONTROL DE VERSIONES
+
+Las versiones se identificarán mediante números, por ejemplo:
+
+Versión 1.0: primera publicación oficial.
+
+Versión 1.1: ajuste menor que no modifica sustancialmente las obligaciones principales.
+
+Versión 2.0: modificación importante que puede cambiar derechos, obligaciones, procesos o condiciones de uso.
+
+TE-TO-KA SOLUTIONS® LLC determinará cuándo un cambio requiere una versión nueva y si debe notificarse directamente a los usuarios.
+
+7. PUBLICACIÓN Y VIGENCIA
+
+Un documento se considerará oficialmente publicado cuando:
+
+a. Aparezca identificado como vigente dentro del MASS ID Legal Center.
+b. Incluya una versión oficial.
+c. Incluya una fecha de vigencia o indique que entra en vigor al publicarse.
+d. Sea accesible mediante los canales oficiales del ecosistema MASS.
+
+Los documentos en preparación no deberán interpretarse como versiones jurídicas definitivas.
+
+8. ACTUALIZACIONES Y NOTIFICACIONES
+
+TE-TO-KA SOLUTIONS® LLC podrá actualizar los documentos para responder a:
+
+a. Nuevos productos o servicios.
+b. Cambios tecnológicos.
+c. Nuevas funciones de seguridad.
+d. Cambios operativos.
+e. Requisitos regulatorios.
+f. Prevención de fraude o abuso.
+g. Protección de usuarios y del ecosistema MASS.
+h. Cambios en métodos de pago o proveedores externos.
+
+Cuando una modificación sea material, podrá solicitarse al usuario revisar o aceptar la nueva versión antes de continuar utilizando determinados servicios.
+
+9. JERARQUÍA DOCUMENTAL
+
+Salvo que un documento específico establezca lo contrario, se seguirá esta jerarquía:
+
+Primero: términos especiales del producto o servicio utilizado.
+
+Segundo: Acuerdo de usuario MASS ID.
+
+Tercero: políticas específicas aplicables, como privacidad, seguridad, pagos, reembolsos o inteligencia artificial.
+
+Cuarto: Normas de la comunidad.
+
+Quinto: esta Gobernanza del MASS ID Legal Center.
+
+Cuando exista una aparente contradicción, prevalecerá la disposición más específica aplicable al servicio o actividad correspondiente.
+
+10. ACEPTACIÓN ELECTRÓNICA
+
+La aceptación de documentos legales podrá registrarse mediante:
+
+a. Casillas de aceptación.
+b. Botones de confirmación.
+c. Firmas electrónicas.
+d. Registros de fecha y hora.
+e. Identificación mediante auth_user_id.
+f. Número MASS ID.
+g. Dirección IP o información técnica permitida.
+h. Registros internos de versión aceptada.
+
+Estos registros podrán utilizarse para comprobar qué documento y versión fueron presentados o aceptados.
+
+11. CONSERVACIÓN DE REGISTROS
+
+TE-TO-KA SOLUTIONS® LLC podrá conservar:
+
+a. Versiones publicadas.
+b. Fechas de publicación.
+c. Fechas de vigencia.
+d. Historial de cambios.
+e. Evidencia de aceptación.
+f. Registros de sustitución o retiro.
+g. Documentos archivados.
+
+La conservación se realizará conforme a las necesidades legales, administrativas, operativas y de seguridad del ecosistema MASS.
+
+12. IDIOMAS
+
+Los documentos podrán publicarse en español, inglés u otros idiomas.
+
+Cuando existan varias traducciones, la versión identificada expresamente como oficial o predominante será utilizada para resolver diferencias de interpretación, siempre respetando las leyes aplicables.
+
+13. ACCESIBILIDAD
+
+El MASS ID Legal Center procurará que los documentos puedan consultarse desde dispositivos móviles, computadoras y otros medios compatibles.
+
+La falta temporal de acceso por mantenimiento, conexión, incidentes técnicos o causas externas no invalidará automáticamente una versión previamente publicada.
+
+14. INTERPRETACIÓN
+
+Los encabezados se incluyen para facilitar la lectura y no limitan el significado de las disposiciones.
+
+Las palabras en singular podrán incluir el plural y viceversa cuando el contexto lo requiera.
+
+Si una disposición fuera declarada inválida o inaplicable, las demás disposiciones continuarán vigentes en la mayor medida permitida.
+
+15. AUSENCIA DE RENUNCIA
+
+La falta de aplicación inmediata de una disposición no significará que TE-TO-KA SOLUTIONS® LLC renuncia a ejercer posteriormente sus derechos.
+
+16. ADMINISTRACIÓN CONTINUA
+
+El MASS ID Legal Center será administrado como una estructura legal evolutiva, diseñada para acompañar el crecimiento del ecosistema MASS durante sus distintas fases, servicios, territorios y modelos de operación.
+
+FIN DEL DOCUMENTO MASS-LC-000
+`
+},
     {
       codigo: "MASS-LC-001",
       titulo: "Definiciones legales",
