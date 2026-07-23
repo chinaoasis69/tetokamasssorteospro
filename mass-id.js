@@ -12850,7 +12850,6 @@ if (errorGuardarDispositivo) {
     errorGuardarDispositivo
   );
 }  
-    }
 
     const {
   data: dispositivosRegistrados,
