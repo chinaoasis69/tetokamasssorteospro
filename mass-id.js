@@ -12706,7 +12706,8 @@ const {
 } 
 
 /* Cargar Dispositivos conectados */
-async function cargarDispositivosConectadosMassId() {
+ async function cargarDispositivosConectadosMassId()
+  console.log("ENTRÓ A CARGAR DISPOSITIVOS CONECTADOS");
   if (!listaDispositivosConectados) {
     return;
   }
