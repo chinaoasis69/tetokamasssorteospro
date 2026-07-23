@@ -12811,6 +12811,11 @@ const {
     }
   );
 
+ console.log(
+  "ERROR GUARDAR DISPOSITIVO:",
+  errorGuardarDispositivo
+);     
+
 if (errorGuardarDispositivo) {
   console.error(
     "ERROR REGISTRANDO DISPOSITIVO MASS ID:",
