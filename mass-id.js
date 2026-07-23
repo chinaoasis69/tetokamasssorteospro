@@ -752,13 +752,357 @@ FIN DEL DOCUMENTO MASS-LC-000
 `
 },
     {
-      codigo: "MASS-LC-001",
-      titulo: "Definiciones legales",
-      descripcion:
-        "Define los términos oficiales utilizados dentro de MASS ID y del ecosistema MASS.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-001",
+  titulo: "Definiciones legales",
+  descripcion:
+    "Define los términos oficiales utilizados dentro de MASS ID y del ecosistema MASS.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-001
+DEFINICIONES LEGALES DEL MASS ID LEGAL CENTER
+
+Versión: 1.0
+Estado: En revisión
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+1. PROPÓSITO
+
+El presente documento establece las definiciones oficiales utilizadas dentro del MASS ID Legal Center y en los productos, plataformas, aplicaciones, módulos, sitios web y servicios que formen parte del ecosistema MASS.
+
+Estas definiciones tienen como propósito facilitar una interpretación uniforme de los documentos legales administrados por TE-TO-KA SOLUTIONS® LLC.
+
+2. ALCANCE
+
+Las definiciones contenidas en este documento se aplicarán, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. Los demás productos, módulos, plataformas y servicios presentes o futuros del ecosistema MASS.
+
+Cuando un documento o servicio específico incluya una definición diferente, la definición específica prevalecerá únicamente para ese documento o servicio.
+
+3. REGLAS DE INTERPRETACIÓN
+
+Los términos en singular podrán incluir el plural y viceversa cuando el contexto lo requiera.
+
+Las palabras que indiquen un género incluirán los demás géneros cuando resulte aplicable.
+
+Los encabezados se utilizan para facilitar la lectura y no limitarán el alcance de las disposiciones.
+
+Las palabras “incluye”, “incluyendo” o expresiones similares se interpretarán de manera enunciativa y no limitativa.
+
+Las referencias a leyes, normas o reglamentos incluirán sus modificaciones, sustituciones y disposiciones relacionadas, según resulten aplicables.
+
+4. DEFINICIONES OFICIALES
+
+4.1. CUENTA
+
+Registro digital creado para que una persona pueda acceder y utilizar MASS ID o cualquier servicio autorizado del ecosistema MASS.
+
+4.2. CUENTA VERIFICADA
+
+Cuenta que ha completado uno o más procedimientos de verificación establecidos por MASS, como confirmación de correo, teléfono, contraseña, código de seguridad o autenticación en dos pasos.
+
+La verificación reduce riesgos, pero no constituye una garantía absoluta sobre la identidad, conducta, solvencia o confiabilidad de una persona.
+
+4.3. CREDENCIALES DE ACCESO
+
+Información o mecanismos utilizados para acceder a una cuenta, incluyendo correo electrónico, número telefónico, contraseña, PIN, códigos temporales, llaves digitales, enlaces de acceso y factores de autenticación.
+
+4.4. MASS ID
+
+Identidad digital asignada a un usuario dentro del ecosistema MASS para administrar su cuenta, perfil, acceso, preferencias, historial, verificaciones y servicios relacionados.
+
+MASS ID no es una identificación emitida por un gobierno y no sustituye una licencia, pasaporte, tarjeta oficial ni otro documento legal de identidad.
+
+4.5. NÚMERO MASS ID
+
+Identificador único asignado por el sistema a una cuenta MASS ID para distinguirla de otras cuentas.
+
+El número MASS ID no constituye por sí solo prueba absoluta de identidad personal.
+
+4.6. ECOSISTEMA MASS
+
+Conjunto de productos, plataformas, módulos, aplicaciones, sitios web, tecnologías, servicios y operaciones administrados, autorizados o integrados por TE-TO-KA SOLUTIONS® LLC bajo las marcas o sistemas MASS.
+
+4.7. EMPRESA
+
+TE-TO-KA SOLUTIONS® LLC, sus representantes autorizados y, cuando corresponda, las entidades afiliadas que administren servicios dentro del ecosistema MASS.
+
+4.8. USUARIO
+
+Persona física o jurídica que registra, accede, visita, utiliza, administra, contrata o interactúa con MASS ID o con algún servicio del ecosistema MASS.
+
+4.9. USUARIO AUTORIZADO
+
+Usuario que cuenta con permiso válido para acceder a una cuenta, función, perfil, panel, información o servicio determinado.
+
+4.10. USUARIO COMERCIAL
+
+Persona o entidad que utiliza MASS con fines empresariales, profesionales, organizacionales o comerciales, incluyendo organizadores, proveedores, operadores, anunciantes y prestadores de servicios.
+
+4.11. ORGANIZADOR
+
+Persona o entidad autorizada para crear, administrar u operar actividades, promociones, dinámicas, sorteos promocionales, publicaciones o servicios dentro de una plataforma MASS.
+
+4.12. OPERADOR
+
+Persona o entidad independiente autorizada para ofrecer, coordinar o realizar servicios mediante una plataforma del ecosistema MASS.
+
+4.13. PROVEEDOR DE SERVICIOS
+
+Persona o entidad que proporciona servicios tecnológicos, financieros, administrativos, logísticos, de comunicación, seguridad, almacenamiento, autenticación u otros servicios en apoyo del ecosistema MASS.
+
+4.14. SERVICIO
+
+Cualquier función, producto, módulo, plataforma, aplicación, contenido, beneficio o capacidad ofrecida dentro del ecosistema MASS.
+
+4.15. PLATAFORMA
+
+Sitio web, aplicación, sistema, interfaz, panel, infraestructura tecnológica o medio digital utilizado para proporcionar uno o más servicios MASS.
+
+4.16. PERFIL
+
+Conjunto de datos, configuraciones, fotografías, identificadores, preferencias y otra información asociada con una cuenta.
+
+4.17. PERFIL PÚBLICO
+
+Parte de un perfil que el usuario autoriza para que sea visible dentro de funciones o servicios determinados.
+
+La existencia de un perfil público no autoriza la divulgación ilimitada de información privada.
+
+4.18. DATOS PERSONALES
+
+Información vinculada o razonablemente vinculable con una persona identificada o identificable.
+
+Los datos personales pueden incluir nombre, correo, teléfono, dirección, identificadores, información de cuenta, ubicación, actividad, historial y demás información asociada con una persona.
+
+4.19. DATOS SENSIBLES
+
+Datos personales que, por su naturaleza, requieren protección reforzada, incluyendo información financiera, credenciales, identificaciones oficiales, ubicación precisa, información médica, genética, biométrica, datos de menores y otras categorías protegidas por la legislación aplicable.
+
+4.20. IDENTIFICADOR BIOMÉTRICO
+
+Característica física o biológica utilizada o potencialmente utilizada para reconocer o verificar a una persona, incluyendo huellas digitales, impresión de voz, geometría facial o de la mano y escaneo de retina o iris.
+
+4.21. DATOS BIOMÉTRICOS
+
+Información derivada de un identificador biométrico mediante procesamiento tecnológico y utilizada para fines de reconocimiento, autenticación o verificación.
+
+4.22. AUTENTICACIÓN
+
+Proceso utilizado para comprobar que una persona o dispositivo está autorizado para acceder a una cuenta, función o servicio.
+
+4.23. AUTENTICACIÓN EN DOS PASOS O MFA
+
+Medida de seguridad que requiere dos o más factores para verificar el acceso o confirmar una operación, como una contraseña y un código temporal generado por una aplicación de autenticación.
+
+4.24. SESIÓN
+
+Periodo durante el cual una cuenta permanece autenticada en un dispositivo, navegador, aplicación o servicio.
+
+4.25. DISPOSITIVO
+
+Computadora, teléfono, tableta, televisión, navegador, equipo conectado u otro medio tecnológico utilizado para acceder a MASS.
+
+4.26. CONSENTIMIENTO
+
+Manifestación libre, informada y verificable mediante la cual una persona autoriza una acción, tratamiento de datos o condición determinada.
+
+El consentimiento podrá retirarse cuando la legislación y la naturaleza del servicio lo permitan.
+
+4.27. TRATAMIENTO DE DATOS
+
+Cualquier operación realizada sobre datos, incluyendo recopilación, registro, organización, almacenamiento, consulta, utilización, transmisión, protección, modificación, análisis, restricción o eliminación.
+
+4.28. RESPONSABLE DEL TRATAMIENTO
+
+Persona o entidad que determina los propósitos y medios principales del tratamiento de datos personales, conforme a la legislación aplicable.
+
+4.29. ENCARGADO DEL TRATAMIENTO
+
+Persona o entidad que procesa datos personales por cuenta o bajo instrucciones de un responsable del tratamiento.
+
+4.30. TERCERO
+
+Persona o entidad distinta del usuario, la Empresa y los proveedores que procesen información directamente para proporcionar los servicios MASS.
+
+4.31. DATOS DESIDENTIFICADOS
+
+Información modificada mediante medidas razonables para que no pueda vincularse con una persona identificada o identificable sin utilizar información adicional.
+
+4.32. DATOS AGREGADOS
+
+Información combinada de múltiples usuarios, operaciones o fuentes que se presenta de manera estadística o colectiva y que no pretende identificar directamente a una persona.
+
+4.33. CONTENIDO
+
+Texto, imagen, fotografía, video, audio, archivo, documento, diseño, código, anuncio, mensaje, publicación, comentario, dato u otro material disponible dentro de MASS.
+
+4.34. CONTENIDO DEL USUARIO
+
+Contenido que un usuario carga, publica, transmite, registra, comparte o proporciona mediante un servicio MASS.
+
+4.35. CONTENIDO PROHIBIDO
+
+Contenido ilegal, fraudulento, abusivo, engañoso, peligroso, infractor, discriminatorio, violento, sexualmente explotador, malicioso o contrario a las normas aplicables del ecosistema MASS.
+
+4.36. PROPIEDAD INTELECTUAL
+
+Derechos relacionados con marcas, nombres comerciales, derechos de autor, patentes, secretos comerciales, diseños, software, bases de datos, contenido y demás activos protegidos por la legislación aplicable.
+
+4.37. REGISTRO ELECTRÓNICO
+
+Contrato, aviso, consentimiento, archivo, comunicación u otro registro creado, generado, enviado, recibido, comunicado o almacenado por medios electrónicos.
+
+4.38. FIRMA ELECTRÓNICA
+
+Sonido, símbolo, acción o proceso electrónico asociado con un registro y adoptado por una persona con la intención de firmar, aceptar o autorizar dicho registro.
+
+4.39. COMUNICACIÓN ELECTRÓNICA
+
+Mensaje enviado mediante correo electrónico, SMS, notificación, aplicación, panel, sitio web u otro medio tecnológico.
+
+4.40. TRANSACCIÓN
+
+Acción realizada mediante MASS que pueda involucrar una compra, pago, reserva, recarga, transferencia, contratación, solicitud, canje, beneficio, servicio o intercambio autorizado.
+
+4.41. PROCESADOR DE PAGOS
+
+Entidad independiente que facilita, autoriza, procesa o administra pagos, tarjetas, cuentas financieras u otros métodos de pago utilizados en relación con MASS.
+
+4.42. MASS CASH O SALDO MASS
+
+Función interna que permite registrar saldos, créditos o movimientos autorizados dentro de servicios específicos del ecosistema MASS.
+
+Salvo indicación legal y expresa en contrario, no constituye una cuenta bancaria, depósito asegurado, moneda de curso legal ni instrumento financiero independiente.
+
+4.43. CRÉDITO, PUNTO, BENEFICIO O TOKEN INTERNO
+
+Unidad digital utilizada para funciones, recompensas, promociones, acceso o beneficios dentro de un servicio MASS.
+
+No tendrá valor monetario, transferibilidad ni posibilidad de redención fuera del servicio, salvo que MASS lo establezca expresamente.
+
+4.44. PAGO
+
+Transferencia autorizada de dinero u otro valor aceptado a cambio de un producto, servicio, acceso, membresía, recarga o beneficio.
+
+4.45. REEMBOLSO
+
+Devolución total o parcial de un pago cuando se cumplan las condiciones de la política aplicable.
+
+4.46. CONTRACARGO
+
+Reversión o disputa de una transacción iniciada mediante una institución financiera, red de pagos o procesador de pagos.
+
+4.47. FRAUDE
+
+Acción u omisión intencional dirigida a obtener un beneficio indebido, engañar, suplantar una identidad, manipular un sistema, evitar obligaciones o causar una pérdida.
+
+4.48. ACTIVIDAD SOSPECHOSA
+
+Conducta, acceso, transacción o patrón que razonablemente pueda indicar fraude, abuso, riesgo de seguridad, incumplimiento o uso no autorizado.
+
+4.49. INTELIGENCIA ARTIFICIAL
+
+Sistema tecnológico capaz de generar, analizar, clasificar, recomendar, predecir, automatizar o apoyar decisiones utilizando modelos computacionales.
+
+4.50. SISTEMA AUTOMATIZADO
+
+Programa, algoritmo, agente electrónico o proceso tecnológico que ejecuta acciones o genera resultados con intervención humana limitada o sin revisión humana inmediata.
+
+4.51. DECISIÓN AUTOMATIZADA
+
+Resultado producido principalmente mediante procesamiento automatizado que pueda influir en el acceso, seguridad, personalización, evaluación o funcionamiento de un servicio.
+
+4.52. COOKIE
+
+Archivo o tecnología utilizada para almacenar o recuperar información relacionada con un navegador, dispositivo, sesión o interacción digital.
+
+4.53. ALMACENAMIENTO LOCAL
+
+Capacidad de un navegador o dispositivo para conservar datos, configuraciones, identificadores o preferencias dentro del propio equipo.
+
+4.54. INCIDENTE DE SEGURIDAD
+
+Evento confirmado o razonablemente sospechoso que comprometa o pueda comprometer la confidencialidad, integridad, disponibilidad o seguridad de cuentas, sistemas o información.
+
+4.55. SUSPENSIÓN
+
+Restricción temporal de una cuenta, función o servicio mientras se investiga, corrige o administra una situación.
+
+4.56. TERMINACIÓN
+
+Cierre definitivo de una cuenta, relación, autorización, acceso o servicio, sujeto a las obligaciones legales y contractuales aplicables.
+
+4.57. MENOR
+
+Persona que no ha alcanzado la edad legal aplicable para consentir o contratar por sí misma en la jurisdicción correspondiente.
+
+4.58. LEGISLACIÓN APLICABLE
+
+Leyes, reglamentos, órdenes, normas y requisitos jurídicos que resulten aplicables a una persona, servicio, operación o territorio determinado.
+
+4.59. AVISO
+
+Comunicación oficial relacionada con una cuenta, política, cambio, solicitud, seguridad, pago, servicio o derecho.
+
+4.60. FECHA DE VIGENCIA
+
+Fecha a partir de la cual un documento o versión comienza a aplicarse oficialmente.
+
+4.61. VERSIÓN
+
+Identificador utilizado para distinguir una edición específica de un documento, política, acuerdo o norma.
+
+4.62. ACTUALIZACIÓN
+
+Modificación, corrección, ampliación, sustitución o reorganización de un documento, sistema o servicio.
+
+4.63. FUERZA MAYOR
+
+Acontecimiento fuera del control razonable de una parte que impida, retrase o afecte el cumplimiento de una obligación, sujeto a la legislación aplicable.
+
+5. NATURALEZA CONTRACTUAL DE LAS DEFINICIONES
+
+Las definiciones de este documento se establecen para la interpretación interna y contractual del MASS ID Legal Center.
+
+Una definición interna no sustituirá ni limitará una definición obligatoria establecida por la legislación aplicable.
+
+6. CONFLICTOS ENTRE DEFINICIONES
+
+En caso de conflicto:
+
+a. La legislación aplicable tendrá prioridad.
+b. La definición específica de un servicio tendrá prioridad sobre una definición general.
+c. La versión más reciente publicada tendrá prioridad sobre versiones anteriores.
+d. Las disposiciones particulares tendrán prioridad sobre las disposiciones generales respecto del mismo asunto.
+
+7. ACTUALIZACIONES
+
+TE-TO-KA SOLUTIONS® LLC podrá ampliar, aclarar, modificar o reorganizar estas definiciones para adaptarlas a nuevos productos, tecnologías, requisitos legales, territorios y modelos de operación.
+
+Cada actualización deberá conservar identificación, versión y fecha de vigencia.
+
+8. DIVISIBILIDAD
+
+Si una definición fuera declarada inválida o inaplicable, las demás definiciones continuarán vigentes en la mayor medida permitida.
+
+9. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-001 será administrado como un documento evolutivo del MASS ID Legal Center y servirá como referencia para los demás documentos legales del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-001
+`
+},
     {
       codigo: "MASS-LC-002",
       titulo: "Acuerdo de usuario MASS ID",
