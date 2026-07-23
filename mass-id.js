@@ -12742,6 +12742,8 @@ const {
     console.log("SESIÓN DISPOSITIVOS:", session);
     console.log("ERROR SESIÓN DISPOSITIVOS:", errorSesion);
 
+    console.log("PASÓ LA LECTURA DE SESIÓN");
+
     if (errorSesion) {
       throw errorSesion;
     }
@@ -12751,6 +12753,9 @@ const {
         "No fue posible identificar la sesión activa."
       );
     }
+    
+    console.log("USUARIO DE SESIÓN:", session.user.id);
+    console.log("ANTES DE LEER EL NAVEGADOR");
 
     const agenteUsuario = navigator.userAgent || "";
     const plataforma =
