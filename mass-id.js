@@ -2560,13 +2560,997 @@ FIN DEL DOCUMENTO MASS-LC-003
 `
 },
     {
-      codigo: "MASS-LC-004",
-      titulo: "Política de seguridad",
-      descripcion:
-        "Describe las medidas utilizadas para proteger cuentas, identidad, sesiones y datos.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-004",
+  titulo: "Política de seguridad",
+  descripcion:
+    "Describe las medidas utilizadas para proteger cuentas, identidad, sesiones y datos.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-004
+POLÍTICA DE SEGURIDAD DE MASS ID
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política establece los principios administrativos, técnicos, físicos y organizacionales que TE-TO-KA SOLUTIONS® LLC aplicará para proteger MASS ID y los productos, plataformas, aplicaciones, módulos, sitios web, sistemas y servicios que formen parte del ecosistema MASS.
+
+La seguridad es una responsabilidad compartida entre MASS, sus usuarios, administradores, organizadores, operadores, empleados, contratistas, proveedores tecnológicos y demás participantes autorizados.
+
+Ningún sistema puede garantizar seguridad absoluta. MASS aplicará medidas razonables y proporcionales al tipo de información, los riesgos identificados, la naturaleza del servicio y los recursos disponibles.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Proteger la confidencialidad de la información.
+b. Mantener la integridad de datos y sistemas.
+c. Preservar la disponibilidad de servicios.
+d. Prevenir accesos no autorizados.
+e. Reducir riesgos de fraude y suplantación.
+f. Detectar actividad sospechosa.
+g. Responder a incidentes.
+h. Recuperar operaciones.
+i. Cumplir obligaciones legales.
+j. Proteger los derechos de usuarios y terceros.
+k. Mantener la confianza en MASS ID.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Face ID.
+j. MASS Points.
+k. MASS Contract.
+l. Central IA.
+m. TOKAYO IA.
+n. Sitios web MASS.
+o. Aplicaciones móviles.
+p. Paneles administrativos.
+q. Bases de datos.
+r. Sistemas de autenticación.
+s. Proveedores conectados.
+t. Infraestructura tecnológica.
+u. Productos y servicios futuros vinculados con MASS ID.
+
+3. OBJETIVOS DE SEGURIDAD
+
+MASS procurará mantener:
+
+a. Confidencialidad, para que los datos solamente sean accesibles por personas y sistemas autorizados.
+b. Integridad, para evitar alteraciones no autorizadas o accidentales.
+c. Disponibilidad, para conservar acceso razonable a sistemas y datos.
+d. Autenticidad, para confirmar la identidad de usuarios y sistemas.
+e. Trazabilidad, para registrar operaciones importantes.
+f. Resiliencia, para continuar o restaurar servicios después de una interrupción.
+g. Privacidad, para utilizar datos conforme a las preferencias y obligaciones aplicables.
+h. Responsabilidad, para identificar funciones y decisiones relacionadas con la seguridad.
+
+4. GOBIERNO DE SEGURIDAD
+
+TE-TO-KA SOLUTIONS® LLC conservará la autoridad administrativa sobre el programa de seguridad del ecosistema MASS.
+
+La Empresa podrá:
+
+a. Establecer políticas.
+b. Aprobar controles.
+c. Designar responsables.
+d. Evaluar riesgos.
+e. Revisar incidentes.
+f. Suspender accesos.
+g. Exigir correcciones.
+h. Seleccionar proveedores.
+i. Ordenar auditorías.
+j. Actualizar procedimientos.
+k. Adoptar estándares adicionales.
+l. Modificar controles conforme evolucionen los riesgos.
+
+5. RESPONSABILIDADES
+
+Las responsabilidades podrán distribuirse entre:
+
+a. Dirección administrativa.
+b. Responsables tecnológicos.
+c. Superadministradores.
+d. Administradores autorizados.
+e. Organizadores.
+f. Operadores.
+g. Desarrolladores.
+h. Personal de soporte.
+i. Proveedores de infraestructura.
+j. Procesadores de pagos.
+k. Proveedores de autenticación.
+l. Consultores legales o de seguridad.
+
+Cada persona deberá tener solamente los permisos necesarios para cumplir sus funciones.
+
+6. GESTIÓN DE RIESGOS
+
+MASS procurará identificar y evaluar riesgos relacionados con:
+
+a. Acceso no autorizado.
+b. Robo de credenciales.
+c. Suplantación de identidad.
+d. Fraude.
+e. Pérdida de datos.
+f. Alteración de registros.
+g. Vulnerabilidades de software.
+h. Configuraciones incorrectas.
+i. Errores humanos.
+j. Proveedores.
+k. Dispositivos comprometidos.
+l. Ingeniería social.
+m. Ataques automatizados.
+n. Interrupciones operativas.
+o. Amenazas internas.
+p. Desastres naturales.
+q. Fallas de servicios externos.
+r. Nuevas tecnologías.
+
+Las evaluaciones deberán actualizarse cuando cambien los sistemas, datos, proveedores, amenazas o modelos de operación.
+
+7. INVENTARIO DE ACTIVOS
+
+MASS procurará mantener un inventario razonable de:
+
+a. Aplicaciones.
+b. Sitios web.
+c. Bases de datos.
+d. Repositorios de código.
+e. Dominios.
+f. Servidores.
+g. Servicios en la nube.
+h. Cuentas administrativas.
+i. Llaves y credenciales.
+j. Proveedores.
+k. Dispositivos autorizados.
+l. Integraciones.
+m. Datos sensibles.
+n. Copias de seguridad.
+o. Sistemas críticos.
+
+El nivel de detalle dependerá del riesgo y la importancia del activo.
+
+8. CLASIFICACIÓN DE INFORMACIÓN
+
+La información podrá clasificarse como:
+
+a. Pública.
+b. Interna.
+c. Confidencial.
+d. Sensible.
+e. Restringida.
+f. Legalmente protegida.
+
+Los datos sensibles, financieros, biométricos, de ubicación, autenticación, identificación y seguridad deberán recibir controles reforzados cuando corresponda.
+
+9. MINIMIZACIÓN DE DATOS
+
+MASS procurará:
+
+a. Recopilar solamente información razonablemente necesaria.
+b. Limitar duplicaciones innecesarias.
+c. Evitar almacenar credenciales sensibles sin necesidad.
+d. Eliminar o anonimizar datos que ya no sean requeridos.
+e. Restringir el acceso conforme a la función.
+f. Revisar periódicamente los datos conservados.
+
+10. IDENTIDAD Y AUTENTICACIÓN
+
+MASS podrá utilizar:
+
+a. Correo electrónico.
+b. Número telefónico.
+c. Contraseña.
+d. PIN.
+e. Códigos de verificación.
+f. Enlaces seguros.
+g. Autenticación multifactor.
+h. Aplicaciones de autenticación.
+i. Verificación documental.
+j. Confirmación biométrica autorizada.
+k. Identificadores internos.
+l. Controles de sesión.
+
+La autenticación deberá ser proporcional al riesgo de la operación.
+
+11. CONTRASEÑAS
+
+Los usuarios deberán utilizar contraseñas que:
+
+a. Sean difíciles de adivinar.
+b. No sean compartidas.
+c. No se reutilicen innecesariamente.
+d. Se mantengan privadas.
+e. Se cambien cuando exista sospecha de compromiso.
+f. No sean enviadas mediante canales inseguros.
+
+MASS no deberá mostrar públicamente contraseñas ni almacenarlas en texto legible cuando sean administradas directamente por sus sistemas.
+
+12. AUTENTICACIÓN MULTIFACTOR
+
+MASS podrá requerir autenticación multifactor para:
+
+a. Superadministradores.
+b. Administradores.
+c. Cambios de contraseña.
+d. Cambios de correo.
+e. Cambios de teléfono.
+f. Operaciones financieras.
+g. Accesos desde dispositivos nuevos.
+h. Recuperación de cuenta.
+i. Funciones sensibles.
+j. Actividad considerada de alto riesgo.
+
+Los códigos de autenticación son personales y no deben compartirse.
+
+13. RECUPERACIÓN DE CUENTA
+
+Los procesos de recuperación podrán requerir:
+
+a. Acceso al correo registrado.
+b. Acceso al teléfono registrado.
+c. Código de autenticación.
+d. Contraseña actual.
+e. Confirmación de identidad.
+f. Revisión administrativa.
+g. Documentación adicional.
+h. Periodos de seguridad.
+i. Cierre de sesiones anteriores.
+j. Revisión de actividad reciente.
+
+MASS podrá negar o retrasar una recuperación cuando existan señales razonables de fraude.
+
+14. CONTROL DE ACCESO
+
+El acceso deberá basarse en:
+
+a. Identidad verificada.
+b. Función autorizada.
+c. Necesidad operativa.
+d. Principio de mínimo privilegio.
+e. Separación de responsabilidades.
+f. Duración necesaria.
+g. Riesgo de la información.
+h. Estado de la cuenta.
+
+Los permisos deberán revisarse y retirarse cuando dejen de ser necesarios.
+
+15. ROLES Y PERMISOS
+
+MASS podrá utilizar roles como:
+
+a. Usuario.
+b. Organizador.
+c. Operador.
+d. Administrador de organización.
+e. Personal de soporte.
+f. Administrador técnico.
+g. Superadministrador.
+h. Auditor.
+i. Proveedor autorizado.
+
+Un rol no concede autoridad ilimitada.
+
+Cada operación deberá permanecer sujeta a las restricciones técnicas, legales y administrativas aplicables.
+
+16. CUENTAS ADMINISTRATIVAS
+
+Las cuentas administrativas deberán:
+
+a. Estar vinculadas con una persona o función autorizada.
+b. Utilizar autenticación reforzada.
+c. Mantener permisos limitados.
+d. Registrar operaciones importantes.
+e. Evitar el uso cotidiano cuando no sea necesario.
+f. Ser desactivadas al terminar la autorización.
+g. Evitar credenciales compartidas.
+h. Proteger secretos y llaves.
+i. Revisarse periódicamente.
+
+17. SESIONES
+
+MASS podrá:
+
+a. Registrar sesiones.
+b. Mostrar dispositivos conectados.
+c. Cerrar sesiones individuales.
+d. Cerrar todas las sesiones.
+e. Invalidar sesiones comprometidas.
+f. Aplicar vencimientos.
+g. Solicitar nueva autenticación.
+h. Detectar cambios sospechosos.
+i. Limitar sesiones simultáneas.
+j. Proteger tokens de acceso.
+
+Cerrar una ventana no necesariamente finaliza una sesión, por lo que el usuario deberá utilizar la función oficial de cerrar sesión cuando corresponda.
+
+18. DISPOSITIVOS
+
+El usuario es responsable de proteger los dispositivos utilizados para acceder a MASS.
+
+Se recomienda:
+
+a. Utilizar bloqueo de pantalla.
+b. Mantener el sistema actualizado.
+c. Evitar dispositivos comprometidos.
+d. No guardar contraseñas en lugares inseguros.
+e. Instalar software solamente de fuentes confiables.
+f. Evitar redes públicas para operaciones sensibles.
+g. Cerrar sesión en dispositivos compartidos.
+h. Revisar dispositivos conectados.
+i. Reportar pérdida o robo.
+j. Activar protección contra malware cuando corresponda.
+
+19. CIFRADO
+
+MASS procurará utilizar mecanismos de cifrado apropiados:
+
+a. Durante la transmisión de datos.
+b. En bases de datos o almacenamiento cuando resulte necesario.
+c. En copias de seguridad sensibles.
+d. En conexiones administrativas.
+e. En integraciones con terceros.
+f. Para proteger secretos y credenciales.
+
+La selección del mecanismo dependerá del tipo de información, el proveedor y el riesgo.
+
+20. PROTECCIÓN DE CREDENCIALES Y SECRETOS
+
+Las llaves, tokens, contraseñas técnicas y secretos deberán:
+
+a. Mantenerse fuera del código público.
+b. Limitarse a sistemas autorizados.
+c. Rotarse cuando sea necesario.
+d. Revocarse cuando exista compromiso.
+e. Separarse por entorno.
+f. No compartirse mediante mensajes inseguros.
+g. Almacenarse mediante herramientas apropiadas.
+h. Tener permisos mínimos.
+i. Supervisarse cuando corresponda.
+
+21. DESARROLLO SEGURO
+
+El desarrollo de aplicaciones MASS deberá procurar:
+
+a. Revisar requisitos de seguridad.
+b. Validar entradas.
+c. Limitar permisos.
+d. Evitar exposición de secretos.
+e. Proteger consultas a bases de datos.
+f. Utilizar autenticación segura.
+g. Manejar errores sin revelar información sensible.
+h. Actualizar dependencias.
+i. Revisar cambios importantes.
+j. Probar funciones críticas.
+k. Separar entornos cuando sea posible.
+l. Mantener respaldos del código.
+m. Documentar controles importantes.
+n. Aplicar seguridad desde el diseño.
+
+22. REPOSITORIOS Y CAMBIOS DE CÓDIGO
+
+Los repositorios deberán protegerse mediante medidas como:
+
+a. Acceso limitado.
+b. Historial de cambios.
+c. Confirmaciones identificables.
+d. Revisión antes de producción.
+e. Protección de ramas cuando resulte apropiado.
+f. Recuperación de versiones anteriores.
+g. Exclusión de credenciales.
+h. Revisión de archivos sensibles.
+i. Control sobre colaboradores.
+j. Monitoreo de cambios inesperados.
+
+23. BASES DE DATOS
+
+Las bases de datos deberán aplicar, según corresponda:
+
+a. Autenticación.
+b. Políticas de acceso.
+c. Seguridad por filas.
+d. Permisos por rol.
+e. Validación de identificadores.
+f. Restricción de operaciones anónimas.
+g. Copias de seguridad.
+h. Registros de actividad.
+i. Separación entre datos públicos y privados.
+j. Protección de campos sensibles.
+k. Revisión de consultas administrativas.
+l. Prevención de acceso cruzado entre usuarios.
+
+24. SEGURIDAD POR FILAS Y AUTORIZACIÓN
+
+Cuando se utilicen políticas de seguridad por filas, estas deberán procurar que:
+
+a. Un usuario acceda solamente a sus propios datos.
+b. Un organizador acceda solamente a la información autorizada.
+c. Un administrador tenga los permisos necesarios y no más.
+d. Los identificadores de autenticación sean verificados.
+e. Las operaciones de inserción, consulta, actualización y eliminación estén controladas.
+f. Las políticas se prueben antes de su publicación.
+
+25. VALIDACIÓN DE OPERACIONES SENSIBLES
+
+Las operaciones sensibles podrán requerir:
+
+a. Sesión activa.
+b. Contraseña actual.
+c. Autenticación multifactor.
+d. Código enviado al usuario.
+e. Confirmación adicional.
+f. Revisión administrativa.
+g. Validación del identificador de autenticación.
+h. Registro del cambio.
+i. Notificación al usuario.
+j. Periodo de seguridad.
+
+26. PAGOS Y DATOS FINANCIEROS
+
+Los pagos podrán ser procesados por proveedores especializados.
+
+MASS procurará:
+
+a. No almacenar números completos de tarjetas cuando no sea necesario.
+b. Utilizar conexiones protegidas.
+c. Limitar información financiera visible.
+d. Mantener registros de transacciones.
+e. Detectar operaciones sospechosas.
+f. Separar saldos cuando el servicio lo requiera.
+g. Proteger reembolsos y aprobaciones.
+h. Aplicar permisos administrativos.
+i. Conservar evidencia de operaciones.
+j. Cumplir requisitos del proveedor de pagos.
+
+27. SEGURIDAD DE MASS CASH Y SALDOS
+
+Los sistemas de saldo, recarga, beneficio, premio o crédito deberán procurar:
+
+a. Registrar cada movimiento.
+b. Identificar al usuario.
+c. Identificar al organizador.
+d. Evitar dobles acreditaciones.
+e. Evitar uso cruzado no autorizado.
+f. Registrar aprobaciones.
+g. Limitar modificaciones manuales.
+h. Mantener historial.
+i. Revisar inconsistencias.
+j. Permitir correcciones documentadas.
+
+28. PROVEEDORES
+
+Antes de confiar datos o funciones importantes a un proveedor, MASS podrá evaluar:
+
+a. Reputación.
+b. Medidas de seguridad.
+c. Controles de acceso.
+d. Cifrado.
+e. Ubicación de datos.
+f. Respuesta a incidentes.
+g. Disponibilidad.
+h. Subcontratistas.
+i. Políticas de privacidad.
+j. Historial conocido.
+k. Capacidad técnica.
+l. Condiciones contractuales.
+m. Métodos de eliminación.
+n. Obligaciones de notificación.
+
+29. CONTRATOS CON PROVEEDORES
+
+Cuando resulte apropiado, los contratos deberán incluir obligaciones relacionadas con:
+
+a. Confidencialidad.
+b. Seguridad razonable.
+c. Uso limitado de datos.
+d. Acceso autorizado.
+e. Notificación de incidentes.
+f. Cooperación en investigaciones.
+g. Eliminación o devolución de información.
+h. Cumplimiento legal.
+i. Subcontratación.
+j. Auditoría o evidencia de cumplimiento.
+k. Continuidad.
+l. Terminación del servicio.
+
+30. REGISTROS DE SEGURIDAD
+
+MASS podrá conservar registros relacionados con:
+
+a. Inicio de sesión.
+b. Cierre de sesión.
+c. Cambios de contraseña.
+d. Cambios de correo.
+e. Cambios de teléfono.
+f. Autenticación multifactor.
+g. Modificación de permisos.
+h. Acciones administrativas.
+i. Operaciones financieras.
+j. Errores.
+k. Eventos de seguridad.
+l. Accesos sospechosos.
+m. Creación o eliminación de registros.
+n. Actividad de proveedores.
+
+Los registros deberán protegerse contra alteraciones y accesos no autorizados.
+
+31. MONITOREO
+
+MASS podrá utilizar monitoreo razonable para:
+
+a. Detectar errores.
+b. Identificar patrones sospechosos.
+c. Prevenir fraude.
+d. Proteger disponibilidad.
+e. Detectar accesos no autorizados.
+f. Investigar incidentes.
+g. Mejorar rendimiento.
+h. Verificar integraciones.
+i. Revisar cambios administrativos.
+j. Confirmar funcionamiento de controles.
+
+El monitoreo deberá respetar la legislación y las políticas de privacidad aplicables.
+
+32. DETECCIÓN DE FRAUDE
+
+Las señales de riesgo podrán incluir:
+
+a. Intentos repetidos de acceso.
+b. Cambios repentinos de credenciales.
+c. Dispositivos desconocidos.
+d. Ubicaciones incompatibles.
+e. Operaciones duplicadas.
+f. Uso anormal de saldo.
+g. Múltiples cuentas relacionadas.
+h. Documentos inconsistentes.
+i. Suplantación.
+j. Manipulación de solicitudes.
+k. Actividad automatizada.
+l. Uso indebido de privilegios.
+
+MASS podrá limitar temporalmente una cuenta mientras investiga.
+
+33. VULNERABILIDADES
+
+MASS procurará:
+
+a. Recibir reportes de vulnerabilidades.
+b. Evaluar su gravedad.
+c. Priorizar riesgos críticos.
+d. Aplicar correcciones.
+e. Actualizar componentes.
+f. Mitigar riesgos no corregibles inmediatamente.
+g. Documentar decisiones.
+h. Verificar la corrección.
+i. Revisar exposición.
+j. Coordinar con proveedores.
+
+Los detalles que puedan facilitar ataques podrán mantenerse confidenciales mientras exista riesgo.
+
+34. ACTUALIZACIONES Y PARCHES
+
+Los sistemas y componentes deberán actualizarse conforme al riesgo.
+
+La prioridad podrá considerar:
+
+a. Gravedad de la vulnerabilidad.
+b. Exposición pública.
+c. Existencia de ataques activos.
+d. Sensibilidad de los datos.
+e. Importancia del sistema.
+f. Compatibilidad.
+g. Disponibilidad de corrección.
+h. Riesgo de interrupción.
+i. Medidas temporales existentes.
+
+35. COPIAS DE SEGURIDAD
+
+MASS procurará mantener copias de seguridad razonables para información y sistemas críticos.
+
+Las copias podrán:
+
+a. Crearse periódicamente.
+b. Conservarse separadas.
+c. Protegerse mediante controles de acceso.
+d. Cifrarse cuando corresponda.
+e. Probarse.
+f. Mantener versiones.
+g. Eliminarse conforme a los periodos aplicables.
+h. Utilizarse para restauración.
+i. Excluir información innecesaria.
+j. Mantener registros de su ejecución.
+
+36. CONTINUIDAD Y RECUPERACIÓN
+
+MASS podrá preparar procedimientos para:
+
+a. Restaurar bases de datos.
+b. Recuperar código.
+c. Cambiar proveedores.
+d. Reanudar autenticación.
+e. Mantener comunicaciones.
+f. Preservar evidencia.
+g. Priorizar servicios críticos.
+h. Operar temporalmente con funciones limitadas.
+i. Validar integridad después de la recuperación.
+j. Informar interrupciones importantes.
+
+37. DISPONIBILIDAD
+
+MASS no garantiza funcionamiento ininterrumpido.
+
+Los servicios podrán limitarse o suspenderse por:
+
+a. Mantenimiento.
+b. Actualizaciones.
+c. Fallas de red.
+d. Incidentes.
+e. Ataques.
+f. Problemas de proveedores.
+g. Cambios legales.
+h. Emergencias.
+i. Desastres.
+j. Protección de usuarios.
+
+MASS procurará restaurar las operaciones de manera razonable y segura.
+
+38. RESPUESTA A INCIDENTES
+
+Cuando exista un incidente real o sospechado, MASS podrá:
+
+a. Identificarlo.
+b. Clasificarlo.
+c. Contenerlo.
+d. Preservar evidencia.
+e. Revocar credenciales.
+f. Cerrar sesiones.
+g. Limitar sistemas.
+h. Cambiar configuraciones.
+i. Corregir vulnerabilidades.
+j. Restaurar información.
+k. Coordinar con proveedores.
+l. Obtener apoyo profesional.
+m. Notificar a personas afectadas.
+n. Notificar a autoridades.
+o. Documentar decisiones.
+p. Revisar causas.
+q. Mejorar controles.
+
+39. EQUIPO DE RESPUESTA
+
+La respuesta podrá involucrar:
+
+a. Dirección.
+b. Personal técnico.
+c. Responsable de seguridad.
+d. Asesor jurídico.
+e. Proveedor de infraestructura.
+f. Proveedor de autenticación.
+g. Procesador de pagos.
+h. Especialistas forenses.
+i. Aseguradora.
+j. Autoridades.
+k. Personal de comunicaciones.
+l. Responsables del servicio afectado.
+
+40. NOTIFICACIÓN DE INCIDENTES
+
+MASS realizará notificaciones cuando sean exigidas por la legislación aplicable.
+
+Las notificaciones podrán incluir, cuando corresponda:
+
+a. Naturaleza del incidente.
+b. Categorías de información afectada.
+c. Fecha o periodo aproximado.
+d. Medidas adoptadas.
+e. Recomendaciones de protección.
+f. Canales de contacto.
+g. Información exigida por autoridades.
+h. Recursos disponibles.
+i. Actualizaciones posteriores.
+
+Una investigación podrá continuar después de la primera notificación.
+
+41. INVESTIGACIÓN
+
+MASS podrá investigar:
+
+a. Registros de acceso.
+b. Cambios administrativos.
+c. Sistemas afectados.
+d. Dispositivos relacionados.
+e. Cuentas vinculadas.
+f. Proveedores.
+g. Transacciones.
+h. Direcciones de red.
+i. Evidencia proporcionada por usuarios.
+j. Comunicaciones relacionadas.
+k. Historial de versiones.
+l. Configuraciones.
+
+La investigación deberá limitarse a fines legítimos de seguridad, cumplimiento y protección.
+
+42. CONSERVACIÓN DE EVIDENCIA
+
+MASS podrá conservar evidencia relacionada con un incidente durante el periodo necesario para:
+
+a. Investigar.
+b. Cumplir la ley.
+c. Cooperar con autoridades.
+d. Resolver disputas.
+e. Defender derechos.
+f. Presentar reclamaciones.
+g. Aplicar contratos.
+h. Mejorar controles.
+
+43. REPORTE POR USUARIOS
+
+Los usuarios deberán reportar de manera inmediata:
+
+a. Accesos no reconocidos.
+b. Pérdida de dispositivo.
+c. Robo de credenciales.
+d. Mensajes sospechosos.
+e. Suplantación.
+f. Transacciones desconocidas.
+g. Vulnerabilidades.
+h. Exposición de datos.
+i. Uso indebido de una cuenta.
+j. Actividad administrativa no autorizada.
+
+Los reportes deberán enviarse mediante los canales oficiales publicados por MASS.
+
+44. PROHIBICIONES
+
+Queda prohibido:
+
+a. Intentar acceder a cuentas ajenas.
+b. Compartir credenciales administrativas.
+c. Evadir controles.
+d. Probar vulnerabilidades sin autorización.
+e. Interceptar comunicaciones.
+f. Extraer datos masivamente.
+g. Instalar código malicioso.
+h. Manipular saldos.
+i. Alterar registros.
+j. Suplantar identidades.
+k. Crear cuentas fraudulentas.
+l. Utilizar automatización dañina.
+m. Publicar secretos.
+n. Interferir con la disponibilidad.
+o. Utilizar información obtenida por error.
+p. Ayudar a terceros a realizar actividades prohibidas.
+
+45. INGENIERÍA SOCIAL
+
+MASS nunca deberá solicitar que un usuario comparta públicamente:
+
+a. Contraseña.
+b. Código completo de autenticación.
+c. PIN de seguridad.
+d. Llave privada.
+e. Token administrativo.
+f. Código de recuperación.
+g. Número completo de tarjeta.
+
+Los usuarios deberán desconfiar de mensajes que generen urgencia, soliciten credenciales o utilicen enlaces no verificados.
+
+46. CORREO, SMS Y NOTIFICACIONES
+
+Las comunicaciones de seguridad podrán utilizar correo, SMS, notificaciones o mensajes dentro de MASS.
+
+El usuario deberá:
+
+a. Verificar el remitente.
+b. Evitar enlaces sospechosos.
+c. No responder con credenciales.
+d. Confirmar cambios desde la aplicación oficial.
+e. Reportar mensajes falsos.
+f. Mantener sus medios de contacto actualizados.
+
+47. DATOS BIOMÉTRICOS
+
+Cuando MASS utilice funciones biométricas deberá:
+
+a. Proporcionar aviso.
+b. Obtener los consentimientos requeridos.
+c. Limitar el propósito.
+d. Restringir el acceso.
+e. Proteger las plantillas.
+f. Establecer periodos de conservación.
+g. Aplicar procedimientos de eliminación.
+h. Supervisar proveedores.
+i. Cumplir la legislación aplicable.
+
+MASS no venderá ni comercializará identificadores biométricos.
+
+48. SEGURIDAD DE MENORES
+
+Los servicios destinados a menores deberán incorporar protecciones reforzadas, incluyendo cuando corresponda:
+
+a. Consentimiento parental verificable.
+b. Recopilación limitada.
+c. Controles de contacto.
+d. Restricciones de publicación.
+e. Acceso parental.
+f. Eliminación.
+g. Moderación.
+h. Protección contra perfilamiento indebido.
+i. Verificación apropiada.
+j. Diseño adecuado para la edad.
+
+49. CAPACITACIÓN
+
+Las personas con acceso administrativo o técnico deberán recibir orientación apropiada sobre:
+
+a. Protección de credenciales.
+b. Phishing.
+c. Ingeniería social.
+d. Privacidad.
+e. Manejo de datos.
+f. Reporte de incidentes.
+g. Uso de dispositivos.
+h. Seguridad de proveedores.
+i. Cambios de código.
+j. Permisos.
+k. Obligaciones legales.
+l. Fraude.
+
+50. AUDITORÍAS Y REVISIONES
+
+MASS podrá realizar:
+
+a. Revisiones internas.
+b. Verificación de permisos.
+c. Revisión de políticas.
+d. Evaluaciones de proveedores.
+e. Pruebas de recuperación.
+f. Revisión de incidentes.
+g. Análisis de registros.
+h. Evaluaciones técnicas.
+i. Pruebas autorizadas.
+j. Revisión de prácticas reales.
+
+Las revisiones deberán priorizar los sistemas y datos de mayor riesgo.
+
+51. EXCEPCIONES
+
+Una excepción a esta Política deberá:
+
+a. Tener una justificación.
+b. Identificar el riesgo.
+c. Ser aprobada por una persona autorizada.
+d. Incluir controles compensatorios cuando sea posible.
+e. Tener duración limitada.
+f. Revisarse periódicamente.
+g. Revocarse cuando deje de ser necesaria.
+
+52. MEDIDAS DE PROTECCIÓN DE CUENTA
+
+MASS podrá proteger una cuenta mediante:
+
+a. Suspensión temporal.
+b. Cierre de sesiones.
+c. Cambio obligatorio de contraseña.
+d. Revocación de permisos.
+e. Verificación adicional.
+f. Limitación de transacciones.
+g. Congelamiento de funciones.
+h. Revisión administrativa.
+i. Notificación.
+j. Cierre definitivo en casos graves.
+
+53. APLICACIÓN
+
+El incumplimiento de esta Política podrá producir:
+
+a. Advertencia.
+b. Limitación.
+c. Suspensión.
+d. Revocación de rol.
+e. Terminación de acceso.
+f. Cancelación de una integración.
+g. Retención de evidencia.
+h. Reclamación contractual.
+i. Reporte a autoridades.
+j. Acción legal.
+
+La medida dependerá de la gravedad, intención, daño, reincidencia y obligaciones aplicables.
+
+54. COOPERACIÓN CON AUTORIDADES
+
+MASS podrá cooperar con autoridades cuando:
+
+a. Exista una obligación legal.
+b. Se reciba una solicitud válida.
+c. Sea necesario proteger a una persona.
+d. Exista fraude.
+e. Exista robo de identidad.
+f. Exista actividad criminal.
+g. Sea necesario defender derechos.
+
+MASS procurará limitar cualquier divulgación a la información razonablemente necesaria.
+
+55. CAMBIOS A LA POLÍTICA
+
+Esta Política podrá actualizarse por:
+
+a. Cambios tecnológicos.
+b. Nuevas amenazas.
+c. Nuevas leyes.
+d. Nuevos servicios.
+e. Nuevos proveedores.
+f. Incidentes.
+g. Auditorías.
+h. Cambios empresariales.
+i. Correcciones.
+j. Mejoras operativas.
+
+Cada versión deberá conservar su identificación, estado y fecha de vigencia.
+
+56. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-005, Política de cookies.
+f. MASS-LC-006, Política de inteligencia artificial.
+g. MASS-LC-007, Política de pagos.
+h. MASS-LC-008, Política de reembolsos.
+i. MASS-LC-009, Política antifraude.
+j. MASS-LC-010, Normas de la comunidad.
+k. Políticas específicas de cada servicio.
+
+57. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Requisitos regulatorios.
+c. Política específica del servicio.
+d. Esta Política de seguridad.
+e. Acuerdo de usuario MASS ID.
+f. Definiciones generales del MASS ID Legal Center.
+
+58. CONTACTO DE SEGURIDAD
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial de seguridad.
+b. Canal para reportar vulnerabilidades.
+c. Canal para reportar fraude.
+d. Canal para reportar incidentes.
+e. Dirección postal oficial.
+f. Información necesaria para avisos legales.
+g. Procedimiento para emergencias.
+h. Procedimiento de escalamiento.
+
+59. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-004 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los sistemas, amenazas, proveedores, prácticas reales, obligaciones legales o medidas de protección del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-004
+`
+},
     {
       codigo: "MASS-LC-005",
       titulo: "Política de cookies",
