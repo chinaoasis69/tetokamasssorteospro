@@ -562,6 +562,31 @@ const btnActualizarActividadCuenta =
     "btnActualizarActividadCuentaMassId"
   );
 
+const btnVolverActividadCuenta =
+  document.getElementById(
+    "btnVolverActividadCuentaMassId"
+  );
+
+const listaActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuentaLista"
+  );
+
+const mensajeActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuentaMensaje"
+  );
+
+const ultimoEventoActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuentaUltimoEvento"
+  );
+
+const totalEventosActividadCuenta =
+  document.getElementById(
+    "massIdActividadCuentaTotalEventos"
+  );  
+
 /* Catálogo oficial del MASS ID Legal Center */
 const catalogoDocumentosLegalesMassId =
   Object.freeze([
@@ -11799,7 +11824,41 @@ function ocultarMensajePrivacidad() {
   mensajePrivacidad.style.display =
     "none";
 }
+  
+/* Mostrar mensajes del panel Actividad de la cuenta */
+function mostrarMensajeActividadCuenta(
+  texto,
+  color = "#ffffff"
+) {
+  if (!mensajeActividadCuenta) {
+    return;
+  }
 
+  mensajeActividadCuenta.textContent =
+    texto;
+
+  mensajeActividadCuenta.style.color =
+    color;
+
+  mensajeActividadCuenta.style.borderColor =
+    color;
+
+  mensajeActividadCuenta.style.display =
+    "block";
+}
+
+/* Ocultar mensajes del panel Actividad de la cuenta */
+function ocultarMensajeActividadCuenta() {
+  if (!mensajeActividadCuenta) {
+    return;
+  }
+
+  mensajeActividadCuenta.textContent =
+    "";
+
+  mensajeActividadCuenta.style.display =
+    "none";
+}
 
 /* Restaurar cambios que no fueron guardados */
 function restaurarPreferenciasPrivacidad() {
@@ -12208,6 +12267,280 @@ if (btnGuardarPrivacidad) {
     };
 }
 
+/* Formatear fecha para Actividad de la cuenta */
+function formatearFechaActividadCuenta(fecha) {
+  if (!fecha) {
+    return "Fecha no disponible";
+  }
+
+  const fechaActividad =
+    new Date(fecha);
+
+  if (
+    Number.isNaN(
+      fechaActividad.getTime()
+    )
+  ) {
+    return "Fecha no disponible";
+  }
+
+  return fechaActividad.toLocaleString(
+    "es-US",
+    {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }
+  );
+}
+
+/* Escapar texto antes de mostrarlo en el historial */
+function escaparTextoActividadCuenta(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+/* Renderizar los eventos de Actividad de la cuenta */
+function renderizarActividadCuenta(eventos) {
+  if (
+    !listaActividadCuenta ||
+    !ultimoEventoActividadCuenta ||
+    !totalEventosActividadCuenta
+  ) {
+    return;
+  }
+
+  listaActividadCuenta.innerHTML =
+    "";
+
+  const eventosSeguros =
+    Array.isArray(eventos)
+      ? eventos
+      : [];
+
+  totalEventosActividadCuenta.textContent =
+    String(eventosSeguros.length);
+
+  if (eventosSeguros.length === 0) {
+    ultimoEventoActividadCuenta.textContent =
+      "Sin actividad registrada";
+
+    listaActividadCuenta.innerHTML = `
+      <div style="
+        padding:18px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+        color:#aaa;
+        text-align:center;
+        line-height:1.5;
+      ">
+        🕘 Todavía no existen eventos registrados
+        para esta cuenta.
+      </div>
+    `;
+
+    return;
+  }
+
+  ultimoEventoActividadCuenta.textContent =
+    formatearFechaActividadCuenta(
+      eventosSeguros[0].created_at
+    );
+
+  eventosSeguros.forEach(
+    function (evento) {
+      const titulo =
+        escaparTextoActividadCuenta(
+          evento.titulo ||
+          evento.tipo_evento ||
+          "Actividad de la cuenta"
+        );
+
+      const descripcion =
+        escaparTextoActividadCuenta(
+          evento.descripcion ||
+          "Evento registrado correctamente."
+        );
+
+      const fecha =
+        formatearFechaActividadCuenta(
+          evento.created_at
+        );
+
+      const tarjeta =
+        document.createElement("div");
+
+      tarjeta.style.cssText = `
+        padding:16px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+      `;
+
+      tarjeta.innerHTML = `
+        <div style="
+          display:flex;
+          align-items:flex-start;
+          justify-content:space-between;
+          gap:12px;
+          flex-wrap:wrap;
+        ">
+          <strong style="
+            color:#fff;
+            font-size:15px;
+          ">
+            ${titulo}
+          </strong>
+
+          <span style="
+            color:#999;
+            font-size:12px;
+          ">
+            ${fecha}
+          </span>
+        </div>
+
+        <p style="
+          margin:9px 0 0;
+          color:#bbb;
+          font-size:13px;
+          line-height:1.5;
+        ">
+          ${descripcion}
+        </p>
+      `;
+
+      listaActividadCuenta.appendChild(
+        tarjeta
+      );
+    }
+  );
+}
+
+/* Cargar Actividad de la cuenta desde Supabase */
+async function cargarActividadCuentaMassId() {
+  ocultarMensajeActividadCuenta();
+
+  if (listaActividadCuenta) {
+    listaActividadCuenta.innerHTML = `
+      <div style="
+        padding:18px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+        color:#bbb;
+        text-align:center;
+      ">
+        ⏳ Cargando actividad de la cuenta...
+      </div>
+    `;
+  }
+
+  if (ultimoEventoActividadCuenta) {
+    ultimoEventoActividadCuenta.textContent =
+      "Cargando...";
+  }
+
+  if (totalEventosActividadCuenta) {
+    totalEventosActividadCuenta.textContent =
+      "0";
+  }
+
+  if (btnActualizarActividadCuenta) {
+    btnActualizarActividadCuenta.disabled =
+      true;
+
+    btnActualizarActividadCuenta.textContent =
+      "⏳ Actualizando...";
+
+    btnActualizarActividadCuenta.style.cursor =
+      "not-allowed";
+
+    btnActualizarActividadCuenta.style.opacity =
+      ".7";
+  }
+
+  try {
+    const {
+      data: { user },
+      error: errorUsuarioActividad
+    } =
+      await supabaseClient.auth.getUser();
+
+    if (
+      errorUsuarioActividad ||
+      !user?.id
+    ) {
+      throw new Error(
+        "No fue posible identificar la cuenta activa."
+      );
+    }
+
+    const {
+      data: eventosActividad,
+      error: errorActividad
+    } =
+      await supabaseClient
+        .from("actividad_cuenta_mass")
+        .select(
+          "id, tipo_evento, titulo, descripcion, created_at"
+        )
+        .eq("auth_user_id", user.id)
+        .order("created_at", {
+          ascending: false
+        })
+        .limit(25);
+
+    if (errorActividad) {
+      throw errorActividad;
+    }
+
+    renderizarActividadCuenta(
+      eventosActividad || []
+    );
+
+    if (
+      !eventosActividad ||
+      eventosActividad.length === 0
+    ) {
+      mostrarMensajeActividadCuenta(
+        "ℹ️ Todavía no existen eventos registrados para esta cuenta.",
+        "#bbbbbb"
+      );
+    }
+  } catch (error) {
+    console.error(
+      "ERROR CARGANDO ACTIVIDAD DE LA CUENTA:",
+      error
+    );
+
+    renderizarActividadCuenta([]);
+
+    mostrarMensajeActividadCuenta(
+      "❌ No fue posible cargar la actividad de la cuenta.",
+      "#ff5b5b"
+    );
+  } finally {
+    if (btnActualizarActividadCuenta) {
+      btnActualizarActividadCuenta.disabled =
+        false;
+
+      btnActualizarActividadCuenta.textContent =
+        "🔄 Actualizar actividad";
+
+      btnActualizarActividadCuenta.style.cursor =
+        "pointer";
+
+      btnActualizarActividadCuenta.style.opacity =
+        "1";
+    }
+  }
+}  
+
 /* Mostrar mensajes del panel Documentos legales */
 function mostrarMensajeDocumentosLegales(
   texto,
@@ -12608,6 +12941,102 @@ if (
   btnVolverDocumentosLegales.onclick =
     function () {
       regresarDesdeDocumentosLegales();
+    };
+}
+
+/* Abrir el panel Actividad de la cuenta */
+if (
+  btnActividadCuenta &&
+  menuPrincipal &&
+  seccionActividadCuenta
+) {
+  btnActividadCuenta.onclick =
+    function () {
+      menuPrincipal.style.display =
+        "none";
+
+      if (seccionInformacion) {
+        seccionInformacion.style.display =
+          "none";
+      }
+
+      if (seccionFotoPerfil) {
+        seccionFotoPerfil.style.display =
+          "none";
+      }
+
+      if (seccionSeguridad) {
+        seccionSeguridad.style.display =
+          "none";
+      }
+
+      if (seccionCambiarCorreo) {
+        seccionCambiarCorreo.style.display =
+          "none";
+      }
+
+      if (seccionCambiarTelefono) {
+        seccionCambiarTelefono.style.display =
+          "none";
+      }
+
+      if (seccionCambiarContrasena) {
+        seccionCambiarContrasena.style.display =
+          "none";
+      }
+
+      if (seccionPrivacidad) {
+        seccionPrivacidad.style.display =
+          "none";
+      }
+
+      if (seccionDocumentosLegales) {
+        seccionDocumentosLegales.style.display =
+          "none";
+      }
+
+      seccionActividadCuenta.style.display =
+        "block";
+
+      ocultarMensajeActividadCuenta();
+
+      cargarActividadCuentaMassId();
+
+      seccionActividadCuenta.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
+
+/* Volver desde Actividad de la cuenta */
+if (
+  btnVolverActividadCuenta &&
+  menuPrincipal &&
+  seccionActividadCuenta
+) {
+  btnVolverActividadCuenta.onclick =
+    function () {
+      seccionActividadCuenta.style.display =
+        "none";
+
+      menuPrincipal.style.display =
+        "block";
+
+      ocultarMensajeActividadCuenta();
+
+      panel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    };
+}
+
+/* Actualizar Actividad de la cuenta */
+if (btnActualizarActividadCuenta) {
+  btnActualizarActividadCuenta.onclick =
+    function () {
+      cargarActividadCuentaMassId();
     };
 }  
 
