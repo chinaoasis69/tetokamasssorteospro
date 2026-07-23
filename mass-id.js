@@ -1104,13 +1104,675 @@ FIN DEL DOCUMENTO MASS-LC-001
 `
 },
     {
-      codigo: "MASS-LC-002",
-      titulo: "Acuerdo de usuario MASS ID",
-      descripcion:
-        "Contiene los términos y condiciones aplicables al registro, acceso y uso de MASS ID.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-002",
+  titulo: "Acuerdo de usuario MASS ID",
+  descripcion:
+    "Contiene los términos y condiciones aplicables al registro, acceso y uso de MASS ID.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-002
+ACUERDO DE USUARIO MASS ID
+
+Versión: 1.0
+Estado: En revisión
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Este Acuerdo constituye un contrato legal entre la persona que utiliza MASS ID y TE-TO-KA SOLUTIONS® LLC.
+
+Antes de registrarte, acceder o utilizar MASS ID, debes leer este documento completo junto con el Aviso de privacidad y las demás políticas aplicables.
+
+1. OBJETO DEL ACUERDO
+
+El presente Acuerdo establece las condiciones generales aplicables al registro, acceso y uso de MASS ID.
+
+MASS ID funciona como una identidad digital y cuenta central para permitir el acceso a productos, plataformas, aplicaciones, módulos, sitios web y servicios autorizados del ecosistema MASS.
+
+Este Acuerdo podrá complementarse mediante políticas, avisos y condiciones específicas para cada servicio.
+
+2. ACEPTACIÓN DEL ACUERDO
+
+Aceptas este Acuerdo cuando realizas cualquiera de las siguientes acciones:
+
+a. Creas una cuenta MASS ID.
+b. Presionas un botón que indique aceptar, continuar, registrarse, confirmar o una expresión equivalente.
+c. Utilizas una firma electrónica, código, PIN o mecanismo de confirmación.
+d. Accedes o continúas utilizando MASS ID después de que este Acuerdo esté disponible.
+e. Utilizas cualquier servicio que requiera una cuenta MASS ID.
+
+Si no estás de acuerdo con estas condiciones, no debes crear una cuenta ni utilizar MASS ID.
+
+3. CONSENTIMIENTO ELECTRÓNICO
+
+Aceptas que los contratos, autorizaciones, avisos, comprobantes, consentimientos y demás registros relacionados con MASS ID puedan proporcionarse y conservarse electrónicamente.
+
+Las acciones realizadas mediante tu cuenta, contraseña, PIN, código de seguridad, enlace de acceso, autenticación multifactor u otro mecanismo autorizado podrán utilizarse para atribuir una aceptación o instrucción a tu cuenta, sujeto a la legislación aplicable.
+
+Podrás conservar una copia electrónica o impresa de este Acuerdo.
+
+4. DEFINICIONES
+
+Los términos utilizados en este Acuerdo tendrán el significado establecido en MASS-LC-001, Definiciones legales, salvo que este documento establezca expresamente una definición diferente.
+
+5. ELEGIBILIDAD
+
+Para crear y administrar una cuenta por cuenta propia debes:
+
+a. Tener al menos dieciocho años de edad o la mayoría de edad legal aplicable.
+b. Tener capacidad jurídica para celebrar este Acuerdo.
+c. Proporcionar información veraz y actualizada.
+d. No tener prohibido legalmente utilizar el servicio.
+e. Cumplir las condiciones particulares de cada producto MASS.
+
+Una empresa, organización o entidad solamente podrá registrar una cuenta mediante una persona con autoridad suficiente para representarla.
+
+6. MENORES DE EDAD
+
+MASS ID de uso general no está dirigido a menores de trece años.
+
+Una persona menor de edad solamente podrá utilizar funciones específicamente autorizadas para menores cuando exista un proceso válido de consentimiento, autorización o supervisión de su padre, madre o tutor legal.
+
+Los servicios dirigidos a menores podrán tener condiciones, controles y avisos de privacidad adicionales.
+
+Si MASS determina que una cuenta fue creada por un menor sin la autorización legal requerida, podrá restringirla, suspenderla o eliminarla conforme a la legislación aplicable.
+
+7. REGISTRO DE LA CUENTA
+
+Para crear una cuenta podrás tener que proporcionar información como:
+
+a. Nombre.
+b. Correo electrónico.
+c. Número telefónico.
+d. Contraseña o PIN.
+e. Fecha de nacimiento o confirmación de edad.
+f. Dirección.
+g. Fotografía de perfil.
+h. Información necesaria para verificaciones o servicios específicos.
+
+Debes proporcionar información completa, correcta y actualizada.
+
+No puedes crear una cuenta utilizando la identidad de otra persona sin autorización legal.
+
+8. NATURALEZA DE MASS ID
+
+MASS ID es una identidad digital privada del ecosistema MASS.
+
+MASS ID no es:
+
+a. Una identificación gubernamental.
+b. Una licencia profesional.
+c. Un pasaporte.
+d. Una cuenta bancaria.
+e. Una garantía de solvencia.
+f. Una garantía absoluta de identidad.
+g. Una certificación de buena conducta.
+h. Una autorización para realizar actividades reguladas.
+
+Cada usuario conserva la responsabilidad de presentar licencias, permisos, seguros, identificaciones o documentos oficiales cuando sean requeridos.
+
+9. NÚMERO MASS ID
+
+La Empresa podrá asignar a cada cuenta un número MASS ID único.
+
+El número MASS ID podrá utilizarse para identificar la cuenta dentro de servicios autorizados.
+
+No debes vender, transferir, alterar, duplicar ni permitir el uso no autorizado de tu número MASS ID.
+
+La asignación de un número MASS ID no transfiere al usuario propiedad sobre el sistema, formato, marca o tecnología relacionada.
+
+10. CREDENCIALES Y SEGURIDAD
+
+Eres responsable de proteger:
+
+a. Tu contraseña.
+b. Tu PIN.
+c. Tus códigos de seguridad.
+d. Tu aplicación de autenticación.
+e. Tus dispositivos.
+f. Tus enlaces de acceso.
+g. Tus métodos de recuperación.
+h. Las sesiones abiertas en tu cuenta.
+
+No debes compartir tus credenciales con personas no autorizadas.
+
+Debes notificarnos sin demora cuando sospeches pérdida, robo, acceso no autorizado, suplantación o compromiso de seguridad.
+
+11. AUTENTICACIÓN MULTIFACTOR
+
+La Empresa podrá exigir autenticación multifactor para:
+
+a. Iniciar sesión.
+b. Cambiar información personal.
+c. Cambiar correo o teléfono.
+d. Cambiar contraseña.
+e. Aprobar pagos o movimientos.
+f. Recuperar una cuenta.
+g. Acceder a funciones administrativas.
+h. Confirmar operaciones sensibles.
+
+La autenticación multifactor reduce riesgos, pero no garantiza que una cuenta nunca será comprometida.
+
+12. VERIFICACIÓN DE CUENTA
+
+MASS podrá verificar información mediante uno o más de los siguientes mecanismos:
+
+a. Confirmación de correo.
+b. Confirmación telefónica.
+c. SMS.
+d. Aplicación de autenticación.
+e. Documentos oficiales.
+f. Fotografía.
+g. Reconocimiento o comparación autorizada.
+h. Preguntas o información adicional.
+i. Proveedores externos de verificación.
+
+La verificación no constituye una garantía absoluta sobre la identidad, antecedentes, solvencia, capacidad o conducta futura de una persona.
+
+13. ACTUALIZACIÓN DE INFORMACIÓN
+
+Debes mantener actualizados tu nombre, teléfono, correo, dirección y demás datos necesarios.
+
+MASS podrá solicitar una nueva verificación cuando:
+
+a. Cambies información importante.
+b. Se detecte actividad inusual.
+c. Exista una disputa sobre la cuenta.
+d. Sea necesario cumplir una obligación legal.
+e. Cambien los requisitos de un servicio.
+
+14. LICENCIA LIMITADA DE USO
+
+Mientras cumplas este Acuerdo, TE-TO-KA SOLUTIONS® LLC te concede una licencia personal, limitada, revocable, no exclusiva, no transferible y no sublicenciable para utilizar MASS ID conforme a sus funciones autorizadas.
+
+Esta licencia no permite:
+
+a. Copiar el sistema.
+b. Revender el acceso.
+c. Crear servicios derivados no autorizados.
+d. Extraer bases de datos.
+e. Eludir medidas de seguridad.
+f. Utilizar marcas o propiedad intelectual sin permiso.
+
+15. USOS PERMITIDOS
+
+Puedes utilizar MASS ID para:
+
+a. Administrar tu perfil.
+b. Acceder a servicios autorizados.
+c. Gestionar preferencias de privacidad.
+d. Consultar actividad de la cuenta.
+e. Administrar direcciones.
+f. Confirmar operaciones.
+g. Recibir comunicaciones.
+h. Utilizar funciones comerciales o personales permitidas.
+i. Interactuar con otros usuarios dentro de las funciones autorizadas.
+
+16. CONDUCTAS PROHIBIDAS
+
+No puedes utilizar MASS ID para:
+
+a. Violar leyes o derechos de terceros.
+b. Suplantar una identidad.
+c. Crear cuentas falsas o duplicadas con intención engañosa.
+d. Proporcionar información materialmente falsa.
+e. Acceder a cuentas ajenas.
+f. Compartir credenciales para evadir restricciones.
+g. Manipular pagos, saldos, promociones, boletos, beneficios o resultados.
+h. Realizar fraude, lavado de dinero o actividad sospechosa.
+i. Introducir malware, código dañino o herramientas de ataque.
+j. Interferir con servidores, redes o sistemas.
+k. Realizar extracción automatizada no autorizada.
+l. Descompilar, modificar o aplicar ingeniería inversa al sistema.
+m. Hostigar, amenazar, discriminar o perjudicar a otras personas.
+n. Publicar contenido ilegal o prohibido.
+o. Evadir suspensiones, verificaciones o límites.
+p. Utilizar MASS para una actividad que requiera licencia sin contar con ella.
+q. Utilizar información obtenida mediante MASS para vigilancia, acoso o explotación.
+r. Comercializar datos personales sin autorización legal.
+
+17. CUENTAS COMERCIALES Y ADMINISTRATIVAS
+
+Los organizadores, operadores, proveedores, comercios y administradores podrán estar sujetos a verificaciones y obligaciones adicionales.
+
+Una cuenta con funciones administrativas deberá utilizarse únicamente por personas autorizadas.
+
+El titular de una cuenta comercial será responsable de:
+
+a. Sus representantes.
+b. Sus empleados y colaboradores.
+c. La legalidad de sus actividades.
+d. Sus licencias, permisos y seguros.
+e. La información publicada.
+f. Las obligaciones frente a sus clientes.
+g. Los impuestos y registros que le correspondan.
+
+18. CONTENIDO DEL USUARIO
+
+Conservas los derechos que legítimamente poseas sobre el contenido que proporciones.
+
+Al cargar contenido, otorgas a la Empresa una licencia limitada para almacenar, reproducir, mostrar, adaptar técnicamente y transmitir ese contenido cuando sea necesario para:
+
+a. Proporcionar el servicio.
+b. Mostrarlo conforme a tus preferencias.
+c. Procesar una solicitud.
+d. Proteger la plataforma.
+e. Cumplir obligaciones legales.
+f. Investigar abuso o fraude.
+
+Declaras que tienes derecho a proporcionar el contenido y que su uso autorizado no viola derechos de terceros.
+
+19. MODERACIÓN Y RETIRO DE CONTENIDO
+
+MASS podrá revisar, restringir, bloquear o retirar contenido cuando razonablemente considere que:
+
+a. Viola este Acuerdo.
+b. Viola las Normas de la comunidad.
+c. Infringe derechos de terceros.
+d. Representa un riesgo de seguridad.
+e. Puede causar daño.
+f. Es requerido por una autoridad competente.
+g. Es necesario para proteger a usuarios o servicios.
+
+La Empresa no está obligada a supervisar previamente todo el contenido.
+
+20. PROPIEDAD INTELECTUAL
+
+MASS ID, TE-TO-KA MASS, los nombres, marcas, diseños, interfaces, software, código, documentación, bases de datos, sistemas, logotipos y materiales oficiales pertenecen a TE-TO-KA SOLUTIONS® LLC o a sus licenciantes.
+
+Nada en este Acuerdo transfiere al usuario derechos de propiedad sobre dichos activos.
+
+No puedes utilizar las marcas MASS para crear confusión sobre patrocinio, afiliación, certificación o autorización.
+
+21. PRIVACIDAD
+
+El tratamiento de datos personales se regirá por MASS-LC-003, Aviso de privacidad, y por las preferencias de privacidad disponibles en MASS ID.
+
+Tus preferencias podrán controlar determinadas formas de visualización, comunicación y personalización.
+
+Las alertas esenciales relacionadas con seguridad, acceso, pagos, cumplimiento o funcionamiento de la cuenta podrán permanecer activas cuando sean necesarias.
+
+22. SEGURIDAD
+
+Las medidas de protección de cuentas, sistemas y datos se describirán en MASS-LC-004, Política de seguridad.
+
+La Empresa utilizará medidas razonables de carácter administrativo, técnico y organizacional.
+
+Ningún sistema puede garantizar seguridad absoluta o disponibilidad ininterrumpida.
+
+23. COOKIES Y ALMACENAMIENTO LOCAL
+
+MASS podrá utilizar cookies, almacenamiento local y tecnologías relacionadas para:
+
+a. Mantener sesiones.
+b. Recordar preferencias.
+c. Proteger cuentas.
+d. Prevenir fraude.
+e. Analizar funcionamiento.
+f. Mejorar la experiencia.
+g. Proporcionar funciones autorizadas.
+
+El uso de estas tecnologías se regirá por MASS-LC-005, Política de cookies.
+
+24. INTELIGENCIA ARTIFICIAL Y AUTOMATIZACIÓN
+
+MASS podrá utilizar sistemas automatizados o inteligencia artificial para apoyar funciones como:
+
+a. Atención al usuario.
+b. Seguridad.
+c. Detección de fraude.
+d. Clasificación.
+e. Personalización.
+f. Recomendaciones.
+g. Moderación.
+h. Procesamiento de solicitudes.
+
+Los resultados automatizados pueden contener errores y no deben considerarse asesoría profesional, legal, médica o financiera.
+
+El uso de inteligencia artificial se regirá por MASS-LC-006.
+
+25. COMUNICACIONES ELECTRÓNICAS
+
+Aceptas recibir comunicaciones relacionadas con:
+
+a. Seguridad.
+b. Inicio de sesión.
+c. Verificación.
+d. Cambios de cuenta.
+e. Pagos.
+f. Actualizaciones de políticas.
+g. Soporte.
+h. Operaciones solicitadas.
+i. Servicios contratados.
+
+Las comunicaciones promocionales se enviarán conforme a tus preferencias y a la legislación aplicable.
+
+Podrás retirar el consentimiento para promociones sin desactivar necesariamente las comunicaciones esenciales de la cuenta.
+
+26. SERVICIOS DE TERCEROS
+
+MASS podrá integrarse con servicios proporcionados por terceros, incluyendo:
+
+a. Procesadores de pagos.
+b. Proveedores de autenticación.
+c. Servicios de correo o SMS.
+d. Servicios de almacenamiento.
+e. Mapas y ubicación.
+f. Proveedores de infraestructura.
+g. Herramientas de seguridad.
+h. Servicios comerciales independientes.
+
+Los terceros podrán tener sus propios términos y políticas.
+
+La Empresa no controla todas las decisiones, interrupciones o prácticas independientes de dichos proveedores.
+
+27. PAGOS
+
+Los cargos, métodos de pago, autorizaciones, recargas y demás operaciones financieras se regirán por MASS-LC-007, Política de pagos, y por las condiciones específicas del servicio correspondiente.
+
+Debes revisar el precio, moneda, frecuencia y descripción antes de confirmar un pago.
+
+La Empresa podrá utilizar proveedores externos para procesar las transacciones.
+
+28. REEMBOLSOS
+
+Los reembolsos estarán sujetos a MASS-LC-008, Política de reembolsos, a las condiciones particulares del servicio y a los derechos obligatorios establecidos por la legislación aplicable.
+
+La presentación de una solicitud no garantiza automáticamente su aprobación.
+
+29. MASS CASH, CRÉDITOS Y BENEFICIOS
+
+MASS Cash, los saldos, créditos, puntos, beneficios, promociones o tokens internos solamente podrán utilizarse dentro de los servicios y condiciones donde sean autorizados.
+
+Salvo que se indique legal y expresamente lo contrario:
+
+a. No son moneda de curso legal.
+b. No son depósitos bancarios.
+c. No generan intereses.
+d. No están asegurados por una institución gubernamental.
+e. No son libremente transferibles.
+f. No pueden utilizarse fuera del servicio autorizado.
+g. Pueden estar vinculados a un organizador o producto específico.
+
+30. PREVENCIÓN DE FRAUDE
+
+MASS podrá utilizar controles para detectar:
+
+a. Accesos inusuales.
+b. Cuentas duplicadas.
+c. Identidades falsas.
+d. Pagos disputados.
+e. Manipulación de promociones.
+f. Abuso de beneficios.
+g. Uso automatizado no autorizado.
+h. Conductas sospechosas.
+
+La Empresa podrá solicitar información adicional, limitar operaciones, retener temporalmente una función o suspender una cuenta mientras investiga.
+
+Estas acciones se regirán por MASS-LC-009, Política antifraude.
+
+31. NORMAS DE LA COMUNIDAD
+
+La conducta dentro de MASS deberá cumplir MASS-LC-010, Normas de la comunidad.
+
+Las normas podrán aplicarse a perfiles, mensajes, imágenes, publicaciones, actividades, transacciones y comunicaciones entre usuarios.
+
+32. DISPONIBILIDAD DEL SERVICIO
+
+MASS procurará mantener sus servicios disponibles, pero no garantiza funcionamiento continuo, libre de errores o compatible con todos los dispositivos.
+
+El servicio podrá verse afectado por:
+
+a. Mantenimiento.
+b. Actualizaciones.
+c. Fallas de internet.
+d. Proveedores externos.
+e. Ataques o incidentes.
+f. Fuerza mayor.
+g. Requisitos legales.
+h. Cambios tecnológicos.
+
+33. CAMBIOS EN FUNCIONES
+
+La Empresa podrá agregar, modificar, suspender o retirar funciones cuando sea necesario para:
+
+a. Mejorar el servicio.
+b. Proteger la seguridad.
+c. Cumplir la ley.
+d. Adaptarse a nuevas tecnologías.
+e. Corregir errores.
+f. Administrar riesgos.
+g. Cambiar modelos comerciales.
+
+Cuando un cambio afecte materialmente derechos u obligaciones, se proporcionará el aviso requerido por la legislación aplicable.
+
+34. SUSPENSIÓN
+
+La Empresa podrá suspender temporalmente una cuenta o función cuando exista una razón legítima, incluyendo:
+
+a. Incumplimiento de este Acuerdo.
+b. Riesgo de seguridad.
+c. Actividad sospechosa.
+d. Información falsa.
+e. Pago no autorizado.
+f. Requerimiento legal.
+g. Riesgo para otros usuarios.
+h. Investigación de fraude.
+i. Inactividad prolongada cuando así lo permitan las políticas aplicables.
+
+La suspensión no elimina automáticamente obligaciones pendientes.
+
+35. TERMINACIÓN POR EL USUARIO
+
+Puedes dejar de utilizar MASS ID o solicitar el cierre de tu cuenta.
+
+Antes de cerrar una cuenta podrán requerirse:
+
+a. Verificación de identidad.
+b. Resolución de pagos pendientes.
+c. Cumplimiento de obligaciones.
+d. Conservación legal de ciertos registros.
+e. Transferencia o cierre de funciones administrativas.
+f. Protección contra fraude o suplantación.
+
+La eliminación de datos estará sujeta al Aviso de privacidad y a las obligaciones legales de conservación.
+
+36. TERMINACIÓN POR LA EMPRESA
+
+La Empresa podrá terminar una cuenta por incumplimiento grave, fraude, abuso, riesgo, actividad ilegal o imposibilidad legal de continuar proporcionando el servicio.
+
+Cuando sea razonablemente posible y legalmente permitido, se proporcionará aviso de la medida.
+
+37. EFECTOS DE LA TERMINACIÓN
+
+Al terminar una cuenta:
+
+a. Podrá finalizar el acceso a servicios.
+b. Podrán cerrarse sesiones.
+c. Podrán revocarse permisos.
+d. Podrá retirarse contenido público.
+e. Los saldos y beneficios se administrarán conforme a sus políticas.
+f. Podrán conservarse registros legalmente necesarios.
+g. Continuarán vigentes las obligaciones que por su naturaleza deban sobrevivir.
+
+38. RESPONSABILIDAD DEL USUARIO
+
+Eres responsable de:
+
+a. Tus acciones dentro de la cuenta.
+b. La información que proporciones.
+c. El contenido que publiques.
+d. Las operaciones que autorices.
+e. Los dispositivos que utilices.
+f. Cumplir la legislación aplicable.
+g. Revisar las condiciones particulares de cada servicio.
+h. Informar oportunamente accesos no autorizados.
+
+39. RELACIONES ENTRE USUARIOS
+
+Salvo que un servicio indique expresamente lo contrario, los usuarios, organizadores, operadores, proveedores y prestadores independientes no son empleados, socios, representantes ni agentes de TE-TO-KA SOLUTIONS® LLC.
+
+Cada parte será responsable de sus propios actos, declaraciones, servicios, licencias, impuestos y obligaciones.
+
+MASS podrá facilitar una conexión tecnológica sin convertirse automáticamente en parte de una relación o transacción independiente.
+
+40. AUSENCIA DE ASESORÍA PROFESIONAL
+
+La información proporcionada mediante MASS no constituye automáticamente asesoría:
+
+a. Legal.
+b. Financiera.
+c. Fiscal.
+d. Médica.
+e. De seguros.
+f. De inversión.
+g. Profesional especializada.
+
+Debes consultar a un profesional calificado cuando una decisión requiera asesoría específica.
+
+41. DECLARACIONES Y GARANTÍAS
+
+El servicio se proporciona en la condición disponible, sujeto a las garantías y derechos que no puedan excluirse legalmente.
+
+En la mayor medida permitida por la legislación aplicable, la Empresa no garantiza que:
+
+a. El servicio sea ininterrumpido.
+b. Toda información de terceros sea exacta.
+c. Todos los usuarios actúen correctamente.
+d. Cada servicio satisfaga todas las necesidades.
+e. Todo error sea corregido inmediatamente.
+f. Una verificación elimine todos los riesgos.
+g. Todo dispositivo sea compatible.
+
+42. LIMITACIÓN DE RESPONSABILIDAD
+
+En la mayor medida permitida por la legislación aplicable, TE-TO-KA SOLUTIONS® LLC no será responsable por daños indirectos, incidentales, especiales, punitivos o consecuentes derivados de:
+
+a. Pérdida de acceso.
+b. Fallas de terceros.
+c. Conducta de otros usuarios.
+d. Pérdida de oportunidades.
+e. Interrupciones tecnológicas.
+f. Uso no autorizado causado por incumplimiento del usuario.
+g. Contenido proporcionado por terceros.
+
+Esta cláusula no limitará responsabilidades que legalmente no puedan excluirse o limitarse.
+
+43. DERECHOS DEL CONSUMIDOR
+
+Nada en este Acuerdo elimina derechos obligatorios otorgados al usuario por las leyes de protección al consumidor.
+
+Cuando una disposición entre en conflicto con un derecho que no pueda renunciarse, prevalecerá la legislación aplicable.
+
+44. INDEMNIZACIÓN
+
+En la medida permitida por la ley, aceptas defender, indemnizar y mantener libre de responsabilidad a TE-TO-KA SOLUTIONS® LLC frente a reclamaciones causadas directamente por:
+
+a. Tu incumplimiento de este Acuerdo.
+b. Tu actividad ilegal.
+c. Tu contenido.
+d. Tu infracción de derechos de terceros.
+e. Tu uso no autorizado de una cuenta.
+f. Tus actividades comerciales independientes.
+
+Esta obligación no se aplicará cuando la reclamación haya sido causada por conducta de la Empresa que legalmente no pueda trasladarse al usuario.
+
+45. NOTIFICACIÓN DE INFRACCIONES
+
+Podrás informar:
+
+a. Suplantación de identidad.
+b. Fraude.
+c. Contenido ilegal.
+d. Violaciones de propiedad intelectual.
+e. Accesos no autorizados.
+f. Problemas de seguridad.
+g. Incumplimientos de las Normas de la comunidad.
+
+La Empresa podrá solicitar información suficiente para investigar y responder.
+
+46. RESOLUCIÓN INFORMAL DE CONTROVERSIAS
+
+Antes de iniciar una reclamación judicial, las partes procurarán resolver la controversia mediante una notificación escrita que incluya:
+
+a. Nombre del reclamante.
+b. Información de la cuenta.
+c. Descripción de los hechos.
+d. Solución solicitada.
+e. Documentos relevantes.
+
+Las partes dispondrán de un periodo razonable para intentar una solución, salvo que la ley permita o requiera una actuación inmediata.
+
+47. LEY APLICABLE Y JURISDICCIÓN
+
+Este Acuerdo se interpretará conforme a las leyes aplicables de Estados Unidos y del Estado de Texas, sin excluir derechos obligatorios que correspondan al usuario en otra jurisdicción.
+
+Salvo que una ley obligatoria disponga otra cosa, cualquier procedimiento judicial relacionado con este Acuerdo podrá presentarse ante los tribunales competentes del Condado de Cameron, Texas.
+
+Esta cláusula no impide utilizar un tribunal de reclamos menores cuando tenga jurisdicción.
+
+48. CAMBIOS AL ACUERDO
+
+La Empresa podrá actualizar este Acuerdo para reflejar:
+
+a. Nuevas funciones.
+b. Cambios legales.
+c. Requisitos de seguridad.
+d. Nuevas tecnologías.
+e. Cambios comerciales.
+f. Correcciones o aclaraciones.
+
+Cada versión deberá mostrar su identificación, versión y fecha de vigencia.
+
+Cuando un cambio sea material, se proporcionará el aviso y consentimiento requeridos por la legislación aplicable.
+
+49. CESIÓN
+
+El usuario no podrá transferir este Acuerdo ni su cuenta sin autorización escrita.
+
+La Empresa podrá transferir sus derechos y obligaciones como parte de una reorganización, fusión, adquisición, venta de activos o cambio de operador, sujeto a la legislación y avisos aplicables.
+
+50. DIVISIBILIDAD
+
+Si una disposición fuera declarada inválida o inaplicable, las demás disposiciones continuarán vigentes.
+
+La disposición afectada se interpretará o limitará en la medida necesaria para aproximarse legalmente a su propósito original.
+
+51. AUSENCIA DE RENUNCIA
+
+La falta de aplicación inmediata de una disposición no significa que la Empresa renuncie a ejercer posteriormente sus derechos.
+
+52. ORDEN DE PRIORIDAD
+
+En caso de conflicto se aplicará el siguiente orden, salvo que la ley establezca otro:
+
+a. Legislación obligatoria.
+b. Condiciones específicas del servicio.
+c. Políticas específicas aplicables.
+d. Este Acuerdo de usuario.
+e. MASS-LC-001, Definiciones legales.
+
+53. ACUERDO COMPLETO
+
+Este Acuerdo, junto con las políticas y condiciones incorporadas, constituye el acuerdo general entre el usuario y TE-TO-KA SOLUTIONS® LLC respecto de MASS ID.
+
+54. CONTACTO Y AVISOS LEGALES
+
+Las solicitudes, preguntas o avisos legales deberán enviarse mediante los canales oficiales publicados por TE-TO-KA SOLUTIONS® LLC.
+
+El usuario deberá conservar actualizados sus medios de contacto para recibir notificaciones relacionadas con su cuenta.
+
+55. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-002 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido podrá adaptarse durante las distintas fases, servicios, territorios y modelos de operación del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-002
+`
+},
     {
       codigo: "MASS-LC-003",
       titulo: "Aviso de privacidad",
