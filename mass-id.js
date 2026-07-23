@@ -115,7 +115,8 @@ if (errorRegistrarCorreoActualizado) {
     errorRegistrarCorreoActualizado
    );
   }  
-}  
+}
+}
 
 const nombrePerfil = document.getElementById("massIdNombre");
 const numeroPerfil = document.getElementById("massIdNumero");
