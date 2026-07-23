@@ -4366,13 +4366,1380 @@ FIN DEL DOCUMENTO MASS-LC-005
 `
 },
     {
-      codigo: "MASS-LC-006",
-      titulo: "Política de inteligencia artificial",
-      descripcion:
-        "Regula el uso responsable, transparente y seguro de inteligencia artificial dentro de MASS.",
-      version: "1.0",
-      estado: "En revisión"
-    },
+  codigo: "MASS-LC-006",
+  titulo: "Política de inteligencia artificial",
+  descripcion:
+    "Regula el uso responsable, transparente y seguro de inteligencia artificial dentro de MASS.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-006
+POLÍTICA DE INTELIGENCIA ARTIFICIAL DEL ECOSISTEMA MASS
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Esta Política establece los principios, obligaciones, restricciones y medidas de control aplicables al desarrollo, adquisición, integración, configuración, entrenamiento, evaluación y utilización de sistemas de inteligencia artificial dentro de MASS ID y del ecosistema MASS.
+
+La inteligencia artificial puede producir errores, información incompleta, resultados inesperados, contenido inexacto o recomendaciones inapropiadas.
+
+Las funciones de inteligencia artificial no sustituyen automáticamente la revisión humana, el juicio profesional, el asesoramiento jurídico, médico, financiero, de seguridad o cualquier otra decisión que requiera una persona debidamente autorizada.
+
+1. PROPÓSITO
+
+Esta Política tiene como propósito:
+
+a. Promover el uso responsable de inteligencia artificial.
+b. Proteger a usuarios y terceros.
+c. Reducir riesgos previsibles.
+d. Mantener supervisión humana.
+e. Evitar discriminación ilegal.
+f. Proteger datos personales.
+g. Proteger la seguridad.
+h. Mantener transparencia.
+i. Documentar sistemas y decisiones.
+j. Prevenir fraude y suplantación.
+k. Cumplir obligaciones legales.
+l. Establecer responsabilidades.
+m. Facilitar auditorías.
+n. Mantener mecanismos de corrección.
+o. Permitir innovación segura.
+
+2. ALCANCE
+
+Esta Política se aplica, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Face ID.
+j. Central IA.
+k. TOKAYO IA.
+l. MASS Contract.
+m. MASS Fit.
+n. MASS Real Estate.
+o. MASS Points.
+p. Aplicaciones móviles.
+q. Sitios web.
+r. Paneles administrativos.
+s. Herramientas de soporte.
+t. Sistemas de detección de fraude.
+u. Sistemas de recomendación.
+v. Sistemas de clasificación.
+w. Sistemas de moderación.
+x. Sistemas de verificación.
+y. Servicios futuros conectados con MASS ID.
+
+3. DEFINICIÓN DE SISTEMA DE INTELIGENCIA ARTIFICIAL
+
+Para esta Política, un sistema de inteligencia artificial es un sistema basado en máquinas que recibe información y genera resultados como:
+
+a. Contenido.
+b. Respuestas.
+c. Decisiones.
+d. Predicciones.
+e. Clasificaciones.
+f. Recomendaciones.
+g. Puntajes.
+h. Imágenes.
+i. Audio.
+j. Video.
+k. Traducciones.
+l. Resúmenes.
+m. Alertas.
+n. Acciones automatizadas.
+
+4. INTELIGENCIA ARTIFICIAL GENERATIVA
+
+La inteligencia artificial generativa puede producir:
+
+a. Texto.
+b. Imágenes.
+c. Audio.
+d. Video.
+e. Código.
+f. Diseños.
+g. Resúmenes.
+h. Traducciones.
+i. Documentos.
+j. Recomendaciones.
+k. Conversaciones.
+l. Datos sintéticos.
+
+Los resultados generados no deberán considerarse automáticamente verdaderos, originales, completos, seguros o jurídicamente válidos.
+
+5. FUNCIONES DE MASS
+
+MASS podrá utilizar inteligencia artificial para:
+
+a. Atención al usuario.
+b. Orientación dentro de aplicaciones.
+c. Clasificación de solicitudes.
+d. Traducción.
+e. Resúmenes.
+f. Recomendaciones.
+g. Detección de fraude.
+h. Seguridad.
+i. Moderación.
+j. Análisis de errores.
+k. Organización de contenido.
+l. Procesamiento documental.
+m. Automatización administrativa.
+n. Apoyo logístico.
+o. Personalización autorizada.
+p. Educación.
+q. Creación de contenido.
+r. Análisis de operaciones.
+s. Apoyo a decisiones humanas.
+t. Desarrollo de nuevas funciones.
+
+6. PRINCIPIOS GENERALES
+
+Los sistemas de inteligencia artificial de MASS deberán procurar:
+
+a. Legalidad.
+b. Seguridad.
+c. Transparencia.
+d. Responsabilidad.
+e. Privacidad.
+f. Equidad.
+g. Supervisión humana.
+h. Precisión razonable.
+i. Robustez.
+j. Trazabilidad.
+k. Accesibilidad.
+l. Proporcionalidad.
+m. Minimización de datos.
+n. Protección contra abuso.
+o. Corrección continua.
+
+7. GOBIERNO DE INTELIGENCIA ARTIFICIAL
+
+TE-TO-KA SOLUTIONS® LLC conservará autoridad administrativa sobre el uso de inteligencia artificial dentro del ecosistema MASS.
+
+La Empresa podrá:
+
+a. Aprobar sistemas.
+b. Rechazar integraciones.
+c. Establecer niveles de riesgo.
+d. Designar responsables.
+e. Ordenar pruebas.
+f. Limitar funciones.
+g. Suspender sistemas.
+h. Solicitar documentación.
+i. Revisar proveedores.
+j. Modificar instrucciones.
+k. Exigir supervisión humana.
+l. Investigar incidentes.
+m. Retirar un modelo.
+n. Actualizar esta Política.
+
+8. RESPONSABILIDADES
+
+Las responsabilidades podrán distribuirse entre:
+
+a. Dirección administrativa.
+b. Responsables tecnológicos.
+c. Desarrolladores.
+d. Administradores.
+e. Personal de seguridad.
+f. Personal de privacidad.
+g. Personal jurídico.
+h. Personal de soporte.
+i. Organizadores.
+j. Operadores.
+k. Proveedores de modelos.
+l. Proveedores de infraestructura.
+m. Evaluadores externos.
+n. Usuarios autorizados.
+
+9. INVENTARIO DE SISTEMAS
+
+MASS procurará mantener un inventario de sistemas de inteligencia artificial que identifique:
+
+a. Nombre del sistema.
+b. Proveedor.
+c. Versión.
+d. Propósito.
+e. Servicio donde se utiliza.
+f. Responsable interno.
+g. Datos de entrada.
+h. Categorías de salida.
+i. Usuarios afectados.
+j. Nivel de riesgo.
+k. Supervisión humana.
+l. Fecha de aprobación.
+m. Fecha de revisión.
+n. Limitaciones conocidas.
+o. Estado del sistema.
+
+10. CLASIFICACIÓN DE RIESGO
+
+Los sistemas podrán clasificarse como:
+
+a. Riesgo mínimo.
+b. Riesgo limitado.
+c. Riesgo moderado.
+d. Riesgo alto.
+e. Riesgo crítico.
+f. Uso prohibido.
+
+La clasificación deberá considerar:
+
+a. Propósito.
+b. Datos utilizados.
+c. Personas afectadas.
+d. Consecuencias posibles.
+e. Nivel de automatización.
+f. Capacidad de corregir errores.
+g. Uso de datos sensibles.
+h. Impacto económico.
+i. Impacto legal.
+j. Impacto físico.
+k. Riesgo de fraude.
+l. Riesgo de discriminación.
+m. Riesgo para menores.
+n. Riesgo para seguridad.
+o. Escala de utilización.
+
+11. USOS DE RIESGO MÍNIMO
+
+Podrán considerarse de riesgo mínimo funciones como:
+
+a. Corrección ortográfica.
+b. Formato de texto.
+c. Organización de contenido.
+d. Traducción no crítica.
+e. Resúmenes informativos.
+f. Ayuda de navegación.
+g. Sugerencias no vinculantes.
+h. Clasificación técnica interna.
+i. Generación de borradores.
+j. Automatización sin impacto significativo.
+
+Estos sistemas seguirán sujetos a seguridad, privacidad y revisión razonable.
+
+12. USOS DE RIESGO ALTO
+
+Podrán considerarse de riesgo alto los sistemas relacionados con:
+
+a. Identidad.
+b. Biometría.
+c. Pagos.
+d. Crédito.
+e. Seguros.
+f. Empleo.
+g. Vivienda.
+h. Salud.
+i. Educación.
+j. Seguridad física.
+k. Servicios esenciales.
+l. Acceso a oportunidades.
+m. Verificación de antecedentes.
+n. Prevención de fraude con consecuencias importantes.
+o. Decisiones que afecten derechos legales.
+p. Menores.
+q. Ubicación precisa.
+r. Suspensión o cierre de cuentas.
+s. Elegibilidad para servicios.
+t. Operaciones de gran valor.
+
+13. EVALUACIÓN PREVIA
+
+Antes de implementar un sistema de riesgo significativo, MASS procurará evaluar:
+
+a. Propósito.
+b. Necesidad.
+c. Beneficios.
+d. Riesgos.
+e. Datos utilizados.
+f. Calidad de datos.
+g. Grupos afectados.
+h. Posibles errores.
+i. Posibles sesgos.
+j. Seguridad.
+k. Privacidad.
+l. Supervisión humana.
+m. Capacidad de apelación.
+n. Proveedor.
+o. Alternativas menos riesgosas.
+p. Impacto sobre menores.
+q. Impacto legal.
+r. Medidas de mitigación.
+
+14. USOS PROHIBIDOS
+
+MASS no autorizará intencionalmente sistemas diseñados para:
+
+a. Incitar autolesiones.
+b. Incitar suicidio.
+c. Incitar daño físico contra otras personas.
+d. Facilitar actividad criminal.
+e. Realizar discriminación ilegal.
+f. Suplantar identidades con fines fraudulentos.
+g. Crear material sexual ilegal.
+h. Crear material sexual que represente menores.
+i. Eludir controles de seguridad.
+j. Manipular saldos o pagos.
+k. Interceptar credenciales.
+l. Extraer datos sin autorización.
+m. Engañar deliberadamente a usuarios.
+n. Vulnerar derechos constitucionales.
+o. Generar puntuaciones sociales prohibidas.
+p. Realizar vigilancia ilegal.
+q. Identificar personas biométricamente sin autorización.
+r. Tomar decisiones importantes sin los controles requeridos.
+s. Ocultar deliberadamente que una persona interactúa con inteligencia artificial cuando la ley exige divulgación.
+
+15. MANIPULACIÓN
+
+Los sistemas no deberán diseñarse con la intención de explotar vulnerabilidades para causar daño.
+
+Esto incluye vulnerabilidades relacionadas con:
+
+a. Edad.
+b. Discapacidad.
+c. Condición económica.
+d. Dependencia emocional.
+e. Emergencias.
+f. Salud.
+g. Falta de conocimiento técnico.
+h. Presión o miedo.
+i. Aislamiento.
+j. Capacidad limitada para comprender consecuencias.
+
+16. DISCRIMINACIÓN
+
+MASS no desarrollará ni utilizará intencionalmente sistemas para discriminar ilegalmente por motivos protegidos.
+
+Las características protegidas podrán incluir:
+
+a. Raza.
+b. Color.
+c. Nacionalidad.
+d. Sexo.
+e. Edad.
+f. Religión.
+g. Discapacidad.
+h. Origen étnico.
+i. Condición familiar.
+j. Condición militar.
+k. Información genética.
+l. Otras categorías protegidas por la ley.
+
+17. EQUIDAD
+
+MASS procurará evaluar si un sistema produce resultados injustificadamente diferentes entre grupos.
+
+Las evaluaciones podrán incluir:
+
+a. Comparación de resultados.
+b. Análisis de errores.
+c. Revisión de datos.
+d. Pruebas con escenarios distintos.
+e. Revisión humana.
+f. Investigación de quejas.
+g. Corrección de instrucciones.
+h. Cambio de modelo.
+i. Limitación de uso.
+j. Suspensión del sistema.
+
+18. TRANSPARENCIA
+
+Cuando corresponda, MASS deberá informar:
+
+a. Que se utiliza inteligencia artificial.
+b. El propósito general.
+c. Las funciones principales.
+d. Las limitaciones relevantes.
+e. Si existe supervisión humana.
+f. Si una salida es generada automáticamente.
+g. Cómo reportar un problema.
+h. Cómo solicitar revisión.
+i. Cómo ejercer derechos.
+j. Qué política resulta aplicable.
+
+19. DIVULGACIÓN AL USUARIO
+
+Cuando un usuario interactúe directamente con una función de inteligencia artificial, MASS podrá mostrar avisos como:
+
+a. Asistente impulsado por inteligencia artificial.
+b. Respuesta generada automáticamente.
+c. Revisa la información antes de utilizarla.
+d. La respuesta puede contener errores.
+e. No constituye asesoramiento profesional.
+f. Puedes solicitar ayuda humana cuando esté disponible.
+
+La divulgación deberá ser clara, visible y comprensible.
+
+20. IDENTIDAD DEL ASISTENTE
+
+Un asistente de inteligencia artificial no deberá presentarse falsamente como:
+
+a. Abogado.
+b. Médico.
+c. Contador.
+d. Profesional financiero.
+e. Funcionario público.
+f. Policía.
+g. Persona real.
+h. Empleado humano.
+i. Representante autorizado cuando no lo sea.
+
+Los nombres comerciales de asistentes MASS podrán utilizarse siempre que se comunique claramente su naturaleza automatizada cuando resulte necesario.
+
+21. TOKAYO IA Y CENTRAL IA
+
+TOKAYO IA y Central IA podrán:
+
+a. Responder preguntas.
+b. Orientar sobre funciones.
+c. Generar borradores.
+d. Organizar información.
+e. Facilitar soporte.
+f. Traducir contenido.
+g. Resumir información.
+h. Proponer acciones.
+i. Ayudar a completar procesos.
+j. Escalar solicitudes a una persona.
+
+No deberán ejecutar automáticamente operaciones sensibles sin las confirmaciones y permisos correspondientes.
+
+22. SUPERVISIÓN HUMANA
+
+La supervisión humana podrá incluir:
+
+a. Revisión antes de una decisión.
+b. Confirmación del usuario.
+c. Aprobación administrativa.
+d. Revisión posterior.
+e. Capacidad de detener el sistema.
+f. Capacidad de modificar el resultado.
+g. Capacidad de ignorar una recomendación.
+h. Capacidad de escalar un caso.
+i. Registro del responsable.
+j. Capacitación apropiada.
+
+23. DECISIONES IMPORTANTES
+
+Un sistema no deberá tomar por sí solo una decisión con consecuencias jurídicas o comparables cuando la ley, el riesgo o la naturaleza del servicio requieran revisión humana.
+
+Estas decisiones pueden incluir:
+
+a. Negar acceso a un servicio esencial.
+b. Suspender permanentemente una cuenta.
+c. Rechazar una reclamación importante.
+d. Determinar elegibilidad financiera.
+e. Determinar acceso a vivienda.
+f. Determinar acceso a empleo.
+g. Determinar tratamiento médico.
+h. Determinar acciones disciplinarias graves.
+i. Determinar pagos de alto valor.
+j. Identificar penalmente a una persona.
+
+24. DERECHO A REVISIÓN
+
+Cuando corresponda, una persona afectada podrá:
+
+a. Solicitar explicación general.
+b. Solicitar revisión humana.
+c. Presentar información adicional.
+d. Corregir datos.
+e. Impugnar el resultado.
+f. Presentar una queja.
+g. Solicitar apelación.
+h. Reportar discriminación.
+i. Reportar un error.
+j. Solicitar un canal alternativo.
+
+25. DATOS DE ENTRADA
+
+Los sistemas podrán recibir información como:
+
+a. Preguntas.
+b. Mensajes.
+c. Documentos.
+d. Imágenes.
+e. Audio.
+f. Video.
+g. Ubicación.
+h. Datos de cuenta.
+i. Historial autorizado.
+j. Información de transacciones.
+k. Registros técnicos.
+l. Preferencias.
+m. Datos proporcionados por proveedores.
+
+La información utilizada deberá limitarse al propósito autorizado.
+
+26. DATOS PERSONALES
+
+El uso de datos personales deberá cumplir con:
+
+a. MASS-LC-003, Aviso de privacidad.
+b. Preferencias del usuario.
+c. Principios de minimización.
+d. Controles de acceso.
+e. Periodos de conservación.
+f. Requisitos de seguridad.
+g. Derechos de privacidad.
+h. Consentimientos aplicables.
+i. Restricciones contractuales.
+j. Legislación aplicable.
+
+27. DATOS SENSIBLES
+
+Los datos sensibles no deberán utilizarse en un sistema de inteligencia artificial sin:
+
+a. Necesidad legítima.
+b. Propósito definido.
+c. Acceso restringido.
+d. Seguridad reforzada.
+e. Revisión del riesgo.
+f. Consentimiento cuando sea requerido.
+g. Periodo de conservación.
+h. Evaluación del proveedor.
+i. Método de eliminación.
+j. Supervisión adecuada.
+
+28. BIOMETRÍA
+
+Cuando una función utilice biometría, MASS deberá procurar:
+
+a. Proporcionar aviso.
+b. Obtener consentimiento cuando corresponda.
+c. Definir el propósito.
+d. Limitar el acceso.
+e. Proteger las plantillas.
+f. Evitar usos secundarios incompatibles.
+g. Establecer conservación.
+h. Aplicar eliminación.
+i. Evaluar proveedores.
+j. Evitar identificación no autorizada.
+k. No vender identificadores biométricos.
+l. Mantener documentación.
+
+29. FOTOGRAFÍAS
+
+Una fotografía podrá utilizarse para:
+
+a. Perfil.
+b. Verificación visual.
+c. Moderación.
+d. Prevención de fraude.
+e. Comparación autorizada.
+f. Funciones solicitadas.
+
+La fotografía no deberá convertirse en una plantilla biométrica identificable sin los avisos y autorizaciones correspondientes.
+
+30. MENORES
+
+Las funciones utilizadas por menores deberán aplicar protecciones reforzadas.
+
+MASS procurará:
+
+a. Limitar recopilación.
+b. Evitar manipulación.
+c. Evitar contenido inapropiado.
+d. Aplicar controles parentales.
+e. Obtener consentimiento cuando corresponda.
+f. Facilitar eliminación.
+g. Limitar personalización.
+h. Evitar publicidad prohibida.
+i. Aplicar moderación.
+j. Diseñar experiencias apropiadas para la edad.
+k. Escalar situaciones de riesgo.
+l. Evitar conversaciones sexuales simulando ser un menor.
+
+31. DATOS PARA ENTRENAMIENTO
+
+Antes de utilizar datos para entrenar o ajustar un sistema, MASS deberá evaluar:
+
+a. Origen.
+b. Autorización.
+c. Licencia.
+d. Privacidad.
+e. Calidad.
+f. Representatividad.
+g. Sesgos.
+h. Información sensible.
+i. Derechos de terceros.
+j. Seguridad.
+k. Conservación.
+l. Posibilidad de eliminación.
+
+32. CONTENIDO DEL USUARIO
+
+El contenido proporcionado por un usuario no deberá utilizarse para entrenar modelos externos salvo que exista:
+
+a. Aviso claro.
+b. Base legal.
+c. Autorización apropiada.
+d. Contrato con el proveedor.
+e. Controles de privacidad.
+f. Medidas de seguridad.
+g. Opción de exclusión cuando corresponda.
+h. Limitación del propósito.
+
+33. PROVEEDORES DE MODELOS
+
+MASS podrá utilizar proveedores externos de modelos o servicios de inteligencia artificial.
+
+Antes de una integración importante podrá evaluar:
+
+a. Reputación.
+b. Seguridad.
+c. Privacidad.
+d. Uso de datos.
+e. Conservación.
+f. Entrenamiento con datos del cliente.
+g. Ubicación de procesamiento.
+h. Subprocesadores.
+i. Disponibilidad.
+j. Limitaciones.
+k. Propiedad intelectual.
+l. Controles administrativos.
+m. Respuesta a incidentes.
+n. Métodos de eliminación.
+o. Condiciones contractuales.
+
+34. CONTRATOS CON PROVEEDORES
+
+Los contratos podrán incluir obligaciones sobre:
+
+a. Confidencialidad.
+b. Seguridad.
+c. Uso limitado de datos.
+d. Prohibición de entrenamiento no autorizado.
+e. Notificación de incidentes.
+f. Eliminación.
+g. Subcontratación.
+h. Cooperación.
+i. Disponibilidad.
+j. Propiedad intelectual.
+k. Cumplimiento legal.
+l. Documentación.
+m. Cambios de modelo.
+n. Terminación.
+o. Exportación de datos.
+
+35. EXACTITUD
+
+MASS procurará evaluar la exactitud de un sistema según su propósito.
+
+La evaluación podrá considerar:
+
+a. Respuestas correctas.
+b. Errores.
+c. Información inventada.
+d. Omisiones.
+e. Ambigüedad.
+f. Resultados desactualizados.
+g. Falsos positivos.
+h. Falsos negativos.
+i. Consistencia.
+j. Contexto.
+k. Idioma.
+l. Grupos de usuarios.
+
+36. ALUCINACIONES
+
+Un sistema generativo puede producir información falsa presentada de manera convincente.
+
+Para reducir este riesgo, MASS podrá:
+
+a. Mostrar advertencias.
+b. Limitar usos críticos.
+c. Utilizar fuentes autorizadas.
+d. Solicitar confirmación.
+e. Aplicar recuperación de información.
+f. Verificar datos.
+g. Requerir revisión humana.
+h. Limitar respuestas.
+i. Bloquear afirmaciones sensibles.
+j. Mantener registros de errores.
+
+37. INFORMACIÓN ACTUALIZADA
+
+Los sistemas no deberán presentarse como fuentes de información actualizada cuando no tengan acceso a datos recientes.
+
+Cuando una respuesta dependa de:
+
+a. Leyes.
+b. Precios.
+c. Noticias.
+d. Clima.
+e. Horarios.
+f. Resultados deportivos.
+g. Disponibilidad.
+h. Políticas de proveedores.
+i. Información financiera.
+j. Información médica.
+
+deberán utilizarse fuentes actuales o advertirse la posible desactualización.
+
+38. ASESORAMIENTO PROFESIONAL
+
+La inteligencia artificial podrá proporcionar información general, pero no deberá presentarse automáticamente como sustituto de:
+
+a. Asesoramiento jurídico.
+b. Diagnóstico médico.
+c. Tratamiento médico.
+d. Asesoramiento financiero.
+e. Asesoramiento fiscal.
+f. Ingeniería profesional.
+g. Evaluación de seguridad.
+h. Servicios de emergencia.
+i. Decisiones de recursos humanos.
+j. Decisiones regulatorias.
+
+39. EMERGENCIAS
+
+Una función de inteligencia artificial no deberá utilizarse como único canal para emergencias.
+
+Cuando se detecte una posible emergencia, el sistema podrá:
+
+a. Recomendar contactar servicios de emergencia.
+b. Mostrar recursos apropiados.
+c. Interrumpir respuestas automatizadas.
+d. Escalar a personal autorizado.
+e. Evitar instrucciones peligrosas.
+f. Preservar información cuando la ley lo permita.
+
+40. AUTOPROTECCIÓN Y DAÑO
+
+Los sistemas no deberán incitar intencionalmente:
+
+a. Suicidio.
+b. Autolesión.
+c. Violencia.
+d. Daño a terceros.
+e. Actividad criminal.
+f. Consumo peligroso.
+g. Manipulación de dispositivos de seguridad.
+h. Conductas que generen riesgo físico inmediato.
+
+41. CONTENIDO GENERADO
+
+El contenido generado podrá requerir una etiqueta cuando:
+
+a. Pueda confundirse con contenido humano.
+b. Represente una persona real.
+c. Se utilice con fines comerciales.
+d. Tenga impacto público.
+e. Pueda alterar una decisión importante.
+f. Incluya voz o imagen sintética.
+g. La ley exija divulgación.
+
+42. IMÁGENES, AUDIO Y VIDEO SINTÉTICOS
+
+MASS no autorizará contenido sintético utilizado para:
+
+a. Fraude.
+b. Suplantación.
+c. Extorsión.
+d. Acoso.
+e. Difamación.
+f. Engaño electoral ilegal.
+g. Material sexual no consentido.
+h. Material sexual infantil.
+i. Falsificación de evidencia.
+j. Evasión de verificaciones.
+
+43. PROPIEDAD INTELECTUAL
+
+Los usuarios deberán respetar:
+
+a. Derechos de autor.
+b. Marcas.
+c. Patentes.
+d. Secretos comerciales.
+e. Derechos de imagen.
+f. Licencias.
+g. Contratos.
+h. Derechos de publicidad.
+i. Restricciones de proveedores.
+
+Los resultados generados podrán no ser exclusivos ni susceptibles de protección.
+
+44. CÓDIGO GENERADO
+
+El código generado por inteligencia artificial deberá revisarse antes de producción.
+
+La revisión podrá incluir:
+
+a. Seguridad.
+b. Funcionamiento.
+c. Dependencias.
+d. Licencias.
+e. Credenciales.
+f. Privacidad.
+g. Validación de entradas.
+h. Manejo de errores.
+i. Permisos.
+j. Pruebas.
+k. Compatibilidad.
+l. Vulnerabilidades.
+
+45. PRUEBAS
+
+Antes de publicar un sistema, MASS podrá realizar:
+
+a. Pruebas funcionales.
+b. Pruebas de seguridad.
+c. Pruebas de privacidad.
+d. Pruebas de sesgo.
+e. Pruebas de exactitud.
+f. Pruebas adversariales.
+g. Pruebas de abuso.
+h. Pruebas de carga.
+i. Pruebas con idiomas.
+j. Pruebas con escenarios extremos.
+k. Pruebas de supervisión humana.
+l. Pruebas de recuperación.
+
+46. EVALUACIÓN ADVERSARIAL
+
+Las pruebas adversariales podrán intentar detectar:
+
+a. Instrucciones peligrosas.
+b. Evasión de controles.
+c. Extracción de datos.
+d. Revelación de instrucciones internas.
+e. Generación de malware.
+f. Fraude.
+g. Suplantación.
+h. Discriminación.
+i. Manipulación.
+j. Contenido ilegal.
+k. Acceso no autorizado.
+l. Uso de herramientas sin permiso.
+
+47. MÉTRICAS
+
+Las métricas podrán incluir:
+
+a. Exactitud.
+b. Precisión.
+c. Falsos positivos.
+d. Falsos negativos.
+e. Tasa de rechazo.
+f. Errores por grupo.
+g. Tiempo de respuesta.
+h. Disponibilidad.
+i. Quejas.
+j. Incidentes.
+k. Solicitudes de revisión.
+l. Resultados corregidos.
+m. Respuestas inseguras.
+n. Cumplimiento de instrucciones.
+
+48. DOCUMENTACIÓN
+
+MASS procurará documentar:
+
+a. Propósito.
+b. Propietario.
+c. Proveedor.
+d. Versión.
+e. Datos.
+f. Instrucciones.
+g. Limitaciones.
+h. Riesgos.
+i. Pruebas.
+j. Resultados.
+k. Supervisión.
+l. Controles.
+m. Incidentes.
+n. Cambios.
+o. Aprobaciones.
+p. Retiro del sistema.
+
+49. REGISTROS
+
+MASS podrá conservar registros relacionados con:
+
+a. Solicitudes.
+b. Respuestas.
+c. Herramientas utilizadas.
+d. Errores.
+e. Bloqueos.
+f. Versiones.
+g. Cambios.
+h. Revisiones humanas.
+i. Quejas.
+j. Apelaciones.
+k. Incidentes.
+l. Operaciones sensibles.
+m. Acciones administrativas.
+
+Los registros deberán limitarse y protegerse conforme a privacidad y seguridad.
+
+50. SEGURIDAD
+
+Los sistemas de inteligencia artificial deberán procurar protección contra:
+
+a. Acceso no autorizado.
+b. Inyección de instrucciones.
+c. Extracción de datos.
+d. Manipulación de contexto.
+e. Envenenamiento de datos.
+f. Robo de modelos.
+g. Exposición de secretos.
+h. Uso abusivo de herramientas.
+i. Ejecución de código no autorizado.
+j. Solicitudes automatizadas.
+k. Ataques a proveedores.
+l. Falsificación de resultados.
+
+51. HERRAMIENTAS Y ACCIONES
+
+Cuando un sistema pueda ejecutar herramientas, deberá aplicarse:
+
+a. Autorización.
+b. Mínimo privilegio.
+c. Confirmación del usuario.
+d. Límites de operación.
+e. Validación de parámetros.
+f. Registro.
+g. Separación de entornos.
+h. Bloqueo de acciones peligrosas.
+i. Revisión humana cuando corresponda.
+j. Capacidad de revocación.
+
+52. PAGOS Y OPERACIONES FINANCIERAS
+
+La inteligencia artificial no deberá aprobar por sí sola una operación financiera sensible sin los controles correspondientes.
+
+Podrá apoyar:
+
+a. Detección de fraude.
+b. Clasificación.
+c. Soporte.
+d. Conciliación.
+e. Alertas.
+f. Análisis.
+g. Recomendaciones.
+
+Las operaciones finales deberán seguir las autorizaciones y registros aplicables.
+
+53. MASS RUTA Y LOGÍSTICA
+
+La inteligencia artificial podrá apoyar:
+
+a. Rutas.
+b. Asignaciones.
+c. Tiempos estimados.
+d. Clasificación de solicitudes.
+e. Detección de inconsistencias.
+f. Comunicación.
+g. Predicción de demanda.
+h. Seguridad.
+
+Las recomendaciones no deberán sustituir las obligaciones del operador, las condiciones reales de tránsito ni las decisiones de seguridad.
+
+54. MASS SORTEOS PRO
+
+La inteligencia artificial podrá apoyar:
+
+a. Moderación.
+b. Detección de fraude.
+c. Soporte.
+d. Análisis de actividad.
+e. Organización de contenido.
+f. Traducción.
+g. Notificaciones.
+
+No deberá manipular resultados, números ganadores, probabilidades, saldos, premios ni registros oficiales.
+
+55. MASS VPN
+
+La inteligencia artificial podrá apoyar:
+
+a. Soporte.
+b. Detección de errores.
+c. Selección de servidor.
+d. Análisis de rendimiento.
+e. Seguridad.
+f. Clasificación de incidentes.
+
+No deberá utilizarse para inspeccionar contenido privado más allá de lo necesario y permitido por las políticas aplicables.
+
+56. MASS LEARN
+
+La inteligencia artificial podrá apoyar:
+
+a. Explicaciones.
+b. Ejercicios.
+c. Traducciones.
+d. Evaluaciones formativas.
+e. Accesibilidad.
+f. Personalización.
+g. Resúmenes.
+
+Los resultados educativos deberán permitir revisión y no deberán representar automáticamente calificaciones oficiales.
+
+57. MASS TV Y CONTENIDO
+
+La inteligencia artificial podrá utilizarse para:
+
+a. Recomendaciones.
+b. Subtítulos.
+c. Traducciones.
+d. Moderación.
+e. Organización.
+f. Búsqueda.
+g. Generación autorizada.
+
+El contenido sintético deberá cumplir derechos de autor, normas comunitarias y requisitos de divulgación.
+
+58. VIGILANCIA POSTERIOR
+
+Después de publicar un sistema, MASS podrá revisar:
+
+a. Errores.
+b. Quejas.
+c. Incidentes.
+d. Sesgos.
+e. Cambios de desempeño.
+f. Cambios del proveedor.
+g. Uso no previsto.
+h. Intentos de abuso.
+i. Resultados perjudiciales.
+j. Vulnerabilidades.
+k. Cambios regulatorios.
+l. Necesidad de retiro.
+
+59. CAMBIOS DE MODELO
+
+Cuando cambie un modelo, MASS podrá revisar nuevamente:
+
+a. Exactitud.
+b. Seguridad.
+c. Privacidad.
+d. Sesgos.
+e. Instrucciones.
+f. Costos.
+g. Disponibilidad.
+h. Comportamiento.
+i. Datos.
+j. Contratos.
+k. Resultados.
+l. Riesgos.
+
+60. INCIDENTES DE INTELIGENCIA ARTIFICIAL
+
+Un incidente podrá incluir:
+
+a. Resultado peligroso.
+b. Divulgación de datos.
+c. Acción no autorizada.
+d. Discriminación.
+e. Suplantación.
+f. Fraude.
+g. Contenido ilegal.
+h. Vulnerabilidad.
+i. Uso de herramientas sin permiso.
+j. Pérdida de control.
+k. Error con impacto significativo.
+l. Incumplimiento legal.
+
+61. RESPUESTA A INCIDENTES
+
+MASS podrá:
+
+a. Suspender el sistema.
+b. Limitar funciones.
+c. Revocar accesos.
+d. Preservar evidencia.
+e. Investigar.
+f. Corregir instrucciones.
+g. Cambiar el modelo.
+h. Notificar al proveedor.
+i. Notificar a usuarios.
+j. Notificar a autoridades.
+k. Revisar resultados anteriores.
+l. Restaurar operaciones.
+m. Documentar mejoras.
+
+62. QUEJAS
+
+Los usuarios podrán reportar:
+
+a. Información falsa.
+b. Resultado inseguro.
+c. Discriminación.
+d. Suplantación.
+e. Exposición de datos.
+f. Contenido ilegal.
+g. Decisión injusta.
+h. Falta de transparencia.
+i. Error de identidad.
+j. Problema de accesibilidad.
+k. Uso no autorizado de contenido.
+
+63. APELACIONES
+
+Cuando una decisión asistida por inteligencia artificial produzca un efecto importante, MASS podrá proporcionar un proceso de apelación que permita:
+
+a. Identificar la decisión.
+b. Presentar información adicional.
+c. Solicitar revisión humana.
+d. Corregir datos.
+e. Recibir respuesta.
+f. Escalar la revisión.
+g. Documentar el resultado.
+
+64. CAPACITACIÓN
+
+Las personas que utilicen o administren sistemas de inteligencia artificial deberán recibir orientación sobre:
+
+a. Limitaciones.
+b. Privacidad.
+c. Seguridad.
+d. Sesgos.
+e. Verificación.
+f. Supervisión humana.
+g. Datos sensibles.
+h. Propiedad intelectual.
+i. Reporte de incidentes.
+j. Uso de herramientas.
+k. Fraude.
+l. Cumplimiento.
+
+65. ACCESIBILIDAD
+
+Los sistemas deberán procurar:
+
+a. Lenguaje comprensible.
+b. Compatibilidad con tecnologías de asistencia.
+c. Alternativas no automatizadas cuando corresponda.
+d. Diseño legible.
+e. Navegación por teclado.
+f. Subtítulos.
+g. Descripciones.
+h. Reducción de barreras.
+i. Apoyo multilingüe.
+j. Revisión de resultados que afecten a personas con discapacidad.
+
+66. USO POR EMPLEADOS Y CONTRATISTAS
+
+Los empleados y contratistas no deberán introducir en herramientas no autorizadas:
+
+a. Contraseñas.
+b. Secretos.
+c. Llaves.
+d. Datos sensibles.
+e. Información confidencial.
+f. Datos de clientes.
+g. Código privado.
+h. Documentos legales reservados.
+i. Información financiera.
+j. Información de incidentes.
+
+67. USO PERSONAL DE HERRAMIENTAS
+
+El uso personal de herramientas externas para actividades de MASS requerirá autorización cuando involucre:
+
+a. Datos del usuario.
+b. Información confidencial.
+c. Código.
+d. Decisiones empresariales.
+e. Documentos legales.
+f. Comunicaciones oficiales.
+g. Operaciones financieras.
+h. Seguridad.
+i. Biometría.
+j. Menores.
+
+68. PROPIEDAD DE RESULTADOS
+
+La propiedad o licencia sobre un resultado dependerá de:
+
+a. La legislación.
+b. Los términos del proveedor.
+c. El contenido de entrada.
+d. Los derechos de terceros.
+e. La participación humana.
+f. El contrato aplicable.
+g. El servicio donde se genere.
+
+MASS no garantiza que todo resultado sea exclusivo.
+
+69. INFORMACIÓN CONFIDENCIAL
+
+Un sistema no deberá revelar:
+
+a. Instrucciones internas protegidas.
+b. Credenciales.
+c. Datos privados.
+d. Secretos comerciales.
+e. Información de otros usuarios.
+f. Investigaciones.
+g. Vulnerabilidades.
+h. Información legal privilegiada.
+i. Configuraciones de seguridad.
+j. Datos financieros restringidos.
+
+70. AUDITORÍAS
+
+MASS podrá realizar:
+
+a. Auditorías internas.
+b. Evaluaciones independientes.
+c. Revisión de documentación.
+d. Revisión de proveedores.
+e. Pruebas adversariales.
+f. Revisión de permisos.
+g. Revisión de datos.
+h. Revisión de quejas.
+i. Evaluación de cumplimiento.
+j. Comparación de versiones.
+k. Verificación de controles.
+l. Revisión de prácticas reales.
+
+71. EXCEPCIONES
+
+Una excepción deberá:
+
+a. Identificar el sistema.
+b. Explicar la necesidad.
+c. Evaluar el riesgo.
+d. Ser aprobada.
+e. Incluir controles compensatorios.
+f. Tener duración limitada.
+g. Ser revisada.
+h. Ser revocada cuando deje de ser necesaria.
+
+72. CUMPLIMIENTO EN TEXAS
+
+Las funciones utilizadas en Texas deberán cumplir las obligaciones aplicables relacionadas con:
+
+a. Desarrollo responsable.
+b. Protección contra riesgos previsibles.
+c. Transparencia.
+d. Discriminación ilegal.
+e. Manipulación dañina.
+f. Derechos constitucionales.
+g. Biometría.
+h. Seguridad.
+i. Investigaciones regulatorias.
+j. Conservación de documentación.
+k. Medidas de corrección.
+
+73. CUMPLIMIENTO INTERNACIONAL
+
+Cuando MASS ofrezca servicios fuera de Estados Unidos, podrá aplicar requisitos adicionales relacionados con:
+
+a. Sistemas prohibidos.
+b. Clasificación de alto riesgo.
+c. Transparencia.
+d. Evaluaciones de conformidad.
+e. Documentación técnica.
+f. Registros.
+g. Supervisión humana.
+h. Información a usuarios.
+i. Datos y privacidad.
+j. Representación local.
+k. Notificación de incidentes.
+l. Etiquetado de contenido sintético.
+
+74. MARCOS DE GESTIÓN DE RIESGOS
+
+MASS podrá utilizar marcos reconocidos para organizar sus controles, incluyendo:
+
+a. Gobierno.
+b. Identificación de riesgos.
+c. Medición.
+d. Gestión.
+e. Evaluación.
+f. Pruebas.
+g. Documentación.
+h. Supervisión.
+i. Corrección.
+j. Seguimiento.
+
+La adopción de un marco no sustituye el cumplimiento de la legislación obligatoria.
+
+75. CAMBIOS A ESTA POLÍTICA
+
+Esta Política podrá actualizarse por:
+
+a. Nuevos modelos.
+b. Nuevos servicios.
+c. Nuevas leyes.
+d. Nuevos riesgos.
+e. Nuevos proveedores.
+f. Incidentes.
+g. Auditorías.
+h. Cambios empresariales.
+i. Nuevas capacidades.
+j. Correcciones.
+k. Experiencia operativa.
+l. Recomendaciones profesionales.
+
+76. RELACIÓN CON OTROS DOCUMENTOS
+
+Esta Política deberá interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-005, Política de cookies.
+g. MASS-LC-007, Política de pagos.
+h. MASS-LC-008, Política de reembolsos.
+i. MASS-LC-009, Política antifraude.
+j. MASS-LC-010, Normas de la comunidad.
+k. Políticas específicas de cada servicio.
+
+77. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Requisitos regulatorios.
+c. Política específica del servicio.
+d. Consentimiento válido.
+e. Esta Política.
+f. Aviso de privacidad.
+g. Política de seguridad.
+h. Acuerdo de usuario MASS ID.
+i. Definiciones del MASS ID Legal Center.
+
+78. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Correo oficial de inteligencia artificial.
+b. Canal para reportar errores.
+c. Canal para reportar discriminación.
+d. Canal para solicitar revisión humana.
+e. Canal para presentar apelaciones.
+f. Canal para reportar contenido sintético dañino.
+g. Dirección postal.
+h. Información adicional exigida por la ley.
+
+79. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-006 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los modelos, proveedores, prácticas reales, datos, riesgos, productos, obligaciones legales, tecnologías o métodos de supervisión del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-006
+`
+},
     {
       codigo: "MASS-LC-007",
       titulo: "Política de pagos",
