@@ -17201,6 +17201,24 @@ if (
         throw errorVerificacion;
       }
 
+      const {
+  error: errorRegistrarActividadMfa
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "mfa_activado"
+    }
+  );
+
+if (errorRegistrarActividadMfa) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE MFA:",
+    errorRegistrarActividadMfa
+  );
+}
+
       /*
         Evita que cerrarPanelConfiguracionMfa()
         elimine el factor que ya fue activado.
