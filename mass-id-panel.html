@@ -229,10 +229,14 @@
   <span>›</span>
 </button>      
 
-      <button type="button" class="mass-id-menu-button">
-        <span>💻 Dispositivos conectados</span>
-        <span>›</span>
-      </button>
+  <button
+  id="btnMassIdDispositivosConectados"
+  type="button"
+  class="mass-id-menu-button"
+>
+  <span>💻 Dispositivos conectados</span>
+  <span>›</span>
+</button>    
 
       <button type="button" class="mass-id-menu-button">
         <span>🚪 Cerrar todas las sesiones</span>
@@ -3009,6 +3013,98 @@ el nuevo correo electrónico.
     >
       🔄 Actualizar actividad
     </button>
+  </div>
+</div>
+
+  <!-- DISPOSITIVOS CONECTADOS -->
+<div
+  id="massIdDispositivosConectados"
+  style="
+    display:none;
+    margin-top:26px;
+    padding:22px;
+    border:1px solid #333;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:15px;
+      margin-bottom:22px;
+      flex-wrap:wrap;
+    "
+  >
+    <div>
+      <h3 style="margin:0;">
+        💻 Dispositivos conectados
+      </h3>
+
+      <p
+        style="
+          margin:8px 0 0;
+          color:#bbb;
+          font-size:14px;
+        "
+      >
+        Consulta los dispositivos y sesiones que han accedido a tu cuenta MASS ID.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverDispositivosConectados"
+      type="button"
+      style="
+        padding:10px 16px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#1b1b1b;
+        color:#fff;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    id="massIdDispositivosConectadosMensaje"
+    style="
+      display:none;
+      margin-bottom:16px;
+      padding:12px 14px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#101010;
+      color:#fff;
+      text-align:center;
+    "
+  ></div>
+
+  <div
+    id="massIdDispositivosConectadosLista"
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    "
+  >
+    <div
+      style="
+        padding:18px;
+        border:1px solid #333;
+        border-radius:12px;
+        background:#101010;
+        color:#bbb;
+        text-align:center;
+      "
+    >
+      ⏳ Cargando dispositivos conectados...
+    </div>
   </div>
 </div>
 
