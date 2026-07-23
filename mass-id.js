@@ -12773,8 +12773,17 @@ async function cargarDispositivosConectadosMassId() {
     const dispositivoId =
   obtenerDispositivoIdMass();
 
+   console.log(
+  "DISPOSITIVO MASS ID:",
+  dispositivoId
+);   
+
 const fechaActualDispositivo =
   new Date().toISOString();
+
+  console.log(
+  "REGISTRANDO DISPOSITIVO MASS ID..."
+);    
 
 const {
   error: errorGuardarDispositivo
