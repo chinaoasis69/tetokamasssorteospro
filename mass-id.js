@@ -9133,13 +9133,1282 @@ FIN DEL DOCUMENTO MASS-LC-009
 `
 },
     {
-      codigo: "MASS-LC-010",
-      titulo: "Normas de la comunidad",
-      descripcion:
-        "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.",
-      version: "1.0",
-      estado: "En revisión"
-    }
+  codigo: "MASS-LC-010",
+  titulo: "Normas de la comunidad",
+  descripcion:
+    "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.",
+  version: "1.0",
+  vigencia: "Pendiente de publicación",
+  estado: "En revisión",
+  contenido: `
+MASS-LC-010
+NORMAS DE LA COMUNIDAD DEL ECOSISTEMA MASS
+
+Versión: 1.0
+Estado: En revisión
+Fecha de vigencia: Pendiente de publicación
+Administrado por: TE-TO-KA SOLUTIONS® LLC
+
+AVISO IMPORTANTE
+
+Estas Normas establecen las conductas permitidas, restringidas y prohibidas dentro de MASS ID y del ecosistema MASS.
+
+Todas las personas que utilicen, administren, organicen, operen, publiquen, vendan, compren, transporten, comuniquen o participen en servicios MASS deberán actuar de manera legal, segura, respetuosa y honesta.
+
+Estas Normas complementan el Acuerdo de usuario, el Aviso de privacidad, la Política de seguridad, la Política antifraude y las condiciones específicas de cada producto o servicio.
+
+1. PROPÓSITO
+
+Estas Normas tienen como propósito:
+
+a. Proteger a usuarios y terceros.
+b. Mantener una comunidad segura.
+c. Prevenir abuso.
+d. Evitar fraude.
+e. Proteger a menores.
+f. Proteger identidad y privacidad.
+g. Establecer límites claros.
+h. Facilitar reportes.
+i. Permitir moderación consistente.
+j. Promover respeto.
+k. Proteger operaciones.
+l. Cumplir obligaciones legales.
+m. Proteger la reputación de MASS.
+n. Mantener confianza.
+o. Facilitar la expansión responsable del ecosistema.
+
+2. ALCANCE
+
+Estas Normas se aplican, según corresponda, a:
+
+a. MASS ID.
+b. TE-TO-KA MASS.
+c. MASS Sorteos Pro.
+d. MASS Ruta.
+e. MASS Cash.
+f. MASS VPN.
+g. MASS Learn.
+h. MASS TV.
+i. MASS Contract.
+j. MASS Points.
+k. MASS Real Estate.
+l. MASS Fit.
+m. MASS Face ID.
+n. Central IA.
+o. TOKAYO IA.
+p. Aplicaciones móviles.
+q. Sitios web.
+r. Paneles administrativos.
+s. Contenido.
+t. Comunicaciones.
+u. Anuncios.
+v. Productos.
+w. Servicios.
+x. Funciones futuras integradas con MASS ID.
+
+3. PERSONAS SUJETAS
+
+Estas Normas se aplican a:
+
+a. Usuarios.
+b. Organizadores.
+c. Operadores.
+d. Choferes.
+e. Prestadores.
+f. Vendedores.
+g. Compradores.
+h. Arrendadores.
+i. Arrendatarios.
+j. Instructores.
+k. Creadores.
+l. Administradores.
+m. Empleados.
+n. Contratistas.
+o. Proveedores.
+p. Patrocinadores.
+q. Invitados.
+r. Representantes autorizados.
+
+4. PRINCIPIOS DE LA COMUNIDAD
+
+La comunidad MASS deberá procurar:
+
+a. Legalidad.
+b. Respeto.
+c. Honestidad.
+d. Seguridad.
+e. Inclusión.
+f. Responsabilidad.
+g. Privacidad.
+h. Transparencia.
+i. Cooperación.
+j. Buena fe.
+k. No discriminación.
+l. Protección de menores.
+m. Protección contra fraude.
+n. Respeto de derechos.
+o. Uso responsable de tecnología.
+
+5. OBLIGACIÓN GENERAL
+
+Toda persona deberá:
+
+a. Proporcionar información verdadera.
+b. Utilizar su propia identidad.
+c. Proteger su cuenta.
+d. Respetar a otras personas.
+e. Cumplir las reglas del servicio.
+f. Respetar permisos.
+g. Cumplir pagos válidos.
+h. Entregar lo ofrecido.
+i. Reportar incidentes.
+j. Cooperar en investigaciones legítimas.
+k. Evitar causar daño.
+l. Cumplir la legislación aplicable.
+
+6. CONDUCTA LEGAL
+
+Se prohíbe utilizar MASS para:
+
+a. Cometer delitos.
+b. Facilitar delitos.
+c. Solicitar actividad ilegal.
+d. Ocultar ganancias ilícitas.
+e. Vender bienes robados.
+f. Distribuir bienes prohibidos.
+g. Falsificar documentos.
+h. Evadir obligaciones legales.
+i. Obstruir una investigación válida.
+j. Ayudar deliberadamente a otra persona a infringir la ley.
+
+7. VIOLENCIA
+
+Se prohíbe:
+
+a. Amenazar con violencia.
+b. Promover ataques.
+c. Incitar daño físico.
+d. Celebrar violencia real contra víctimas.
+e. Organizar agresiones.
+f. Publicar instrucciones para causar daño inmediato.
+g. Solicitar lesiones contra una persona.
+h. Publicar datos para facilitar un ataque.
+i. Glorificar actos de violencia con intención de provocar nuevos daños.
+j. Simular amenazas creíbles.
+
+8. AMENAZAS
+
+Una amenaza podrá tratarse como grave cuando:
+
+a. Identifique una persona.
+b. Identifique un lugar.
+c. Incluya un método.
+d. Incluya una fecha.
+e. Muestre capacidad aparente.
+f. Exista repetición.
+g. Involucre armas.
+h. Involucre menores.
+i. Se relacione con una emergencia.
+j. Produzca temor razonable.
+
+MASS podrá preservar información y contactar a las autoridades cuando exista riesgo inmediato o una obligación legal.
+
+9. EMERGENCIAS
+
+MASS no sustituye a los servicios de emergencia.
+
+Ante peligro inmediato, la persona deberá contactar:
+
+a. Servicios de emergencia.
+b. Policía.
+c. Bomberos.
+d. Servicios médicos.
+e. Autoridades locales.
+f. Personal de seguridad del lugar.
+
+Las funciones automatizadas no deberán utilizarse como único canal para una emergencia.
+
+10. AUTOLESIÓN
+
+Se prohíbe contenido que:
+
+a. Anime al suicidio.
+b. Anime a autolesionarse.
+c. Proporcione instrucciones destinadas a producir daño inmediato.
+d. Se burle de una persona en crisis.
+e. Presione a alguien para dañarse.
+f. Comercialice métodos de autolesión.
+g. Organice retos peligrosos.
+
+MASS podrá mostrar recursos de ayuda o limitar contenido cuando detecte una posible crisis.
+
+11. ACOSO
+
+Se prohíbe:
+
+a. Hostigamiento repetido.
+b. Amenazas.
+c. Insultos dirigidos persistentemente.
+d. Humillación coordinada.
+e. Seguimiento no deseado.
+f. Contacto repetido después de solicitar que se detenga.
+g. Chantaje.
+h. Extorsión.
+i. Intimidación.
+j. Incitación para acosar a otra persona.
+k. Publicación maliciosa de información personal.
+
+12. BULLYING
+
+Se prohíbe utilizar MASS para:
+
+a. Ridiculizar sistemáticamente.
+b. Crear campañas de humillación.
+c. Compartir contenido privado para avergonzar.
+d. Excluir o perseguir coordinadamente.
+e. Crear perfiles falsos para burlarse.
+f. Amenazar a estudiantes o menores.
+g. Difundir rumores maliciosos.
+h. Grabar o publicar agresiones con intención de acosar.
+
+13. DISCURSO DE ODIO
+
+Se prohíbe atacar, deshumanizar, amenazar o promover exclusión ilegal contra personas por características protegidas como:
+
+a. Raza.
+b. Color.
+c. Nacionalidad.
+d. Etnia.
+e. Religión.
+f. Sexo.
+g. Orientación sexual.
+h. Identidad de género.
+i. Edad.
+j. Discapacidad.
+k. Condición médica.
+l. Información genética.
+m. Condición militar.
+n. Otra categoría protegida por la ley.
+
+14. ORGANIZACIONES VIOLENTAS
+
+Se prohíbe:
+
+a. Reclutamiento para organizaciones terroristas.
+b. Propaganda operativa.
+c. Recaudación de fondos prohibida.
+d. Instrucciones para ataques.
+e. Coordinación logística de violencia.
+f. Venta de material destinado a apoyar actos terroristas.
+g. Celebración de ataques con intención de promover nuevos actos.
+h. Evasión de restricciones legales.
+
+15. EXPLOTACIÓN SEXUAL INFANTIL
+
+Está estrictamente prohibido:
+
+a. Crear material de abuso sexual infantil.
+b. Publicarlo.
+c. Almacenarlo.
+d. Compartirlo.
+e. Solicitarlo.
+f. Comprarlo.
+g. Venderlo.
+h. Intercambiarlo.
+i. Dirigir a otras personas hacia dicho material.
+j. Sexualizar a menores.
+k. Organizar encuentros sexuales con menores.
+l. Extorsionar a menores mediante contenido íntimo.
+m. Generar representaciones sexuales ilegales de menores mediante inteligencia artificial.
+
+MASS podrá retirar el contenido, preservar evidencia y realizar reportes legalmente requeridos.
+
+16. CONTACTO INAPROPIADO CON MENORES
+
+Se prohíbe:
+
+a. Solicitar fotografías sexuales.
+b. Solicitar conversaciones sexuales.
+c. Engañar sobre la edad.
+d. Preparar a un menor para explotación.
+e. Pedir encuentros secretos.
+f. Presionar para ocultar comunicaciones.
+g. Enviar contenido sexual.
+h. Ofrecer dinero a cambio de contenido íntimo.
+i. Amenazar con publicar contenido.
+j. Utilizar otra identidad para acercarse a un menor.
+
+17. PROTECCIÓN DE MENORES
+
+Los servicios dirigidos o accesibles a menores deberán procurar:
+
+a. Diseño apropiado para la edad.
+b. Recopilación limitada.
+c. Moderación reforzada.
+d. Controles parentales cuando correspondan.
+e. Métodos de reporte visibles.
+f. Restricciones de pagos.
+g. Prevención de contacto dañino.
+h. Protección de ubicación.
+i. Privacidad reforzada.
+j. Escalamiento de incidentes.
+
+18. CONTENIDO SEXUAL DE ADULTOS
+
+Podrá restringirse o prohibirse:
+
+a. Pornografía.
+b. Servicios sexuales.
+c. Prostitución.
+d. Explotación sexual.
+e. Contenido íntimo no consentido.
+f. Desnudez explícita.
+g. Fetiches peligrosos.
+h. Material sexual generado sin consentimiento.
+i. Venta de contenido sexual donde no esté autorizada.
+j. Solicitudes sexuales no deseadas.
+
+19. CONTENIDO ÍNTIMO NO CONSENTIDO
+
+Se prohíbe:
+
+a. Publicar imágenes íntimas sin consentimiento.
+b. Amenazar con publicarlas.
+c. Crear falsificaciones sexuales de una persona real.
+d. Compartir grabaciones privadas.
+e. Solicitar pagos para retirar contenido.
+f. Identificar a una víctima.
+g. Dirigir usuarios hacia el contenido.
+h. Volver a publicar material retirado.
+
+20. TRATA Y EXPLOTACIÓN HUMANA
+
+Se prohíbe utilizar MASS para:
+
+a. Trata de personas.
+b. Trabajo forzado.
+c. Explotación sexual.
+d. Reclutamiento engañoso.
+e. Transporte para explotación.
+f. Retención de documentos.
+g. Venta o compra de personas.
+h. Control mediante amenazas.
+i. Deuda coercitiva.
+j. Explotación de menores.
+
+21. FRAUDE
+
+Se prohíbe:
+
+a. Suplantar identidad.
+b. Falsificar comprobantes.
+c. Manipular pagos.
+d. Crear cuentas falsas.
+e. Vender productos inexistentes.
+f. Crear servicios inexistentes.
+g. Solicitar depósitos fraudulentos.
+h. Presentar contracargos falsos.
+i. Alterar premios.
+j. Manipular saldos.
+k. Engañar deliberadamente.
+l. Participar en colusión.
+
+22. SUPLANTACIÓN
+
+Se prohíbe hacerse pasar por:
+
+a. Otra persona.
+b. Empresa.
+c. Organizador.
+d. Operador.
+e. Empleado de MASS.
+f. Funcionario público.
+g. Profesional autorizado.
+h. Institución financiera.
+i. Servicio de soporte.
+j. Titular de una propiedad.
+k. Propietario de contenido.
+l. Representante legal sin autorización.
+
+23. CUENTAS AUTÉNTICAS
+
+Cada persona deberá:
+
+a. Utilizar información verdadera.
+b. Mantener datos actualizados.
+c. No vender su cuenta.
+d. No alquilar su cuenta.
+e. No compartir credenciales indebidamente.
+f. No crear cuentas para evadir sanciones.
+g. No registrar a otra persona sin autorización.
+h. Cooperar con verificaciones legítimas.
+
+24. PRIVACIDAD
+
+Se prohíbe:
+
+a. Publicar datos privados sin autorización.
+b. Acceder a otra cuenta.
+c. Compartir contraseñas ajenas.
+d. Extraer bases de datos.
+e. Vender información personal.
+f. Rastrear ilegalmente.
+g. Compartir ubicación privada.
+h. Publicar documentos personales.
+i. Interceptar comunicaciones.
+j. Utilizar datos para acoso.
+k. Reidentificar información protegida sin autorización.
+
+25. DOXXING
+
+Se prohíbe publicar información con intención de intimidar, acosar o facilitar daño, incluyendo:
+
+a. Domicilio.
+b. Ubicación en tiempo real.
+c. Teléfono privado.
+d. Correo privado.
+e. Información familiar.
+f. Lugar de trabajo.
+g. Información médica.
+h. Documentos.
+i. Datos financieros.
+j. Horarios o rutas privadas.
+
+26. ACCESO NO AUTORIZADO
+
+Se prohíbe:
+
+a. Acceder a cuentas ajenas.
+b. Evadir autenticación.
+c. Robar sesiones.
+d. Probar credenciales robadas.
+e. Alterar permisos.
+f. Extraer información restringida.
+g. Acceder a paneles administrativos sin autorización.
+h. Manipular bases de datos.
+i. Utilizar llaves o tokens ajenos.
+j. Interferir con sistemas protegidos.
+
+27. SEGURIDAD INFORMÁTICA
+
+Se prohíbe:
+
+a. Distribuir malware.
+b. Ejecutar ataques.
+c. Realizar denegación de servicio.
+d. Instalar spyware.
+e. Robar credenciales.
+f. Explotar vulnerabilidades para obtener beneficio.
+g. Inyectar código malicioso.
+h. Interferir con registros.
+i. Intentar escalar privilegios.
+j. Eludir controles de seguridad.
+k. Publicar secretos o llaves.
+l. Facilitar ataques contra terceros.
+
+28. DIVULGACIÓN RESPONSABLE
+
+Una persona que descubra una vulnerabilidad deberá:
+
+a. Evitar explotarla.
+b. Evitar acceder a datos innecesarios.
+c. Evitar alterar información.
+d. No exigir pagos mediante amenazas.
+e. Reportarla por el canal autorizado.
+f. Proporcionar información suficiente.
+g. Dar tiempo razonable para corregirla.
+h. Mantener confidencialidad cuando corresponda.
+
+29. SPAM
+
+Se prohíbe:
+
+a. Mensajería masiva no autorizada.
+b. Publicidad repetitiva.
+c. Comentarios automáticos.
+d. Enlaces engañosos.
+e. Etiquetado masivo.
+f. Invitaciones no solicitadas repetidas.
+g. Mensajes comerciales sin consentimiento cuando sea requerido.
+h. Publicaciones duplicadas destinadas a manipular visibilidad.
+
+30. AUTOMATIZACIÓN ABUSIVA
+
+Se prohíbe utilizar bots para:
+
+a. Crear cuentas.
+b. Comprar boletos injustamente.
+c. Manipular métricas.
+d. Enviar spam.
+e. Repetir giros.
+f. Acaparar promociones.
+g. Extraer datos.
+h. Simular usuarios.
+i. Evasión de límites.
+j. Generar reseñas falsas.
+k. Atacar servicios.
+l. Manipular resultados.
+
+31. INFORMACIÓN FALSA
+
+Se prohíbe presentar deliberadamente como verdadera información falsa destinada a:
+
+a. Defraudar.
+b. Suplantar.
+c. Obtener pagos.
+d. Crear pánico.
+e. Dañar la reputación.
+f. Alterar una decisión importante.
+g. Manipular una dinámica.
+h. Ocultar un peligro.
+i. Publicar una propiedad inexistente.
+j. Falsificar credenciales profesionales.
+
+32. ERRORES Y OPINIONES
+
+Una equivocación de buena fe no se tratará automáticamente como fraude.
+
+MASS podrá considerar:
+
+a. Intención.
+b. Contexto.
+c. Daño.
+d. Corrección.
+e. Repetición.
+f. Evidencia.
+g. Naturaleza del contenido.
+h. Disposición para aclarar.
+
+33. DIFAMACIÓN
+
+Se prohíbe publicar deliberadamente acusaciones falsas de hechos con intención maliciosa de dañar a una persona o entidad.
+
+Las críticas, opiniones, reseñas y reportes de buena fe podrán permitirse cuando:
+
+a. Se expresen respetuosamente.
+b. No incluyan amenazas.
+c. No revelen datos privados.
+d. No sean fraudulentos.
+e. Se basen en una experiencia real.
+f. No se utilicen para extorsionar.
+
+34. RESEÑAS
+
+Las reseñas deberán:
+
+a. Basarse en experiencias reales.
+b. Identificar conflictos cuando corresponda.
+c. Evitar pagos ocultos.
+d. Evitar amenazas.
+e. Evitar información privada.
+f. Evitar reseñas coordinadas falsas.
+g. No utilizarse para chantaje.
+h. No suplantar clientes.
+
+35. PROPIEDAD INTELECTUAL
+
+Se prohíbe:
+
+a. Publicar contenido sin derechos.
+b. Vender falsificaciones.
+c. Usar marcas de forma engañosa.
+d. Copiar software.
+e. Distribuir contenido pirateado.
+f. Revelar secretos comerciales.
+g. Eliminar avisos de propiedad.
+h. Vender diseños robados.
+i. Falsificar licencias.
+j. Suplantar titulares de derechos.
+
+36. REPORTES DE PROPIEDAD INTELECTUAL
+
+Un reporte deberá procurar incluir:
+
+a. Identificación del titular.
+b. Obra o derecho afectado.
+c. Ubicación del contenido.
+d. Explicación.
+e. Declaración de buena fe.
+f. Información de contacto.
+g. Autorización del representante.
+h. Otra información legalmente requerida.
+
+37. BIENES PROHIBIDOS
+
+Se prohíbe ofrecer, vender, transportar o facilitar bienes ilegales o restringidos sin autorización, incluyendo cuando corresponda:
+
+a. Drogas ilegales.
+b. Bienes robados.
+c. Productos falsificados.
+d. Documentos falsos.
+e. Material de explotación infantil.
+f. Sustancias peligrosas prohibidas.
+g. Especies protegidas.
+h. Datos robados.
+i. Credenciales.
+j. Malware.
+k. Productos retirados por riesgo grave.
+l. Otros bienes prohibidos por la ley.
+
+38. ARMAS
+
+La oferta o transporte de armas podrá prohibirse o restringirse.
+
+Se prohíbe:
+
+a. Venta ilegal.
+b. Venta a personas no autorizadas.
+c. Instrucciones para evadir controles.
+d. Armas no detectables ilegales.
+e. Explosivos.
+f. Dispositivos destinados a terrorismo.
+g. Amenazas utilizando armas.
+h. Transporte no autorizado.
+i. Manipulación peligrosa.
+
+39. PRODUCTOS PELIGROSOS
+
+Los productos peligrosos deberán cumplir:
+
+a. Etiquetado.
+b. Empaque.
+c. Transporte.
+d. Edad mínima.
+e. Licencias.
+f. Advertencias.
+g. Restricciones territoriales.
+h. Requisitos de almacenamiento.
+i. Condiciones específicas del servicio.
+
+40. ALCOHOL, TABACO Y NICOTINA
+
+Podrán restringirse:
+
+a. Venta a menores.
+b. Venta sin licencia.
+c. Envío ilegal.
+d. Promoción engañosa.
+e. Productos prohibidos.
+f. Verificación insuficiente de edad.
+g. Entrega a persona no autorizada.
+
+41. MEDICAMENTOS Y SALUD
+
+Se prohíbe:
+
+a. Venta ilegal de medicamentos.
+b. Recetas falsas.
+c. Diagnósticos fraudulentos.
+d. Productos adulterados.
+e. Afirmaciones médicas engañosas.
+f. Suplantar profesionales.
+g. Vender sustancias controladas sin autorización.
+h. Ocultar riesgos conocidos.
+
+42. SERVICIOS PROFESIONALES
+
+Quien ofrezca servicios regulados deberá mantener:
+
+a. Licencia cuando sea requerida.
+b. Certificación válida.
+c. Identidad verdadera.
+d. Seguro cuando corresponda.
+e. Alcance autorizado.
+f. Información de precios.
+g. Condiciones.
+h. Registros necesarios.
+
+Se prohíbe falsificar títulos, licencias o experiencia.
+
+43. MASS REAL ESTATE
+
+Se prohíbe:
+
+a. Publicar propiedades inexistentes.
+b. Publicar sin autorización.
+c. Solicitar depósitos fraudulentos.
+d. Ocultar defectos conocidos cuando exista obligación de divulgarlos.
+e. Usar fotografías engañosas.
+f. Falsificar titularidad.
+g. Discriminar ilegalmente.
+h. Suplantar agentes.
+i. Crear documentos falsos.
+j. Desviar pagos.
+
+44. VIVIENDA Y DISCRIMINACIÓN
+
+Los anuncios y decisiones relacionadas con vivienda no deberán discriminar ilegalmente.
+
+Se prohíbe publicar condiciones que excluyan personas por categorías protegidas cuando la ley no permita dicha exclusión.
+
+45. MASS RUTA
+
+Se prohíbe:
+
+a. Transportar bienes ilegales.
+b. Falsificar entregas.
+c. Manipular ubicación.
+d. Utilizar choferes no autorizados.
+e. Alterar documentos.
+f. Abrir paquetes sin autorización.
+g. Cambiar destinos fraudulentamente.
+h. Cobrar fuera de las condiciones acordadas con intención de engañar.
+i. Retener mercancía.
+j. Poner en peligro a personas.
+k. Utilizar vehículos inseguros.
+l. Compartir información de clientes indebidamente.
+
+46. SEGURIDAD DE TRANSPORTE
+
+Los operadores deberán:
+
+a. Cumplir licencias.
+b. Mantener seguros requeridos.
+c. Utilizar vehículos apropiados.
+d. Respetar límites.
+e. Evitar conducir intoxicados.
+f. Proteger mercancía.
+g. Reportar incidentes.
+h. Seguir instrucciones de seguridad.
+i. Respetar restricciones.
+j. No falsificar inspecciones.
+
+47. MASS SORTEOS PRO
+
+Los organizadores deberán:
+
+a. Publicar reglas claras.
+b. Identificarse.
+c. Cumplir requisitos legales.
+d. Mantener registros.
+e. Respetar resultados.
+f. Entregar premios.
+g. No alterar números.
+h. No vender duplicados.
+i. No manipular probabilidades.
+j. No ocultar condiciones.
+k. No utilizar premios inexistentes.
+l. No eliminar evidencia.
+
+48. DINÁMICAS Y SORTEOS
+
+Se prohíbe:
+
+a. Manipular ganadores.
+b. Alterar resultados.
+c. Crear participantes falsos.
+d. Utilizar bots.
+e. Vender números no disponibles.
+f. Cambiar reglas después del resultado.
+g. Falsificar premios.
+h. Reutilizar comprobantes.
+i. Organizar una actividad ilegal.
+j. Confundir intencionalmente una dinámica promocional con una operación permitida.
+
+49. APUESTAS Y JUEGOS DE AZAR
+
+MASS no deberá utilizarse para operar apuestas, casinos, loterías o juegos regulados sin una estructura legal y autorizaciones apropiadas.
+
+Las actividades sujetas a licencia permanecerán deshabilitadas hasta completar revisión jurídica y regulatoria.
+
+50. MASS CASH
+
+Se prohíbe:
+
+a. Manipular saldos.
+b. Crear créditos falsos.
+c. Duplicar recargas.
+d. Transferir saldo sin autorización.
+e. Falsificar comprobantes.
+f. Utilizar cuentas intermediarias.
+g. Ocultar origen de fondos.
+h. Presentarlo falsamente como banco.
+i. Prometer rendimientos no autorizados.
+j. Utilizarlo para actividad ilegal.
+
+51. MASS VPN
+
+MASS VPN no deberá utilizarse para:
+
+a. Ataques.
+b. Fraude.
+c. Robo de credenciales.
+d. Distribución de malware.
+e. Acceso ilegal.
+f. Acoso.
+g. Explotación infantil.
+h. Evasión de controles de MASS.
+i. Infracción sistemática de derechos.
+j. Ocultar operaciones criminales.
+k. Interferir con redes.
+l. Acceder a sistemas sin autorización.
+
+52. MASS LEARN
+
+Se prohíbe:
+
+a. Falsificar calificaciones.
+b. Alterar certificados.
+c. Suplantar estudiantes.
+d. Copiar evaluaciones sin autorización.
+e. Vender respuestas.
+f. Publicar cursos inexistentes.
+g. Falsificar acreditaciones.
+h. Acosar estudiantes.
+i. Publicar contenido peligroso.
+j. Manipular pagos a instructores.
+
+53. MASS TV
+
+Se prohíbe:
+
+a. Publicar contenido sin derechos.
+b. Retransmitir ilegalmente.
+c. Falsificar licencias.
+d. Manipular reproducciones.
+e. Crear cuentas automatizadas.
+f. Publicar explotación sexual.
+g. Publicar violencia ilegal.
+h. Suplantar creadores.
+i. Alterar regalías.
+j. Vender accesos robados.
+
+54. MASS FIT
+
+Los prestadores deberán:
+
+a. Identificar sus credenciales.
+b. Evitar afirmaciones médicas engañosas.
+c. No garantizar resultados.
+d. Respetar límites profesionales.
+e. Proteger datos de salud.
+f. Informar riesgos.
+g. Evitar prácticas peligrosas.
+h. Cumplir requisitos de instalaciones.
+i. No vender sustancias prohibidas.
+j. Derivar emergencias a profesionales apropiados.
+
+55. INTELIGENCIA ARTIFICIAL
+
+Se prohíbe utilizar inteligencia artificial para:
+
+a. Suplantación fraudulenta.
+b. Crear contenido sexual infantil.
+c. Crear contenido íntimo no consentido.
+d. Automatizar acoso.
+e. Manipular pagos.
+f. Crear documentos falsos.
+g. Evasión de controles.
+h. Generar malware.
+i. Alterar resultados.
+j. Engañar deliberadamente.
+k. Discriminar ilegalmente.
+l. Tomar decisiones sensibles sin los controles requeridos.
+
+56. CONTENIDO SINTÉTICO
+
+El contenido generado o alterado deberá identificarse cuando:
+
+a. Pueda confundirse con una persona real.
+b. Tenga impacto público.
+c. Se utilice comercialmente.
+d. Represente una declaración falsa.
+e. Pueda afectar una decisión importante.
+f. La ley exija divulgación.
+
+57. PUBLICIDAD
+
+La publicidad deberá:
+
+a. Ser verdadera.
+b. Identificar al anunciante.
+c. Mostrar condiciones.
+d. Evitar afirmaciones engañosas.
+e. Revelar patrocinios.
+f. Respetar restricciones de edad.
+g. No ocultar cargos.
+h. Evitar productos prohibidos.
+i. Respetar privacidad.
+j. Permitir reportes.
+
+58. PROMOCIONES
+
+Las promociones deberán indicar:
+
+a. Elegibilidad.
+b. Duración.
+c. Beneficio.
+d. Restricciones.
+e. Organizador.
+f. Método de selección.
+g. Disponibilidad.
+h. Vencimiento.
+i. Condiciones de canje.
+j. Limitaciones territoriales.
+
+59. IDENTIDAD DE MARCA
+
+Se prohíbe:
+
+a. Utilizar logotipos de MASS sin autorización.
+b. Crear sitios falsos.
+c. Simular soporte oficial.
+d. Registrar perfiles engañosos.
+e. Vender productos falsificados.
+f. Publicar comunicaciones como si fueran oficiales.
+g. Falsificar contratos.
+h. Suplantar a TE-TO-KA SOLUTIONS® LLC.
+
+60. REPORTES FALSOS
+
+Se prohíbe presentar reportes deliberadamente falsos para:
+
+a. Acosar.
+b. Eliminar competidores.
+c. Obtener reembolsos.
+d. Suspender cuentas legítimas.
+e. Manipular resultados.
+f. Ocultar fraude.
+g. Dañar reputaciones.
+h. Crear evidencia falsa.
+
+Los reportes de buena fe no deberán generar represalias.
+
+61. MODERACIÓN
+
+MASS podrá:
+
+a. Revisar contenido reportado.
+b. Aplicar filtros.
+c. Solicitar información.
+d. Limitar visibilidad.
+e. Retirar contenido.
+f. Suspender funciones.
+g. Proteger a víctimas.
+h. Preservar evidencia.
+i. Consultar especialistas.
+j. Cooperar con proveedores.
+k. Aplicar medidas urgentes.
+l. Restaurar contenido retirado por error.
+
+62. MEDIDAS DE CUMPLIMIENTO
+
+Una infracción podrá producir:
+
+a. Advertencia.
+b. Solicitud de corrección.
+c. Eliminación de contenido.
+d. Limitación temporal.
+e. Pérdida de beneficios obtenidos indebidamente.
+f. Cancelación de una operación.
+g. Suspensión.
+h. Cierre de cuenta.
+i. Terminación como organizador.
+j. Terminación como operador.
+k. Preservación de evidencia.
+l. Reporte a proveedores.
+m. Cooperación con autoridades.
+n. Acción legal.
+
+63. FACTORES PARA DECIDIR
+
+MASS podrá considerar:
+
+a. Gravedad.
+b. Intención.
+c. Daño.
+d. Riesgo.
+e. Historial.
+f. Repetición.
+g. Cooperación.
+h. Edad de las personas afectadas.
+i. Alcance.
+j. Beneficio obtenido.
+k. Posibilidad de corregir.
+l. Obligaciones legales.
+
+64. MEDIDAS URGENTES
+
+MASS podrá actuar inmediatamente cuando exista:
+
+a. Riesgo físico.
+b. Explotación infantil.
+c. Cuenta comprometida.
+d. Fraude activo.
+e. Amenaza.
+f. Malware.
+g. Exposición de datos.
+h. Actividad ilegal grave.
+i. Manipulación de pagos.
+j. Riesgo para servicios esenciales.
+
+65. NOTIFICACIÓN
+
+Cuando sea apropiado, la persona afectada podrá recibir:
+
+a. Descripción general de la infracción.
+b. Medida aplicada.
+c. Duración.
+d. Contenido afectado.
+e. Método para corregir.
+f. Canal de apelación.
+g. Requisitos de verificación.
+h. Información adicional permitida.
+
+MASS podrá limitar detalles cuando divulgarlos perjudique la seguridad, una investigación o los derechos de terceros.
+
+66. APELACIÓN
+
+Una persona podrá solicitar revisión mediante el canal publicado.
+
+La apelación deberá incluir:
+
+a. MASS ID.
+b. Cuenta.
+c. Medida.
+d. Motivo de desacuerdo.
+e. Evidencia.
+f. Explicación.
+g. Solución solicitada.
+
+67. REVISIÓN HUMANA
+
+Las medidas importantes deberán permitir revisión humana cuando resulte razonable o legalmente necesario.
+
+La revisión podrá:
+
+a. Confirmar.
+b. Modificar.
+c. Reducir.
+d. Ampliar.
+e. Revertir.
+f. Solicitar información.
+g. Restaurar acceso.
+h. Cerrar el caso.
+
+68. EVASIÓN DE MEDIDAS
+
+Se prohíbe:
+
+a. Crear otra cuenta para evadir suspensión.
+b. Utilizar cuentas de terceros.
+c. Cambiar identidad.
+d. Cambiar dispositivo para continuar el abuso.
+e. Manipular información de registro.
+f. Reclutar a otra persona para evadir controles.
+g. Repetir contenido retirado.
+h. Ocultar relación entre cuentas.
+
+69. FALSOS POSITIVOS
+
+Cuando una medida sea aplicada por error, MASS procurará:
+
+a. Revisarla.
+b. Restaurar acceso.
+c. Corregir registros.
+d. Liberar operaciones.
+e. Informar el resultado.
+f. Mejorar controles.
+g. Conservar documentación.
+
+70. PRIVACIDAD EN LA MODERACIÓN
+
+La moderación deberá procurar:
+
+a. Limitar acceso.
+b. Evitar exposición innecesaria.
+c. Proteger reportantes.
+d. Proteger víctimas.
+e. Conservar solamente lo necesario.
+f. Aplicar controles de seguridad.
+g. Respetar solicitudes válidas.
+h. Cumplir obligaciones legales.
+
+71. CONSERVACIÓN DE EVIDENCIA
+
+MASS podrá conservar:
+
+a. Contenido.
+b. Mensajes.
+c. Registros.
+d. Identificadores.
+e. Dispositivos.
+f. Direcciones de red.
+g. Transacciones.
+h. Reportes.
+i. Historial de cambios.
+j. Información necesaria para investigaciones.
+
+La conservación deberá estar limitada por privacidad, seguridad y legislación aplicable.
+
+72. REPORTES OBLIGATORIOS
+
+Cuando MASS quede sujeto a una obligación legal de reporte, podrá:
+
+a. Preservar contenido.
+b. Limitar acceso.
+c. Enviar información al organismo correspondiente.
+d. Cooperar con una solicitud válida.
+e. Proteger la evidencia.
+f. Restringir cuentas relacionadas.
+g. Mantener confidencialidad cuando sea exigida.
+
+73. AUTORIDADES
+
+MASS podrá cooperar con autoridades cuando:
+
+a. Exista una orden válida.
+b. La ley exija un reporte.
+c. Exista peligro inmediato.
+d. Sea necesario proteger a una víctima.
+e. Se investigue fraude.
+f. Se investigue explotación infantil.
+g. Se investigue violencia.
+h. Se investigue acceso no autorizado.
+i. Se requiera preservar evidencia.
+
+74. SOLICITUDES LEGALES
+
+Las solicitudes gubernamentales deberán:
+
+a. Recibirse por canales apropiados.
+b. Ser revisadas.
+c. Identificar autoridad.
+d. Identificar alcance.
+e. Cumplir requisitos.
+f. Limitarse a información autorizada.
+g. Documentarse.
+h. Protegerse contra divulgación no autorizada.
+
+75. TRANSPARENCIA
+
+MASS podrá publicar información general sobre:
+
+a. Número de reportes.
+b. Categorías de infracción.
+c. Medidas aplicadas.
+d. Apelaciones.
+e. Solicitudes legales.
+f. Mejoras de seguridad.
+g. Cambios de políticas.
+
+No deberá publicarse información que identifique indebidamente a víctimas o usuarios.
+
+76. ACCESIBILIDAD
+
+Los mecanismos de reporte y apelación deberán procurar:
+
+a. Lenguaje comprensible.
+b. Compatibilidad móvil.
+c. Navegación por teclado.
+d. Lectores de pantalla.
+e. Alternativas de contacto.
+f. Apoyo multilingüe.
+g. Formularios claros.
+h. Confirmación de recepción.
+
+77. CAPACITACIÓN
+
+Las personas responsables deberán recibir orientación sobre:
+
+a. Seguridad.
+b. Privacidad.
+c. Fraude.
+d. Acoso.
+e. Menores.
+f. Contenido ilegal.
+g. Emergencias.
+h. Evidencia.
+i. Apelaciones.
+j. No discriminación.
+k. Conflictos de interés.
+l. Escalamiento.
+
+78. CONFLICTOS DE INTERÉS
+
+Quien revise un caso deberá revelar:
+
+a. Relación personal.
+b. Relación familiar.
+c. Relación comercial.
+d. Beneficio económico.
+e. Participación en el incidente.
+f. Interés en una de las partes.
+g. Otra circunstancia que pueda afectar imparcialidad.
+
+79. CAMBIOS A ESTAS NORMAS
+
+Estas Normas podrán actualizarse por:
+
+a. Nuevos servicios.
+b. Nuevos riesgos.
+c. Nuevas leyes.
+d. Nuevas tecnologías.
+e. Nuevos tipos de abuso.
+f. Incidentes.
+g. Auditorías.
+h. Reportes de usuarios.
+i. Expansión territorial.
+j. Cambios empresariales.
+k. Correcciones.
+l. Recomendaciones profesionales.
+
+80. RELACIÓN CON OTROS DOCUMENTOS
+
+Estas Normas deberán interpretarse junto con:
+
+a. MASS-LC-000, Gobernanza del Centro Legal.
+b. MASS-LC-001, Definiciones legales.
+c. MASS-LC-002, Acuerdo de usuario MASS ID.
+d. MASS-LC-003, Aviso de privacidad.
+e. MASS-LC-004, Política de seguridad.
+f. MASS-LC-005, Política de cookies.
+g. MASS-LC-006, Política de inteligencia artificial.
+h. MASS-LC-007, Política de pagos.
+i. MASS-LC-008, Política de reembolsos.
+j. MASS-LC-009, Política antifraude.
+k. Condiciones específicas de cada servicio.
+
+81. CONFLICTOS
+
+En caso de conflicto se aplicará, salvo disposición legal distinta:
+
+a. Legislación obligatoria.
+b. Orden válida de una autoridad.
+c. Requisitos regulatorios.
+d. Política específica del servicio.
+e. Estas Normas.
+f. Política de seguridad.
+g. Política antifraude.
+h. Acuerdo de usuario MASS ID.
+i. Definiciones del MASS ID Legal Center.
+
+82. CONTACTO
+
+Antes de la publicación definitiva deberán incorporarse:
+
+a. Formulario general de reportes.
+b. Canal para emergencias dentro del servicio.
+c. Canal para explotación infantil.
+d. Canal para amenazas.
+e. Canal para acoso.
+f. Canal para fraude.
+g. Canal para vulnerabilidades.
+h. Canal para propiedad intelectual.
+i. Canal de apelaciones.
+j. Dirección postal.
+k. Plazos de respuesta.
+l. Información legal adicional.
+
+83. ADMINISTRACIÓN CONTINUA
+
+MASS-LC-010 será administrado como un documento evolutivo del MASS ID Legal Center.
+
+Su contenido deberá revisarse cuando cambien los productos, servicios, riesgos, tecnologías, conductas, prácticas reales, obligaciones legales, territorios o modelos de operación del ecosistema MASS.
+
+FIN DEL DOCUMENTO MASS-LC-010
+`
+}
   ]);  
 
 const direccionInvitacion =
