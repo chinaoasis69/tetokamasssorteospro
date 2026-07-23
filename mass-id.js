@@ -15270,6 +15270,24 @@ if (
         btnConfirmarSmsCambioTelefono.style.opacity =
           "1";
 
+        const {
+  error: errorRegistrarActividadTelefono
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "telefono_actualizado"
+    }
+  );
+
+if (errorRegistrarActividadTelefono) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE TELÉFONO:",
+    errorRegistrarActividadTelefono
+  );
+}
+
         regresarDesdeCambioTelefono();
 
         await abrirMiMassId();
