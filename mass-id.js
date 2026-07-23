@@ -12778,6 +12778,8 @@ const {
     const dispositivoId =
   obtenerDispositivoIdMass();
 
+    console.log("DISPOSITIVO ID GENERADO:", dispositivoId);  
+
    console.log(
   "DISPOSITIVO MASS ID:",
   dispositivoId
