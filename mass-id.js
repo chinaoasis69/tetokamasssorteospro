@@ -12225,6 +12225,24 @@ if (btnGuardarPrivacidad) {
 
         privacidadMassCargada = true;
 
+        const {
+  error: errorRegistrarActividadPrivacidad
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "privacidad_actualizada"
+    }
+  );
+
+if (errorRegistrarActividadPrivacidad) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE PRIVACIDAD:",
+    errorRegistrarActividadPrivacidad
+  );
+}
+
         mostrarMensajePrivacidad(
           "✅ Tus preferencias de privacidad fueron guardadas correctamente.",
           "#39ff14"
