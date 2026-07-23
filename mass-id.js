@@ -556,13 +556,13 @@ const catalogoDocumentosLegalesMassId =
     "Establece la estructura, autoridad, control de versiones y administración del MASS ID Legal Center.",
   version: "1.0",
   vigencia: "Pendiente de publicación",
-  estado: "En preparación",
+  estado: "En revisión",
   contenido: `
 MASS-LC-000
 GOBERNANZA DEL MASS ID LEGAL CENTER
 
 Versión: 1.0
-Estado: En preparación
+Estado: En revisión
 Administrado por: TE-TO-KA SOLUTIONS® LLC
 
 1. PROPÓSITO
@@ -757,7 +757,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Define los términos oficiales utilizados dentro de MASS ID y del ecosistema MASS.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-002",
@@ -765,7 +765,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Contiene los términos y condiciones aplicables al registro, acceso y uso de MASS ID.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-003",
@@ -773,7 +773,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Explica cómo se recopilan, utilizan, protegen y administran los datos personales.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-004",
@@ -781,7 +781,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Describe las medidas utilizadas para proteger cuentas, identidad, sesiones y datos.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-005",
@@ -789,7 +789,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Explica el uso de cookies, almacenamiento local y tecnologías relacionadas.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-006",
@@ -797,7 +797,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Regula el uso responsable, transparente y seguro de inteligencia artificial dentro de MASS.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-007",
@@ -805,7 +805,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Establece las reglas relacionadas con cargos, autorizaciones y procesamiento de pagos.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-008",
@@ -813,7 +813,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Define las condiciones, requisitos y procedimientos aplicables a reembolsos.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-009",
@@ -821,7 +821,7 @@ FIN DEL DOCUMENTO MASS-LC-000
       descripcion:
         "Establece medidas para prevenir abuso, suplantación de identidad, fraude y actividades sospechosas.",
       version: "1.0",
-      estado: "En preparación"
+      estado: "En revisión"
     },
     {
       codigo: "MASS-LC-010",
