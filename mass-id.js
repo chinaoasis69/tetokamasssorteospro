@@ -505,6 +505,47 @@ const mensajeDocumentosLegales =
     "massIdDocumentosLegalesMensaje"
   );
 
+ /* Elementos del visor individual de documentos legales */
+const detalleDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalDetalle"
+  );
+
+const btnVolverListaDocumentosLegales =
+  document.getElementById(
+    "btnVolverListaDocumentosLegalesMassId"
+  );
+
+const estadoDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalEstado"
+  );
+
+const codigoDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalCodigo"
+  );
+
+const tituloDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalTitulo"
+  );
+
+const versionDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalVersion"
+  );
+
+const vigenciaDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalVigencia"
+  );
+
+const contenidoDocumentoLegal =
+  document.getElementById(
+    "massIdDocumentoLegalContenido"
+  ); 
+
 /* Catálogo oficial del MASS ID Legal Center */
 const catalogoDocumentosLegalesMassId =
   Object.freeze([
@@ -2412,17 +2453,112 @@ function ocultarMensajeDocumentosLegales() {
     "none";
 }
 
-/* Renderizar el catálogo oficial del MASS ID Legal Center */
+/* Abrir un documento legal en el visor individual */
+function abrirDocumentoLegalMassId(codigoDocumento) {
+  const documentoLegal =
+    catalogoDocumentosLegalesMassId.find(
+      function (documento) {
+        return documento.codigo === codigoDocumento;
+      }
+    );
+
+  if (
+    !documentoLegal ||
+    !listaDocumentosLegales ||
+    !detalleDocumentoLegal
+  ) {
+    mostrarMensajeDocumentosLegales(
+      "❌ No fue posible abrir el documento seleccionado.",
+      "#ff5b5b"
+    );
+
+    return;
+  }
+
+  const contenidoTemporal =
+    documentoLegal.contenido ||
+    (
+      documentoLegal.descripcion +
+      "\n\n" +
+      "El contenido jurídico completo de este documento se encuentra actualmente en preparación dentro del MASS ID Legal Center."
+    );
+
+  listaDocumentosLegales.style.display = "none";
+  detalleDocumentoLegal.style.display = "block";
+
+  if (estadoDocumentoLegal) {
+    estadoDocumentoLegal.textContent =
+      documentoLegal.estado || "En preparación";
+  }
+
+  if (codigoDocumentoLegal) {
+    codigoDocumentoLegal.textContent =
+      documentoLegal.codigo || "";
+  }
+
+  if (tituloDocumentoLegal) {
+    tituloDocumentoLegal.textContent =
+      documentoLegal.titulo || "Documento legal";
+  }
+
+  if (versionDocumentoLegal) {
+    versionDocumentoLegal.textContent =
+      documentoLegal.version || "1.0";
+  }
+
+  if (vigenciaDocumentoLegal) {
+    vigenciaDocumentoLegal.textContent =
+      documentoLegal.vigencia || "Pendiente";
+  }
+
+  if (contenidoDocumentoLegal) {
+    contenidoDocumentoLegal.textContent =
+      contenidoTemporal;
+  }
+
+  detalleDocumentoLegal.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+/* Regresar del visor individual a la lista */
+function regresarListaDocumentosLegalesMassId() {
+  if (detalleDocumentoLegal) {
+    detalleDocumentoLegal.style.display = "none";
+  }
+
+  if (listaDocumentosLegales) {
+    listaDocumentosLegales.style.display = "grid";
+
+    listaDocumentosLegales.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+}
+
+/* Mostrar el catálogo de documentos legales */
 function renderizarDocumentosLegalesMassId() {
   if (!listaDocumentosLegales) {
     return;
   }
+
+  if (detalleDocumentoLegal) {
+    detalleDocumentoLegal.style.display = "none";
+  }
+
+  listaDocumentosLegales.style.display = "grid";
 
   listaDocumentosLegales.innerHTML =
     catalogoDocumentosLegalesMassId
       .map(function (documentoLegal) {
         return `
           <article
+            data-documento-legal="${documentoLegal.codigo}"
+            role="button"
+            tabindex="0"
+            aria-label="Abrir ${documentoLegal.titulo}"
             style="
               padding:16px;
               border:1px solid #333;
@@ -2432,6 +2568,11 @@ function renderizarDocumentosLegalesMassId() {
               flex-direction:column;
               gap:10px;
               min-height:210px;
+              cursor:pointer;
+              transition:
+                border-color .2s ease,
+                transform .2s ease,
+                box-shadow .2s ease;
             "
           >
             <div
@@ -2496,19 +2637,100 @@ function renderizarDocumentosLegalesMassId() {
                 border-top:1px solid #2f2f2f;
                 color:#999;
                 font-size:12px;
+                display:flex;
+                justify-content:space-between;
+                gap:10px;
+                flex-wrap:wrap;
               "
             >
-              Versión ${documentoLegal.version}
+              <span>
+                Versión ${documentoLegal.version}
+              </span>
+
+              <span style="color:#39ff14;">
+                Consultar →
+              </span>
             </div>
           </article>
         `;
       })
       .join("");
 
+  const tarjetasDocumentos =
+    listaDocumentosLegales.querySelectorAll(
+      "[data-documento-legal]"
+    );
+
+  tarjetasDocumentos.forEach(
+    function (tarjetaDocumento) {
+      const codigoDocumento =
+        tarjetaDocumento.getAttribute(
+          "data-documento-legal"
+        );
+
+      tarjetaDocumento.onclick =
+        function () {
+          abrirDocumentoLegalMassId(
+            codigoDocumento
+          );
+        };
+
+      tarjetaDocumento.onkeydown =
+        function (evento) {
+          if (
+            evento.key === "Enter" ||
+            evento.key === " "
+          ) {
+            evento.preventDefault();
+
+            abrirDocumentoLegalMassId(
+              codigoDocumento
+            );
+          }
+        };
+
+      tarjetaDocumento.onmouseenter =
+        function () {
+          tarjetaDocumento.style.borderColor =
+            "#39ff14";
+
+          tarjetaDocumento.style.transform =
+            "translateY(-2px)";
+
+          tarjetaDocumento.style.boxShadow =
+            "0 8px 22px rgba(57,255,20,.12)";
+        };
+
+      tarjetaDocumento.onmouseleave =
+        function () {
+          tarjetaDocumento.style.borderColor =
+            "#333";
+
+          tarjetaDocumento.style.transform =
+            "translateY(0)";
+
+          tarjetaDocumento.style.boxShadow =
+            "none";
+        };
+    }
+  );
+
   mostrarMensajeDocumentosLegales(
     `✅ ${catalogoDocumentosLegalesMassId.length} documentos oficiales cargados.`,
     "#39ff14"
   );
+}
+
+/* Botón para regresar del documento individual */
+if (
+  btnVolverListaDocumentosLegales &&
+  listaDocumentosLegales &&
+  detalleDocumentoLegal
+) {
+  btnVolverListaDocumentosLegales.onclick =
+    function () {
+      regresarListaDocumentosLegalesMassId();
+    };
 }
 
 /* Regresar desde el panel Documentos legales */
