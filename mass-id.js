@@ -13885,6 +13885,24 @@ if (
             .value = "";
         }
 
+        const {
+  error: errorRegistrarActividadContrasenaMfa
+} =
+  await supabaseClient.rpc(
+    "registrar_actividad_cuenta_mass",
+    {
+      p_tipo_evento:
+        "contrasena_actualizada"
+    }
+  );
+
+if (errorRegistrarActividadContrasenaMfa) {
+  console.error(
+    "ERROR REGISTRANDO ACTIVIDAD DE CONTRASEÑA CON MFA:",
+    errorRegistrarActividadContrasenaMfa
+  );
+}
+
         mostrarMensajeMfaCambioContrasena(
           "✅ Tu identidad fue confirmada y la contraseña fue actualizada correctamente.",
           "#39ff14"
