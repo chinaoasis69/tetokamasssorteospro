@@ -72,6 +72,15 @@ const correoGuardadoPerfil = (
   .trim()
   .toLowerCase();
 
+const correoPendienteConfirmado =
+  (
+    localStorage.getItem(
+      "mass_correo_pendiente_confirmacion"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();  
+
 if (
   correoOficialAuth &&
   correoOficialAuth !== correoGuardadoPerfil
@@ -96,27 +105,36 @@ if (
     localStorage.setItem(
       "mass_email",
       correoOficialAuth
+    );  
+  }
+}
+
+if (
+  correoPendienteConfirmado &&
+  correoOficialAuth === correoPendienteConfirmado
+) {
+  const {
+    error: errorRegistrarCorreoConfirmado
+  } =
+    await supabaseClient.rpc(
+      "registrar_actividad_cuenta_mass",
+      {
+        p_tipo_evento:
+          "correo_actualizado"
+      }
     );
 
-const {
-  error: errorRegistrarCorreoActualizado
-} =
-  await supabaseClient.rpc(
-    "registrar_actividad_cuenta_mass",
-    {
-      p_tipo_evento:
-        "correo_actualizado"
-    }
-  );
-
-if (errorRegistrarCorreoActualizado) {
-  console.error(
-    "ERROR REGISTRANDO CORREO ACTUALIZADO:",
-    errorRegistrarCorreoActualizado
-   );
-  }  
-}
-}
+  if (errorRegistrarCorreoConfirmado) {
+    console.error(
+      "ERROR REGISTRANDO CORREO CONFIRMADO:",
+      errorRegistrarCorreoConfirmado
+    );
+  } else {
+    localStorage.removeItem(
+      "mass_correo_pendiente_confirmacion"
+    );
+  }
+}  
 
 const nombrePerfil = document.getElementById("massIdNombre");
 const numeroPerfil = document.getElementById("massIdNumero");
@@ -16088,6 +16106,13 @@ if (
         const correoPendienteConfirmacion =
           datosSolicitudCorreo?.user?.new_email ||
           correoSolicitado;
+
+        localStorage.setItem(
+  "mass_correo_pendiente_confirmacion",
+  correoPendienteConfirmacion
+    .trim()
+    .toLowerCase()
+);
 
         mostrarMensajeMfaCambioCorreo(
           "✅ Solicitud enviada. Revisa " +
