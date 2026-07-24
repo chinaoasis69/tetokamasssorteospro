@@ -13563,7 +13563,17 @@ if (
       "Tu cuenta MASS ID volvió a quedar activa. Ya puedes iniciar sesión."
     );
 
-    window.location.reload();
+    if (typeof cerrarMiMassId === "function") {
+  cerrarMiMassId();
+}
+
+if (typeof mostrarSesionActiva === "function") {
+  mostrarSesionActiva();
+}
+
+if (typeof cargarClienteActual === "function") {
+  await cargarClienteActual();
+}
   } catch (error) {
     console.error(
       "ERROR CANCELANDO CIERRE DE CUENTA MASS ID:",
