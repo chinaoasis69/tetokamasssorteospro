@@ -13944,6 +13944,13 @@ if (btnMassIdDesactivarCuenta) {
   btnMassIdDesactivarCuenta.onclick = function () {
     desactivarCuentaMassId();
   };
+} 
+
+/* Solicitar cierre de cuenta MASS ID */
+if (btnMassIdSolicitarCierreCuenta) {
+  btnMassIdSolicitarCierreCuenta.onclick = function () {
+    solicitarCierreCuentaMassId();
+  };
 }  
 
 /* Volver desde Cerrar o desactivar cuenta */
