@@ -9262,7 +9262,7 @@ mostrarSesionActiva();
   }
 }
 
-async function cerrarAccesoV2() {
+async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
   const acceso =
     document.getElementById("accesoV2");
 
@@ -9292,7 +9292,9 @@ async function cerrarAccesoV2() {
       return;
     }
 
-    await supabaseClient.auth.signOut();
+    if (!conservarSesionRecuperacion) {
+  await supabaseClient.auth.signOut();
+}
 
     localStorage.removeItem("mass_telefono");
     localStorage.removeItem("mass_user");
@@ -9315,18 +9317,12 @@ async function cerrarAccesoV2() {
       acceso.style.display = "none";
     }
 
-    location.reload();
-    return;
-  }
-
-  /*
-    Fuera del desafío MFA,
-    la X funciona normalmente.
-  */
-  if (acceso) {
-    acceso.style.display = "none";
-  }
+    if (!conservarSesionRecuperacion) {
+  location.reload();
 }
+
+return;
+  }
 
 function regresarMenuAccesoV2(){
 
@@ -9842,13 +9838,17 @@ if (!accesoMfaAprobado) {
   "true"
 );
 
-/*
 if (
   typeof cerrarAccesoV2 === "function"
 ) {
-  cerrarAccesoV2();
+  await cerrarAccesoV2(true);
 }
-*/
+
+setTimeout(function () {
+  if (typeof abrirMiMassId === "function") {
+    abrirMiMassId();
+  }
+}, 300);
 
 return;
 }
