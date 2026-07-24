@@ -9837,19 +9837,16 @@ if (!accesoMfaAprobado) {
     "Puedes recuperarla durante el periodo de 30 días desde Mi MASS ID."
   );
 
-  if (
+  localStorage.setItem(
+  "mass_abrir_recuperacion_cuenta",
+  "true"
+);
+
+if (
   typeof cerrarAccesoV2 === "function"
 ) {
   cerrarAccesoV2();
 }
-
-setTimeout(function () {
-  if (
-    typeof abrirMiMassId === "function"
-  ) {
-    abrirMiMassId();
-  }
-}, 300);
 
 return;
 }
