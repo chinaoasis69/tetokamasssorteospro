@@ -13480,6 +13480,11 @@ async function cancelarCierreCuentaMassId() {
     return;
   }
 
+  const botonCancelarCierreActual =
+  document.getElementById(
+    "btnMassIdCancelarCierreCuenta"
+  );
+
   const authUserIdCierre =
     localStorage.getItem(
       "mass_cierre_auth_user_id"
@@ -13494,11 +13499,11 @@ async function cancelarCierreCuentaMassId() {
   }
 
   try {
-    if (btnCancelarCierreCuenta) {
-      btnCancelarCierreCuenta.disabled = true;
-      btnCancelarCierreCuenta.style.opacity = "0.6";
-      btnCancelarCierreCuenta.style.cursor = "not-allowed";
-    }
+    if (botonCancelarCierreActual) {
+  botonCancelarCierreActual.disabled = true;
+  botonCancelarCierreActual.style.opacity = "0.6";
+  botonCancelarCierreActual.style.cursor = "not-allowed";
+}
 
     const fechaCancelacion =
       new Date().toISOString();
@@ -13555,11 +13560,11 @@ async function cancelarCierreCuentaMassId() {
       "No fue posible recuperar tu cuenta. Intenta nuevamente."
     );
   } finally {
-    if (btnCancelarCierreCuenta) {
-      btnCancelarCierreCuenta.disabled = false;
-      btnCancelarCierreCuenta.style.opacity = "1";
-      btnCancelarCierreCuenta.style.cursor = "pointer";
-    }
+    if (botonCancelarCierreActual) {
+  botonCancelarCierreActual.disabled = false;
+  botonCancelarCierreActual.style.opacity = "1";
+  botonCancelarCierreActual.style.cursor = "pointer";
+   }
   }
 }  
 
