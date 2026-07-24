@@ -18626,3 +18626,32 @@ function cerrarMiMassId() {
     panel.style.display = "none";
   }
 }
+
+window.addEventListener("load", function () {
+  const abrirRecuperacion =
+    localStorage.getItem(
+      "mass_abrir_recuperacion_cuenta"
+    );
+
+  const authUserIdCierre =
+    localStorage.getItem(
+      "mass_cierre_auth_user_id"
+    );
+
+  if (
+    abrirRecuperacion === "true" &&
+    authUserIdCierre
+  ) {
+    localStorage.removeItem(
+      "mass_abrir_recuperacion_cuenta"
+    );
+
+    setTimeout(function () {
+      if (
+        typeof abrirMiMassId === "function"
+      ) {
+        abrirMiMassId();
+      }
+    }, 500);
+  }
+});
