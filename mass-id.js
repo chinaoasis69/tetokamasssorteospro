@@ -13542,6 +13542,22 @@ if (
   );
 }
 
+    const telefonoRecuperado =
+  cuentaRecuperada[0]?.telefono || "";
+
+if (telefonoRecuperado) {
+  localStorage.setItem("mass_user", telefonoRecuperado);
+  localStorage.setItem("mass_telefono", telefonoRecuperado);
+
+  userActual = telefonoRecuperado;
+  usuarioMASS = telefonoRecuperado;
+}
+
+localStorage.setItem(
+  "mass_auth_user_id",
+  authUserIdCierre
+);
+
     localStorage.removeItem(
       "mass_cierre_auth_user_id"
     );
@@ -13560,7 +13576,7 @@ if (
 
     window.alert(
       "✅ El cierre de tu cuenta fue cancelado correctamente.\n\n" +
-      "Tu cuenta MASS ID volvió a quedar activa. Ya puedes iniciar sesión."
+      "Tu cuenta MASS ID volvió a quedar activa."
     );
 
     if (typeof cerrarMiMassId === "function") {
