@@ -4092,8 +4092,8 @@ async function verificarSesionMassIdActiva() {
       localStorage.removeItem("mass_dispositivo_id");
 
       await supabaseClient.auth.signOut({
-        scope: "local"
-      });
+  scope: "local"
+});
 
       window.location.reload();
     }
@@ -9852,9 +9852,11 @@ return;
 }
 
 if (perfil.estado !== "activo") {
-  await supabaseClient.auth.signOut({
-    scope: "local"
-  });
+  /*
+await supabaseClient.auth.signOut({
+  scope: "local"
+});
+*/
 
   alert(
     "⌛ Tu cuenta MASS todavía no está activa."
