@@ -7645,10 +7645,17 @@ window.addEventListener("DOMContentLoaded", async () => {
         menuAccesoV2.style.display = "grid";
       }
 
-      if (accesoV2) {
+            if (accesoV2) {
         accesoV2.style.display = "block";
       }
+
+      return;
     }
+
+    // Existe una sesión activa:
+    // restaurar las tarjetas Sesión activa y Mi MASS ID
+    await mostrarSesionActiva();
+
   } catch (errorAperturaMassId) {
     console.error(
       "ERROR ABRIENDO ACCESO INICIAL MASS ID:",
