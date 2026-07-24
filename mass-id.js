@@ -12707,8 +12707,6 @@ const {
 
 /* Cargar Dispositivos conectados */
  async function cargarDispositivosConectadosMassId() {
-  console.log("ENTRÓ A CARGAR DISPOSITIVOS CONECTADOS");
-  
   if (!listaDispositivosConectados) {
     return;
   }
@@ -12739,11 +12737,6 @@ const {
       error: errorSesion
     } = await supabaseClient.auth.getSession();
 
-    console.log("SESIÓN DISPOSITIVOS:", session);
-    console.log("ERROR SESIÓN DISPOSITIVOS:", errorSesion);
-
-    console.log("PASÓ LA LECTURA DE SESIÓN");
-
     if (errorSesion) {
       throw errorSesion;
     }
@@ -12753,26 +12746,13 @@ const {
         "No fue posible identificar la sesión activa."
       );
     }
-    
-    console.log("USUARIO DE SESIÓN:", session.user.id);
-    console.log("ANTES DE LEER EL NAVEGADOR");
 
     const agenteUsuario = navigator.userAgent || "";
-
-    console.log(
-  "AGENTE DEL NAVEGADOR:",
-  agenteUsuario
-);
     
     const plataforma =
       navigator.userAgentData?.platform ||
       navigator.platform ||
       "No disponible";
-
-    console.log(
-  "PLATAFORMA DETECTADA:",
-  plataforma
-);
 
     let navegador = "Navegador desconocido";
 
@@ -12790,33 +12770,13 @@ const {
       navegador = "Safari";
     } else if (agenteUsuario.includes("Firefox/")) {
       navegador = "Mozilla Firefox";
-    }
-
-      console.log(
-  "NAVEGADOR DETECTADO:",
-  navegador
-);
-
-    console.log(
-  "ANTES DE OBTENER DISPOSITIVO ID"
-);  
+    }  
 
     const dispositivoId =
-  obtenerDispositivoIdMass();
-
-    console.log("DISPOSITIVO ID GENERADO:", dispositivoId);  
-
-   console.log(
-  "DISPOSITIVO MASS ID:",
-  dispositivoId
-);   
+  obtenerDispositivoIdMass();     
 
 const fechaActualDispositivo =
-  new Date().toISOString();
-
-  console.log(
-  "REGISTRANDO DISPOSITIVO MASS ID..."
-);    
+  new Date().toISOString();    
 
 const {
   error: errorGuardarDispositivo
@@ -12837,12 +12797,7 @@ const {
       onConflict:
         "auth_user_id,dispositivo_id"
     }
-  );
-
- console.log(
-  "ERROR GUARDAR DISPOSITIVO:",
-  errorGuardarDispositivo
-);     
+  );     
 
 if (errorGuardarDispositivo) {
   console.error(
