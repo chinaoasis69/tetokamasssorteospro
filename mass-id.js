@@ -695,6 +695,21 @@ const comentarioCierreCuenta =
 const mensajeCerrarDesactivarCuenta =
   document.getElementById(
     "massIdCerrarDesactivarCuentaMensaje"
+  ); 
+
+const panelRecuperarCuenta =
+  document.getElementById(
+    "massIdRecuperarCuenta"
+  );
+
+const mensajeRecuperarCuenta =
+  document.getElementById(
+    "massIdRecuperarCuentaMensaje"
+  );
+
+const btnCancelarCierreCuenta =
+  document.getElementById(
+    "btnMassIdCancelarCierreCuenta"
   );  
 
 const mensajeDispositivosConectados =
