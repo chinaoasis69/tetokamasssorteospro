@@ -13202,6 +13202,164 @@ async function desactivarCuentaMassId() {
       btnMassIdDesactivarCuenta.style.cursor = "pointer";
     }
   }
+}
+
+/* Solicitar cierre de cuenta MASS ID */
+async function solicitarCierreCuentaMassId() {
+  const motivoSeleccionado =
+    motivoCierreCuenta?.value || "";
+
+  const comentarioIngresado =
+    comentarioCierreCuenta?.value.trim() || "";
+
+  if (!motivoSeleccionado) {
+    window.alert(
+      "Selecciona un motivo antes de solicitar el cierre de tu cuenta."
+    );
+
+    if (motivoCierreCuenta) {
+      motivoCierreCuenta.focus();
+    }
+
+    return;
+  }
+
+  const primeraConfirmacion = window.confirm(
+    "¿Deseas solicitar el cierre de tu cuenta MASS ID?\n\n" +
+    "Tendrás 30 días para cambiar de opinión y recuperar tu cuenta."
+  );
+
+  if (!primeraConfirmacion) {
+    return;
+  }
+
+  const segundaConfirmacion = window.confirm(
+    "Esta solicitud cerrará todas tus sesiones y bloqueará temporalmente el acceso.\n\n" +
+    "La eliminación definitiva quedará programada dentro de 30 días.\n\n" +
+    "¿Deseas continuar?"
+  );
+
+  if (!segundaConfirmacion) {
+    return;
+  }
+
+  try {
+    if (btnMassIdSolicitarCierreCuenta) {
+      btnMassIdSolicitarCierreCuenta.disabled = true;
+      btnMassIdSolicitarCierreCuenta.style.opacity = "0.6";
+      btnMassIdSolicitarCierreCuenta.style.cursor = "not-allowed";
+    }
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      throw userError || new Error(
+        "No fue posible identificar la cuenta MASS ID."
+      );
+    }
+
+    const fechaSolicitud = new Date();
+
+    const fechaEliminacionProgramada = new Date(
+      fechaSolicitud.getTime() +
+      30 * 24 * 60 * 60 * 1000
+    );
+
+    const motivoCompleto = comentarioIngresado
+      ? `${motivoSeleccionado}: ${comentarioIngresado}`
+      : motivoSeleccionado;
+
+    const { error: errorSolicitarCierre } =
+      await supabaseClient
+        .from("usuarios_mass")
+        .update({
+          estado: "cierre_solicitado",
+          cierre_solicitado_at:
+            fechaSolicitud.toISOString(),
+          eliminacion_programada_at:
+            fechaEliminacionProgramada.toISOString(),
+          cierre_cancelado_at: null,
+          motivo_cierre: motivoCompleto
+        })
+        .eq("auth_user_id", user.id);
+
+    if (errorSolicitarCierre) {
+      throw errorSolicitarCierre;
+    }
+
+    const { error: errorCerrarDispositivos } =
+      await supabaseClient
+        .from("dispositivos_mass_id")
+        .update({
+          activo: false,
+          updated_at: fechaSolicitud.toISOString()
+        })
+        .eq("auth_user_id", user.id);
+
+    if (errorCerrarDispositivos) {
+      console.error(
+        "ERROR CERRANDO DISPOSITIVOS POR SOLICITUD DE CIERRE:",
+        errorCerrarDispositivos
+      );
+    }
+
+    if (mensajeCerrarDesactivarCuenta) {
+      mensajeCerrarDesactivarCuenta.textContent =
+        "✅ Tu solicitud de cierre fue registrada. Tendrás 30 días para recuperar tu cuenta.";
+
+      mensajeCerrarDesactivarCuenta.style.display = "block";
+      mensajeCerrarDesactivarCuenta.style.color = "#ffbf47";
+      mensajeCerrarDesactivarCuenta.style.border =
+        "1px solid #ffbf47";
+      mensajeCerrarDesactivarCuenta.style.background = "#101010";
+    }
+
+    await supabaseClient.auth.signOut({
+      scope: "global"
+    });
+
+    localStorage.removeItem("mass_user");
+    localStorage.removeItem("mass_telefono");
+    localStorage.removeItem("mass_auth_user_id");
+    localStorage.removeItem("mass_email");
+    localStorage.removeItem("mass_dispositivo_id");
+
+    window.alert(
+      "Tu solicitud de cierre fue registrada correctamente.\n\n" +
+      "Tendrás 30 días para recuperar tu cuenta antes del cierre definitivo."
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "ERROR SOLICITANDO CIERRE DE CUENTA MASS ID:",
+      error
+    );
+
+    if (mensajeCerrarDesactivarCuenta) {
+      mensajeCerrarDesactivarCuenta.textContent =
+        "❌ No fue posible registrar la solicitud de cierre. Intenta nuevamente.";
+
+      mensajeCerrarDesactivarCuenta.style.display = "block";
+      mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
+      mensajeCerrarDesactivarCuenta.style.border =
+        "1px solid #ff5a5a";
+      mensajeCerrarDesactivarCuenta.style.background = "#101010";
+    }
+
+    window.alert(
+      "No fue posible registrar la solicitud de cierre. Intenta nuevamente."
+    );
+  } finally {
+    if (btnMassIdSolicitarCierreCuenta) {
+      btnMassIdSolicitarCierreCuenta.disabled = false;
+      btnMassIdSolicitarCierreCuenta.style.opacity = "1";
+      btnMassIdSolicitarCierreCuenta.style.cursor = "pointer";
+    }
+  }
 }  
 
 /* Mostrar mensajes del panel Documentos legales */
