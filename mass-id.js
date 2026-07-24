@@ -131,16 +131,17 @@ if (btnCancelarCierreCuentaActual) {
 } = await supabaseClient.auth.getUser();
 
 if (userError || !user) {
-  console.error("ERROR OBTENIENDO USUARIO AUTH:", userError);
+  console.log("No hay sesión MASS ID activa. Mostrando opciones de acceso.");
 
   localStorage.removeItem("mass_user");
   localStorage.removeItem("mass_dispositivo_id");
 
-  await supabaseClient.auth.signOut({
-    scope: "local"
-  });
+  panel.style.display = "none";
 
-  window.location.reload();
+  if (typeof abrirAccesoV2 === "function") {
+    await abrirAccesoV2();
+  }
+
   return;
 }
 
