@@ -13614,6 +13614,66 @@ if (
   };
 }
 
+/* Abrir Cerrar o desactivar cuenta */
+if (
+  btnMassIdCerrarDesactivarCuenta &&
+  menuPrincipal &&
+  seccionCerrarDesactivarCuenta
+) {
+  btnMassIdCerrarDesactivarCuenta.onclick = function () {
+    menuPrincipal.style.display = "none";
+
+    if (seccionInformacion) {
+      seccionInformacion.style.display = "none";
+    }
+
+    if (seccionPrivacidad) {
+      seccionPrivacidad.style.display = "none";
+    }
+
+    if (seccionDocumentosLegales) {
+      seccionDocumentosLegales.style.display = "none";
+    }
+
+    if (seccionActividadCuenta) {
+      seccionActividadCuenta.style.display = "none";
+    }
+
+    if (seccionDispositivosConectados) {
+      seccionDispositivosConectados.style.display = "none";
+    }
+
+    seccionCerrarDesactivarCuenta.style.display = "block";
+
+    if (mensajeCerrarDesactivarCuenta) {
+      mensajeCerrarDesactivarCuenta.style.display = "none";
+      mensajeCerrarDesactivarCuenta.textContent = "";
+    }
+
+    seccionCerrarDesactivarCuenta.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}
+
+/* Volver desde Cerrar o desactivar cuenta */
+if (
+  btnVolverCerrarDesactivarCuenta &&
+  menuPrincipal &&
+  seccionCerrarDesactivarCuenta
+) {
+  btnVolverCerrarDesactivarCuenta.onclick = function () {
+    seccionCerrarDesactivarCuenta.style.display = "none";
+    menuPrincipal.style.display = "block";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+}  
+
 /* Volver desde Dispositivos conectados */
 if (
   btnVolverDispositivosConectados &&
