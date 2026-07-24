@@ -64,6 +64,18 @@ if (authUserIdCierre) {
       "massIdRecuperarCuentaMensaje"
     );
 
+  const btnCancelarCierreCuentaActual =
+  document.getElementById(
+    "btnMassIdCancelarCierreCuenta"
+  );
+
+if (btnCancelarCierreCuentaActual) {
+  btnCancelarCierreCuentaActual.onclick =
+    function () {
+      cancelarCierreCuentaMassId();
+    };
+}
+
   if (menuPrincipal) {
     menuPrincipal.style.display = "none";
   }
