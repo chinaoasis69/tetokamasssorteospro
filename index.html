@@ -9895,7 +9895,15 @@ await supabaseClient.auth.signOut({
     })
     .eq("auth_user_id", authUserId);
 
-  cerrarAccesoV2();
+  const accesoV2SesionActiva =
+  document.getElementById(
+    "accesoV2"
+  );
+
+if (accesoV2SesionActiva) {
+  accesoV2SesionActiva.style.display =
+    "none";
+}
   mostrarSesionActiva();
 
   await asegurarWallet();
