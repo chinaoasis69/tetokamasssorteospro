@@ -9291,7 +9291,8 @@ async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
       btnCancelarMfaLogin.click();
       return;
     }
-
+  }
+	
     if (!conservarSesionRecuperacion) {
   await supabaseClient.auth.signOut();
 }
