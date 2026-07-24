@@ -13501,7 +13501,7 @@ if (
   return;
 }
 
-const authUserIdCierre = user,id;
+const authUserIdCierre = user.id;
 
   try {
     if (botonCancelarCierreActual) {
