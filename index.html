@@ -3999,6 +3999,36 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 supabaseClient.auth.onAuthStateChange((event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
 
+	if (event === "SIGNED_OUT") {
+  localStorage.removeItem("mass_user");
+  localStorage.removeItem("mass_dispositivo_id");
+
+  const estadoSesion = document.getElementById("estadoSesion");
+  const telefonoSesion = document.getElementById("telefonoSesion");
+  const btnCerrarSesion = document.getElementById("btnCerrarSesion");
+
+  if (estadoSesion) {
+    estadoSesion.textContent = "Sesión cerrada";
+  }
+
+  if (telefonoSesion) {
+    telefonoSesion.textContent = "";
+  }
+
+  if (btnCerrarSesion) {
+    btnCerrarSesion.style.display = "none";
+  }
+
+  if (
+    typeof cerrarPanelMiMassId === "function"
+  ) {
+    cerrarPanelMiMassId();
+  }
+
+  window.location.reload();
+  return;
+}
+
   if (event === "PASSWORD_RECOVERY") {
     const acceso = document.getElementById("accesoV2");
     const menu = document.getElementById("menuAccesoV2");
