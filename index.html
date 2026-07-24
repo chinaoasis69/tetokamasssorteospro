@@ -9840,16 +9840,10 @@ if (!accesoMfaAprobado) {
 );
 
 if (
-  typeof cerrarAccesoV2 === "function"
+  typeof abrirMiMassId === "function"
 ) {
-  await cerrarAccesoV2(true);
+  await abrirMiMassId();
 }
-
-setTimeout(function () {
-  if (typeof abrirMiMassId === "function") {
-    abrirMiMassId();
-  }
-}, 300);
 
 return;
 }
