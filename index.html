@@ -9453,34 +9453,76 @@ function regresarMenuAccesoV2(){
 
 }
 
-function mostrarLoginUsuarioV2(){
+function prepararVistaAccesoV2(vistaActiva) {
+  const acceso =
+    document.getElementById("accesoV2");
 
-    document.getElementById("menuAccesoV2").style.display="none";
+  const menu =
+    document.getElementById("menuAccesoV2");
 
-    document.getElementById("formUsuarioV2").style.display="block";
+  const usuario =
+    document.getElementById("formUsuarioV2");
 
-    document.getElementById("btnRegresarMenuV2").style.display="block";
+  const registro =
+    document.getElementById("formOrganizadorV2");
 
+  const superAdmin =
+    document.getElementById("formSuperAdminV2");
+
+  const nuevaPassword =
+    document.getElementById("formNuevaPasswordMassId");
+
+  const regresar =
+    document.getElementById("btnRegresarMenuV2");
+
+  if (acceso) {
+    acceso.style.display = "block";
+  }
+
+  if (menu) {
+    menu.style.display = "none";
+  }
+
+  if (usuario) {
+    usuario.style.display =
+      vistaActiva === "usuario"
+        ? "block"
+        : "none";
+  }
+
+  if (registro) {
+    registro.style.display =
+      vistaActiva === "registro"
+        ? "block"
+        : "none";
+  }
+
+  if (superAdmin) {
+    superAdmin.style.display =
+      vistaActiva === "superAdmin"
+        ? "block"
+        : "none";
+  }
+
+  if (nuevaPassword) {
+    nuevaPassword.style.display = "none";
+  }
+
+  if (regresar) {
+    regresar.style.display = "block";
+  }
 }
 
-function mostrarLoginOrganizadorV2(){
-
-    document.getElementById("menuAccesoV2").style.display="none";
-
-    document.getElementById("formOrganizadorV2").style.display="block";
-
-    document.getElementById("btnRegresarMenuV2").style.display="block";
-
+function mostrarLoginUsuarioV2() {
+  prepararVistaAccesoV2("usuario");
 }
 
-function mostrarLoginSuperAdminV2(){
+function mostrarLoginOrganizadorV2() {
+  prepararVistaAccesoV2("registro");
+}
 
-    document.getElementById("menuAccesoV2").style.display="none";
-
-    document.getElementById("formSuperAdminV2").style.display="block";
-
-    document.getElementById("btnRegresarMenuV2").style.display="block";
-
+function mostrarLoginSuperAdminV2() {
+  prepararVistaAccesoV2("superAdmin");
 }
 
 async function iniciarSesionSuperAdminV2() {
