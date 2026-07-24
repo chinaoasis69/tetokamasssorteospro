@@ -9436,7 +9436,15 @@ const { data: adminData, error: adminError } =
    localStorage.setItem("mass_user", adminData.telefono);
    }  
 
-    cerrarAccesoV2();
+    const accesoV2SuperAdmin =
+  document.getElementById(
+    "accesoV2"
+  );
+
+if (accesoV2SuperAdmin) {
+  accesoV2SuperAdmin.style.display =
+    "none";
+}
 	mostrarSesionActiva();
 
     if (typeof mostrarPanelAdmin === "function") {
