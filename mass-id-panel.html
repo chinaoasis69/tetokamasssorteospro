@@ -3899,5 +3899,60 @@ el nuevo correo electrónico.
       Los cambios sensibles requerirán confirmar tu identidad
       antes de aplicarse.
     </div>
-  </div>        
+  </div>
+
+  <div
+  id="massIdPasskeyCard"
+  style="
+    margin-top:18px;
+    padding:18px;
+    border:1px solid rgba(57,255,20,.45);
+    border-radius:14px;
+    background:#141414;
+    text-align:center;
+  "
+>
+  <h3 style="margin:0 0 10px; color:#fff;">
+    🔐 Face ID y Passkey
+  </h3>
+
+  <p
+    style="
+      margin:0 0 14px;
+      color:#bbb;
+      font-size:14px;
+      line-height:1.5;
+    "
+  >
+    Registra este dispositivo para iniciar sesión sin escribir tu contraseña.
+  </p>
+
+  <button
+    id="btnRegistrarPasskeyMassId"
+    type="button"
+    onclick="registrarPasskeyMassId()"
+    style="
+      width:100%;
+      padding:13px 16px;
+      border:none;
+      border-radius:10px;
+      background:#39ff14;
+      color:#111;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    🔐 Registrar Face ID o Passkey
+  </button>
+
+  <p
+    id="massIdPasskeyMensaje"
+    style="
+      display:none;
+      margin:12px 0 0;
+      font-size:13px;
+      line-height:1.4;
+    "
+  ></p>
+</div>
 </section>
