@@ -258,6 +258,121 @@
     </div>
   </div>
 
+  <!-- CERRAR O DESACTIVAR CUENTA -->
+<div
+  id="massIdCerrarDesactivarCuenta"
+  style="
+    display:none;
+    margin-top:20px;
+    padding:22px;
+    border:1px solid #7a1f1f;
+    border-radius:16px;
+    background:#181818;
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    "
+  >
+    <div>
+      <h3 style="margin:0 0 8px; color:#ff5a5a;">
+        ⚠️ Cerrar o desactivar cuenta
+      </h3>
+
+      <p style="margin:0; color:#bbb; line-height:1.6;">
+        Elige cuidadosamente qué deseas hacer con tu cuenta MASS ID.
+      </p>
+    </div>
+
+    <button
+      id="btnVolverCerrarDesactivarCuenta"
+      type="button"
+      class="mass-id-menu-button"
+      style="width:auto;"
+    >
+      ← Volver
+    </button>
+  </div>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+      gap:16px;
+    "
+  >
+    <div
+      style="
+        padding:18px;
+        border:1px solid #555;
+        border-radius:14px;
+        background:#101010;
+      "
+    >
+      <h4 style="margin:0 0 10px; color:#ffbf47;">
+        ⏸️ Desactivar cuenta
+      </h4>
+
+      <p style="color:#bbb; line-height:1.6;">
+        Tu cuenta quedará suspendida temporalmente. Tus datos se conservarán
+        y podrás solicitar su reactivación más adelante.
+      </p>
+
+      <button
+        id="btnMassIdDesactivarCuenta"
+        type="button"
+        class="mass-id-menu-button"
+      >
+        Desactivar mi cuenta
+      </button>
+    </div>
+
+    <div
+      style="
+        padding:18px;
+        border:1px solid #7a1f1f;
+        border-radius:14px;
+        background:#101010;
+      "
+    >
+      <h4 style="margin:0 0 10px; color:#ff5a5a;">
+        🗑️ Solicitar cierre de cuenta
+      </h4>
+
+      <p style="color:#bbb; line-height:1.6;">
+        Inicia una solicitud formal de cierre. La cuenta no se eliminará
+        inmediatamente y quedará sujeta a revisión y al periodo de retención
+        correspondiente.
+      </p>
+
+      <button
+        id="btnMassIdSolicitarCierreCuenta"
+        type="button"
+        class="mass-id-menu-button mass-id-danger-button"
+      >
+        Solicitar cierre de cuenta
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="massIdCerrarDesactivarCuentaMensaje"
+    style="
+      display:none;
+      margin-top:16px;
+      padding:14px;
+      border-radius:12px;
+      text-align:center;
+    "
+  ></div>
+</div>
+
   <!-- INFORMACIÓN PERSONAL -->
   <div
     id="massIdInformacionPersonal"
