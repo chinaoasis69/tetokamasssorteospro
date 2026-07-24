@@ -9831,10 +9831,12 @@ if (!accesoMfaAprobado) {
     "mass_cierre_eliminacion_programada_at",
     perfil.eliminacion_programada_at || ""
   );
-
+	  
+  /*
   await supabaseClient.auth.signOut({
     scope: "local"
   });
+  */
 
   alert(
     "⏳ Tu cuenta MASS ID está programada para cierre.\n\n" +
@@ -9856,11 +9858,10 @@ return;
 }
 
 if (perfil.estado !== "activo") {
-  /*
+  
 await supabaseClient.auth.signOut({
   scope: "local"
 });
-*/
 
   alert(
     "⌛ Tu cuenta MASS todavía no está activa."
