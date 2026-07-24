@@ -7590,6 +7590,72 @@ cargarMisBoletos();
 }	
 
 // Realtime
+
+// Abrir acceso MASS ID únicamente cuando no existe sesión activa
+window.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const {
+      data: { session },
+      error: errorSesionInicial
+    } = await supabaseClient.auth.getSession();
+
+    if (errorSesionInicial) {
+      console.error(
+        "ERROR VERIFICANDO SESIÓN INICIAL MASS ID:",
+        errorSesionInicial
+      );
+    }
+
+    if (!session?.user) {
+      const accesoV2 =
+        document.getElementById("accesoV2");
+
+      const menuAccesoV2 =
+        document.getElementById("menuAccesoV2");
+
+      const formUsuarioV2 =
+        document.getElementById("formUsuarioV2");
+
+      const formOrganizadorV2 =
+        document.getElementById("formOrganizadorV2");
+
+      const formSuperAdminV2 =
+        document.getElementById("formSuperAdminV2");
+
+      const btnRegresarMenuV2 =
+        document.getElementById("btnRegresarMenuV2");
+
+      if (formUsuarioV2) {
+        formUsuarioV2.style.display = "none";
+      }
+
+      if (formOrganizadorV2) {
+        formOrganizadorV2.style.display = "none";
+      }
+
+      if (formSuperAdminV2) {
+        formSuperAdminV2.style.display = "none";
+      }
+
+      if (btnRegresarMenuV2) {
+        btnRegresarMenuV2.style.display = "none";
+      }
+
+      if (menuAccesoV2) {
+        menuAccesoV2.style.display = "grid";
+      }
+
+      if (accesoV2) {
+        accesoV2.style.display = "block";
+      }
+    }
+  } catch (errorAperturaMassId) {
+    console.error(
+      "ERROR ABRIENDO ACCESO INICIAL MASS ID:",
+      errorAperturaMassId
+    );
+  }
+});	
 Promise.resolve().then(async () => {
 
     await asegurarWallet();
