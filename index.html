@@ -8000,29 +8000,64 @@ async function cerrarSesion() {
     }, 1200);
 }
 
-function mostrarSesionActiva() {
+async function mostrarSesionActiva() {
+  const box = document.getElementById("sesionActivaBox");
+  const telefonoBox = document.getElementById("telefonoSesion");
 
-    const box = document.getElementById("sesionActivaBox");
-    const telefonoBox = document.getElementById("telefonoSesion");
+  if (!box || !telefonoBox) {
+    return;
+  }
 
-    if (!box || !telefonoBox) return;
+  let telefono =
+    localStorage.getItem("mass_telefono") ||
+    localStorage.getItem("mass_user") ||
+    "";
 
-    const telefono =
-        localStorage.getItem("mass_telefono") ||
-        localStorage.getItem("mass_user");
+  if (!telefono) {
+    try {
+      const {
+        data: { user },
+        error
+      } = await supabaseClient.auth.getUser();
 
-    if (!telefono) {
-        box.style.display = "none";
-        return;
+      if (!error && user) {
+        const { data: perfil, error: errorPerfil } =
+          await supabaseClient
+            .from("usuarios_mass")
+            .select("telefono")
+            .eq("auth_user_id", user.id)
+            .maybeSingle();
+
+        if (!errorPerfil && perfil?.telefono) {
+          telefono = perfil.telefono;
+
+          localStorage.setItem(
+            "mass_telefono",
+            perfil.telefono
+          );
+
+          localStorage.setItem(
+            "mass_user",
+            perfil.telefono
+          );
+        }
+      }
+    } catch (errorSesionActiva) {
+      console.error(
+        "ERROR CARGANDO TARJETA DE SESIÓN ACTIVA:",
+        errorSesionActiva
+      );
     }
+  }
 
-    telefonoBox.textContent = telefono;
-    box.style.display = "block";
+  if (!telefono) {
+    box.style.display = "none";
+    return;
+  }
+
+  telefonoBox.textContent = telefono;
+  box.style.display = "block";
 }
-
-	setTimeout(() => {
-  mostrarSesionActiva();
-}, 800);
 
 function mostrarToast(mensaje){
     const toast = document.getElementById("toast");
