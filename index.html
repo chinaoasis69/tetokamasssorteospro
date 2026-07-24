@@ -3994,7 +3994,17 @@ const SUPABASE_URL = "https://yrmuxelajgmmonbbvshj.supabase.co";
 const SUPABASE_KEY= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlybXV4ZWxhamdtbW9uYmJ2c2hqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzgxNDYsImV4cCI6MjA5NDcxNDE0Nn0.mubpd6u9GPuAOovJhhPEFFdR8lLEIXt66pAcTdmXZD4";
 
 const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY,
+  {
+    auth: {
+      experimental: {
+        passkey: true
+      }
+    }
+  }
+);
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
@@ -10059,6 +10069,202 @@ async function recuperarPasswordMassId() {
         "¿Olvidaste tu contraseña?";
     }
   }
+}
+
+async function iniciarSesionPasskeyMassId() {
+  const botonPasskey = document.getElementById(
+    "btnMassIdPasskeyLogin"
+  );
+
+  if (!window.PublicKeyCredential) {
+    alert(
+      "❌ Este dispositivo o navegador no admite Face ID o Passkeys."
+    );
+    return;
+  }
+
+  try {
+    if (botonPasskey) {
+      botonPasskey.disabled = true;
+      botonPasskey.textContent = "Verificando identidad...";
+      botonPasskey.style.opacity = "0.6";
+      botonPasskey.style.cursor = "not-allowed";
+    }
+
+    const {
+      data: authData,
+      error: authError
+    } = await supabaseClient.auth.signInWithPasskey();
+
+    if (authError) {
+      throw authError;
+    }
+
+    const authUserId = authData?.user?.id;
+
+    if (!authUserId) {
+      throw new Error(
+        "No fue posible identificar la cuenta MASS ID."
+      );
+    }
+
+    const {
+      data: perfil,
+      error: perfilError
+    } = await supabaseClient
+      .from("usuarios_mass")
+      .select("*")
+      .eq("auth_user_id", authUserId)
+      .maybeSingle();
+
+    if (perfilError) {
+      throw perfilError;
+    }
+
+    if (!perfil) {
+      await supabaseClient.auth.signOut();
+
+      alert(
+        "❌ Esta Passkey no tiene un perfil MASS ID vinculado."
+      );
+
+      return;
+    }
+
+    if (perfil.estado === "cierre_solicitado") {
+      localStorage.setItem(
+        "mass_cierre_auth_user_id",
+        authUserId
+      );
+
+      localStorage.setItem(
+        "mass_cierre_email",
+        perfil.email || authData?.user?.email || ""
+      );
+
+      localStorage.setItem(
+        "mass_cierre_eliminacion_programada_at",
+        perfil.eliminacion_programada_at || ""
+      );
+
+      localStorage.setItem(
+        "mass_abrir_recuperacion_cuenta",
+        "true"
+      );
+
+      const accesoRecuperacion =
+        document.getElementById("accesoV2");
+
+      if (accesoRecuperacion) {
+        accesoRecuperacion.style.display = "none";
+      }
+
+      if (typeof abrirMiMassId === "function") {
+        await abrirMiMassId();
+      }
+
+      return;
+    }
+
+    if (perfil.estado !== "activo") {
+      await supabaseClient.auth.signOut({
+        scope: "local"
+      });
+
+      alert(
+        "⏳ Tu cuenta MASS todavía no está activa."
+      );
+
+      return;
+    }
+
+    userActual = perfil.telefono;
+    usuarioMASS = perfil.telefono;
+
+    localStorage.setItem(
+      "mass_user",
+      perfil.telefono
+    );
+
+    localStorage.setItem(
+      "mass_telefono",
+      perfil.telefono
+    );
+
+    localStorage.setItem(
+      "mass_auth_user_id",
+      authUserId
+    );
+
+    localStorage.setItem(
+      "mass_email",
+      perfil.email || authData?.user?.email || ""
+    );
+
+    localStorage.removeItem("admin_rol");
+    localStorage.removeItem("admin_organizador_id");
+
+    await supabaseClient
+      .from("usuarios_mass")
+      .update({
+        ultimo_login: new Date().toISOString()
+      })
+      .eq("auth_user_id", authUserId);
+
+    const accesoV2SesionActiva =
+      document.getElementById("accesoV2");
+
+    if (accesoV2SesionActiva) {
+      accesoV2SesionActiva.style.display = "none";
+    }
+
+    if (typeof mostrarSesionActiva === "function") {
+      await mostrarSesionActiva();
+    }
+
+    if (typeof asegurarWallet === "function") {
+      await asegurarWallet();
+    }
+
+    if (typeof cargarSaldo === "function") {
+      cargarSaldo();
+    }
+
+    if (typeof cargarMisBoletos === "function") {
+      cargarMisBoletos();
+    }
+
+    if (typeof cargarHistorialSorteos === "function") {
+      cargarHistorialSorteos();
+    }
+
+    if (typeof cargarHistorialPremios === "function") {
+      cargarHistorialPremios();
+    }
+
+    alert("✅ Bienvenido a MASS ID con Passkey.");
+  } catch (errorPasskey) {
+    console.error(
+      "ERROR INICIANDO SESIÓN CON PASSKEY:",
+      errorPasskey
+    );
+
+    const mensajeError =
+      errorPasskey?.name === "NotAllowedError"
+        ? "La verificación fue cancelada o no se seleccionó una Passkey."
+        : errorPasskey?.message ||
+          "No fue posible iniciar sesión con Face ID o Passkey.";
+
+    alert("❌ " + mensajeError);
+  } finally {
+    if (botonPasskey) {
+      botonPasskey.disabled = false;
+      botonPasskey.textContent =
+        "🔐 Entrar con Face ID o Passkey";
+      botonPasskey.style.opacity = "1";
+      botonPasskey.style.cursor = "pointer";
+    }
+  }
 }	
 
 async function crearCuentaMassId() {
@@ -10540,6 +10746,26 @@ font-family:Arial, sans-serif;">
 >
   🔐 Iniciar sesión
 </button>
+
+<div style="margin-top:12px;">
+  <button
+    id="btnMassIdPasskeyLogin"
+    type="button"
+    onclick="iniciarSesionPasskeyMassId()"
+    style="
+      width:100%;
+      background:#39ff14;
+      color:#111;
+      border:none;
+      border-radius:10px;
+      padding:12px 16px;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    🔐 Entrar con Face ID o Passkey
+  </button>
+</div>		
 
 		<button
   type="button"
