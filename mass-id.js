@@ -40,7 +40,15 @@ async function abrirMiMassId() {
 
 if (userError || !user) {
   console.error("ERROR OBTENIENDO USUARIO AUTH:", userError);
-  alert("❌ No se pudo identificar tu cuenta MASS.");
+
+  localStorage.removeItem("mass_user");
+  localStorage.removeItem("mass_dispositivo_id");
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+  window.location.reload();
   return;
 }
 
