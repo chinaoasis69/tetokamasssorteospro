@@ -154,6 +154,7 @@ if (typeof window.abrirAccesoV2 === "function") {
 }
 
 return;
+}
 
 const { data: perfil, error: perfilError } = await supabaseClient
   .from("usuarios_mass")
