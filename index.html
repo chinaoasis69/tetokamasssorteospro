@@ -4069,6 +4069,42 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     }
   }
 });
+
+let verificacionSesionMassIdEnProceso = false;
+
+async function verificarSesionMassIdActiva() {
+  if (verificacionSesionMassIdEnProceso) {
+    return;
+  }
+
+  verificacionSesionMassIdEnProceso = true;
+
+  try {
+    const {
+      data: { user },
+      error
+    } = await supabaseClient.auth.getUser();
+
+    const usuarioLocal = localStorage.getItem("mass_user");
+
+    if (usuarioLocal && (error || !user)) {
+      localStorage.removeItem("mass_user");
+      localStorage.removeItem("mass_dispositivo_id");
+
+      await supabaseClient.auth.signOut({
+        scope: "local"
+      });
+
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error("ERROR VERIFICANDO SESIÓN MASS ID:", error);
+  } finally {
+    verificacionSesionMassIdEnProceso = false;
+  }
+}
+
+setInterval(verificarSesionMassIdActiva, 15000);	
 	
 let userActual = localStorage.getItem("mass_user");
 let rifaActual = null;
