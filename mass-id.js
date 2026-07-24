@@ -18827,3 +18827,127 @@ window.addEventListener("load", function () {
     }, 500);
   }
 });
+
+async function registrarPasskeyMassId() {
+  const botonPasskey = document.getElementById(
+    "btnRegistrarPasskeyMassId"
+  );
+
+  const mensajePasskey = document.getElementById(
+    "massIdPasskeyMensaje"
+  );
+
+  if (!window.PublicKeyCredential) {
+    alert(
+      "❌ Este dispositivo o navegador no admite Face ID o Passkeys."
+    );
+    return;
+  }
+
+  try {
+    if (botonPasskey) {
+      botonPasskey.disabled = true;
+      botonPasskey.textContent = "Registrando dispositivo...";
+      botonPasskey.style.opacity = "0.6";
+      botonPasskey.style.cursor = "not-allowed";
+    }
+
+    if (mensajePasskey) {
+      mensajePasskey.style.display = "none";
+      mensajePasskey.textContent = "";
+    }
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } = await supabaseClient.auth.getSession();
+
+    if (
+      sessionError ||
+      !sessionData?.session?.user
+    ) {
+      throw new Error(
+        "Debes iniciar sesión antes de registrar Face ID o una Passkey."
+      );
+    }
+
+    const {
+      data: passkeyRegistrada,
+      error: passkeyError
+    } = await supabaseClient.auth.registerPasskey();
+
+    if (passkeyError) {
+      throw passkeyError;
+    }
+
+    console.log(
+      "PASSKEY MASS ID REGISTRADA:",
+      passkeyRegistrada
+    );
+
+    if (mensajePasskey) {
+      mensajePasskey.textContent =
+        "✅ Face ID o Passkey fue registrado correctamente.";
+
+      mensajePasskey.style.color = "#39ff14";
+      mensajePasskey.style.display = "block";
+    }
+
+    alert(
+      "✅ Face ID o Passkey fue registrado correctamente.\n\n" +
+      "Ya puedes utilizarlo para iniciar sesión en MASS ID."
+    );
+  } catch (errorPasskey) {
+    console.error(
+      "ERROR REGISTRANDO PASSKEY MASS ID:",
+      errorPasskey
+    );
+
+    let mensajeError =
+      errorPasskey?.message ||
+      "No fue posible registrar Face ID o Passkey.";
+
+    if (
+      errorPasskey?.name === "NotAllowedError"
+    ) {
+      mensajeError =
+        "El registro fue cancelado o el dispositivo no permitió crear la Passkey.";
+    }
+
+    if (
+      mensajeError.includes(
+        "webauthn_credential_exists"
+      )
+    ) {
+      mensajeError =
+        "Este dispositivo ya tiene una Passkey registrada para tu cuenta MASS ID.";
+    }
+
+    if (
+      mensajeError.includes(
+        "too_many_passkeys"
+      )
+    ) {
+      mensajeError =
+        "Tu cuenta alcanzó el número máximo de Passkeys permitidas.";
+    }
+
+    if (mensajePasskey) {
+      mensajePasskey.textContent =
+        "❌ " + mensajeError;
+
+      mensajePasskey.style.color = "#ff5252";
+      mensajePasskey.style.display = "block";
+    }
+
+    alert("❌ " + mensajeError);
+  } finally {
+    if (botonPasskey) {
+      botonPasskey.disabled = false;
+      botonPasskey.textContent =
+        "🔐 Registrar Face ID o Passkey";
+      botonPasskey.style.opacity = "1";
+      botonPasskey.style.cursor = "pointer";
+    }
+  }
+}
