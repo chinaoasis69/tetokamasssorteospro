@@ -33,6 +33,86 @@ async function abrirMiMassId() {
     return;
   }
 
+const authUserIdCierre =
+  localStorage.getItem(
+    "mass_cierre_auth_user_id"
+  );
+
+const emailCierre =
+  localStorage.getItem(
+    "mass_cierre_email"
+  );
+
+const fechaEliminacionCierre =
+  localStorage.getItem(
+    "mass_cierre_eliminacion_programada_at"
+  );
+
+if (authUserIdCierre) {
+  const menuPrincipal =
+    document.getElementById(
+      "massIdMenuPrincipal"
+    );
+
+  const panelRecuperarCuenta =
+    document.getElementById(
+      "massIdRecuperarCuenta"
+    );
+
+  const mensajeRecuperarCuenta =
+    document.getElementById(
+      "massIdRecuperarCuentaMensaje"
+    );
+
+  if (menuPrincipal) {
+    menuPrincipal.style.display = "none";
+  }
+
+  if (panelRecuperarCuenta) {
+    panelRecuperarCuenta.style.display = "block";
+  }
+
+  if (mensajeRecuperarCuenta) {
+    let textoRecuperacion =
+      "Tu cuenta MASS ID se encuentra dentro del periodo de recuperación.";
+
+    if (fechaEliminacionCierre) {
+      const fechaEliminacion =
+        new Date(fechaEliminacionCierre);
+
+      const ahora = new Date();
+
+      const diferenciaMilisegundos =
+        fechaEliminacion.getTime() -
+        ahora.getTime();
+
+      const diasRestantes = Math.max(
+        0,
+        Math.ceil(
+          diferenciaMilisegundos /
+          (1000 * 60 * 60 * 24)
+        )
+      );
+
+      textoRecuperacion =
+        `La cuenta ${emailCierre || "MASS ID"} está programada para cierre. ` +
+        `Tienes aproximadamente ${diasRestantes} día(s) para recuperarla.`;
+    }
+
+    mensajeRecuperarCuenta.textContent =
+      textoRecuperacion;
+  }
+
+  panel.style.display = "block";
+
+  panelRecuperarCuenta?.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  return;
+}  
+
   const {
   data: { user },
   error: userError
