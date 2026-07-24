@@ -682,6 +682,16 @@ const btnMassIdSolicitarCierreCuenta =
     "btnMassIdSolicitarCierreCuenta"
   );
 
+const motivoCierreCuenta =
+  document.getElementById(
+    "massIdMotivoCierre"
+  );
+
+const comentarioCierreCuenta =
+  document.getElementById(
+    "massIdComentarioCierre"
+  );  
+
 const mensajeCerrarDesactivarCuenta =
   document.getElementById(
     "massIdCerrarDesactivarCuentaMensaje"
