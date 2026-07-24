@@ -655,6 +655,11 @@ const btnVolverDispositivosConectados =
 const btnMassIdCerrarTodasSesiones =
   document.getElementById(
     "btnMassIdCerrarTodasSesiones"
+  );
+
+const btnMassIdCerrarDesactivarCuenta =
+  document.getElementById(
+    "btnMassIdCerrarDesactivarCuenta"
   );  
 
 const mensajeDispositivosConectados =
