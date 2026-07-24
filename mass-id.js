@@ -660,6 +660,31 @@ const btnMassIdCerrarTodasSesiones =
 const btnMassIdCerrarDesactivarCuenta =
   document.getElementById(
     "btnMassIdCerrarDesactivarCuenta"
+  );
+
+const seccionCerrarDesactivarCuenta =
+  document.getElementById(
+    "massIdCerrarDesactivarCuenta"
+  );
+
+const btnVolverCerrarDesactivarCuenta =
+  document.getElementById(
+    "btnVolverCerrarDesactivarCuenta"
+  );
+
+const btnMassIdDesactivarCuenta =
+  document.getElementById(
+    "btnMassIdDesactivarCuenta"
+  );
+
+const btnMassIdSolicitarCierreCuenta =
+  document.getElementById(
+    "btnMassIdSolicitarCierreCuenta"
+  );
+
+const mensajeCerrarDesactivarCuenta =
+  document.getElementById(
+    "massIdCerrarDesactivarCuentaMensaje"
   );  
 
 const mensajeDispositivosConectados =
