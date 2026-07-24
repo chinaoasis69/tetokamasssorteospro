@@ -13485,23 +13485,16 @@ async function cancelarCierreCuentaMassId() {
     "btnMassIdCancelarCierreCuenta"
   );
 
-  const {
-  data: { user },
-  error: errorUsuarioRecuperacion
-} = await supabaseClient.auth.getUser();
+  const authUserIdCierre =
+  localStorage.getItem("mass_cierre_auth_user_id");
 
-if (
-  errorUsuarioRecuperacion ||
-  !user
-) {
+if (!authUserIdCierre) {
   window.alert(
-    "Tu sesión de recuperación ya no está disponible. Inicia sesión nuevamente."
+    "No fue posible identificar la cuenta que deseas recuperar. Inicia sesión nuevamente."
   );
 
   return;
 }
-
-const authUserIdCierre = user.id;
 
   try {
     if (botonCancelarCierreActual) {
