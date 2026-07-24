@@ -9848,6 +9848,13 @@ if (!accesoMfaAprobado) {
   "true"
 );
 
+const accesoRecuperacion =
+  document.getElementById("accesoV2");
+
+if (accesoRecuperacion) {
+  accesoRecuperacion.style.display = "none";
+}
+
 if (
   typeof abrirMiMassId === "function"
 ) {
