@@ -10740,14 +10740,7 @@ font-family:Arial, sans-serif;">
   autocomplete="current-password"
 >
 
-<button
-  type="button"
-  onclick="iniciarSesionMassId()"
->
-  🔐 Iniciar sesión
-</button>
-
-<div style="margin-top:12px;">
+<div style="margin-top:14px;">
   <button
     id="btnMassIdPasskeyLogin"
     type="button"
@@ -10758,16 +10751,62 @@ font-family:Arial, sans-serif;">
       color:#111;
       border:none;
       border-radius:10px;
-      padding:12px 16px;
+      padding:14px 16px;
       font-weight:bold;
       cursor:pointer;
+      font-size:15px;
     "
   >
     🔐 Entrar con Face ID o Passkey
   </button>
-</div>		
+</div>
 
-		<button
+<div
+  style="
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:18px 0 14px;
+    color:#aaa;
+    font-size:13px;
+  "
+>
+  <span style="flex:1; height:1px; background:#444;"></span>
+  <span>O entrar con contraseña</span>
+  <span style="flex:1; height:1px; background:#444;"></span>
+</div>
+
+<input
+  id="massIdEmailLogin"
+  type="email"
+  placeholder="Correo electrónico"
+  autocomplete="email"
+/>
+
+<div
+  style="
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px;
+    margin-top:12px;
+  "
+>
+  <input
+    id="massIdPasswordLogin"
+    type="password"
+    placeholder="Contraseña"
+    autocomplete="current-password"
+  />
+
+  <button
+    type="button"
+    onclick="iniciarSesionMassId()"
+  >
+    🔒 Iniciar sesión
+  </button>
+</div>
+
+<button
   type="button"
   onclick="recuperarPasswordMassId()"
   style="
@@ -10781,7 +10820,6 @@ font-family:Arial, sans-serif;">
 >
   ¿Olvidaste tu contraseña?
 </button>
-    </div>
 
 <!-- VERIFICACIÓN MFA DURANTE EL INICIO DE SESIÓN -->
 <div
