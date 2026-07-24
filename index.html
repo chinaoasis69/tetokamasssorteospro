@@ -4087,16 +4087,23 @@ async function verificarSesionMassIdActiva() {
 
     const usuarioLocal = localStorage.getItem("mass_user");
 
-    if (usuarioLocal && (error || !user)) {
-      localStorage.removeItem("mass_user");
-      localStorage.removeItem("mass_dispositivo_id");
+const recuperacionCuentaActiva =
+  localStorage.getItem("mass_abrir_recuperacion_cuenta") === "true";
 
-      await supabaseClient.auth.signOut({
-  scope: "local"
-});
+if (
+  !recuperacionCuentaActiva &&
+  usuarioLocal &&
+  (error || !user)
+) {
+  localStorage.removeItem("mass_user");
+  localStorage.removeItem("mass_dispositivo_id");
 
-      window.location.reload();
-    }
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+  window.location.reload();
+}
   } catch (error) {
     console.error("ERROR VERIFICANDO SESIÓN MASS ID:", error);
   } finally {
