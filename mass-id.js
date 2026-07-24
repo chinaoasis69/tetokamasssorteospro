@@ -12990,6 +12990,56 @@ if (dispositivosParaMostrar.length === 0) {
         "block";
     }
   }
+}
+
+/* Cerrar todas las sesiones de MASS ID */
+async function cerrarTodasLasSesionesMassId() {
+  const confirmarCierre = window.confirm(
+    "¿Seguro que deseas cerrar todas las sesiones de tu cuenta MASS ID?"
+  );
+
+  if (!confirmarCierre) {
+    return;
+  }
+
+  try {
+    if (btnMassIdCerrarTodasSesiones) {
+      btnMassIdCerrarTodasSesiones.disabled = true;
+      btnMassIdCerrarTodasSesiones.style.opacity = "0.6";
+      btnMassIdCerrarTodasSesiones.style.cursor = "not-allowed";
+    }
+
+    const { error } = await supabaseClient.auth.signOut({
+      scope: "global"
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    localStorage.removeItem("mass_dispositivo_id");
+
+    window.alert(
+      "Todas las sesiones de tu cuenta MASS ID fueron cerradas correctamente."
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "ERROR CERRANDO TODAS LAS SESIONES MASS ID:",
+      error
+    );
+
+    window.alert(
+      "No fue posible cerrar todas las sesiones. Intenta nuevamente."
+    );
+  } finally {
+    if (btnMassIdCerrarTodasSesiones) {
+      btnMassIdCerrarTodasSesiones.disabled = false;
+      btnMassIdCerrarTodasSesiones.style.opacity = "1";
+      btnMassIdCerrarTodasSesiones.style.cursor = "pointer";
+    }
+  }
 }  
 
 /* Mostrar mensajes del panel Documentos legales */
@@ -13518,6 +13568,12 @@ if (
         block: "start"
       });
     };
+}
+
+  if (btnMassIdCerrarTodasSesiones) {
+  btnMassIdCerrarTodasSesiones.onclick = function () {
+    cerrarTodasLasSesionesMassId();
+  };
 }
 
 /* Volver desde Dispositivos conectados */
