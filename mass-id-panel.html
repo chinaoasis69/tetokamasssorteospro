@@ -351,6 +351,98 @@
         correspondiente.
       </p>
 
+      <div
+  style="
+    margin-top:16px;
+    padding:14px;
+    border:1px solid #7a1f1f;
+    border-radius:12px;
+    background:#181818;
+  "
+>
+  <p
+    style="
+      margin:0 0 12px;
+      color:#ffbf47;
+      font-weight:bold;
+      line-height:1.5;
+    "
+  >
+    Tendrás 30 días para recuperar tu cuenta antes de que el cierre sea definitivo.
+  </p>
+
+  <label
+    for="massIdMotivoCierre"
+    style="
+      display:block;
+      margin-bottom:6px;
+      color:#fff;
+      font-weight:bold;
+    "
+  >
+    Motivo del cierre
+  </label>
+
+  <select
+    id="massIdMotivoCierre"
+    style="
+      width:100%;
+      padding:12px;
+      margin-bottom:12px;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#101010;
+      color:#fff;
+    "
+  >
+    <option value="">Selecciona una opción</option>
+    <option value="ya_no_utilizo_la_cuenta">
+      Ya no utilizo la cuenta
+    </option>
+    <option value="preocupacion_privacidad">
+      Preocupación por privacidad
+    </option>
+    <option value="problemas_tecnicos">
+      Problemas técnicos
+    </option>
+    <option value="cuenta_duplicada">
+      Tengo otra cuenta MASS ID
+    </option>
+    <option value="otro">
+      Otro motivo
+    </option>
+  </select>
+
+  <label
+    for="massIdComentarioCierre"
+    style="
+      display:block;
+      margin-bottom:6px;
+      color:#fff;
+      font-weight:bold;
+    "
+  >
+    Comentario opcional
+  </label>
+
+  <textarea
+    id="massIdComentarioCierre"
+    maxlength="500"
+    rows="4"
+    placeholder="Cuéntanos brevemente por qué deseas cerrar tu cuenta."
+    style="
+      width:100%;
+      padding:12px;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#101010;
+      color:#fff;
+      resize:vertical;
+      box-sizing:border-box;
+    "
+  ></textarea>
+</div>
+
       <button
         id="btnMassIdSolicitarCierreCuenta"
         type="button"
