@@ -9838,12 +9838,20 @@ if (!accesoMfaAprobado) {
   );
 
   if (
+  typeof cerrarAccesoV2 === "function"
+) {
+  cerrarAccesoV2();
+}
+
+setTimeout(function () {
+  if (
     typeof abrirMiMassId === "function"
   ) {
     abrirMiMassId();
   }
+}, 300);
 
-  return;
+return;
 }
 
 if (perfil.estado !== "activo") {
