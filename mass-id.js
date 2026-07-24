@@ -13509,6 +13509,7 @@ async function cancelarCierreCuentaMassId() {
       new Date().toISOString();
 
     const {
+      data: cuentaRecuperada,
       error: errorCancelarCierre
     } = await supabaseClient
       .from("usuarios_mass")
@@ -13522,11 +13523,26 @@ async function cancelarCierreCuentaMassId() {
       .eq(
         "auth_user_id",
         authUserIdCierre
-      );
+      )
+      .select();
 
     if (errorCancelarCierre) {
       throw errorCancelarCierre;
     }
+
+    console.log(
+  "RESULTADO RECUPERACIÓN MASS ID:",
+  cuentaRecuperada
+);
+
+if (
+  !cuentaRecuperada ||
+  cuentaRecuperada.length === 0
+) {
+  throw new Error(
+    "Supabase no actualizó ninguna cuenta. Verifica la sesión autenticada y las políticas RLS."
+  );
+}
 
     localStorage.removeItem(
       "mass_cierre_auth_user_id"
