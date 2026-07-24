@@ -13455,6 +13455,100 @@ async function solicitarCierreCuentaMassId() {
       btnMassIdSolicitarCierreCuenta.style.cursor = "pointer";
     }
   }
+}
+
+/* Cancelar cierre y recuperar cuenta MASS ID */
+async function cancelarCierreCuentaMassId() {
+  const confirmarRecuperacion = window.confirm(
+    "¿Deseas cancelar el cierre y recuperar tu cuenta MASS ID?\n\n" +
+    "Tu cuenta volverá a quedar activa y podrás iniciar sesión normalmente."
+  );
+
+  if (!confirmarRecuperacion) {
+    return;
+  }
+
+  const authUserIdCierre =
+    localStorage.getItem(
+      "mass_cierre_auth_user_id"
+    );
+
+  if (!authUserIdCierre) {
+    window.alert(
+      "No fue posible identificar la cuenta que deseas recuperar."
+    );
+
+    return;
+  }
+
+  try {
+    if (btnCancelarCierreCuenta) {
+      btnCancelarCierreCuenta.disabled = true;
+      btnCancelarCierreCuenta.style.opacity = "0.6";
+      btnCancelarCierreCuenta.style.cursor = "not-allowed";
+    }
+
+    const fechaCancelacion =
+      new Date().toISOString();
+
+    const {
+      error: errorCancelarCierre
+    } = await supabaseClient
+      .from("usuarios_mass")
+      .update({
+        estado: "activo",
+        cierre_solicitado_at: null,
+        eliminacion_programada_at: null,
+        cierre_cancelado_at: fechaCancelacion,
+        motivo_cierre: null
+      })
+      .eq(
+        "auth_user_id",
+        authUserIdCierre
+      );
+
+    if (errorCancelarCierre) {
+      throw errorCancelarCierre;
+    }
+
+    localStorage.removeItem(
+      "mass_cierre_auth_user_id"
+    );
+
+    localStorage.removeItem(
+      "mass_cierre_email"
+    );
+
+    localStorage.removeItem(
+      "mass_cierre_eliminacion_programada_at"
+    );
+
+    localStorage.removeItem(
+      "mass_abrir_recuperacion_cuenta"
+    );
+
+    window.alert(
+      "✅ El cierre de tu cuenta fue cancelado correctamente.\n\n" +
+      "Tu cuenta MASS ID volvió a quedar activa. Ya puedes iniciar sesión."
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "ERROR CANCELANDO CIERRE DE CUENTA MASS ID:",
+      error
+    );
+
+    window.alert(
+      "No fue posible recuperar tu cuenta. Intenta nuevamente."
+    );
+  } finally {
+    if (btnCancelarCierreCuenta) {
+      btnCancelarCierreCuenta.disabled = false;
+      btnCancelarCierreCuenta.style.opacity = "1";
+      btnCancelarCierreCuenta.style.cursor = "pointer";
+    }
+  }
 }  
 
 /* Mostrar mensajes del panel Documentos legales */
@@ -14045,6 +14139,13 @@ if (btnMassIdDesactivarCuenta) {
 if (btnMassIdSolicitarCierreCuenta) {
   btnMassIdSolicitarCierreCuenta.onclick = function () {
     solicitarCierreCuentaMassId();
+  };
+}
+
+/* Cancelar cierre y recuperar cuenta MASS ID */
+if (btnCancelarCierreCuenta) {
+  btnCancelarCierreCuenta.onclick = function () {
+    cancelarCierreCuentaMassId();
   };
 }  
 
