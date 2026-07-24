@@ -13771,6 +13771,13 @@ if (
   };
 }
 
+/* Desactivar cuenta MASS ID */
+if (btnMassIdDesactivarCuenta) {
+  btnMassIdDesactivarCuenta.onclick = function () {
+    desactivarCuentaMassId();
+  };
+}  
+
 /* Volver desde Cerrar o desactivar cuenta */
 if (
   btnVolverCerrarDesactivarCuenta &&
