@@ -9812,11 +9812,51 @@ if (!accesoMfaAprobado) {
     return;
   }
 
-  if (perfil.estado !== "activo") {
-    await supabaseClient.auth.signOut();
-    alert("⏳ Tu cuenta MASS todavía no está activa.");
-    return;
+  if (perfil.estado === "cierre_solicitado") {
+  localStorage.setItem(
+    "mass_cierre_auth_user_id",
+    authUserId
+  );
+
+  localStorage.setItem(
+    "mass_cierre_email",
+    perfil.email || email
+  );
+
+  localStorage.setItem(
+    "mass_cierre_eliminacion_programada_at",
+    perfil.eliminacion_programada_at || ""
+  );
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+  alert(
+    "⏳ Tu cuenta MASS ID está programada para cierre.\n\n" +
+    "Puedes recuperarla durante el periodo de 30 días desde Mi MASS ID."
+  );
+
+  if (
+    typeof abrirMiMassId === "function"
+  ) {
+    abrirMiMassId();
   }
+
+  return;
+}
+
+if (perfil.estado !== "activo") {
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+  alert(
+    "⌛ Tu cuenta MASS todavía no está activa."
+  );
+
+  return;
+}
 
   userActual = perfil.telefono;
   usuarioMASS = perfil.telefono;
