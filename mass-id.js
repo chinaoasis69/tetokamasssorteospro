@@ -138,12 +138,22 @@ if (userError || !user) {
 
   panel.style.display = "none";
 
-  if (typeof abrirAccesoV2 === "function") {
-    await abrirAccesoV2();
+if (typeof window.abrirAccesoV2 === "function") {
+  await window.abrirAccesoV2();
+} else {
+  const accesoV2 = document.getElementById("accesoV2");
+  const menuAccesoV2 = document.getElementById("menuAccesoV2");
+
+  if (accesoV2) {
+    accesoV2.style.display = "block";
   }
 
-  return;
+  if (menuAccesoV2) {
+    menuAccesoV2.style.display = "grid";
+  }
 }
+
+return;
 
 const { data: perfil, error: perfilError } = await supabaseClient
   .from("usuarios_mass")
