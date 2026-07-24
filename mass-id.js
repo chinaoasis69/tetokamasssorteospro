@@ -13078,6 +13078,120 @@ async function cerrarTodasLasSesionesMassId() {
       btnMassIdCerrarTodasSesiones.style.cursor = "pointer";
     }
   }
+}
+
+/* Desactivar cuenta MASS ID */
+async function desactivarCuentaMassId() {
+  const confirmarDesactivacion = window.confirm(
+    "¿Seguro que deseas desactivar tu cuenta MASS ID?\n\n" +
+    "Tu cuenta quedará suspendida y no podrás iniciar sesión hasta solicitar su reactivación."
+  );
+
+  if (!confirmarDesactivacion) {
+    return;
+  }
+
+  try {
+    if (btnMassIdDesactivarCuenta) {
+      btnMassIdDesactivarCuenta.disabled = true;
+      btnMassIdDesactivarCuenta.style.opacity = "0.6";
+      btnMassIdDesactivarCuenta.style.cursor = "not-allowed";
+    }
+
+    const {
+      data: { user },
+      error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      throw userError || new Error(
+        "No fue posible identificar la cuenta MASS ID."
+      );
+    }
+
+    const fechaDesactivacion = new Date().toISOString();
+
+    const { error: errorDesactivarCuenta } =
+      await supabaseClient
+        .from("usuarios_mass")
+        .update({
+          estado: "desactivado",
+        })
+        .eq("auth_user_id", user.id);
+
+    if (errorDesactivarCuenta) {
+      throw errorDesactivarCuenta;
+    }
+
+    const { error: errorDesactivarDispositivos } =
+      await supabaseClient
+        .from("dispositivos_mass_id")
+        .update({
+          activo: false,
+          updated_at: fechaDesactivacion
+        })
+        .eq("auth_user_id", user.id);
+
+    if (errorDesactivarDispositivos) {
+      console.error(
+        "ERROR DESACTIVANDO DISPOSITIVOS MASS ID:",
+        errorDesactivarDispositivos
+      );
+    }
+
+    if (mensajeCerrarDesactivarCuenta) {
+      mensajeCerrarDesactivarCuenta.textContent =
+        "✅ Tu cuenta MASS ID fue desactivada correctamente.";
+
+      mensajeCerrarDesactivarCuenta.style.display = "block";
+      mensajeCerrarDesactivarCuenta.style.color = "#39ff14";
+      mensajeCerrarDesactivarCuenta.style.border =
+        "1px solid #39ff14";
+      mensajeCerrarDesactivarCuenta.style.background = "#101010";
+    }
+
+    await supabaseClient.auth.signOut({
+      scope: "global"
+    });
+
+    localStorage.removeItem("mass_user");
+    localStorage.removeItem("mass_telefono");
+    localStorage.removeItem("mass_auth_user_id");
+    localStorage.removeItem("mass_email");
+    localStorage.removeItem("mass_dispositivo_id");
+
+    window.alert(
+      "Tu cuenta MASS ID fue desactivada correctamente."
+    );
+
+    window.location.reload();
+  } catch (error) {
+    console.error(
+      "ERROR DESACTIVANDO CUENTA MASS ID:",
+      error
+    );
+
+    if (mensajeCerrarDesactivarCuenta) {
+      mensajeCerrarDesactivarCuenta.textContent =
+        "❌ No fue posible desactivar tu cuenta. Intenta nuevamente.";
+
+      mensajeCerrarDesactivarCuenta.style.display = "block";
+      mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
+      mensajeCerrarDesactivarCuenta.style.border =
+        "1px solid #ff5a5a";
+      mensajeCerrarDesactivarCuenta.style.background = "#101010";
+    }
+
+    window.alert(
+      "No fue posible desactivar tu cuenta. Intenta nuevamente."
+    );
+  } finally {
+    if (btnMassIdDesactivarCuenta) {
+      btnMassIdDesactivarCuenta.disabled = false;
+      btnMassIdDesactivarCuenta.style.opacity = "1";
+      btnMassIdDesactivarCuenta.style.cursor = "pointer";
+    }
+  }
 }  
 
 /* Mostrar mensajes del panel Documentos legales */
