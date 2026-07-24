@@ -13583,13 +13583,27 @@ localStorage.setItem(
   cerrarMiMassId();
 }
 
-if (typeof mostrarSesionActiva === "function") {
-  mostrarSesionActiva();
-}
+setTimeout(async function () {
+  try {
+    if (typeof cargarClienteActual === "function") {
+      await cargarClienteActual();
+    }
 
-if (typeof cargarClienteActual === "function") {
-  await cargarClienteActual();
-}
+    if (typeof mostrarSesionActiva === "function") {
+      mostrarSesionActiva();
+    }
+
+    console.log(
+      "✅ Interfaz restaurada después de recuperar la cuenta MASS ID."
+    );
+  } catch (errorInterfaz) {
+    console.error(
+      "ERROR RESTAURANDO INTERFAZ MASS ID:",
+      errorInterfaz
+    );
+  }
+}, 500);
+    
   } catch (error) {
     console.error(
       "ERROR CANCELANDO CIERRE DE CUENTA MASS ID:",
