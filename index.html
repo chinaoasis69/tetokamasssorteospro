@@ -8904,34 +8904,227 @@ async function subirImagenOrganizador(tipo){
   alert("✅ Imagen subida");
 }
 
-async function editarOrganizadorAdmin(id){
-  const { data, error } = await supabaseClient
-    .from("organizadores")
-    .select("*")
-    .eq("id", id)
-    .single();
+async function editarOrganizadorAdmin(id) {
 
-  if(error || !data){
-    alert("❌ No se pudo cargar el organizador");
-    console.error(error);
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
     return;
   }
 
- clienteActual = data;
+  const {
+    data: organizador,
+    error: errorCarga
+  } =
+    await supabaseClient
+      .from("organizadores")
+      .select(`
+        id,
+        nombre,
+        slug,
+        telefono,
+        activo
+      `)
+      .eq("id", id)
+      .maybeSingle();
 
-localStorage.setItem(
-  "organizador_admin_id",
-  data.id
-);
+  if (errorCarga || !organizador) {
+    console.error(
+      "ERROR CARGANDO ORGANIZADOR PARA EDICIÓN:",
+      errorCarga
+    );
 
-mostrarConfigAdmin(); 
+    alert(
+      "❌ No se pudo cargar el organizador."
+    );
+    return;
+  }
 
-setTimeout(() => {
-  document.getElementById("adminPanel")?.scrollIntoView({
-    behavior: "smooth",
-    block: "start"
-  });
-}, 300);
+  const nombreIngresado =
+    prompt(
+      "Nombre del negocio u organizador",
+      organizador.nombre || ""
+    );
+
+  if (nombreIngresado === null) {
+    return;
+  }
+
+  const nombre =
+    nombreIngresado.trim();
+
+  if (nombre.length < 3) {
+    alert(
+      "❌ El nombre debe tener al menos 3 caracteres."
+    );
+    return;
+  }
+
+  const slugIngresado =
+    prompt(
+      "Slug del organizador\n\n" +
+      "Ejemplo: dinamicas-matamoros",
+      organizador.slug || ""
+    );
+
+  if (slugIngresado === null) {
+    return;
+  }
+
+  const slug =
+    slugIngresado
+      .trim()
+      .toLowerCase();
+
+  if (slug.length < 3) {
+    alert(
+      "❌ Escribe un slug válido."
+    );
+    return;
+  }
+
+  const telefonoIngresado =
+    prompt(
+      "Teléfono o WhatsApp del negocio\n\n" +
+      "Este campo puede dejarse vacío.",
+      organizador.telefono || ""
+    );
+
+  if (telefonoIngresado === null) {
+    return;
+  }
+
+  const telefono =
+    telefonoIngresado.trim();
+
+  const estadoIngresado =
+    prompt(
+      "Estado del negocio\n\n" +
+      "1 = Activo\n" +
+      "2 = Inactivo",
+      organizador.activo ? "1" : "2"
+    );
+
+  if (estadoIngresado === null) {
+    return;
+  }
+
+  const estado =
+    estadoIngresado.trim();
+
+  if (
+    estado !== "1" &&
+    estado !== "2"
+  ) {
+    alert(
+      "❌ Escribe 1 para Activo o 2 para Inactivo."
+    );
+    return;
+  }
+
+  const activo =
+    estado === "1";
+
+  const confirmar =
+    confirm(
+      "¿Deseas guardar estos cambios?\n\n" +
+      "Nombre: " + nombre + "\n" +
+      "Slug: " + slug + "\n" +
+      "Teléfono: " +
+      (telefono || "Sin teléfono") + "\n" +
+      "Estado: " +
+      (activo ? "Activo" : "Inactivo")
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "actualizar_organizador_negocio",
+        {
+          p_organizador_id:
+            organizador.id,
+
+          p_nombre:
+            nombre,
+
+          p_slug:
+            slug,
+
+          p_telefono:
+            telefono || null,
+
+          p_activo:
+            activo
+        }
+      );
+
+    if (error) {
+      console.error(
+        "ERROR ACTUALIZANDO ORGANIZADOR:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible actualizar el organizador.\n\n" +
+        (
+          error.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+    if (!data?.ok) {
+      console.error(
+        "RESPUESTA INESPERADA ACTUALIZANDO ORGANIZADOR:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó la actualización."
+      );
+
+      return;
+    }
+
+    alert(
+      "✅ Organizador actualizado correctamente.\n\n" +
+      "Nombre: " + data.nombre + "\n" +
+      "Slug: " + data.slug + "\n" +
+      "Estado: " +
+      (data.activo ? "Activo" : "Inactivo")
+    );
+
+    await mostrarOrganizadoresAdmin();
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO ACTUALIZANDO ORGANIZADOR:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado " +
+      "al actualizar el organizador."
+    );
+  }
 }
 
 async function eliminarOrganizador(id){
