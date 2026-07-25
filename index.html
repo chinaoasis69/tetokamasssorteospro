@@ -4125,6 +4125,48 @@ if (errorAccesos) {
               ${acceso.activo ? "Activo ✅" : "Suspendido ⛔"}<br>
               🔗 MASS ID vinculado:
               ${acceso.auth_user_id ? "Sí ✅" : "Pendiente ⚠️"}
+
+			<br><br>
+
+${
+  acceso.activo
+    ? `
+      <button
+        type="button"
+        onclick="gestionarAccesoOrganizador(
+          '${acceso.id}',
+          'suspender'
+        )"
+      >
+        ⏸️ Suspender acceso
+      </button>
+    `
+    : `
+      <button
+        type="button"
+        onclick="gestionarAccesoOrganizador(
+          '${acceso.id}',
+          'reactivar'
+        )"
+      >
+        ▶️ Reactivar acceso
+      </button>
+    `
+}
+
+<button
+  type="button"
+  onclick="gestionarAccesoOrganizador(
+    '${acceso.id}',
+    'retirar'
+  )"
+  style="
+    background:#a30000;
+    color:white;
+  "
+>
+  🗑️ Retirar acceso
+</button>  
             </div>
           `).join("")
         : `
@@ -4144,6 +4186,168 @@ if (errorAccesos) {
   </div>
 `;
 }
+
+async function gestionarAccesoOrganizador(
+  accesoId,
+  accion
+) {
+
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
+    return;
+  }
+
+  const accesoIdLimpio =
+    String(accesoId || "").trim();
+
+  const accionLimpia =
+    String(accion || "")
+      .trim()
+      .toLowerCase();
+
+  const accionesPermitidas = [
+    "suspender",
+    "reactivar",
+    "retirar"
+  ];
+
+  if (
+    !accesoIdLimpio ||
+    !accionesPermitidas.includes(
+      accionLimpia
+    )
+  ) {
+    alert(
+      "❌ La acción solicitada no es válida."
+    );
+    return;
+  }
+
+  const organizadorId =
+    sessionStorage.getItem(
+      "organizador_accesos_id"
+    );
+
+  if (!organizadorId) {
+    alert(
+      "❌ No se encontró el organizador seleccionado."
+    );
+    return;
+  }
+
+  const mensajesConfirmacion = {
+    suspender:
+      "¿Deseas suspender este acceso?\n\n" +
+      "La persona conservará su MASS ID, " +
+      "pero no podrá ingresar como Organizador.",
+
+    reactivar:
+      "¿Deseas reactivar este acceso?\n\n" +
+      "La persona podrá volver a ingresar " +
+      "como Organizador.",
+
+    retirar:
+      "⚠️ ¿Deseas retirar este acceso?\n\n" +
+      "Se eliminará únicamente el permiso " +
+      "de Organizador.\n\n" +
+      "El MASS ID y el negocio no se borrarán."
+  };
+
+  const confirmar = confirm(
+    mensajesConfirmacion[accionLimpia]
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "gestionar_acceso_organizador",
+        {
+          p_acceso_id:
+            accesoIdLimpio,
+
+          p_accion:
+            accionLimpia
+        }
+      );
+
+    if (error) {
+      console.error(
+        "ERROR GESTIONANDO ACCESO:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible modificar el acceso.\n\n" +
+        (
+          error.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+    if (!data?.ok) {
+      console.error(
+        "RESPUESTA INESPERADA GESTIONANDO ACCESO:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó la operación."
+      );
+
+      return;
+    }
+
+    const mensajesExito = {
+      suspender:
+        "✅ El acceso fue suspendido.",
+
+      reactivar:
+        "✅ El acceso fue reactivado.",
+
+      retirar:
+        "✅ El permiso de Organizador fue retirado."
+    };
+
+    alert(
+      mensajesExito[accionLimpia]
+    );
+
+    await mostrarAccesosOrganizador(
+      organizadorId
+    );
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO GESTIONANDO ACCESO:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado " +
+      "al modificar el acceso."
+    );
+  }
+}	
 
 async function buscarCuentaMassParaAcceso() {
 
