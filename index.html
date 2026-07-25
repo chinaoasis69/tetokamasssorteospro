@@ -1402,6 +1402,67 @@ async function adminSecreto(){
 
     tapsAdmin = 0;
 
+	const modoAcceso =
+  localStorage.getItem(
+    "mass_modo_acceso"
+  );
+
+const rolSesion =
+  localStorage.getItem(
+    "admin_rol"
+  );
+
+if (
+  modoAcceso === "usuario" ||
+  ![
+    "organizador",
+    "super_admin"
+  ].includes(rolSesion)
+) {
+  localStorage.removeItem(
+    "admin_rol"
+  );
+
+  localStorage.removeItem(
+    "admin_organizador_id"
+  );
+
+  localStorage.removeItem(
+    "organizador_admin_id"
+  );
+
+  sessionStorage.removeItem(
+    "organizador_accesos_id"
+  );
+
+  const panelAdmin =
+    document.getElementById(
+      "panelAdmin"
+    );
+
+  const panelSuperAdmin =
+    document.getElementById(
+      "panelSuperAdmin"
+    );
+
+  if (panelAdmin) {
+    panelAdmin.style.display = "none";
+  }
+
+  if (panelSuperAdmin) {
+    panelSuperAdmin.style.display =
+      "none";
+  }
+
+  alert(
+    "🔒 Estás en modo Usuario MASS ID.\n\n" +
+    "Para abrir el Panel Administrativo, " +
+    "cierra sesión y entra desde la opción Organizador."
+  );
+
+  return;
+}  
+
     const tel = localStorage.getItem("mass_telefono");
 
     if(!tel){
