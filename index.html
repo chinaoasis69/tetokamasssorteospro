@@ -11008,6 +11008,50 @@ async function iniciarSesionOrganizadorV2() {
       return;
     }
 
+	const {
+  data: negocioOrganizador,
+  error: errorNegocioOrganizador
+} =
+  await supabaseClient
+    .from("organizadores")
+    .select(`
+      id,
+      nombre,
+      activo
+    `)
+    .eq("id", organizadorId)
+    .maybeSingle();
+
+if (
+  errorNegocioOrganizador ||
+  !negocioOrganizador
+) {
+  console.error(
+    "ERROR VERIFICANDO NEGOCIO DEL ORGANIZADOR:",
+    errorNegocioOrganizador
+  );
+
+  await supabaseClient.auth.signOut();
+
+  alert(
+    "❌ No fue posible verificar el estado del negocio."
+  );
+  return;
+}
+
+if (negocioOrganizador.activo === false) {
+  await supabaseClient.auth.signOut();
+
+  alert(
+    "⛔ Este negocio se encuentra inactivo.\n\n" +
+    "La cuenta MASS ID permanece activa, pero el panel " +
+    "de Organizador estará bloqueado hasta que el negocio " +
+    "sea reactivado por el Súper Admin."
+  );
+
+  return;
+}  
+
     localStorage.setItem(
       "admin_rol",
       "organizador"
