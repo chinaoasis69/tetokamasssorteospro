@@ -11111,7 +11111,12 @@ if (negocioOrganizador.activo === false) {
   );
 
   return;
-}  
+} 
+
+	localStorage.setItem(
+  "mass_modo_acceso",
+  "organizador"
+);  
 
     localStorage.setItem(
       "admin_rol",
@@ -11248,6 +11253,11 @@ const { data: adminData, error: adminError } =
       alert("❌ Esta cuenta no tiene permisos de Súper Admin.");
       return;
     }
+
+	localStorage.setItem(
+  "mass_modo_acceso",
+  "super_admin"
+);  
 
     localStorage.setItem("admin_rol", "super_admin");
     localStorage.removeItem("admin_organizador_id");
