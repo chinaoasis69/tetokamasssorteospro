@@ -1253,6 +1253,12 @@ async function volverPanelSuperAdmin(){
   document.getElementById("superAdminContenido").innerHTML = `
     <button onclick="mostrarDashboardGlobalSuperAdmin()">📊 Dashboard global</button>
     <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+	<button
+  type="button"
+  onclick="mostrarGestionAccesosOrganizadores()"
+>
+  👤 Accesos de Organizadores
+</button>
     <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
     <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
     <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
@@ -1461,6 +1467,12 @@ if(btnVolverSuperAdmin){
   document.getElementById("superAdminContenido").innerHTML = `
     <button onclick="mostrarDashboardGlobalSuperAdmin()">📊 Dashboard global</button>
     <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+	<button
+  type="button"
+  onclick="mostrarGestionAccesosOrganizadores()"
+>
+  👤 Accesos de Organizadores
+</button>
     <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
     <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
     <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
@@ -3702,6 +3714,172 @@ if (!organizadorActualizado) {
   await cargarClienteActual();
 }
 
+async function mostrarGestionAccesosOrganizadores() {
+
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
+    return;
+  }
+
+  const cont =
+    document.getElementById(
+      "superAdminContenido"
+    );
+
+  if (!cont) {
+    return;
+  }
+
+  cont.innerHTML =
+    "<p>Cargando organizadores...</p>";
+
+  const {
+    data: organizadores,
+    error
+  } =
+    await supabaseClient
+      .from("organizadores")
+      .select(`
+        id,
+        nombre,
+        slug,
+        telefono,
+        activo
+      `)
+      .order("nombre", {
+        ascending: true
+      });
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO ORGANIZADORES PARA ACCESOS:",
+      error
+    );
+
+    cont.innerHTML = `
+      <p>
+        ❌ No fue posible cargar los organizadores.
+      </p>
+
+      <button
+        type="button"
+        onclick="volverPanelSuperAdmin()"
+      >
+        ← Volver al Panel Súper Admin
+      </button>
+    `;
+
+    return;
+  }
+
+  cont.innerHTML = `
+    <h3>👤 Accesos de Organizadores</h3>
+
+    <div class="card">
+      <p style="color:#bbb;">
+        Busca el negocio que deseas administrar
+        y después asigna o revisa sus cuentas MASS ID.
+      </p>
+
+      <input
+        id="buscarOrganizadorParaAcceso"
+        type="text"
+        placeholder="Nombre, slug o teléfono"
+        autocomplete="off"
+        oninput="filtrarOrganizadoresParaAcceso()"
+      >
+    </div>
+
+    <div id="listaOrganizadoresParaAcceso">
+      ${
+        organizadores && organizadores.length > 0
+          ? organizadores.map(o => `
+              <div
+                class="card tarjetaOrganizadorParaAcceso"
+              >
+                <h3>
+                  🏢 ${o.nombre || "Organizador"}
+                </h3>
+
+                <p>
+                  Slug: ${o.slug || "--"}
+                </p>
+
+                <p>
+                  Teléfono: ${o.telefono || "--"}
+                </p>
+
+                <p>
+                  Estado:
+                  ${o.activo ? "Activo ✅" : "Inactivo ⛔"}
+                </p>
+
+                <button
+                  type="button"
+                  onclick="mostrarAccesosOrganizador('${o.id}')"
+                >
+                  👤 Abrir gestión de accesos
+                </button>
+              </div>
+            `).join("")
+          : `
+            <div class="card">
+              <p>
+                Todavía no existen organizadores.
+              </p>
+            </div>
+          `
+      }
+    </div>
+
+    <button
+      type="button"
+      onclick="volverPanelSuperAdmin()"
+    >
+      ← Volver al Panel Súper Admin
+    </button>
+  `;
+}
+
+
+function filtrarOrganizadoresParaAcceso() {
+
+  const termino =
+    String(
+      document.getElementById(
+        "buscarOrganizadorParaAcceso"
+      )?.value || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const tarjetas =
+    document.querySelectorAll(
+      ".tarjetaOrganizadorParaAcceso"
+    );
+
+  tarjetas.forEach(tarjeta => {
+
+    const contenido =
+      String(
+        tarjeta.textContent || ""
+      ).toLowerCase();
+
+    tarjeta.style.display =
+      contenido.includes(termino)
+        ? "block"
+        : "none";
+  });
+}	
+
 async function mostrarOrganizadoresAdmin(){
 
 	const adminActual = await obtenerAdminActual();
@@ -3756,13 +3934,6 @@ if (!adminActual || adminActual.rol !== "super_admin") {
 
 <button onclick="editarOrganizadorAdmin('${o.id}')">
 ✏️ Editar Organizador
-</button>
-
-<button
-  type="button"
-  onclick="mostrarAccesosOrganizador('${o.id}')"
->
-  👤 Administrar accesos
 </button>
 
 <button onclick="eliminarOrganizador('${o.id}')">
