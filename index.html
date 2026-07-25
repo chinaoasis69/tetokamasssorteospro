@@ -4072,15 +4072,152 @@ async function buscarCuentaMassParaAcceso() {
         🔗 Auth vinculado:
         ${cuenta.auth_user_id ? "Sí ✅" : "No ⚠️"}
 
-        <p style="
-          color:#bbb;
-          margin-bottom:0;
-        ">
-          Cuenta encontrada. En el siguiente paso
-          agregaremos la opción para asignarle acceso.
-        </p>
+       ${
+  cuenta.auth_user_id &&
+  cuenta.estado === "activo"
+    ? `
+      <button
+        type="button"
+        onclick="asignarCuentaMassAOrganizador(
+          '${cuenta.auth_user_id}'
+        )"
+        style="margin-top:16px;"
+      >
+        ✅ Asignar acceso de Organizador
+      </button>
+    `
+    : `
+      <p style="
+        color:#ffcc00;
+        margin-bottom:0;
+      ">
+        ⚠️ Esta cuenta debe estar activa y
+        vinculada con Supabase Auth antes
+        de poder asignarla.
+      </p>
+    `
+} 
       </div>
     `).join("");
+}
+
+async function asignarCuentaMassAOrganizador(
+  authUserId
+) {
+
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
+    return;
+  }
+
+  const organizadorId =
+    sessionStorage.getItem(
+      "organizador_accesos_id"
+    );
+
+  if (!organizadorId) {
+    alert(
+      "❌ No se encontró el organizador seleccionado."
+    );
+    return;
+  }
+
+  if (!authUserId) {
+    alert(
+      "❌ La cuenta MASS ID no tiene Auth vinculado."
+    );
+    return;
+  }
+
+  const confirmar = confirm(
+    "¿Deseas asignar esta cuenta MASS ID " +
+    "como administradora de este organizador?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "asignar_cuenta_mass_a_organizador",
+        {
+          p_organizador_id:
+            organizadorId,
+
+          p_auth_user_id:
+            authUserId
+        }
+      );
+
+    if (error) {
+      console.error(
+        "ERROR ASIGNANDO ACCESO:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible asignar el acceso.\n\n" +
+        (
+          error.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+    if (!data?.ok) {
+      console.error(
+        "RESPUESTA INESPERADA ASIGNANDO ACCESO:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó la asignación."
+      );
+
+      return;
+    }
+
+    const mensajeAccion =
+      data.accion === "actualizado"
+        ? "El acceso anterior fue vinculado y reactivado."
+        : "El acceso fue creado correctamente.";
+
+    alert(
+      "✅ Cuenta asignada como Organizador.\n\n" +
+      mensajeAccion
+    );
+
+    await mostrarAccesosOrganizador(
+      organizadorId
+    );
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO ASIGNANDO ACCESO:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado al asignar el acceso."
+    );
+  }
 }	
 
 async function seleccionarOrganizadorAdmin(id){
