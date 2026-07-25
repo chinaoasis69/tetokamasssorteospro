@@ -11505,6 +11505,64 @@ async function solicitarMfaLoginMassId() {
         }
       };
   });
+}
+
+function activarModoUsuarioMassId() {
+
+  /*
+    La persona entra como usuaria MASS ID.
+    Sus permisos reales no se eliminan,
+    solamente se limpia el contexto administrativo
+    guardado en este navegador.
+  */
+  localStorage.setItem(
+    "mass_modo_acceso",
+    "usuario"
+  );
+
+  localStorage.removeItem(
+    "admin_rol"
+  );
+
+  localStorage.removeItem(
+    "admin_organizador_id"
+  );
+
+  localStorage.removeItem(
+    "organizador_admin_id"
+  );
+
+  sessionStorage.removeItem(
+    "organizador_accesos_id"
+  );
+
+  const panelAdmin =
+    document.getElementById(
+      "panelAdmin"
+    );
+
+  const panelSuperAdmin =
+    document.getElementById(
+      "panelSuperAdmin"
+    );
+
+  const btnVolverSuperAdmin =
+    document.getElementById(
+      "btnVolverSuperAdmin"
+    );
+
+  if (panelAdmin) {
+    panelAdmin.style.display = "none";
+  }
+
+  if (panelSuperAdmin) {
+    panelSuperAdmin.style.display = "none";
+  }
+
+  if (btnVolverSuperAdmin) {
+    btnVolverSuperAdmin.style.display =
+      "none";
+  }
 }	
 
 async function iniciarSesionMassId() {
@@ -11653,8 +11711,7 @@ await supabaseClient.auth.signOut({
   localStorage.setItem("mass_auth_user_id", authUserId);
   localStorage.setItem("mass_email", perfil.email || email);
 
-  localStorage.removeItem("admin_rol");
-  localStorage.removeItem("admin_organizador_id");
+  activarModoUsuarioMassId();
 
   await supabaseClient
     .from("usuarios_mass")
@@ -11915,9 +11972,8 @@ async function iniciarSesionPasskeyMassId() {
       "mass_email",
       perfil.email || authData?.user?.email || ""
     );
-
-    localStorage.removeItem("admin_rol");
-    localStorage.removeItem("admin_organizador_id");
+	  
+    activarModoUsuarioMassId();
 
     await supabaseClient
       .from("usuarios_mass")
