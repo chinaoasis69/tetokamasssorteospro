@@ -4129,6 +4129,181 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 }
 });
 
+function mostrarContinuacionRecuperacionMassId() {
+  const parametros =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const confirmationUrl =
+    parametros.get("confirmation_url");
+
+  if (!confirmationUrl) {
+    return;
+  }
+
+  let enlaceConfirmacion;
+
+  try {
+    enlaceConfirmacion =
+      new URL(confirmationUrl);
+  } catch (errorUrl) {
+    console.error(
+      "ENLACE DE RECUPERACIÓN INVÁLIDO:",
+      errorUrl
+    );
+    return;
+  }
+
+  const origenSupabase =
+    new URL(SUPABASE_URL).origin;
+
+  if (
+    enlaceConfirmacion.origin !==
+      origenSupabase ||
+    enlaceConfirmacion.pathname !==
+      "/auth/v1/verify"
+  ) {
+    console.error(
+      "EL ENLACE DE RECUPERACIÓN NO PERTENECE A SUPABASE."
+    );
+    return;
+  }
+
+  const acceso =
+    document.getElementById("accesoV2");
+
+  const menu =
+    document.getElementById(
+      "menuAccesoV2"
+    );
+
+  const login =
+    document.getElementById(
+      "formUsuarioV2"
+    );
+
+  const registro =
+    document.getElementById(
+      "formOrganizadorV2"
+    );
+
+  const organizador =
+    document.getElementById(
+      "formLoginOrganizadorV2"
+    );
+
+  const superAdmin =
+    document.getElementById(
+      "formSuperAdminV2"
+    );
+
+  const regresar =
+    document.getElementById(
+      "btnRegresarMenuV2"
+    );
+
+  if (!acceso) {
+    return;
+  }
+
+  acceso.style.display = "block";
+
+  if (menu) {
+    menu.style.display = "none";
+  }
+
+  if (login) {
+    login.style.display = "none";
+  }
+
+  if (registro) {
+    registro.style.display = "none";
+  }
+
+  if (organizador) {
+    organizador.style.display = "none";
+  }
+
+  if (superAdmin) {
+    superAdmin.style.display = "none";
+  }
+
+  if (regresar) {
+    regresar.style.display = "none";
+  }
+
+  let tarjeta =
+    document.getElementById(
+      "formContinuarRecuperacionMassId"
+    );
+
+  if (!tarjeta) {
+    tarjeta =
+      document.createElement("div");
+
+    tarjeta.id =
+      "formContinuarRecuperacionMassId";
+
+    tarjeta.style.marginTop = "24px";
+
+    tarjeta.innerHTML = `
+      <h3>🔐 Recuperar contraseña</h3>
+
+      <p style="
+        text-align:center;
+        opacity:.8;
+        line-height:1.5;
+      ">
+        Presiona el botón para verificar tu solicitud
+        y crear una contraseña nueva.
+      </p>
+
+      <button
+        id="btnContinuarRecuperacionMassId"
+        type="button"
+        style="margin-top:16px;"
+      >
+        Continuar con el cambio de contraseña
+      </button>
+    `;
+
+    acceso.firstElementChild
+      ?.appendChild(tarjeta);
+  }
+
+  tarjeta.style.display = "block";
+
+  const botonContinuar =
+    document.getElementById(
+      "btnContinuarRecuperacionMassId"
+    );
+
+  if (botonContinuar) {
+    botonContinuar.onclick =
+      function () {
+        botonContinuar.disabled = true;
+
+        botonContinuar.textContent =
+          "Verificando solicitud...";
+
+        window.location.assign(
+          enlaceConfirmacion.href
+        );
+      };
+  }
+}
+
+window.addEventListener(
+  "DOMContentLoaded",
+  function () {
+    setTimeout(
+      mostrarContinuacionRecuperacionMassId,
+      0
+    );
+  }
+);	
+
 let verificacionSesionMassIdEnProceso = false;
 
 async function verificarSesionMassIdActiva() {
@@ -7642,6 +7817,21 @@ cargarMisBoletos();
 
 // Abrir acceso MASS ID únicamente cuando no existe sesión activa
 window.addEventListener("DOMContentLoaded", async () => {
+
+  const parametrosRecuperacion =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  if (
+    parametrosRecuperacion.has(
+      "confirmation_url"
+    )
+  ) {
+    mostrarContinuacionRecuperacionMassId();
+    return;
+  }
+
   try {
     const {
       data: { session },
