@@ -4433,6 +4433,11 @@ async function buscarCuentaMassParaAcceso() {
     return;
   }
 
+const organizadorSeleccionadoId =
+  sessionStorage.getItem(
+    "organizador_accesos_id"
+  );	
+
   resultado.innerHTML =
     cuentas.map(cuenta => `
       <div style="
@@ -4456,29 +4461,73 @@ async function buscarCuentaMassParaAcceso() {
         ${cuenta.auth_user_id ? "Sí ✅" : "No ⚠️"}
 
        ${
-  cuenta.auth_user_id &&
-  cuenta.estado === "activo"
+  cuenta.organizador_actual_id
     ? `
-      <button
-        type="button"
-        onclick="asignarCuentaMassAOrganizador(
-          '${cuenta.auth_user_id}'
-        )"
-        style="margin-top:16px;"
-      >
-        ✅ Asignar acceso de Organizador
-      </button>
-    `
-    : `
-      <p style="
+      <div style="
+        margin-top:16px;
+        padding:12px;
+        border:1px solid #ffcc00;
+        border-radius:10px;
         color:#ffcc00;
-        margin-bottom:0;
       ">
-        ⚠️ Esta cuenta debe estar activa y
-        vinculada con Supabase Auth antes
-        de poder asignarla.
-      </p>
+        ${
+          String(
+            cuenta.organizador_actual_id
+          ) === String(
+            organizadorSeleccionadoId
+          )
+            ? `
+              ✅ Esta cuenta ya administra
+              este mismo negocio.
+            `
+            : `
+              ⚠️ Esta cuenta ya administra
+              otro negocio.
+            `
+        }
+
+        <br><br>
+
+        🏢 ${
+          cuenta.organizador_actual_nombre ||
+          "Organizador sin nombre"
+        }
+
+        <br>
+
+        📌 Acceso:
+        ${
+          cuenta.organizador_actual_activo
+            ? "Activo ✅"
+            : "Suspendido ⛔"
+        }
+      </div>
     `
+    : (
+        cuenta.auth_user_id &&
+        cuenta.estado === "activo"
+      )
+      ? `
+        <button
+          type="button"
+          onclick="asignarCuentaMassAOrganizador(
+            '${cuenta.auth_user_id}'
+          )"
+          style="margin-top:16px;"
+        >
+          ✅ Asignar acceso de Organizador
+        </button>
+      `
+      : `
+        <p style="
+          color:#ffcc00;
+          margin-bottom:0;
+        ">
+          ⚠️ Esta cuenta debe estar activa y
+          vinculada con Supabase Auth antes
+          de poder asignarla.
+        </p>
+      `
 } 
       </div>
     `).join("");
