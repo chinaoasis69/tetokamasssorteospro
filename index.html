@@ -3758,6 +3758,13 @@ if (!adminActual || adminActual.rol !== "super_admin") {
 ✏️ Editar Organizador
 </button>
 
+<button
+  type="button"
+  onclick="mostrarAccesosOrganizador('${o.id}')"
+>
+  👤 Administrar accesos
+</button>
+
 <button onclick="eliminarOrganizador('${o.id}')">
 🗑️ Eliminar Organizador
 </button>
@@ -3769,6 +3776,312 @@ if (!adminActual || adminActual.rol !== "super_admin") {
     `).join("")}
   `;
 }
+
+async function mostrarAccesosOrganizador(organizadorId) {
+
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
+    return;
+  }
+
+  const cont =
+    document.getElementById(
+      "superAdminContenido"
+    );
+
+  if (!cont) {
+    return;
+  }
+
+  cont.innerHTML =
+    "<p>Cargando accesos...</p>";
+
+  const {
+    data: organizador,
+    error
+  } =
+    await supabaseClient
+      .from("organizadores")
+      .select("id, nombre, slug")
+      .eq("id", organizadorId)
+      .maybeSingle();
+
+  if (error || !organizador) {
+    console.error(
+      "ERROR CARGANDO ORGANIZADOR PARA ACCESOS:",
+      error
+    );
+
+    cont.innerHTML = `
+      <p>
+        ❌ No se pudo cargar el organizador.
+      </p>
+
+      <button
+        type="button"
+        onclick="mostrarOrganizadoresAdmin()"
+      >
+        ← Regresar
+      </button>
+    `;
+
+    return;
+  }
+
+  sessionStorage.setItem(
+    "organizador_accesos_id",
+    organizador.id
+  );
+
+const {
+  data: accesos,
+  error: errorAccesos
+} =
+  await supabaseClient
+    .from("admin_organizadores")
+    .select(`
+      id,
+      nombre,
+      email,
+      telefono,
+      rol,
+      activo,
+      auth_user_id
+    `)
+    .eq("organizador_id", organizador.id)
+    .order("fecha_creacion", {
+      ascending: false
+    });
+
+if (errorAccesos) {
+  console.error(
+    "ERROR CARGANDO ACCESOS DEL ORGANIZADOR:",
+    errorAccesos
+  );
+}	
+
+  cont.innerHTML = `
+  <h3>👤 Administrar accesos</h3>
+
+  <div class="card">
+    <h3>
+      ${organizador.nombre || "Organizador"}
+    </h3>
+
+    <p>
+      Slug:
+      ${organizador.slug || "--"}
+    </p>
+
+    <p style="color:#bbb;">
+      Aquí asignaremos cuentas MASS ID
+      para administrar este organizador.
+    </p>
+  </div>
+
+  <div class="card">
+  <h3>➕ Asignar cuenta MASS ID</h3>
+
+  <p style="color:#bbb;">
+    Busca una cuenta existente por correo,
+    teléfono o número MASS ID.
+  </p>
+
+  <input
+    id="buscarCuentaMassAcceso"
+    type="text"
+    placeholder="Correo, teléfono o MASS ID"
+    autocomplete="off"
+    onkeydown="
+      if (event.key === 'Enter') {
+        buscarCuentaMassParaAcceso();
+      }
+    "
+  >
+
+  <button
+    type="button"
+    onclick="buscarCuentaMassParaAcceso()"
+  >
+    🔎 Buscar cuenta
+  </button>
+
+  <div
+    id="resultadoBusquedaCuentaMassAcceso"
+    style="margin-top:18px;"
+  ></div>
+</div>
+
+  <div class="card">
+    <h3>🔐 Accesos actuales</h3>
+
+    ${
+      accesos && accesos.length > 0
+        ? accesos.map(acceso => `
+            <div style="
+              border:1px solid #39ff14;
+              border-radius:12px;
+              padding:14px;
+              margin:12px 0;
+              text-align:left;
+            ">
+              <b>
+                👤 ${acceso.nombre || "Sin nombre"}
+              </b>
+
+              <br><br>
+
+              📧 ${acceso.email || "--"}<br>
+              📱 ${acceso.telefono || "--"}<br>
+              🛡️ Rol: ${acceso.rol || "--"}<br>
+              📌 Estado:
+              ${acceso.activo ? "Activo ✅" : "Suspendido ⛔"}<br>
+              🔗 MASS ID vinculado:
+              ${acceso.auth_user_id ? "Sí ✅" : "Pendiente ⚠️"}
+            </div>
+          `).join("")
+        : `
+          <p style="color:#bbb;">
+            Todavía no hay cuentas asignadas
+            a este organizador.
+          </p>
+        `
+    }
+
+    <button
+      type="button"
+      onclick="mostrarOrganizadoresAdmin()"
+    >
+      ← Regresar a Organizadores
+    </button>
+  </div>
+`;
+}
+
+async function buscarCuentaMassParaAcceso() {
+
+  const adminActual =
+    await obtenerAdminActual();
+
+  if (
+    !adminActual ||
+    adminActual.rol !== "super_admin"
+  ) {
+    alert(
+      "❌ Acceso exclusivo para Súper Admin."
+    );
+    return;
+  }
+
+  const input =
+    document.getElementById(
+      "buscarCuentaMassAcceso"
+    );
+
+  const resultado =
+    document.getElementById(
+      "resultadoBusquedaCuentaMassAcceso"
+    );
+
+  if (!input || !resultado) {
+    return;
+  }
+
+  const termino =
+    String(input.value || "").trim();
+
+  if (!termino) {
+    resultado.innerHTML = `
+      <p style="color:#ffcc00;">
+        ⚠️ Escribe un correo, teléfono
+        o número MASS ID.
+      </p>
+    `;
+
+    input.focus();
+    return;
+  }
+
+  resultado.innerHTML =
+    "<p>Buscando cuenta MASS ID...</p>";
+
+  const {
+  data: cuentas,
+  error
+} =
+  await supabaseClient.rpc(
+    "buscar_cuenta_mass_para_acceso",
+    {
+      p_termino: termino
+    }
+  );
+
+  if (error) {
+    console.error(
+      "ERROR BUSCANDO CUENTA MASS ID:",
+      error
+    );
+
+    resultado.innerHTML = `
+      <p style="color:#ff5252;">
+        ❌ No fue posible buscar la cuenta.
+      </p>
+    `;
+
+    return;
+  }
+
+  if (!cuentas || cuentas.length === 0) {
+    resultado.innerHTML = `
+      <p style="color:#bbb;">
+        No encontramos una cuenta MASS ID
+        con esos datos.
+      </p>
+    `;
+
+    return;
+  }
+
+  resultado.innerHTML =
+    cuentas.map(cuenta => `
+      <div style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:14px;
+        margin:12px 0;
+        text-align:left;
+      ">
+        <b>
+          👤 ${cuenta.nombre || "Sin nombre"}
+        </b>
+
+        <br><br>
+
+        🆔 ${cuenta.mass_id || "MASS ID pendiente"}<br>
+        📧 ${cuenta.email || "--"}<br>
+        📱 ${cuenta.telefono || "--"}<br>
+        📌 Estado: ${cuenta.estado || "--"}<br>
+        🔗 Auth vinculado:
+        ${cuenta.auth_user_id ? "Sí ✅" : "No ⚠️"}
+
+        <p style="
+          color:#bbb;
+          margin-bottom:0;
+        ">
+          Cuenta encontrada. En el siguiente paso
+          agregaremos la opción para asignarle acceso.
+        </p>
+      </div>
+    `).join("");
+}	
 
 async function seleccionarOrganizadorAdmin(id){
 
