@@ -9454,6 +9454,13 @@ function regresarMenuAccesoV2(){
 
     document.getElementById("formOrganizadorV2").style.display="none";
 
+	const formLoginOrganizador =
+  document.getElementById("formLoginOrganizadorV2");
+
+if (formLoginOrganizador) {
+  formLoginOrganizador.style.display = "none";
+}
+
     document.getElementById("formSuperAdminV2").style.display="none";
 
     document.getElementById("btnRegresarMenuV2").style.display="none";
@@ -9472,6 +9479,9 @@ function prepararVistaAccesoV2(vistaActiva) {
 
   const registro =
     document.getElementById("formOrganizadorV2");
+
+  const organizador =
+    document.getElementById("formLoginOrganizadorV2");	
 
   const superAdmin =
     document.getElementById("formSuperAdminV2");
@@ -9504,6 +9514,13 @@ function prepararVistaAccesoV2(vistaActiva) {
         : "none";
   }
 
+if (organizador) {
+  organizador.style.display =
+    vistaActiva === "organizador"
+      ? "block"
+      : "none";
+}	
+
   if (superAdmin) {
     superAdmin.style.display =
       vistaActiva === "superAdmin"
@@ -9528,9 +9545,207 @@ function mostrarLoginOrganizadorV2() {
   prepararVistaAccesoV2("registro");
 }
 
+function mostrarAccesoOrganizadorV2() {
+  prepararVistaAccesoV2("organizador");
+}	
+
 function mostrarLoginSuperAdminV2() {
   prepararVistaAccesoV2("superAdmin");
 }
+
+async function iniciarSesionOrganizadorV2() {
+  const email = (
+    document.getElementById("organizadorEmailV2")
+      ?.value || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const password = (
+    document.getElementById("organizadorPasswordV2")
+      ?.value || ""
+  ).trim();
+
+  if (!email || !password) {
+    alert(
+      "❌ Ingresa tu correo y contraseña de Organizador."
+    );
+    return;
+  }
+
+  try {
+    const {
+      data: authData,
+      error: authError
+    } =
+      await supabaseClient.auth
+        .signInWithPassword({
+          email,
+          password
+        });
+
+    if (authError || !authData?.user) {
+      console.error(
+        "ERROR LOGIN ORGANIZADOR:",
+        authError
+      );
+
+      alert(
+        "❌ Correo o contraseña de Organizador incorrectos."
+      );
+      return;
+    }
+
+    const authUserId = authData.user.id;
+
+    const {
+      data: adminData,
+      error: adminError
+    } =
+      await supabaseClient
+        .from("admin_organizadores")
+        .select("*")
+        .eq("auth_user_id", authUserId)
+        .eq("rol", "organizador")
+        .maybeSingle();
+
+    if (adminError) {
+      console.error(
+        "ERROR BUSCANDO ORGANIZADOR:",
+        adminError
+      );
+
+      await supabaseClient.auth.signOut();
+
+      alert(
+        "❌ No se pudo verificar la cuenta de Organizador."
+      );
+      return;
+    }
+
+    if (!adminData) {
+      await supabaseClient.auth.signOut();
+
+      alert(
+        "❌ Esta cuenta no tiene permisos de Organizador."
+      );
+      return;
+    }
+
+    const estadoOrganizador =
+      String(adminData.estado || "")
+        .trim()
+        .toLowerCase();
+
+    if (
+      adminData.activo === false ||
+      estadoOrganizador === "inactivo" ||
+      estadoOrganizador === "suspendido" ||
+      estadoOrganizador === "bloqueado"
+    ) {
+      await supabaseClient.auth.signOut();
+
+      alert(
+        "⏳ Esta cuenta de Organizador no está activa."
+      );
+      return;
+    }
+
+    const organizadorId =
+      adminData.organizador_id;
+
+    if (!organizadorId) {
+      await supabaseClient.auth.signOut();
+
+      alert(
+        "❌ La cuenta todavía no está vinculada con un organizador."
+      );
+      return;
+    }
+
+    localStorage.setItem(
+      "admin_rol",
+      "organizador"
+    );
+
+    localStorage.setItem(
+      "admin_organizador_id",
+      String(organizadorId)
+    );
+
+    /*
+      Compatibilidad con funciones anteriores
+      del panel organizador.
+    */
+    localStorage.setItem(
+      "organizador_admin_id",
+      String(organizadorId)
+    );
+
+    localStorage.setItem(
+      "mass_auth_user_id",
+      authUserId
+    );
+
+    localStorage.setItem(
+      "mass_email",
+      email
+    );
+
+    if (adminData.telefono) {
+      localStorage.setItem(
+        "mass_telefono",
+        adminData.telefono
+      );
+
+      localStorage.setItem(
+        "mass_user",
+        adminData.telefono
+      );
+    } else {
+      localStorage.removeItem("mass_telefono");
+      localStorage.removeItem("mass_user");
+    }
+
+    const accesoOrganizador =
+      document.getElementById("accesoV2");
+
+    if (accesoOrganizador) {
+      accesoOrganizador.style.display =
+        "none";
+    }
+
+    if (
+      typeof mostrarSesionActiva ===
+      "function"
+    ) {
+      await mostrarSesionActiva();
+    }
+
+    if (
+      typeof mostrarPanelAdmin ===
+      "function"
+    ) {
+      await mostrarPanelAdmin();
+    }
+
+    alert(
+      "✅ Bienvenido al panel de Organizador."
+    );
+
+  } catch (error) {
+    console.error(
+      "ERROR INESPERADO LOGIN ORGANIZADOR:",
+      error
+    );
+
+    await supabaseClient.auth.signOut();
+
+    alert(
+      "❌ Ocurrió un error al iniciar sesión como Organizador."
+    );
+  }
+}	
 
 async function iniciarSesionSuperAdminV2() {
   const email = (
@@ -10826,6 +11041,13 @@ font-family:Arial, sans-serif;">
         📝 Crear cuenta
       </button>
 
+	<button
+  type="button"
+  onclick="mostrarAccesoOrganizadorV2()"
+>
+  🏢 Organizador
+</button>	
+
       <button type="button" onclick="mostrarLoginSuperAdminV2()">
         👑 Súper Admin
       </button>
@@ -11190,8 +11412,40 @@ font-family:Arial, sans-serif;">
 >
   📝 Crear cuenta
 </button>
-		
-    </div>
+ </div>
+	  
+  <div
+  id="formLoginOrganizadorV2"
+  style="display:none; margin-top:24px;"
+>
+  <h3>🏢 Acceso de Organizador</h3>
+
+  <p style="text-align:center; opacity:.8;">
+    Ingresa con el correo y contraseña de tu cuenta de organizador.
+  </p>
+
+  <input
+    id="organizadorEmailV2"
+    type="email"
+    placeholder="Correo electrónico"
+    autocomplete="email"
+  >
+
+  <input
+    id="organizadorPasswordV2"
+    type="password"
+    placeholder="Contraseña"
+    autocomplete="current-password"
+  >
+
+  <button
+    type="button"
+    onclick="iniciarSesionOrganizadorV2()"
+    style="margin-top:16px;"
+  >
+    🏢 Entrar como Organizador
+  </button>
+</div>  
 
     <div
       id="formSuperAdminV2"
