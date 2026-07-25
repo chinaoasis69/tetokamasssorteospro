@@ -4547,21 +4547,39 @@ async function asignarCuentaMassAOrganizador(
       );
 
     if (error) {
-      console.error(
-        "ERROR ASIGNANDO ACCESO:",
-        error
-      );
+  console.error(
+    "ERROR ASIGNANDO ACCESO:",
+    error
+  );
 
-      alert(
-        "❌ No fue posible asignar el acceso.\n\n" +
-        (
-          error.message ||
-          "Error desconocido."
-        )
-      );
+  const cuentaYaAsignada =
+    error.code === "23505" ||
+    String(
+      error.message || ""
+    ).includes(
+      "admin_organizadores_unico_auth_organizador_idx"
+    );
 
-      return;
-    }
+  if (cuentaYaAsignada) {
+    alert(
+      "⚠️ Esta cuenta MASS ID ya administra otro negocio.\n\n" +
+      "Primero debes retirar su acceso anterior " +
+      "antes de asignarla a un organizador diferente."
+    );
+
+    return;
+  }
+
+  alert(
+    "❌ No fue posible asignar el acceso.\n\n" +
+    (
+      error.message ||
+      "Error desconocido."
+    )
+  );
+
+  return;
+}
 
     if (!data?.ok) {
       console.error(
