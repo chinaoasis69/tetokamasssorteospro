@@ -4016,27 +4016,35 @@ const {
   data: accesos,
   error: errorAccesos
 } =
-  await supabaseClient
-    .from("admin_organizadores")
-    .select(`
-      id,
-      nombre,
-      email,
-      telefono,
-      rol,
-      activo,
-      auth_user_id
-    `)
-    .eq("organizador_id", organizador.id)
-    .order("fecha_creacion", {
-      ascending: false
-    });
+  await supabaseClient.rpc(
+    "listar_accesos_organizador",
+    {
+      p_organizador_id:
+        organizador.id
+    }
+  );
 
 if (errorAccesos) {
   console.error(
     "ERROR CARGANDO ACCESOS DEL ORGANIZADOR:",
     errorAccesos
   );
+
+  cont.innerHTML = `
+    <p style="color:#ff5252;">
+      ❌ No fue posible cargar los accesos
+      de este organizador.
+    </p>
+
+    <button
+      type="button"
+      onclick="mostrarGestionAccesosOrganizadores()"
+    >
+      ← Regresar a Accesos de Organizadores
+    </button>
+  `;
+
+  return;
 }	
 
   cont.innerHTML = `
