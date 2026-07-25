@@ -11737,6 +11737,8 @@ if (accesoV2SesionActiva) {
   cargarHistorialSorteos();
   cargarHistorialPremios();
 
+  activarModoUsuarioMassId();
+	
   alert("✅ Bienvenido a MASS ID");
 }
 
@@ -12012,8 +12014,11 @@ async function iniciarSesionPasskeyMassId() {
     if (typeof cargarHistorialPremios === "function") {
       cargarHistorialPremios();
     }
-
+	  
+    activarModoUsuarioMassId();
+	  
     alert("✅ Bienvenido a MASS ID con Passkey.");
+	  
   } catch (errorPasskey) {
     console.error(
       "ERROR INICIANDO SESIÓN CON PASSKEY:",
