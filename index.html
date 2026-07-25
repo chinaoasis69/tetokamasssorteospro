@@ -4040,44 +4040,93 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 }
 
   if (event === "PASSWORD_RECOVERY") {
-    const acceso = document.getElementById("accesoV2");
-    const menu = document.getElementById("menuAccesoV2");
-    const login = document.getElementById("formUsuarioV2");
-    const registro = document.getElementById("formOrganizadorV2");
-    const superAdmin = document.getElementById("formSuperAdminV2");
-    const nuevaPassword = document.getElementById(
-      "formNuevaPasswordMassId"
-    );
-    const regresar = document.getElementById("btnRegresarMenuV2");
 
-    if (acceso) {
+  const abrirFormularioRecuperacionPassword =
+    function () {
+
+      const acceso =
+        document.getElementById("accesoV2");
+
+      const menu =
+        document.getElementById("menuAccesoV2");
+
+      const login =
+        document.getElementById("formUsuarioV2");
+
+      const registro =
+        document.getElementById("formOrganizadorV2");
+
+      const organizador =
+        document.getElementById(
+          "formLoginOrganizadorV2"
+        );
+
+      const superAdmin =
+        document.getElementById(
+          "formSuperAdminV2"
+        );
+
+      const nuevaPassword =
+        document.getElementById(
+          "formNuevaPasswordMassId"
+        );
+
+      const regresar =
+        document.getElementById(
+          "btnRegresarMenuV2"
+        );
+
+      if (!acceso || !nuevaPassword) {
+        return;
+      }
+
       acceso.style.display = "block";
-    }
 
-    if (menu) {
-      menu.style.display = "none";
-    }
+      if (menu) {
+        menu.style.display = "none";
+      }
 
-    if (login) {
-      login.style.display = "none";
-    }
+      if (login) {
+        login.style.display = "none";
+      }
 
-    if (registro) {
-      registro.style.display = "none";
-    }
+      if (registro) {
+        registro.style.display = "none";
+      }
 
-    if (superAdmin) {
-      superAdmin.style.display = "none";
-    }
+      if (organizador) {
+        organizador.style.display = "none";
+      }
 
-    if (regresar) {
-      regresar.style.display = "none";
-    }
+      if (superAdmin) {
+        superAdmin.style.display = "none";
+      }
 
-    if (nuevaPassword) {
+      if (regresar) {
+        regresar.style.display = "none";
+      }
+
       nuevaPassword.style.display = "block";
-    }
+
+      setTimeout(() => {
+        document
+          .getElementById("massIdNuevaPassword")
+          ?.focus();
+      }, 150);
+    };
+
+  if (document.readyState === "loading") {
+    window.addEventListener(
+      "DOMContentLoaded",
+      abrirFormularioRecuperacionPassword,
+      { once: true }
+    );
+  } else {
+    abrirFormularioRecuperacionPassword();
   }
+
+  return;
+}
 });
 
 let verificacionSesionMassIdEnProceso = false;
@@ -10330,7 +10379,7 @@ async function recuperarPasswordMassId() {
     const { error } =
       await supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo:
-          "https://tetokamasssorteospro.netlify.app/"
+           "https://sorteos.tetokamass.com/"
       });
 
     if (error) {
