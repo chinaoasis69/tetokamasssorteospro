@@ -9769,6 +9769,7 @@ const boletosVisibles = filtrados.filter(
 
   boletosVisibles.forEach(b => {
     const btn = document.createElement("button");
+	btn.className = "boleto";  
     btn.innerText = b.numero;
 
     if(b.estado === "vendido"){
