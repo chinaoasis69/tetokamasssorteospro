@@ -10047,17 +10047,40 @@ const paginacionBox =
 
 if (paginacionBox) {
 
-  const mostrandoDesde =
-    boletosVisibles.length === 0
-      ? 0
-      : inicioPaginaBoletos + 1;
+  const primerBoletoPagina =
+  boletosPaginaActual[0];
 
 
-  const mostrandoHasta =
-    Math.min(
-      finPaginaBoletos,
-      boletosVisibles.length
-    );
+const ultimoBoletoPagina =
+  boletosPaginaActual[
+    boletosPaginaActual.length - 1
+  ];
+
+
+const mostrandoDesde =
+  primerBoletoPagina
+    ? String(
+        Number(
+          primerBoletoPagina.numero
+        )
+      ).padStart(
+        digitosMostrar,
+        "0"
+      )
+    : "--";
+
+
+const mostrandoHasta =
+  ultimoBoletoPagina
+    ? String(
+        Number(
+          ultimoBoletoPagina.numero
+        )
+      ).padStart(
+        digitosMostrar,
+        "0"
+      )
+    : "--";
 
 
   if (
