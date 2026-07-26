@@ -737,6 +737,41 @@ input{
   .mass-sponsor-arrow-next {
     right: 0;
   }
+}
+
+/* =====================================================
+   MASS PATROCINADORES V2
+   AJUSTE PARA 1 O 2 PATROCINADORES
+===================================================== */
+
+/* Un solo patrocinador:
+   tarjeta ancha y centrada en cualquier pantalla */
+.mass-sponsor-card:only-child {
+  flex: 0 0 min(100%, 520px);
+  width: min(100%, 520px);
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Dos patrocinadores:
+   ocupan correctamente el espacio en laptop */
+@media (min-width: 901px) {
+
+  .mass-sponsor-card:first-child:nth-last-child(2),
+  .mass-sponsor-card:first-child:nth-last-child(2)
+  ~ .mass-sponsor-card {
+    flex-basis: calc((100% - 16px) / 2);
+  }
+
+}
+
+/* Ocultar flechas cuando solamente existe una tarjeta */
+.mass-sponsor-carousel:has(
+  .mass-sponsor-card:only-child
+)
+.mass-sponsor-arrow {
+  display: none;
 }	
 
 </style>
