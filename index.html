@@ -1870,21 +1870,40 @@ const { error } = await supabaseClient
   mostrarPremiosAdmin();
 }	
 
-async function mostrarPatrocinadoresAdmin(){
+async function mostrarPatrocinadoresAdmin(organizadorId = null){
 
-  const cont = document.getElementById("adminContenido");
+  const adminRol =
+    localStorage.getItem("admin_rol");
 
-  const adminRol = localStorage.getItem("admin_rol");
-const adminOrgId = localStorage.getItem("admin_organizador_id");
+  const adminOrgId =
+    localStorage.getItem("admin_organizador_id");
 
-let query = supabaseClient
-  .from("patrocinadores")
-  .select("*")
-  .order("created_at", { ascending: false });
+  const cont =
+    adminRol === "super_admin" && organizadorId
+      ? document.getElementById("superAdminContenido")
+      : document.getElementById("adminContenido");
 
-if (adminRol === "organizador") {
-  query = query.eq("organizador_id", adminOrgId || clienteActual?.id);
-}
+  if (!cont) {
+    alert("❌ No se encontró el panel de patrocinadores.");
+    return;
+  }
+
+  const organizadorFiltroId =
+    adminRol === "organizador"
+      ? (adminOrgId || clienteActual?.id)
+      : organizadorId;
+
+  let query = supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (organizadorFiltroId) {
+    query = query.eq(
+      "organizador_id",
+      organizadorFiltroId
+    );
+  }
 
 const { data, error } = await query;
 
