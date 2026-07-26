@@ -1878,6 +1878,16 @@ async function mostrarPatrocinadoresAdmin(organizadorId = null){
   const adminOrgId =
     localStorage.getItem("admin_organizador_id");
 
+	if (
+  adminRol === "super_admin" &&
+  organizadorId
+) {
+  sessionStorage.setItem(
+    "patrocinador_organizador_id",
+    organizadorId
+  );
+}
+
   const cont =
     adminRol === "super_admin" && organizadorId
       ? document.getElementById("superAdminContenido")
@@ -1956,6 +1966,15 @@ async function nuevoPatrocinador(){
 
   const adminRol = localStorage.getItem("admin_rol");
 
+const organizadorSeleccionadoId =
+  adminRol === "super_admin"
+    ? sessionStorage.getItem(
+        "patrocinador_organizador_id"
+      )
+    : localStorage.getItem(
+        "admin_organizador_id"
+      );	
+
 let mensajeTipo = "¿Dónde pertenece este patrocinador?\n\n";
 
 if (adminRol === "super_admin") {
@@ -2002,7 +2021,7 @@ if (tipo === "1" && adminRol !== "super_admin") {
   }
 
   if(tipo === "2"){
-  organizador_id = localStorage.getItem("admin_organizador_id");
+  organizador_id = organizadorSeleccionadoId;
 
   if(!organizador_id){
     alert("❌ No se encontró el organizador de esta sesión.");
@@ -2013,7 +2032,7 @@ if (tipo === "1" && adminRol !== "super_admin") {
 }
 
   if(tipo === "3"){
-  organizador_id = localStorage.getItem("admin_organizador_id");
+  organizador_id = organizadorSeleccionadoId;
 
   if(!organizador_id){
     alert("❌ No se encontró el organizador de esta sesión.");
@@ -2071,7 +2090,12 @@ if (tipo === "1" && adminRol !== "super_admin") {
   }
 
   alert("✅ Patrocinador agregado");
-  mostrarPatrocinadoresAdmin();
+
+await mostrarPatrocinadoresAdmin(
+  adminRol === "super_admin"
+    ? organizadorSeleccionadoId
+    : null
+);
 }
 
 	function puedeEditarPatrocinador(p){
