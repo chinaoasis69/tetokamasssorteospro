@@ -531,7 +531,7 @@ Selecciona una rifa
 	  
 </div>
 <div id="patrocinadoresSorteoCard" class="card" style="text-align:center;margin:20px auto;display:none !important;">
-  <h3>🤝 Patrocinadores del sorteo</h3>
+  <h3>🤝 Patrocinadores</h3>
   <div id="patrocinadoresBox">
     Próximamente...
   </div>
@@ -7425,17 +7425,153 @@ async function cargarPatrocinadoresPublicos(
     return;
   }
 
-  box.innerHTML = data.map(p => `
-    <div class="card" style="margin:10px 0;text-align:center;">
-      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:140px;border-radius:12px;"><br>` : ""}
-      <b>${p.nombre || ""}</b><br>
-      ${p.descripcion || ""}<br>
-      <span style="color:#7CFF00;font-weight:bold;">
-        ${p.promocion || ""}
-      </span><br><br>
-      ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}','_blank')">📲 Contactar</button>` : ""}
-    </div>
-  `).join("");
+  const crearTarjetaPatrocinador = (p) => `
+  <div
+    class="card"
+    style="
+      margin:10px 0;
+      text-align:center;
+    "
+  >
+    ${
+      p.logo_url
+        ? `
+          <img
+            src="${p.logo_url}"
+            alt="Logo de ${p.nombre || "patrocinador"}"
+            style="
+              max-width:140px;
+              border-radius:12px;
+            "
+          >
+          <br>
+        `
+        : ""
+    }
+
+    <b>
+      ${p.nombre || ""}
+    </b>
+    <br>
+
+    ${p.descripcion || ""}
+    <br>
+
+    <span
+      style="
+        color:#7CFF00;
+        font-weight:bold;
+      "
+    >
+      ${p.promocion || ""}
+    </span>
+
+    <br><br>
+
+    ${
+      p.whatsapp
+        ? `
+          <button
+            type="button"
+            onclick="window.open(
+              'https://wa.me/${p.whatsapp}',
+              '_blank'
+            )"
+          >
+            📱 Contactar
+          </button>
+        `
+        : ""
+    }
+  </div>
+`;
+
+
+if (tipo === "rifa") {
+
+  const patrocinadoresOrganizador =
+    data.filter(
+      p => !p.rifa_id
+    );
+
+  const patrocinadoresExclusivos =
+    data.filter(
+      p =>
+        String(p.rifa_id) ===
+        String(id)
+    );
+
+  box.innerHTML = `
+
+    ${
+      patrocinadoresOrganizador.length > 0
+        ? `
+          <section
+            style="
+              margin-bottom:28px;
+            "
+          >
+            <h3>
+              🤝 Patrocinadores del Organizador
+            </h3>
+
+            <p
+              style="
+                margin-top:-6px;
+                opacity:.85;
+              "
+            >
+              Beneficios generales disponibles
+              en las dinámicas de este Organizador.
+            </p>
+
+            ${
+              patrocinadoresOrganizador
+                .map(crearTarjetaPatrocinador)
+                .join("")
+            }
+          </section>
+        `
+        : ""
+    }
+
+    ${
+      patrocinadoresExclusivos.length > 0
+        ? `
+          <section>
+            <h3>
+              🎯 Patrocinadores exclusivos de este sorteo
+            </h3>
+
+            <p
+              style="
+                margin-top:-6px;
+                opacity:.85;
+              "
+            >
+              Promociones especiales válidas
+              únicamente para esta dinámica.
+            </p>
+
+            ${
+              patrocinadoresExclusivos
+                .map(crearTarjetaPatrocinador)
+                .join("")
+            }
+          </section>
+        `
+        : ""
+    }
+
+  `;
+
+} else {
+
+  box.innerHTML =
+    data
+      .map(crearTarjetaPatrocinador)
+      .join("");
+}
 }	
 
 async function cargarClientePorId(clienteId){
