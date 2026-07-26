@@ -3098,10 +3098,6 @@ style="background:#a30000;color:white;">
   🤝 Patrocinadores de esta rifa
 </button>
 
-<button onclick="generarBoletosRifaAdmin('${r.id}', ${r.total_numeros || 0})">
-🎟️ Generar boletos
-</button>
-
 ` : `
 
 <div style="
@@ -4108,16 +4104,65 @@ if (
     nuevaRifa = res.data;
 
     if (!error && nuevaRifa) {
-      await generarBoletosParaRifa(nuevaRifa.id, Number(total));
 
-      await supabaseClient.from("premios_rifa").insert([{
-        rifa_id: nuevaRifa.id,
-        lugar: 1,
-        nombre: premio,
-        descripcion: "Premio principal",
-        imagen_url: imagen
-      }]);
-    }
+  const boletosGenerados =
+    await generarBoletosParaRifa(
+      nuevaRifa.id,
+      Number(total)
+    );
+
+
+  if (!boletosGenerados) {
+
+    console.error(
+      "La rifa fue creada, pero falló la generación automática de boletos:",
+      nuevaRifa.id
+    );
+
+
+    cerrarModalRifa();
+    mostrarSorteosAdmin();
+
+    return;
+  }
+
+
+  const {
+    error: premioError
+  } = await supabaseClient
+    .from("premios_rifa")
+    .insert([{
+      rifa_id:
+        nuevaRifa.id,
+
+      lugar:
+        1,
+
+      nombre:
+        premio,
+
+      descripcion:
+        "Premio principal",
+
+      imagen_url:
+        imagen
+    }]);
+
+
+  if (premioError) {
+
+    console.error(
+      "Error guardando el premio principal:",
+      premioError
+    );
+
+    alert(
+      "⚠️ Los boletos se generaron correctamente, pero no se pudo registrar el premio principal."
+    );
+
+  }
+
+}
   }
 
   if (error) {
@@ -4254,68 +4299,405 @@ if(premioError){
     mostrarSorteosAdmin();
 }
 
-async function generarBoletosParaRifa(rifaId, total){
-
-  const { data: existentes, error: errorCheck } = await supabaseClient
-    .from("boletos")
-    .select("id")
-    .eq("rifa_id", rifaId)
-    .limit(1);
-
-  if(errorCheck){
-    console.error(errorCheck);
-    alert("❌ Error revisando boletos existentes");
-    return;
-  }
-
-  if(existentes && existentes.length > 0){
-    console.log("Esta rifa ya tiene boletos. No se generan duplicados.");
-    return;
-  }
+async function generarBoletosParaRifa(
+  rifaId,
+  total
+) {
 
   const cantidadTotal = Number(total);
-const digitos = String(cantidadTotal - 1).length;
-const boletos = [];
 
-for (let i = 0; i < cantidadTotal; i++) {
-  boletos.push({
-    rifa_id: rifaId,
-    numero: String(i).padStart(digitos, "0"),
-    estado: "disponible"
-  });
+
+  if (
+    !rifaId ||
+    !Number.isInteger(cantidadTotal) ||
+    cantidadTotal <= 0
+  ) {
+
+    console.error(
+      "Datos inválidos para generar boletos:",
+      {
+        rifaId,
+        total
+      }
+    );
+
+    alert(
+      "❌ No se pudieron generar los boletos porque la información de la rifa no es válida."
+    );
+
+    return false;
+  }
+
+
+  /*
+    Revisar si la rifa ya tiene boletos
+    para evitar números duplicados.
+  */
+
+  const {
+    count: cantidadExistente,
+    error: errorCheck
+  } = await supabaseClient
+    .from("boletos")
+    .select(
+      "id",
+      {
+        count: "exact",
+        head: true
+      }
+    )
+    .eq(
+      "rifa_id",
+      rifaId
+    );
+
+
+  if (errorCheck) {
+
+    console.error(
+      "Error revisando boletos existentes:",
+      errorCheck
+    );
+
+    alert(
+      "❌ No se pudo revisar si la rifa ya tiene boletos."
+    );
+
+    return false;
+  }
+
+
+  const boletosExistentes =
+    Number(cantidadExistente || 0);
+
+
+  if (
+    boletosExistentes ===
+    cantidadTotal
+  ) {
+
+    console.log(
+      "La rifa ya tiene todos sus boletos:",
+      boletosExistentes
+    );
+
+    return true;
+  }
+
+
+  if (boletosExistentes > 0) {
+
+    console.error(
+      "La rifa tiene una generación incompleta:",
+      {
+        esperados: cantidadTotal,
+        existentes: boletosExistentes
+      }
+    );
+
+    alert(
+      `⚠️ Esta rifa tiene una generación incompleta.\n\n` +
+      `Boletos esperados: ${cantidadTotal}\n` +
+      `Boletos existentes: ${boletosExistentes}\n\n` +
+      `No se generaron boletos adicionales para evitar duplicados.`
+    );
+
+    return false;
+  }
+
+
+  /*
+    Generar por lotes para evitar enviar
+    miles de registros en una sola petición.
+  */
+
+  const TAMANO_LOTE = 1000;
+
+  const digitos =
+    String(
+      cantidadTotal - 1
+    ).length;
+
+
+  for (
+    let inicio = 0;
+    inicio < cantidadTotal;
+    inicio += TAMANO_LOTE
+  ) {
+
+    const final =
+      Math.min(
+        inicio + TAMANO_LOTE,
+        cantidadTotal
+      );
+
+
+    const lote = [];
+
+
+    for (
+      let numeroActual = inicio;
+      numeroActual < final;
+      numeroActual++
+    ) {
+
+      lote.push({
+        rifa_id: rifaId,
+
+        numero:
+          String(numeroActual)
+            .padStart(
+              digitos,
+              "0"
+            ),
+
+        estado:
+          "disponible"
+      });
+
+    }
+
+
+    const {
+      error: errorLote
+    } = await supabaseClient
+      .from("boletos")
+      .insert(lote);
+
+
+    if (errorLote) {
+
+      console.error(
+        `Error generando boletos del ${inicio} al ${final - 1}:`,
+        errorLote
+      );
+
+
+      /*
+        Limpiar los lotes que alcanzaron
+        a guardarse para no dejar una
+        generación incompleta.
+      */
+
+      const {
+        error: errorLimpieza
+      } = await supabaseClient
+        .from("boletos")
+        .delete()
+        .eq(
+          "rifa_id",
+          rifaId
+        );
+
+
+      if (errorLimpieza) {
+
+        console.error(
+          "No se pudieron limpiar los boletos incompletos:",
+          errorLimpieza
+        );
+
+      }
+
+
+      alert(
+        "❌ Ocurrió un error generando los boletos.\n\n" +
+        "La rifa no debe activarse hasta corregir la generación."
+      );
+
+      return false;
+    }
+
+
+    console.log(
+      `Boletos generados: ${final} de ${cantidadTotal}`
+    );
+
+  }
+
+
+  console.log(
+    "✅ Generación automática terminada:",
+    cantidadTotal
+  );
+
+
+  return true;
 }
 
-  const { error } = await supabaseClient
-    .from("boletos")
-    .insert(boletos);
+async function activarRifaAdmin(id) {
 
-  if(error){
-    console.error(error);
-    alert("⚠️ Rifa creada pero hubo error generando boletos");
+  if (!id) {
+
+    alert(
+      "❌ No se encontró la rifa que deseas activar."
+    );
+
     return;
   }
 
-  console.log("Boletos generados:", total);
-}	
 
-async function activarRifaAdmin(id){
+  /*
+    Consultar la cantidad oficial de números
+    configurada para esta rifa.
+  */
 
-    const confirmar = confirm("¿Activar esta rifa?");
-    if(!confirmar) return;
+  const {
+    data: rifa,
+    error: errorRifa
+  } = await supabaseClient
+    .from("rifas")
+    .select(
+      "id, titulo, total_numeros"
+    )
+    .eq(
+      "id",
+      id
+    )
+    .single();
 
-    const { error } = await supabaseClient
-        .from("rifas")
-        .update({ estado: "activa" })
-        .eq("id", id);
 
-    if(error){
-        console.error(error);
-        alert("❌ Error activando rifa");
-        return;
-    }
+  if (errorRifa || !rifa) {
 
-    alert("✅ Rifa activada");
-mostrarSorteosAdmin();
+    console.error(
+      "Error consultando la rifa:",
+      errorRifa
+    );
+
+    alert(
+      "❌ No se pudo consultar la información de la rifa."
+    );
+
+    return;
+  }
+
+
+  const totalEsperado =
+    Number(
+      rifa.total_numeros || 0
+    );
+
+
+  if (
+    !Number.isInteger(totalEsperado) ||
+    totalEsperado <= 0
+  ) {
+
+    alert(
+      "❌ La rifa no tiene una cantidad de números válida."
+    );
+
+    return;
+  }
+
+
+  /*
+    Contar los boletos realmente guardados
+    para esta rifa.
+  */
+
+  const {
+    count: totalExistente,
+    error: errorConteo
+  } = await supabaseClient
+    .from("boletos")
+    .select(
+      "id",
+      {
+        count: "exact",
+        head: true
+      }
+    )
+    .eq(
+      "rifa_id",
+      id
+    );
+
+
+  if (errorConteo) {
+
+    console.error(
+      "Error contando boletos:",
+      errorConteo
+    );
+
+    alert(
+      "❌ No se pudo comprobar la generación de los boletos."
+    );
+
+    return;
+  }
+
+
+  const boletosGenerados =
+    Number(
+      totalExistente || 0
+    );
+
+
+  if (
+    boletosGenerados !==
+    totalEsperado
+  ) {
+
+    alert(
+      `⚠️ Esta rifa todavía no puede activarse.\n\n` +
+      `Boletos esperados: ${totalEsperado}\n` +
+      `Boletos generados: ${boletosGenerados}\n\n` +
+      `Primero debe completarse correctamente la generación automática.`
+    );
+
+    return;
+  }
+
+
+  const confirmar = confirm(
+    `¿Activar la rifa "${rifa.titulo || "Sin título"}"?\n\n` +
+    `Boletos verificados: ${boletosGenerados}`
+  );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const {
+    error: errorActivar
+  } = await supabaseClient
+    .from("rifas")
+    .update({
+      estado: "activa"
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  if (errorActivar) {
+
+    console.error(
+      "Error activando la rifa:",
+      errorActivar
+    );
+
+    alert(
+      "❌ No se pudo activar la rifa."
+    );
+
+    return;
+  }
+
+
+  alert(
+    `✅ Rifa activada correctamente.\n\n` +
+    `${boletosGenerados} boletos verificados.`
+  );
+
+
+  mostrarSorteosAdmin();
+
 }
 
 async function editarRifaAdmin(id){
