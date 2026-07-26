@@ -9759,18 +9759,35 @@ const rifaActual = rifas.find(
 const modalidadActual = Number(rifaActual?.modalidad || 1);
 const totalNumerosRifa = Number(
   rifaActual?.total_numeros || filtrados.length
-);
+);	
 
 const limiteVisible = totalNumerosRifa / modalidadActual;
 
 const boletosVisibles = filtrados.filter(
   b => Number(b.numero) < limiteVisible
+);
+
+const digitosMostrar = Math.max(
+  2,
+  String(
+    Math.max(
+      totalNumerosRifa - 1,
+      0
+    )
+  ).length
 );	
 
   boletosVisibles.forEach(b => {
     const btn = document.createElement("button");
-	btn.className = "boleto";  
-    btn.innerText = b.numero;
+	btn.className = "boleto";
+	  
+    btn.innerText =
+  String(
+    Number(b.numero)
+  ).padStart(
+    digitosMostrar,
+    "0"
+  );
 
     if(b.estado === "vendido"){
   btn.style.background = "#444";
