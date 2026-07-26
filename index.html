@@ -7374,7 +7374,11 @@ async function cargarPatrocinadoresPlataforma() {
   `;
 }	
 
-async function cargarPatrocinadoresPublicos(tipo = "organizador", id = null){
+async function cargarPatrocinadoresPublicos(
+  tipo = "organizador",
+  id = null,
+  organizadorId = null
+){
 
   const box = document.getElementById("patrocinadoresBox");
   if(!box) return;
@@ -7390,10 +7394,23 @@ async function cargarPatrocinadoresPublicos(tipo = "organizador", id = null){
       .is("rifa_id", null);
   }
 
-  if(tipo === "rifa"){
-    query = query
-      .eq("rifa_id", id);
+  if (tipo === "rifa") {
+
+  if (!id || !organizadorId) {
+    box.innerHTML =
+      "No se encontró la información del sorteo.";
+    return;
   }
+
+  query = query
+    .eq(
+      "organizador_id",
+      organizadorId
+    )
+    .or(
+      `rifa_id.is.null,rifa_id.eq.${id}`
+    );
+}
 
   const { data, error } = await query.order("created_at", { ascending:false });
 
@@ -7492,7 +7509,6 @@ async function abrirRifa(rifaId){
 if (cardSorteo) {
   cardSorteo.style.setProperty("display", "block", "important");
 }
-await cargarPatrocinadoresPublicos("rifa", rifaId);
 
 	mostrarPatrocinadorPlataforma(false);
 
@@ -7514,6 +7530,14 @@ if (actividadBox) {
         .select("*")
         .eq("id", rifaId)
         .single();
+
+	if (!error && rifa) {
+  await cargarPatrocinadoresPublicos(
+    "rifa",
+    rifa.id,
+    rifa.organizador_id
+  );
+}
 
 	localStorage.setItem("organizador_actual_id", rifa.organizador_id);
 await cargarSaldo();
