@@ -3980,26 +3980,53 @@ if (!adminActual || adminActual.rol !== "super_admin") {
         margin:10px 0;
       ">
         <b>${o.nombre}</b><br>
-        Slug: ${o.slug}<br>
-        Tel: ${o.telefono || "--"}<br>
-        Activo: ${o.activo ? "Sí" : "No"}
+Slug: ${o.slug}<br>
+Tel: ${o.telefono || "--"}<br>
+Activo: ${o.activo ? "Sí" : "No"}<br><br>
+
+<b>👥 Organizadores asignados: ${o.total_organizadores || 0}</b><br>
+
+${
+  Array.isArray(o.organizadores_asignados) &&
+  o.organizadores_asignados.length > 0
+
+    ? o.organizadores_asignados.map(acceso => `
+        <div style="
+          margin-top:8px;
+          padding:10px;
+          border:1px solid #555;
+          border-radius:8px;
+        ">
+          👤 ${acceso.nombre || "Sin nombre"}<br>
+          📧 ${acceso.email || "Sin correo"}<br>
+          📱 ${acceso.telefono || "Sin teléfono"}<br>
+          ${acceso.activo ? "🟢 Acceso activo" : "🔴 Acceso suspendido"}
+        </div>
+      `).join("")
+
+    : `
+        <div style="margin-top:8px;">
+          ⚪ Sin Organizador asignado
+        </div>
+      `
+}
 
 	<br><br>
-<button onclick="seleccionarOrganizadorAdmin('${o.id}')">
+<button onclick="seleccionarOrganizadorAdmin('${o.organizador_id}')">
   🎯 Ver / Crear Rifas
 </button>
 
 <br><br>
 
-<button onclick="editarOrganizadorAdmin('${o.id}')">
+<button onclick="editarOrganizadorAdmin('${o.organizador_id}')">
 ✏️ Editar Organizador
 </button>
 
-<button onclick="eliminarOrganizador('${o.id}')">
+<button onclick="eliminarOrganizador('${o.organizador_id}')">
 🗑️ Eliminar Organizador
 </button>
 
-<button onclick="mostrarPatrocinadoresAdmin('${o.id}')">
+<button onclick="mostrarPatrocinadoresAdmin('${o.organizador_id}')">
 🤝 Patrocinadores
 </button>
       </div>
