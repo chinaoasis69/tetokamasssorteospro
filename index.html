@@ -2387,6 +2387,10 @@ style="background:#a30000;color:white;">
   🏆 Premios
 </button>
 
+<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
+  🤝 Patrocinadores de esta rifa
+</button>
+
 <button onclick="generarBoletosRifaAdmin('${r.id}', ${r.total_numeros || 0})">
 🎟️ Generar boletos
 </button>
@@ -2427,11 +2431,345 @@ style="background:#a30000;color:white;">
 🏆 Premios
 </button>
 
+<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
+  🤝 Patrocinadores de esta rifa
+</button>
+
 `}
             </div>
         `).join("")}
     `;
 }
+
+async function mostrarPatrocinadoresRifa(rifaId) {
+
+  const cont =
+    document.getElementById("adminContenido");
+
+  if (!cont || !rifaId) {
+    alert(
+      "❌ No se encontró la rifa seleccionada."
+    );
+    return;
+  }
+
+  cont.innerHTML =
+    "<p>Cargando patrocinadores de la rifa...</p>";
+
+  const {
+    data: rifa,
+    error: errorRifa
+  } = await supabaseClient
+    .from("rifas")
+    .select(
+      "id, titulo, premio, organizador_id"
+    )
+    .eq("id", rifaId)
+    .single();
+
+  if (errorRifa || !rifa) {
+    console.error(
+      "ERROR CARGANDO RIFA PARA PATROCINADORES:",
+      errorRifa
+    );
+
+    cont.innerHTML = `
+      <p>
+        ❌ No fue posible cargar esta rifa.
+      </p>
+
+      <button onclick="mostrarSorteosAdmin()">
+        ← Regresar a Sorteos
+      </button>
+    `;
+
+    return;
+  }
+
+  const adminRol =
+    localStorage.getItem("admin_rol");
+
+  const adminOrgId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+  if (
+    adminRol === "organizador" &&
+    String(rifa.organizador_id) !==
+      String(adminOrgId)
+  ) {
+    alert(
+      "❌ Esta rifa pertenece a otro organizador."
+    );
+
+    await mostrarSorteosAdmin();
+    return;
+  }
+
+  sessionStorage.setItem(
+    "patrocinador_rifa_id",
+    rifa.id
+  );
+
+  sessionStorage.setItem(
+    "patrocinador_organizador_id",
+    rifa.organizador_id
+  );
+
+  const {
+    data: patrocinadores,
+    error
+  } = await supabaseClient
+    .from("patrocinadores")
+    .select("*")
+    .eq(
+      "organizador_id",
+      rifa.organizador_id
+    )
+    .eq(
+      "rifa_id",
+      rifa.id
+    )
+    .order(
+      "created_at",
+      { ascending: false }
+    );
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO PATROCINADORES DE RIFA:",
+      error
+    );
+
+    cont.innerHTML = `
+      <p>
+        ❌ Error cargando patrocinadores.
+      </p>
+
+      <button onclick="mostrarSorteosAdmin()">
+        ← Regresar a Sorteos
+      </button>
+    `;
+
+    return;
+  }
+
+  cont.innerHTML = `
+    <h3>
+      🤝 Patrocinadores de esta rifa
+    </h3>
+
+    <div class="card">
+      <b>
+        🎯 ${
+          rifa.titulo ||
+          rifa.premio ||
+          "Sorteo sin título"
+        }
+      </b>
+    </div>
+
+    <button
+      type="button"
+      onclick="nuevoPatrocinadorRifa(
+        '${rifa.id}'
+      )"
+    >
+      ➕ Agregar patrocinador a esta rifa
+    </button>
+
+    <button
+      type="button"
+      onclick="mostrarSorteosAdmin()"
+    >
+      ← Regresar a Sorteos
+    </button>
+
+    <hr>
+
+    ${
+      patrocinadores &&
+      patrocinadores.length > 0
+
+        ? patrocinadores.map(p => `
+            <div class="card">
+              <h4>
+                ${p.nombre || "Sin nombre"}
+              </h4>
+
+              <p>
+                ${p.descripcion || ""}
+              </p>
+
+              <p>
+                ${p.promocion || ""}
+              </p>
+
+              ${
+                p.whatsapp
+                  ? `
+                    <p>
+                      📱 ${p.whatsapp}
+                    </p>
+                  `
+                  : ""
+              }
+
+              ${
+                p.logo_url
+                  ? `
+                    <img
+                      src="${p.logo_url}"
+                      alt="Logo del patrocinador"
+                      style="
+                        width:120px;
+                        max-width:100%;
+                        border-radius:12px;
+                        margin-top:10px;
+                      "
+                    >
+                  `
+                  : ""
+              }
+            </div>
+          `).join("")
+
+        : `
+            <div class="card">
+              <p>
+                Esta rifa todavía no tiene
+                patrocinadores exclusivos.
+              </p>
+            </div>
+          `
+    }
+  `;
+}
+
+
+async function nuevoPatrocinadorRifa(
+  rifaId
+) {
+
+  if (!rifaId) {
+    alert(
+      "❌ No se encontró la rifa seleccionada."
+    );
+    return;
+  }
+
+  const {
+    data: rifa,
+    error: errorRifa
+  } = await supabaseClient
+    .from("rifas")
+    .select(
+      "id, titulo, premio, organizador_id"
+    )
+    .eq("id", rifaId)
+    .single();
+
+  if (errorRifa || !rifa) {
+    console.error(
+      "ERROR BUSCANDO RIFA PARA PATROCINADOR:",
+      errorRifa
+    );
+
+    alert(
+      "❌ No fue posible cargar esta rifa."
+    );
+    return;
+  }
+
+  const nombre = (
+    prompt(
+      "Nombre del patrocinador"
+    ) || ""
+  ).trim();
+
+  if (!nombre) {
+    return;
+  }
+
+  const descripcion = (
+    prompt(
+      "Descripción del negocio"
+    ) || ""
+  ).trim();
+
+  const promocion = (
+    prompt(
+      "Promoción o premio que ofrece"
+    ) || ""
+  ).trim();
+
+  const logo_url = (
+    prompt(
+      "URL del logo opcional"
+    ) || ""
+  ).trim();
+
+  const whatsapp = (
+    prompt(
+      "WhatsApp del patrocinador"
+    ) || ""
+  ).trim();
+
+  const confirmar = confirm(
+    "¿Agregar este patrocinador a la rifa?\n\n" +
+    "Rifa: " +
+    (
+      rifa.titulo ||
+      rifa.premio ||
+      "Sorteo sin título"
+    ) +
+    "\n\nPatrocinador: " +
+    nombre
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("patrocinadores")
+    .insert({
+      organizador_id:
+        rifa.organizador_id,
+
+      rifa_id:
+        rifa.id,
+
+      nombre,
+      descripcion,
+      promocion,
+      logo_url,
+      whatsapp,
+      activo: true
+    });
+
+  if (error) {
+    console.error(
+      "ERROR GUARDANDO PATROCINADOR DE RIFA:",
+      error
+    );
+
+    alert(
+      "❌ Error guardando patrocinador."
+    );
+
+    return;
+  }
+
+  alert(
+    "✅ Patrocinador agregado a esta rifa."
+  );
+
+  await mostrarPatrocinadoresRifa(
+    rifa.id
+  );
+}	
 
 async function mostrarGanadoresAdmin() {
 
