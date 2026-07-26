@@ -977,6 +977,22 @@ Selecciona una rifa
   <div id="grid" class="grid"></div>
 
 <div
+  id="paginacionBoletos"
+  style="
+    display:none;
+    max-width:760px;
+    margin:18px auto 28px;
+    padding:14px 10px;
+    border:1px solid rgba(57,255,20,.55);
+    border-radius:14px;
+    background:#111;
+    color:white;
+    text-align:center;
+    box-shadow:0 0 14px rgba(57,255,20,.18);
+  "
+></div>	
+
+<div
   id="sesionActivaBox"
   style="
     display:none;
@@ -9252,6 +9268,7 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
+	paginaBoletosActual = 1;
 
 	const cardSorteo = document.getElementById("patrocinadoresSorteoCard");
 if (cardSorteo) {
@@ -9564,55 +9581,222 @@ navigator.clipboard.writeText(valor)
 }	
 
 // 🔥 CARGAR BOLETOS
-async function cargarBoletos(){
-  // document.getElementById("stats").innerText = "Cargando números...";
+async function cargarBoletos() {
 
-if(!RIFA_ID){
-  alert("Selecciona una rifa primero");
-  return;
-}	
+  if (!RIFA_ID) {
 
-  let query = supabaseClient
-    .from("boletos")
-    .select("*")
-    .order("numero", { ascending: true });
+    alert(
+      "Selecciona una rifa primero"
+    );
 
-	query = query.eq("rifa_id", RIFA_ID);
+    return;
+  }
 
-  const { data, error } = await query;
 
-  if(error){
-  console.error("ERROR SUPABASE:", error);
-  alert(JSON.stringify(error));
-  document.getElementById("stats").innerText = "Error cargando boletos";
-  return;
-}
+  const TAMANO_LOTE_LECTURA =
+    1000;
 
-  boletos = data || [];
-boletos.sort((a,b) => a.numero.localeCompare(b.numero));
 
-const vendidos = boletos.filter(b =>
-  (b.estado || "").toLowerCase() === "vendido"
-).length;
-const total = boletos.length;
-const reservados = boletos.filter(b =>
-  (b.estado || "").toLowerCase() === "apartado"
-).length;
+  let desde =
+    0;
 
-const disponibles = total - vendidos - reservados;	
 
-const porcentaje = total > 0
-  ? ((vendidos / total) * 100).toFixed(1)
-  : 0;
+  let todosLosBoletos =
+    [];
 
-document.getElementById("avanceRifa").innerText = "";	
 
-document.getElementById("porcentajeRifa").innerText =
-`📊 Vendidos: ${vendidos} | Reservados: ${reservados} | Disponibles: ${disponibles} | ${porcentaje}%`;	
+  while (true) {
 
-document.getElementById("barraPorcentaje").style.width = porcentaje + "%";	
+    const hasta =
+      desde +
+      TAMANO_LOTE_LECTURA -
+      1;
 
-aplicarFiltros();
+
+    const {
+      data: lote,
+      error
+    } = await supabaseClient
+      .from("boletos")
+      .select("*")
+      .eq(
+        "rifa_id",
+        RIFA_ID
+      )
+      .order(
+        "numero",
+        {
+          ascending: true
+        }
+      )
+      .range(
+        desde,
+        hasta
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR SUPABASE CARGANDO BOLETOS:",
+        error
+      );
+
+      alert(
+        "❌ No se pudieron cargar los boletos."
+      );
+
+
+      const stats =
+        document.getElementById(
+          "stats"
+        );
+
+
+      if (stats) {
+
+        stats.innerText =
+          "Error cargando boletos";
+
+      }
+
+
+      return;
+    }
+
+
+    const loteSeguro =
+      Array.isArray(lote)
+        ? lote
+        : [];
+
+
+    todosLosBoletos.push(
+      ...loteSeguro
+    );
+
+
+    if (
+      loteSeguro.length <
+      TAMANO_LOTE_LECTURA
+    ) {
+
+      break;
+    }
+
+
+    desde +=
+      TAMANO_LOTE_LECTURA;
+
+  }
+
+
+  boletos =
+    todosLosBoletos;
+
+
+  boletos.sort(
+    (a, b) =>
+      Number(a.numero) -
+      Number(b.numero)
+  );
+
+
+  const vendidos =
+    boletos.filter(
+      b =>
+        (
+          b.estado || ""
+        ).toLowerCase() ===
+        "vendido"
+    ).length;
+
+
+  const total =
+    boletos.length;
+
+
+  const reservados =
+    boletos.filter(
+      b =>
+        (
+          b.estado || ""
+        ).toLowerCase() ===
+        "apartado"
+    ).length;
+
+
+  const disponibles =
+    total -
+    vendidos -
+    reservados;
+
+
+  const porcentaje =
+    total > 0
+      ? (
+          (
+            vendidos /
+            total
+          ) *
+          100
+        ).toFixed(1)
+      : 0;
+
+
+  const avanceRifa =
+    document.getElementById(
+      "avanceRifa"
+    );
+
+
+  if (avanceRifa) {
+
+    avanceRifa.innerText =
+      "";
+
+  }
+
+
+  const porcentajeRifa =
+    document.getElementById(
+      "porcentajeRifa"
+    );
+
+
+  if (porcentajeRifa) {
+
+    porcentajeRifa.innerText =
+      `📊 Vendidos: ${vendidos} | ` +
+      `Reservados: ${reservados} | ` +
+      `Disponibles: ${disponibles} | ` +
+      `${porcentaje}%`;
+
+  }
+
+
+  const barraPorcentaje =
+    document.getElementById(
+      "barraPorcentaje"
+    );
+
+
+  if (barraPorcentaje) {
+
+    barraPorcentaje.style.width =
+      porcentaje + "%";
+
+  }
+
+
+  console.log(
+    "✅ Total de boletos cargados:",
+    boletos.length
+  );
+
+
+  aplicarFiltros();
+
 }
 
 // 🔥 FILTROS
@@ -9748,6 +9932,10 @@ function aplicarFiltros(){
 }
 
 // 🔥 RENDER
+let paginaBoletosActual = 1;
+
+const BOLETOS_POR_PAGINA = 200;
+	
 function renderBoletos(){
   const contenedor = document.getElementById("grid");
   contenedor.innerHTML = "";
@@ -9767,6 +9955,41 @@ const boletosVisibles = filtrados.filter(
   b => Number(b.numero) < limiteVisible
 );
 
+const totalPaginasBoletos = Math.max(
+  1,
+  Math.ceil(
+    boletosVisibles.length /
+    BOLETOS_POR_PAGINA
+  )
+);
+
+
+paginaBoletosActual = Math.min(
+  Math.max(
+    paginaBoletosActual,
+    1
+  ),
+  totalPaginasBoletos
+);
+
+
+const inicioPaginaBoletos =
+  (
+    paginaBoletosActual - 1
+  ) * BOLETOS_POR_PAGINA;
+
+
+const finPaginaBoletos =
+  inicioPaginaBoletos +
+  BOLETOS_POR_PAGINA;
+
+
+const boletosPaginaActual =
+  boletosVisibles.slice(
+    inicioPaginaBoletos,
+    finPaginaBoletos
+  );	
+
 const digitosMostrar = Math.max(
   2,
   String(
@@ -9777,7 +10000,7 @@ const digitosMostrar = Math.max(
   ).length
 );	
 
-  boletosVisibles.forEach(b => {
+    boletosPaginaActual.forEach(b => {
     const btn = document.createElement("button");
 	btn.className = "boleto";
 	  
@@ -9816,8 +10039,228 @@ if(seleccionado){
     contenedor.appendChild(btn);
   });
 
+const paginacionBox =
+  document.getElementById(
+    "paginacionBoletos"
+  );
+
+
+if (paginacionBox) {
+
+  const mostrandoDesde =
+    boletosVisibles.length === 0
+      ? 0
+      : inicioPaginaBoletos + 1;
+
+
+  const mostrandoHasta =
+    Math.min(
+      finPaginaBoletos,
+      boletosVisibles.length
+    );
+
+
+  if (
+    boletosVisibles.length <=
+    BOLETOS_POR_PAGINA
+  ) {
+
+    paginacionBox.style.display =
+      "none";
+
+    paginacionBox.innerHTML =
+      "";
+
+  } else {
+
+    paginacionBox.style.display =
+      "block";
+
+
+    paginacionBox.innerHTML = `
+      <div
+        style="
+          color:#39ff14;
+          font-weight:bold;
+          margin-bottom:10px;
+        "
+      >
+        Mostrando
+        ${mostrandoDesde}-${mostrandoHasta}
+        de ${boletosVisibles.length} boletos
+      </div>
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          flex-wrap:wrap;
+          gap:8px;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="cambiarPaginaBoletos(
+            ${paginaBoletosActual - 1}
+          )"
+          ${
+            paginaBoletosActual <= 1
+              ? "disabled"
+              : ""
+          }
+        >
+          ⬅️ Anterior
+        </button>
+
+        <span
+          style="
+            min-width:120px;
+            color:white;
+            font-weight:bold;
+          "
+        >
+          Página ${paginaBoletosActual}
+          de ${totalPaginasBoletos}
+        </span>
+
+        <button
+          type="button"
+          onclick="cambiarPaginaBoletos(
+            ${paginaBoletosActual + 1}
+          )"
+          ${
+            paginaBoletosActual >=
+            totalPaginasBoletos
+              ? "disabled"
+              : ""
+          }
+        >
+          Siguiente ➡️
+        </button>
+
+      </div>
+
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          flex-wrap:wrap;
+          gap:6px;
+          margin-top:12px;
+        "
+      >
+
+        <input
+          id="irPaginaBoletosInput"
+          type="number"
+          min="1"
+          max="${totalPaginasBoletos}"
+          value="${paginaBoletosActual}"
+          onkeydown="
+            if(event.key === 'Enter'){
+              irPaginaBoletos();
+            }
+          "
+          style="
+            width:100px;
+            margin:0;
+            padding:10px 6px;
+          "
+        >
+
+        <button
+          type="button"
+          onclick="irPaginaBoletos()"
+          style="margin:0;"
+        >
+          Ir a página
+        </button>
+
+      </div>
+    `;
+
+  }
+
+}	
+
   document.getElementById("stats").style.display = "none";
 }
+
+function cambiarPaginaBoletos(
+  nuevaPagina
+) {
+
+  const paginaSolicitada =
+    Number(nuevaPagina);
+
+
+  if (
+    !Number.isFinite(
+      paginaSolicitada
+    )
+  ) {
+    return;
+  }
+
+
+  paginaBoletosActual =
+    Math.max(
+      1,
+      Math.floor(
+        paginaSolicitada
+      )
+    );
+
+
+  renderBoletos();
+
+
+  requestAnimationFrame(() => {
+
+    const gridBoletos =
+      document.getElementById(
+        "grid"
+      );
+
+
+    if (gridBoletos) {
+
+      gridBoletos.scrollIntoView({
+        behavior:
+          "smooth",
+
+        block:
+          "start"
+      });
+
+    }
+
+  });
+
+}
+
+
+function irPaginaBoletos() {
+
+  const input =
+    document.getElementById(
+      "irPaginaBoletosInput"
+    );
+
+
+  if (!input) {
+    return;
+  }
+
+
+  cambiarPaginaBoletos(
+    input.value
+  );
+
+}	
 
 // 🔥 SELECCIONAR
 function seleccionarBoleto(b){
