@@ -1964,140 +1964,421 @@ const { data, error } = await query;
   `;
 }
 
-async function nuevoPatrocinador(){
+// =========================================
+// FORMULARIO REUTILIZABLE DE PATROCINADORES
+// =========================================
 
-  const adminRol = localStorage.getItem("admin_rol");
+function mostrarMensajeFormularioPatrocinador(
+  texto,
+  tipo = "error"
+) {
 
-const organizadorSeleccionadoId =
-  adminRol === "super_admin"
-    ? sessionStorage.getItem(
-        "patrocinador_organizador_id"
+  const mensaje =
+    document.getElementById(
+      "mensajeFormularioPatrocinador"
+    );
+
+  if (!mensaje) {
+    return;
+  }
+
+  if (!texto) {
+    mensaje.style.display = "none";
+    mensaje.textContent = "";
+    return;
+  }
+
+  const esExito =
+    tipo === "exito";
+
+  mensaje.style.display = "block";
+
+  mensaje.style.background =
+    esExito
+      ? "rgba(22,163,74,.18)"
+      : "rgba(220,38,38,.18)";
+
+  mensaje.style.border =
+    esExito
+      ? "1px solid #39ff14"
+      : "1px solid #ff5252";
+
+  mensaje.style.color =
+    esExito
+      ? "#86efac"
+      : "#fca5a5";
+
+  mensaje.textContent = texto;
+}
+
+
+function abrirFormularioPatrocinador({
+  organizadorId,
+  rifaId = null,
+  destinoTexto = ""
+}) {
+
+  const modal =
+    document.getElementById(
+      "modalFormularioPatrocinador"
+    );
+
+  const organizadorInput =
+    document.getElementById(
+      "patrocinadorFormOrganizadorId"
+    );
+
+  const rifaInput =
+    document.getElementById(
+      "patrocinadorFormRifaId"
+    );
+
+  const titulo =
+    document.getElementById(
+      "tituloFormularioPatrocinador"
+    );
+
+  const destino =
+    document.getElementById(
+      "destinoFormularioPatrocinador"
+    );
+
+  const botonGuardar =
+    document.getElementById(
+      "btnGuardarFormularioPatrocinador"
+    );
+
+  if (
+    !modal ||
+    !organizadorInput ||
+    !rifaInput
+  ) {
+    alert(
+      "❌ No se encontró el formulario de patrocinadores."
+    );
+    return;
+  }
+
+  if (!organizadorId) {
+    alert(
+      "❌ No se encontró el organizador seleccionado."
+    );
+    return;
+  }
+
+  organizadorInput.value =
+    String(organizadorId);
+
+  rifaInput.value =
+    rifaId
+      ? String(rifaId)
+      : "";
+
+  document.getElementById(
+    "patrocinadorFormNombre"
+  ).value = "";
+
+  document.getElementById(
+    "patrocinadorFormDescripcion"
+  ).value = "";
+
+  document.getElementById(
+    "patrocinadorFormPromocion"
+  ).value = "";
+
+  document.getElementById(
+    "patrocinadorFormWhatsapp"
+  ).value = "";
+
+  document.getElementById(
+    "patrocinadorFormLogoUrl"
+  ).value = "";
+
+  if (titulo) {
+    titulo.textContent =
+      rifaId
+        ? "🤝 Patrocinador de la rifa"
+        : "🤝 Patrocinador del Organizador";
+  }
+
+  if (destino) {
+    destino.textContent =
+      destinoTexto ||
+      (
+        rifaId
+          ? "Este patrocinador será exclusivo de la rifa seleccionada."
+          : "Este patrocinador será general del Organizador."
+      );
+  }
+
+  mostrarMensajeFormularioPatrocinador("");
+
+  if (botonGuardar) {
+    botonGuardar.disabled = false;
+    botonGuardar.textContent =
+      "✅ Guardar patrocinador";
+  }
+
+  modal.style.display = "block";
+  document.body.style.overflow = "hidden";
+
+  setTimeout(() => {
+    document
+      .getElementById(
+        "patrocinadorFormNombre"
       )
-    : localStorage.getItem(
-        "admin_organizador_id"
-      );	
-
-let mensajeTipo = "¿Dónde pertenece este patrocinador?\n\n";
-
-if (adminRol === "super_admin") {
-  mensajeTipo += "1 = Plataforma\n";
+      ?.focus();
+  }, 100);
 }
 
-mensajeTipo += "2 = Organizador\n3 = Sorteo";
 
-const tipo = prompt(mensajeTipo);
-if(!tipo) return;
+function cerrarFormularioPatrocinador() {
 
-if (tipo === "1" && adminRol !== "super_admin") {
-  alert("❌ Solo el Súper Admin puede agregar patrocinadores de plataforma.");
-  return;
+  const modal =
+    document.getElementById(
+      "modalFormularioPatrocinador"
+    );
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+
+  document.body.style.overflow = "";
+
+  mostrarMensajeFormularioPatrocinador("");
 }
 
-  if(!tipo) return;
 
-  const nombre = prompt("Nombre del patrocinador");
-  if(!nombre) return;
+async function guardarFormularioPatrocinador() {
 
-  const descripcion = prompt("Descripción del negocio") || "";
-  const promocion = prompt("Promoción o premio que ofrece") || "";
-  const logo_url = prompt("URL del logo opcional") || "";
-  const whatsapp = prompt("WhatsApp del patrocinador") || "";
+  const organizadorId =
+    (
+      document.getElementById(
+        "patrocinadorFormOrganizadorId"
+      )?.value || ""
+    ).trim();
 
-  let organizador_id = null;
-  let rifa_id = null;
+  const rifaId =
+    (
+      document.getElementById(
+        "patrocinadorFormRifaId"
+      )?.value || ""
+    ).trim();
 
-  if(tipo === "1"){
-    const { data: principal, error } = await supabaseClient
-      .from("organizadores")
-      .select("id")
-      .eq("es_principal", true)
-      .single();
+  const nombre =
+    (
+      document.getElementById(
+        "patrocinadorFormNombre"
+      )?.value || ""
+    ).trim();
 
-    if(error || !principal){
-      alert("❌ No se encontró el organizador principal");
+  const descripcion =
+    (
+      document.getElementById(
+        "patrocinadorFormDescripcion"
+      )?.value || ""
+    ).trim();
+
+  const promocion =
+    (
+      document.getElementById(
+        "patrocinadorFormPromocion"
+      )?.value || ""
+    ).trim();
+
+  const whatsapp =
+    (
+      document.getElementById(
+        "patrocinadorFormWhatsapp"
+      )?.value || ""
+    ).trim();
+
+  let logoUrl =
+    (
+      document.getElementById(
+        "patrocinadorFormLogoUrl"
+      )?.value || ""
+    ).trim();
+
+  const botonGuardar =
+    document.getElementById(
+      "btnGuardarFormularioPatrocinador"
+    );
+
+  if (!organizadorId) {
+    mostrarMensajeFormularioPatrocinador(
+      "No se encontró el Organizador."
+    );
+    return;
+  }
+
+  if (nombre.length < 2) {
+    mostrarMensajeFormularioPatrocinador(
+      "Escribe el nombre del patrocinador."
+    );
+
+    document
+      .getElementById(
+        "patrocinadorFormNombre"
+      )
+      ?.focus();
+
+    return;
+  }
+
+  if (logoUrl) {
+    try {
+      const urlValidada =
+        new URL(logoUrl);
+
+      if (
+        urlValidada.protocol !== "https:" &&
+        urlValidada.protocol !== "http:"
+      ) {
+        throw new Error(
+          "Protocolo no permitido"
+        );
+      }
+
+      logoUrl =
+        urlValidada.href;
+
+    } catch (errorUrl) {
+      mostrarMensajeFormularioPatrocinador(
+        "La URL del logo no es válida. Usa una dirección que comience con https://"
+      );
+      return;
+    }
+  }
+
+  if (botonGuardar) {
+    botonGuardar.disabled = true;
+    botonGuardar.textContent =
+      "Guardando...";
+  }
+
+  mostrarMensajeFormularioPatrocinador("");
+
+  try {
+
+    const { error } =
+      await supabaseClient
+        .from("patrocinadores")
+        .insert({
+          organizador_id:
+            organizadorId,
+
+          rifa_id:
+            rifaId || null,
+
+          nombre,
+          descripcion,
+          promocion,
+
+          logo_url:
+            logoUrl,
+
+          whatsapp,
+          activo: true
+        });
+
+    if (error) {
+      console.error(
+        "ERROR GUARDANDO PATROCINADOR:",
+        error
+      );
+
+      mostrarMensajeFormularioPatrocinador(
+        error.message ||
+        "No fue posible guardar el patrocinador."
+      );
+
       return;
     }
 
-    organizador_id = principal.id;
-    rifa_id = null;
-  }
+    cerrarFormularioPatrocinador();
 
-  if(tipo === "2"){
-  organizador_id = organizadorSeleccionadoId;
+    alert(
+      rifaId
+        ? "✅ Patrocinador agregado a esta rifa."
+        : "✅ Patrocinador agregado al Organizador."
+    );
 
-  if(!organizador_id){
-    alert("❌ No se encontró el organizador de esta sesión.");
-    return;
-  }
+    if (rifaId) {
+      await mostrarPatrocinadoresRifa(
+        rifaId
+      );
 
-  rifa_id = null;
-}
+    } else {
+      const adminRol =
+        localStorage.getItem(
+          "admin_rol"
+        );
 
-  if(tipo === "3"){
-  organizador_id = organizadorSeleccionadoId;
-
-  if(!organizador_id){
-    alert("❌ No se encontró el organizador de esta sesión.");
-    return;
-  }
-
-    const { data: rifasOrg, error } = await supabaseClient
-      .from("rifas")
-      .select("id, titulo, premio")
-      .eq("organizador_id", organizador_id)
-      .order("created_at", { ascending:false });
-
-    if(error || !rifasOrg || rifasOrg.length === 0){
-      alert("❌ Este organizador no tiene sorteos");
-      return;
+      await mostrarPatrocinadoresAdmin(
+        adminRol === "super_admin"
+          ? organizadorId
+          : null
+      );
     }
 
-    const lista = rifasOrg.map((r, i) =>
-      `${i + 1}. ${r.titulo || r.premio || "Sorteo sin título"}`
-    ).join("\n");
+  } catch (errorInesperado) {
 
-    const elegido = prompt("Elige el sorteo:\n\n" + lista);
-    const index = Number(elegido) - 1;
+    console.error(
+      "ERROR INESPERADO GUARDANDO PATROCINADOR:",
+      errorInesperado
+    );
 
-    if(!rifasOrg[index]){
-      alert("❌ Sorteo inválido");
-      return;
+    mostrarMensajeFormularioPatrocinador(
+      "Ocurrió un error inesperado al guardar."
+    );
+
+  } finally {
+
+    if (botonGuardar) {
+      botonGuardar.disabled = false;
+      botonGuardar.textContent =
+        "✅ Guardar patrocinador";
     }
-
-    rifa_id = rifasOrg[index].id;
   }
+}	
 
-  if(!organizador_id){
-    alert("❌ No se encontró organizador");
+function nuevoPatrocinador() {
+
+  const adminRol =
+    localStorage.getItem(
+      "admin_rol"
+    );
+
+  const organizadorId =
+    adminRol === "super_admin"
+      ? sessionStorage.getItem(
+          "patrocinador_organizador_id"
+        )
+      : (
+          localStorage.getItem(
+            "admin_organizador_id"
+          ) ||
+          clienteActual?.id
+        );
+
+  if (!organizadorId) {
+    alert(
+      "❌ No se encontró el Organizador seleccionado."
+    );
     return;
   }
 
-  const { error } = await supabaseClient
-    .from("patrocinadores")
-    .insert({
-      organizador_id,
-      rifa_id,
-      nombre,
-      descripcion,
-      promocion,
-      logo_url,
-      whatsapp,
-      activo: true
-    });
+  abrirFormularioPatrocinador({
+    organizadorId:
+      organizadorId,
 
-  if(error){
-    console.error(error);
-    alert("❌ Error guardando patrocinador");
-    return;
-  }
+    rifaId:
+      null,
 
-  alert("✅ Patrocinador agregado");
-
-await mostrarPatrocinadoresAdmin(
-  adminRol === "super_admin"
-    ? organizadorSeleccionadoId
-    : null
-);
+    destinoTexto:
+      "Este patrocinador será general del Organizador."
+  });
 }
 
 	function puedeEditarPatrocinador(p){
@@ -2647,7 +2928,6 @@ async function mostrarPatrocinadoresRifa(rifaId) {
   `;
 }
 
-
 async function nuevoPatrocinadorRifa(
   rifaId
 ) {
@@ -2661,7 +2941,7 @@ async function nuevoPatrocinadorRifa(
 
   const {
     data: rifa,
-    error: errorRifa
+    error
   } = await supabaseClient
     .from("rifas")
     .select(
@@ -2670,105 +2950,54 @@ async function nuevoPatrocinadorRifa(
     .eq("id", rifaId)
     .single();
 
-  if (errorRifa || !rifa) {
+  if (error || !rifa) {
     console.error(
-      "ERROR BUSCANDO RIFA PARA PATROCINADOR:",
-      errorRifa
-    );
-
-    alert(
-      "❌ No fue posible cargar esta rifa."
-    );
-    return;
-  }
-
-  const nombre = (
-    prompt(
-      "Nombre del patrocinador"
-    ) || ""
-  ).trim();
-
-  if (!nombre) {
-    return;
-  }
-
-  const descripcion = (
-    prompt(
-      "Descripción del negocio"
-    ) || ""
-  ).trim();
-
-  const promocion = (
-    prompt(
-      "Promoción o premio que ofrece"
-    ) || ""
-  ).trim();
-
-  const logo_url = (
-    prompt(
-      "URL del logo opcional"
-    ) || ""
-  ).trim();
-
-  const whatsapp = (
-    prompt(
-      "WhatsApp del patrocinador"
-    ) || ""
-  ).trim();
-
-  const confirmar = confirm(
-    "¿Agregar este patrocinador a la rifa?\n\n" +
-    "Rifa: " +
-    (
-      rifa.titulo ||
-      rifa.premio ||
-      "Sorteo sin título"
-    ) +
-    "\n\nPatrocinador: " +
-    nombre
-  );
-
-  if (!confirmar) {
-    return;
-  }
-
-  const { error } = await supabaseClient
-    .from("patrocinadores")
-    .insert({
-      organizador_id:
-        rifa.organizador_id,
-
-      rifa_id:
-        rifa.id,
-
-      nombre,
-      descripcion,
-      promocion,
-      logo_url,
-      whatsapp,
-      activo: true
-    });
-
-  if (error) {
-    console.error(
-      "ERROR GUARDANDO PATROCINADOR DE RIFA:",
+      "ERROR CARGANDO RIFA PARA PATROCINADOR:",
       error
     );
 
     alert(
-      "❌ Error guardando patrocinador."
+      "❌ No fue posible cargar la rifa seleccionada."
     );
-
     return;
   }
 
-  alert(
-    "✅ Patrocinador agregado a esta rifa."
-  );
+  const adminRol =
+    localStorage.getItem(
+      "admin_rol"
+    );
 
-  await mostrarPatrocinadoresRifa(
-    rifa.id
-  );
+  const adminOrgId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+  if (
+    adminRol === "organizador" &&
+    String(rifa.organizador_id) !==
+      String(adminOrgId)
+  ) {
+    alert(
+      "❌ Esta rifa pertenece a otro Organizador."
+    );
+    return;
+  }
+
+  abrirFormularioPatrocinador({
+    organizadorId:
+      rifa.organizador_id,
+
+    rifaId:
+      rifa.id,
+
+    destinoTexto:
+      "Este patrocinador será exclusivo de la rifa: " +
+      (
+        rifa.titulo ||
+        rifa.premio ||
+        "Sorteo sin título"
+      )
+  });
 }	
 
 async function mostrarGanadoresAdmin() {
@@ -13415,6 +13644,239 @@ font-family:Arial, sans-serif;">
 </div>
 	
 </div>
+
+<!-- =========================================
+     FORMULARIO DE PATROCINADOR
+========================================= -->
+
+<div
+  id="modalFormularioPatrocinador"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:10050;
+    background:rgba(0,0,0,.88);
+    padding:20px;
+    overflow-y:auto;
+  "
+>
+  <div
+    style="
+      width:100%;
+      max-width:560px;
+      margin:30px auto;
+      padding:24px;
+      border:2px solid #39ff14;
+      border-radius:18px;
+      background:#111;
+      box-shadow:0 0 25px rgba(57,255,20,.45);
+      color:white;
+      text-align:center;
+    "
+  >
+    <h2
+      id="tituloFormularioPatrocinador"
+      style="
+        margin-top:0;
+        color:#39ff14;
+      "
+    >
+      🤝 Nuevo patrocinador
+    </h2>
+
+    <p
+      id="destinoFormularioPatrocinador"
+      style="
+        color:#bbb;
+        line-height:1.5;
+        margin-bottom:22px;
+      "
+    >
+      Completa la información del patrocinador.
+    </p>
+
+    <!-- Datos internos -->
+    <input
+      id="patrocinadorFormOrganizadorId"
+      type="hidden"
+    >
+
+    <input
+      id="patrocinadorFormRifaId"
+      type="hidden"
+    >
+
+    <label
+      for="patrocinadorFormNombre"
+      style="
+        display:block;
+        margin:14px 0 6px;
+        font-weight:bold;
+      "
+    >
+      Nombre del patrocinador *
+    </label>
+
+    <input
+      id="patrocinadorFormNombre"
+      type="text"
+      placeholder="Ejemplo: Snacks Andrea"
+      maxlength="120"
+      autocomplete="organization"
+      style="
+        width:100%;
+        max-width:100%;
+      "
+    >
+
+    <label
+      for="patrocinadorFormDescripcion"
+      style="
+        display:block;
+        margin:14px 0 6px;
+        font-weight:bold;
+      "
+    >
+      Descripción del negocio
+    </label>
+
+    <textarea
+      id="patrocinadorFormDescripcion"
+      placeholder="Describe brevemente el negocio"
+      maxlength="500"
+      rows="4"
+      style="
+        width:100%;
+        padding:13px;
+        border:none;
+        border-radius:10px;
+        resize:vertical;
+        font-family:Arial,sans-serif;
+        font-size:16px;
+        text-align:left;
+      "
+    ></textarea>
+
+    <label
+      for="patrocinadorFormPromocion"
+      style="
+        display:block;
+        margin:14px 0 6px;
+        font-weight:bold;
+      "
+    >
+      Promoción, beneficio o premio
+    </label>
+
+    <textarea
+      id="patrocinadorFormPromocion"
+      placeholder="Ejemplo: Elote gratis con la compra de un boleto"
+      maxlength="500"
+      rows="4"
+      style="
+        width:100%;
+        padding:13px;
+        border:none;
+        border-radius:10px;
+        resize:vertical;
+        font-family:Arial,sans-serif;
+        font-size:16px;
+        text-align:left;
+      "
+    ></textarea>
+
+    <label
+      for="patrocinadorFormWhatsapp"
+      style="
+        display:block;
+        margin:14px 0 6px;
+        font-weight:bold;
+      "
+    >
+      WhatsApp
+    </label>
+
+    <input
+      id="patrocinadorFormWhatsapp"
+      type="tel"
+      placeholder="Ejemplo: 9561234567"
+      maxlength="30"
+      autocomplete="tel"
+      style="
+        width:100%;
+        max-width:100%;
+      "
+    >
+
+    <label
+      for="patrocinadorFormLogoUrl"
+      style="
+        display:block;
+        margin:14px 0 6px;
+        font-weight:bold;
+      "
+    >
+      URL del logo opcional
+    </label>
+
+    <input
+      id="patrocinadorFormLogoUrl"
+      type="url"
+      placeholder="https://..."
+      autocomplete="url"
+      style="
+        width:100%;
+        max-width:100%;
+      "
+    >
+
+    <div
+      id="mensajeFormularioPatrocinador"
+      style="
+        display:none;
+        margin-top:18px;
+        padding:12px;
+        border-radius:10px;
+        line-height:1.5;
+      "
+    ></div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:22px;
+      "
+    >
+      <button
+        type="button"
+        onclick="cerrarFormularioPatrocinador()"
+        style="
+          background:#333;
+          color:white;
+        "
+      >
+        ← Cancelar
+      </button>
+
+      <button
+        id="btnGuardarFormularioPatrocinador"
+        type="button"
+        onclick="guardarFormularioPatrocinador()"
+        style="
+          background:#0b6b24;
+          color:white;
+          border:1px solid #39ff14;
+        "
+      >
+        ✅ Guardar patrocinador
+      </button>
+    </div>
+  </div>
+</div>	
 
 <script src="mass-id.js"></script>	
 
