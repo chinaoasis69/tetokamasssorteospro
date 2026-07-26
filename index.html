@@ -2482,7 +2482,7 @@ if (adminRol === "organizador") {
 
   const { error: uploadError } = await supabaseClient
     .storage
-    .from("premios")
+    .from("organizadores")
     .upload(nombreArchivo, file, {
       cacheControl: "3600",
       upsert: true
@@ -2496,7 +2496,7 @@ if (adminRol === "organizador") {
 
   const { data: urlData } = supabaseClient
     .storage
-    .from("premios")
+    .from("organizadores")
     .getPublicUrl(nombreArchivo);
 
   const publicUrl = urlData.publicUrl;
