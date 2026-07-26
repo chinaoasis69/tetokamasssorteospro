@@ -3954,9 +3954,7 @@ if (!adminActual || adminActual.rol !== "super_admin") {
     "<p>Cargando organizadores...</p>";
 
   const { data, error } = await supabaseClient
-    .from("organizadores")
-    .select("*")
-    .order("created_at", { ascending:false });
+  .rpc("listar_resumen_organizadores_super_admin");
 
   if(error){
     console.error(error);
