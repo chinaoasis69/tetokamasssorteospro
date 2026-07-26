@@ -346,6 +346,397 @@ input{
   #sesionActivaBox {
     padding: 16px !important;
   }
+}
+
+/* =====================================================
+   MASS PATROCINADORES V2 — CARRUSEL MODERNO
+===================================================== */
+
+.mass-sponsor-section {
+  position: relative;
+  width: 100%;
+  margin: 22px auto 32px;
+  padding: 20px 12px;
+  border: 1px solid rgba(57, 255, 20, 0.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(57, 255, 20, 0.08),
+      transparent 48%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(18, 18, 18, 0.98),
+      rgba(5, 5, 5, 0.98)
+    );
+  box-shadow:
+    0 14px 35px rgba(0, 0, 0, 0.45),
+    inset 0 0 22px rgba(57, 255, 20, 0.025);
+  overflow: hidden;
+}
+
+.mass-sponsor-section-title {
+  margin: 0 0 7px;
+  color: #39ff14;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.25;
+  text-align: center;
+  text-shadow:
+    0 0 8px rgba(57, 255, 20, 0.5),
+    0 0 18px rgba(57, 255, 20, 0.2);
+}
+
+.mass-sponsor-section-subtitle {
+  max-width: 650px;
+  margin: 0 auto 20px;
+  padding: 0 10px;
+  color: #cfcfcf;
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.mass-sponsor-carousel {
+  position: relative;
+  width: 100%;
+  padding: 2px 46px 10px;
+}
+
+.mass-sponsor-viewport {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 18px;
+  touch-action: pan-y;
+}
+
+.mass-sponsor-track {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+  width: 100%;
+  transition:
+    transform 0.48s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+
+.mass-sponsor-card {
+  position: relative;
+  flex: 0 0 calc((100% - 32px) / 3);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 17px;
+  border: 1px solid rgba(57, 255, 20, 0.42);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      155deg,
+      rgba(30, 30, 30, 0.98),
+      rgba(10, 10, 10, 0.98)
+    );
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.38),
+    0 0 14px rgba(57, 255, 20, 0.07);
+  text-align: center;
+  overflow: hidden;
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.mass-sponsor-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 14%;
+  width: 72%;
+  height: 3px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #39ff14,
+    transparent
+  );
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.75);
+}
+
+.mass-sponsor-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(57, 255, 20, 0.75);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(57, 255, 20, 0.15);
+}
+
+.mass-sponsor-logo-box {
+  width: 118px;
+  height: 118px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 3px auto 14px;
+  padding: 9px;
+  border: 2px solid rgba(57, 255, 20, 0.55);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.11),
+      rgba(0, 0, 0, 0.28)
+    );
+  box-shadow:
+    0 0 18px rgba(57, 255, 20, 0.14),
+    inset 0 0 12px rgba(255, 255, 255, 0.04);
+}
+
+.mass-sponsor-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 13px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.mass-sponsor-logo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: #151515;
+  color: #39ff14;
+  font-size: 40px;
+  font-weight: 900;
+}
+
+.mass-sponsor-name {
+  width: 100%;
+  margin: 0 0 8px;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.mass-sponsor-description {
+  width: 100%;
+  min-height: 42px;
+  margin: 0 0 12px;
+  color: #cccccc;
+  font-size: 13px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.mass-sponsor-promo {
+  width: 100%;
+  margin: auto 0 14px;
+  padding: 10px 9px;
+  border: 1px solid rgba(57, 255, 20, 0.38);
+  border-radius: 12px;
+  background: rgba(57, 255, 20, 0.075);
+  color: #7cff00;
+  font-size: 14px;
+  font-weight: 900;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.mass-sponsor-contact {
+  width: 100%;
+  margin: 0;
+  padding: 11px 12px;
+  border: 1px solid #39ff14;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(15, 78, 15, 0.96),
+      rgba(5, 37, 5, 0.96)
+    );
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(57, 255, 20, 0.12);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.mass-sponsor-contact:hover {
+  transform: translateY(-2px);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(27, 124, 27, 0.98),
+      rgba(7, 54, 7, 0.98)
+    );
+  box-shadow: 0 7px 18px rgba(57, 255, 20, 0.22);
+}
+
+.mass-sponsor-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(57, 255, 20, 0.75);
+  border-radius: 50%;
+  background: rgba(5, 5, 5, 0.92);
+  color: #39ff14;
+  font-size: 25px;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow:
+    0 0 16px rgba(57, 255, 20, 0.2),
+    0 6px 16px rgba(0, 0, 0, 0.4);
+  transform: translateY(-50%);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.mass-sponsor-arrow:hover {
+  background: rgba(20, 70, 20, 0.96);
+}
+
+.mass-sponsor-arrow:active {
+  transform: translateY(-50%) scale(0.92);
+}
+
+.mass-sponsor-arrow:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.mass-sponsor-arrow-prev {
+  left: 1px;
+}
+
+.mass-sponsor-arrow-next {
+  right: 1px;
+}
+
+.mass-sponsor-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-height: 18px;
+  margin-top: 14px;
+}
+
+.mass-sponsor-dot {
+  width: 9px;
+  height: 9px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #555555;
+  cursor: pointer;
+  transition:
+    width 0.25s ease,
+    border-radius 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.mass-sponsor-dot.active {
+  width: 25px;
+  border-radius: 8px;
+  background: #39ff14;
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.7);
+}
+
+.mass-sponsor-empty {
+  margin: 12px auto;
+  padding: 18px;
+  border: 1px dashed rgba(57, 255, 20, 0.35);
+  border-radius: 14px;
+  color: #bdbdbd;
+  background: rgba(255, 255, 255, 0.025);
+  text-align: center;
+}
+
+/* Dos patrocinadores por vista */
+@media (max-width: 900px) {
+  .mass-sponsor-card {
+    flex-basis: calc((100% - 16px) / 2);
+  }
+}
+
+/* Un patrocinador por vista en teléfono */
+@media (max-width: 600px) {
+  .mass-sponsor-section {
+    margin: 18px auto 26px;
+    padding: 17px 8px;
+    border-radius: 17px;
+  }
+
+  .mass-sponsor-section-title {
+    padding: 0 8px;
+    font-size: 19px;
+  }
+
+  .mass-sponsor-section-subtitle {
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  .mass-sponsor-carousel {
+    padding: 2px 35px 8px;
+  }
+
+  .mass-sponsor-track {
+    gap: 12px;
+  }
+
+  .mass-sponsor-card {
+    flex-basis: 100%;
+    padding: 18px 14px 15px;
+  }
+
+  .mass-sponsor-logo-box {
+    width: 108px;
+    height: 108px;
+  }
+
+  .mass-sponsor-name {
+    font-size: 18px;
+  }
+
+  .mass-sponsor-arrow {
+    width: 31px;
+    height: 31px;
+    font-size: 21px;
+  }
+
+  .mass-sponsor-arrow-prev {
+    left: 0;
+  }
+
+  .mass-sponsor-arrow-next {
+    right: 0;
+  }
 }	
 
 </style>
@@ -7332,246 +7723,1043 @@ setTimeout(() => {
 }, 200);	
 }
 
+/* =====================================================
+   MASS PATROCINADORES V2 — MOTOR DEL CARRUSEL
+===================================================== */
+
+function massEscaparHTML(valor = "") {
+  return String(valor ?? "").replace(
+    /[&<>"']/g,
+    caracter => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[caracter]
+  );
+}
+
+
+function massNormalizarWhatsApp(valor = "") {
+  return String(valor ?? "").replace(/\D/g, "");
+}
+
+
+function massCrearTarjetaPatrocinador(p = {}) {
+
+  const nombre =
+    massEscaparHTML(
+      p.nombre || "Patrocinador MASS"
+    );
+
+  const descripcion =
+    massEscaparHTML(
+      p.descripcion || ""
+    );
+
+  const promocion =
+    massEscaparHTML(
+      p.promocion || ""
+    );
+
+  const logoUrl =
+    massEscaparHTML(
+      p.logo_url || ""
+    );
+
+  const whatsapp =
+    massNormalizarWhatsApp(
+      p.whatsapp || ""
+    );
+
+  const inicial =
+    massEscaparHTML(
+      String(p.nombre || "M")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "M"
+    );
+
+  return `
+    <article class="mass-sponsor-card">
+
+      <div class="mass-sponsor-logo-box">
+
+        ${
+          logoUrl
+            ? `
+              <img
+                class="mass-sponsor-logo"
+                src="${logoUrl}"
+                alt="Logo de ${nombre}"
+                loading="lazy"
+                onerror="
+                  this.style.display='none';
+                  this.nextElementSibling.style.display='flex';
+                "
+              >
+
+              <div
+                class="mass-sponsor-logo-placeholder"
+                style="display:none;"
+              >
+                ${inicial}
+              </div>
+            `
+            : `
+              <div class="mass-sponsor-logo-placeholder">
+                ${inicial}
+              </div>
+            `
+        }
+
+      </div>
+
+      <h4 class="mass-sponsor-name">
+        ${nombre}
+      </h4>
+
+      ${
+        descripcion
+          ? `
+            <p class="mass-sponsor-description">
+              ${descripcion}
+            </p>
+          `
+          : `
+            <p class="mass-sponsor-description">
+              Patrocinador oficial
+            </p>
+          `
+      }
+
+      ${
+        promocion
+          ? `
+            <div class="mass-sponsor-promo">
+              🎁 ${promocion}
+            </div>
+          `
+          : `
+            <div
+              class="mass-sponsor-promo"
+              style="visibility:hidden;"
+            >
+              Promoción
+            </div>
+          `
+      }
+
+      ${
+        whatsapp
+          ? `
+            <button
+              type="button"
+              class="mass-sponsor-contact"
+              data-mass-whatsapp="${whatsapp}"
+            >
+              📱 Contactar por WhatsApp
+            </button>
+          `
+          : ""
+      }
+
+    </article>
+  `;
+}
+
+
+function massCrearCarruselPatrocinadores(
+  patrocinadores = [],
+  opciones = {}
+) {
+
+  if (
+    !Array.isArray(patrocinadores) ||
+    patrocinadores.length === 0
+  ) {
+    return `
+      <div class="mass-sponsor-empty">
+        Próximamente...
+      </div>
+    `;
+  }
+
+  const titulo =
+    massEscaparHTML(
+      opciones.titulo || ""
+    );
+
+  const subtitulo =
+    massEscaparHTML(
+      opciones.subtitulo || ""
+    );
+
+  const clave =
+    String(
+      opciones.clave || "patrocinadores"
+    ).replace(/[^a-zA-Z0-9_-]/g, "");
+
+  const carruselId =
+    `${clave}-${Date.now()}-${
+      Math.random()
+        .toString(36)
+        .slice(2, 8)
+    }`;
+
+  return `
+    <section class="mass-sponsor-section">
+
+      ${
+        titulo
+          ? `
+            <h3 class="mass-sponsor-section-title">
+              ${titulo}
+            </h3>
+          `
+          : ""
+      }
+
+      ${
+        subtitulo
+          ? `
+            <p class="mass-sponsor-section-subtitle">
+              ${subtitulo}
+            </p>
+          `
+          : ""
+      }
+
+      <div
+        id="${carruselId}"
+        class="mass-sponsor-carousel"
+        data-mass-carousel
+      >
+
+        <button
+          type="button"
+          class="
+            mass-sponsor-arrow
+            mass-sponsor-arrow-prev
+          "
+          aria-label="Patrocinador anterior"
+        >
+          ‹
+        </button>
+
+        <div class="mass-sponsor-viewport">
+
+          <div class="mass-sponsor-track">
+
+            ${
+              patrocinadores
+                .map(massCrearTarjetaPatrocinador)
+                .join("")
+            }
+
+          </div>
+
+        </div>
+
+        <button
+          type="button"
+          class="
+            mass-sponsor-arrow
+            mass-sponsor-arrow-next
+          "
+          aria-label="Patrocinador siguiente"
+        >
+          ›
+        </button>
+
+        <div
+          class="mass-sponsor-dots"
+          aria-label="Posición del carrusel"
+        ></div>
+
+      </div>
+
+    </section>
+  `;
+}
+
+
+function massInicializarCarruselesPatrocinadores(
+  contenedor = document
+) {
+
+  const carruseles =
+    contenedor.querySelectorAll(
+      "[data-mass-carousel]"
+    );
+
+  carruseles.forEach(carrusel => {
+
+    if (
+      carrusel.dataset.massInicializado ===
+      "true"
+    ) {
+      return;
+    }
+
+    carrusel.dataset.massInicializado =
+      "true";
+
+    const viewport =
+      carrusel.querySelector(
+        ".mass-sponsor-viewport"
+      );
+
+    const track =
+      carrusel.querySelector(
+        ".mass-sponsor-track"
+      );
+
+    const tarjetas =
+      Array.from(
+        carrusel.querySelectorAll(
+          ".mass-sponsor-card"
+        )
+      );
+
+    const botonAnterior =
+      carrusel.querySelector(
+        ".mass-sponsor-arrow-prev"
+      );
+
+    const botonSiguiente =
+      carrusel.querySelector(
+        ".mass-sponsor-arrow-next"
+      );
+
+    const dotsBox =
+      carrusel.querySelector(
+        ".mass-sponsor-dots"
+      );
+
+    if (
+      !viewport ||
+      !track ||
+      tarjetas.length === 0
+    ) {
+      return;
+    }
+
+    let posicionActual = 0;
+    let posicionMaxima = 0;
+    let anchoMovimiento = 0;
+    let autoplay = null;
+    let touchInicioX = 0;
+    let touchFinalX = 0;
+
+
+    function calcularMedidas() {
+
+      const estiloTrack =
+        window.getComputedStyle(track);
+
+      const espacio =
+        parseFloat(
+          estiloTrack.columnGap ||
+          estiloTrack.gap ||
+          "0"
+        ) || 0;
+
+      const anchoTarjeta =
+        tarjetas[0]
+          .getBoundingClientRect()
+          .width;
+
+      const anchoViewport =
+        viewport
+          .getBoundingClientRect()
+          .width;
+
+      if (
+        !anchoTarjeta ||
+        !anchoViewport
+      ) {
+        return;
+      }
+
+      anchoMovimiento =
+        anchoTarjeta + espacio;
+
+      const visibles =
+        Math.max(
+          1,
+          Math.round(
+            (anchoViewport + espacio) /
+            anchoMovimiento
+          )
+        );
+
+      posicionMaxima =
+        Math.max(
+          0,
+          tarjetas.length - visibles
+        );
+
+      posicionActual =
+        Math.min(
+          posicionActual,
+          posicionMaxima
+        );
+
+      crearIndicadores();
+      actualizarCarrusel();
+    }
+
+
+    function actualizarCarrusel() {
+
+      track.style.transform =
+        `translateX(-${
+          posicionActual *
+          anchoMovimiento
+        }px)`;
+
+      if (botonAnterior) {
+        botonAnterior.disabled =
+          posicionActual === 0;
+      }
+
+      if (botonSiguiente) {
+        botonSiguiente.disabled =
+          posicionActual ===
+          posicionMaxima;
+      }
+
+      const indicadores =
+        dotsBox
+          ? dotsBox.querySelectorAll(
+              ".mass-sponsor-dot"
+            )
+          : [];
+
+      indicadores.forEach(
+        (indicador, indice) => {
+
+          indicador.classList.toggle(
+            "active",
+            indice === posicionActual
+          );
+
+          indicador.setAttribute(
+            "aria-current",
+            indice === posicionActual
+              ? "true"
+              : "false"
+          );
+        }
+      );
+    }
+
+
+    function crearIndicadores() {
+
+      if (!dotsBox) return;
+
+      dotsBox.innerHTML = "";
+
+      if (posicionMaxima === 0) {
+        dotsBox.style.display = "none";
+        return;
+      }
+
+      dotsBox.style.display = "flex";
+
+      for (
+        let indice = 0;
+        indice <= posicionMaxima;
+        indice++
+      ) {
+
+        const punto =
+          document.createElement("button");
+
+        punto.type = "button";
+        punto.className =
+          "mass-sponsor-dot";
+
+        punto.setAttribute(
+          "aria-label",
+          `Ir a patrocinador ${
+            indice + 1
+          }`
+        );
+
+        punto.addEventListener(
+          "click",
+          () => {
+            posicionActual = indice;
+            actualizarCarrusel();
+            reiniciarAutoplay();
+          }
+        );
+
+        dotsBox.appendChild(punto);
+      }
+    }
+
+
+    function avanzar() {
+
+      if (posicionMaxima === 0) return;
+
+      posicionActual =
+        posicionActual >= posicionMaxima
+          ? 0
+          : posicionActual + 1;
+
+      actualizarCarrusel();
+    }
+
+
+    function retroceder() {
+
+      if (posicionMaxima === 0) return;
+
+      posicionActual =
+        posicionActual <= 0
+          ? posicionMaxima
+          : posicionActual - 1;
+
+      actualizarCarrusel();
+    }
+
+
+    function detenerAutoplay() {
+
+      if (autoplay) {
+        clearInterval(autoplay);
+        autoplay = null;
+      }
+    }
+
+
+    function iniciarAutoplay() {
+
+      detenerAutoplay();
+
+      if (posicionMaxima === 0) {
+        return;
+      }
+
+      autoplay =
+        setInterval(
+          avanzar,
+          4500
+        );
+    }
+
+
+    function reiniciarAutoplay() {
+      detenerAutoplay();
+      iniciarAutoplay();
+    }
+
+
+    botonAnterior?.addEventListener(
+      "click",
+      () => {
+        retroceder();
+        reiniciarAutoplay();
+      }
+    );
+
+
+    botonSiguiente?.addEventListener(
+      "click",
+      () => {
+        avanzar();
+        reiniciarAutoplay();
+      }
+    );
+
+
+    carrusel
+      .querySelectorAll(
+        "[data-mass-whatsapp]"
+      )
+      .forEach(boton => {
+
+        boton.addEventListener(
+          "click",
+          () => {
+
+            const numero =
+              boton.dataset.massWhatsapp;
+
+            if (!numero) return;
+
+            window.open(
+              `https://wa.me/${numero}`,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          }
+        );
+      });
+
+
+    viewport.addEventListener(
+      "touchstart",
+      evento => {
+
+        detenerAutoplay();
+
+        touchInicioX =
+          evento.changedTouches[0]
+            .clientX;
+      },
+      {
+        passive: true
+      }
+    );
+
+
+    viewport.addEventListener(
+      "touchend",
+      evento => {
+
+        touchFinalX =
+          evento.changedTouches[0]
+            .clientX;
+
+        const diferencia =
+          touchInicioX - touchFinalX;
+
+        if (
+          Math.abs(diferencia) > 45
+        ) {
+
+          if (diferencia > 0) {
+            avanzar();
+          } else {
+            retroceder();
+          }
+        }
+
+        iniciarAutoplay();
+      },
+      {
+        passive: true
+      }
+    );
+
+
+    carrusel.addEventListener(
+      "mouseenter",
+      detenerAutoplay
+    );
+
+
+    carrusel.addEventListener(
+      "mouseleave",
+      iniciarAutoplay
+    );
+
+
+    carrusel.addEventListener(
+      "focusin",
+      detenerAutoplay
+    );
+
+
+    carrusel.addEventListener(
+      "focusout",
+      iniciarAutoplay
+    );
+
+
+    if (
+      typeof ResizeObserver !==
+      "undefined"
+    ) {
+
+      const observador =
+        new ResizeObserver(() => {
+          calcularMedidas();
+        });
+
+      observador.observe(viewport);
+
+    } else {
+
+      window.addEventListener(
+        "resize",
+        calcularMedidas
+      );
+    }
+
+
+    requestAnimationFrame(() => {
+      calcularMedidas();
+      iniciarAutoplay();
+    });
+
+  });
+}	
+
 async function cargarPatrocinadoresPlataforma() {
-  const box = document.getElementById("patrocinadoresPlataformaBox");
+
+  const box =
+    document.getElementById(
+      "patrocinadoresPlataformaBox"
+    );
+
   if (!box) return;
 
-  const { data: principal, error: errorPrincipal } = await supabaseClient
+
+  box.innerHTML = `
+    <div class="mass-sponsor-empty">
+      Cargando patrocinadores...
+    </div>
+  `;
+
+
+  const {
+    data: principal,
+    error: errorPrincipal
+  } = await supabaseClient
     .from("organizadores")
     .select("id")
     .eq("es_principal", true)
     .single();
 
+
   if (errorPrincipal || !principal) {
-    box.innerHTML = "Próximamente...";
+
+    console.error(
+      "Error buscando organizador principal:",
+      errorPrincipal
+    );
+
+    box.innerHTML = `
+      <div class="mass-sponsor-empty">
+        Próximamente...
+      </div>
+    `;
+
     return;
   }
 
-  const { data, error } = await supabaseClient
+
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("patrocinadores")
     .select("*")
     .eq("activo", true)
-    .eq("organizador_id", principal.id)
-    .order("created_at", { ascending: false });
+    .eq(
+      "organizador_id",
+      principal.id
+    )
+    .is("rifa_id", null)
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
 
-  if (error || !data || data.length === 0) {
-    box.innerHTML = "Próximamente...";
+
+  if (error) {
+
+    console.error(
+      "Error cargando patrocinadores de plataforma:",
+      error
+    );
+
+    box.innerHTML = `
+      <div class="mass-sponsor-empty">
+        No se pudieron cargar los patrocinadores.
+      </div>
+    `;
+
     return;
   }
 
-  const p = data[0];
 
-  box.innerHTML = `
-    <div class="card" style="margin:10px 0;text-align:center;">
-      ${p.logo_url ? `<img src="${p.logo_url}" style="max-width:140px;border-radius:14px;"><br>` : ""}
-      <b>${p.nombre || ""}</b><br>
-      ${p.descripcion || ""}<br>
-      <span style="color:#7CFF00;font-weight:bold;">
-        ${p.promocion || ""}
-      </span><br><br>
-      ${p.whatsapp ? `<button onclick="window.open('https://wa.me/${p.whatsapp}', '_blank')">📞 Contactar</button>` : ""}
-    </div>
-  `;
+  if (
+    !Array.isArray(data) ||
+    data.length === 0
+  ) {
+
+    box.innerHTML = `
+      <div class="mass-sponsor-empty">
+        Próximamente...
+      </div>
+    `;
+
+    return;
+  }
+
+
+  box.innerHTML =
+    massCrearCarruselPatrocinadores(
+      data,
+      {
+        titulo: "",
+        subtitulo:
+          "Conoce los negocios que apoyan la plataforma TE-TO-KA MASS SORTEOS PRO.",
+        clave:
+          "patrocinadores-plataforma"
+      }
+    );
+
+
+  requestAnimationFrame(() => {
+
+    massInicializarCarruselesPatrocinadores(
+      box
+    );
+
+  });
+
 }	
 
 async function cargarPatrocinadoresPublicos(
   tipo = "organizador",
   id = null,
   organizadorId = null
-){
+) {
 
-  const box = document.getElementById("patrocinadoresBox");
-  if(!box) return;
+  const box =
+    document.getElementById(
+      "patrocinadoresBox"
+    );
+
+  if (!box) return;
+
+
+  box.innerHTML = `
+    <div class="mass-sponsor-empty">
+      Cargando patrocinadores...
+    </div>
+  `;
+
 
   let query = supabaseClient
     .from("patrocinadores")
     .select("*")
     .eq("activo", true);
 
-  if(tipo === "organizador"){
+
+  if (tipo === "organizador") {
+
+    const organizadorFinalId =
+      id || clienteActual?.id;
+
+    if (!organizadorFinalId) {
+
+      box.innerHTML = `
+        <div class="mass-sponsor-empty">
+          No se encontró el Organizador.
+        </div>
+      `;
+
+      return;
+    }
+
+
     query = query
-      .eq("organizador_id", id || clienteActual?.id)
-      .is("rifa_id", null);
+      .eq(
+        "organizador_id",
+        organizadorFinalId
+      )
+      .is(
+        "rifa_id",
+        null
+      );
+
   }
+
 
   if (tipo === "rifa") {
 
-  if (!id || !organizadorId) {
+    if (!id || !organizadorId) {
+
+      box.innerHTML = `
+        <div class="mass-sponsor-empty">
+          No se encontró la información del sorteo.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    query = query
+      .eq(
+        "organizador_id",
+        organizadorId
+      )
+      .or(
+        `rifa_id.is.null,rifa_id.eq.${id}`
+      );
+
+  }
+
+
+  const {
+    data,
+    error
+  } = await query.order(
+    "created_at",
+    {
+      ascending: false
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "Error cargando patrocinadores públicos:",
+      error
+    );
+
+    box.innerHTML = `
+      <div class="mass-sponsor-empty">
+        No se pudieron cargar los patrocinadores.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (
+    !Array.isArray(data) ||
+    data.length === 0
+  ) {
+
+    box.innerHTML = `
+      <div class="mass-sponsor-empty">
+        Próximamente...
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (tipo === "rifa") {
+
+    const patrocinadoresOrganizador =
+      data.filter(
+        patrocinador =>
+          !patrocinador.rifa_id
+      );
+
+
+    const patrocinadoresExclusivos =
+      data.filter(
+        patrocinador =>
+          String(
+            patrocinador.rifa_id
+          ) === String(id)
+      );
+
+
+    const secciones = [];
+
+
+    if (
+      patrocinadoresOrganizador.length >
+      0
+    ) {
+
+      secciones.push(
+        massCrearCarruselPatrocinadores(
+          patrocinadoresOrganizador,
+          {
+            titulo:
+              "🤝 Patrocinadores del Organizador",
+
+            subtitulo:
+              "Beneficios generales disponibles en las dinámicas de este Organizador.",
+
+            clave:
+              `patrocinadores-organizador-${organizadorId}`
+          }
+        )
+      );
+
+    }
+
+
+    if (
+      patrocinadoresExclusivos.length >
+      0
+    ) {
+
+      secciones.push(
+        massCrearCarruselPatrocinadores(
+          patrocinadoresExclusivos,
+          {
+            titulo:
+              "🎯 Patrocinadores exclusivos de este sorteo",
+
+            subtitulo:
+              "Promociones especiales válidas únicamente para esta dinámica.",
+
+            clave:
+              `patrocinadores-rifa-${id}`
+          }
+        )
+      );
+
+    }
+
+
+    if (secciones.length === 0) {
+
+      box.innerHTML = `
+        <div class="mass-sponsor-empty">
+          Este sorteo todavía no tiene patrocinadores.
+        </div>
+      `;
+
+      return;
+    }
+
+
     box.innerHTML =
-      "No se encontró la información del sorteo.";
-    return;
+      secciones.join("");
+
+  } else {
+
+    box.innerHTML =
+      massCrearCarruselPatrocinadores(
+        data,
+        {
+          titulo:
+            "🤝 Patrocinadores del Organizador",
+
+          subtitulo:
+            "Conoce los negocios y promociones disponibles con este Organizador.",
+
+          clave:
+            `patrocinadores-organizador-${id || clienteActual?.id || "general"}`
+        }
+      );
+
   }
 
-  query = query
-    .eq(
-      "organizador_id",
-      organizadorId
-    )
-    .or(
-      `rifa_id.is.null,rifa_id.eq.${id}`
-    );
-}
 
-  const { data, error } = await query.order("created_at", { ascending:false });
+  requestAnimationFrame(() => {
 
-  if(error){
-    console.error(error);
-    box.innerHTML = "No se pudieron cargar patrocinadores";
-    return;
-  }
-
-  if(!data || data.length === 0){
-    box.innerHTML = "Próximamente...";
-    return;
-  }
-
-  const crearTarjetaPatrocinador = (p) => `
-  <div
-    class="card"
-    style="
-      margin:10px 0;
-      text-align:center;
-    "
-  >
-    ${
-      p.logo_url
-        ? `
-          <img
-            src="${p.logo_url}"
-            alt="Logo de ${p.nombre || "patrocinador"}"
-            style="
-              max-width:140px;
-              border-radius:12px;
-            "
-          >
-          <br>
-        `
-        : ""
-    }
-
-    <b>
-      ${p.nombre || ""}
-    </b>
-    <br>
-
-    ${p.descripcion || ""}
-    <br>
-
-    <span
-      style="
-        color:#7CFF00;
-        font-weight:bold;
-      "
-    >
-      ${p.promocion || ""}
-    </span>
-
-    <br><br>
-
-    ${
-      p.whatsapp
-        ? `
-          <button
-            type="button"
-            onclick="window.open(
-              'https://wa.me/${p.whatsapp}',
-              '_blank'
-            )"
-          >
-            📱 Contactar
-          </button>
-        `
-        : ""
-    }
-  </div>
-`;
-
-
-if (tipo === "rifa") {
-
-  const patrocinadoresOrganizador =
-    data.filter(
-      p => !p.rifa_id
+    massInicializarCarruselesPatrocinadores(
+      box
     );
 
-  const patrocinadoresExclusivos =
-    data.filter(
-      p =>
-        String(p.rifa_id) ===
-        String(id)
-    );
+  });
 
-  box.innerHTML = `
-
-    ${
-      patrocinadoresOrganizador.length > 0
-        ? `
-          <section
-            style="
-              margin-bottom:28px;
-            "
-          >
-            <h3>
-              🤝 Patrocinadores del Organizador
-            </h3>
-
-            <p
-              style="
-                margin-top:-6px;
-                opacity:.85;
-              "
-            >
-              Beneficios generales disponibles
-              en las dinámicas de este Organizador.
-            </p>
-
-            ${
-              patrocinadoresOrganizador
-                .map(crearTarjetaPatrocinador)
-                .join("")
-            }
-          </section>
-        `
-        : ""
-    }
-
-    ${
-      patrocinadoresExclusivos.length > 0
-        ? `
-          <section>
-            <h3>
-              🎯 Patrocinadores exclusivos de este sorteo
-            </h3>
-
-            <p
-              style="
-                margin-top:-6px;
-                opacity:.85;
-              "
-            >
-              Promociones especiales válidas
-              únicamente para esta dinámica.
-            </p>
-
-            ${
-              patrocinadoresExclusivos
-                .map(crearTarjetaPatrocinador)
-                .join("")
-            }
-          </section>
-        `
-        : ""
-    }
-
-  `;
-
-} else {
-
-  box.innerHTML =
-    data
-      .map(crearTarjetaPatrocinador)
-      .join("");
-}
 }	
 
 async function cargarClientePorId(clienteId){
