@@ -11315,87 +11315,787 @@ function abrirSelectorSuerte(){
   }
 }	
 
-function numeroSuerte(cantidad = 1) {
+async function numeroSuerte(cantidad = 1) {
 
-  const rifaActual = (rifas || []).find(
-    r => String(r.id) === String(RIFA_ID)
-  );
-
-  if (!rifaActual) {
-    alert("❌ No se encontró la rifa seleccionada");
-    return;
-  }
-
-  const modalidadActual = Number(rifaActual.modalidad || 1);
-  const totalNumerosRifa = Number(
-    rifaActual.total_numeros || boletos.length
-  );
-
-  const saltoNumeros = totalNumerosRifa / modalidadActual;
-
-  const boletosDeRifa = boletos.filter(
-    b => String(b.rifa_id) === String(RIFA_ID)
-  );
-
-  // Solamente números base que tengan todo su paquete disponible
-  const basesValidas = boletosDeRifa.filter(base => {
-
-    const numeroBase = Number(base.numero);
-
-    if ((base.estado || "disponible") !== "disponible") {
-      return false;
-    }
-
-    // En modalidad 4 y 100 números solo permite bases 00–24
-    if (numeroBase >= saltoNumeros) {
-      return false;
-    }
-
-    const numerosPaquete = Array.from(
-      { length: modalidadActual },
-      (_, indice) => numeroBase + (indice * saltoNumeros)
-    );
-
-    return numerosPaquete.every(numeroPaquete =>
-      boletosDeRifa.some(b =>
-        Number(b.numero) === numeroPaquete &&
-        (b.estado || "disponible") === "disponible"
+  const cantidadSolicitada =
+    Math.max(
+      1,
+      Math.floor(
+        Number(cantidad) || 1
       )
     );
-  });
 
-  if (basesValidas.length < cantidad) {
-    alert(
-      `❌ Solo quedan ${basesValidas.length} paquetes completos disponibles`
+
+  const selector =
+    document.getElementById(
+      "selectorSuerte"
     );
-    return;
-  }
 
-  document.getElementById("selectorSuerte").style.display = "none";
 
-  // Limpiar selección anterior
-  boletosSeleccionados = [];
+  const botonesSelector =
+    selector
+      ? selector.querySelectorAll(
+          "button"
+        )
+      : [];
 
-  // Mezclar únicamente números base válidos
-  const mezcla = [...basesValidas].sort(
-    () => Math.random() - 0.5
+
+  botonesSelector.forEach(
+    boton => {
+      boton.disabled = true;
+    }
   );
 
-  mezcla.slice(0, cantidad).forEach(b => {
-    seleccionarBoleto(b);
-  });
 
-  // Ir al Centro de Compra
-  setTimeout(() => {
-    const centro = document.getElementById("resumenCompra");
+  try {
 
-    if (centro) {
-      centro.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
+    const rifaActual =
+      obtenerRifaActualParaBoletos();
+
+
+    if (!rifaActual || !RIFA_ID) {
+
+      alert(
+        "❌ No se encontró la rifa seleccionada."
+      );
+
+      return;
     }
-  }, 300);
+
+
+    const modalidadActual =
+      Math.max(
+        1,
+        Number(
+          rifaActual.modalidad || 1
+        )
+      );
+
+
+    const totalNumerosRifa =
+      Number(
+        rifaActual.total_numeros || 0
+      );
+
+
+    if (
+      !Number.isInteger(
+        totalNumerosRifa
+      ) ||
+      totalNumerosRifa <= 0 ||
+      totalNumerosRifa %
+        modalidadActual !== 0
+    ) {
+
+      alert(
+        "❌ La configuración de esta rifa no es válida."
+      );
+
+      return;
+    }
+
+
+    const saltoNumeros =
+      totalNumerosRifa /
+      modalidadActual;
+
+
+    const digitosRifa =
+      Math.max(
+        2,
+        String(
+          totalNumerosRifa - 1
+        ).length
+      );
+
+
+    const ultimoNumeroBaseTexto =
+      String(
+        saltoNumeros - 1
+      ).padStart(
+        digitosRifa,
+        "0"
+      );
+
+
+    /*
+      Contar solamente números base
+      disponibles, sin descargar la rifa.
+    */
+
+    const {
+      count: totalBasesDisponibles,
+      error: errorConteo
+    } =
+      await supabaseClient
+        .from("boletos")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "rifa_id",
+          RIFA_ID
+        )
+        .eq(
+          "estado",
+          "disponible"
+        )
+        .lte(
+          "numero",
+          ultimoNumeroBaseTexto
+        );
+
+
+    if (errorConteo) {
+
+      console.error(
+        "ERROR CONTANDO BASES DISPONIBLES:",
+        errorConteo
+      );
+
+      alert(
+        "❌ No fue posible buscar números disponibles."
+      );
+
+      return;
+    }
+
+
+    const cantidadBasesDisponibles =
+      Number(
+        totalBasesDisponibles || 0
+      );
+
+
+    if (
+      cantidadBasesDisponibles <
+      cantidadSolicitada
+    ) {
+
+      alert(
+        `❌ Solo quedan ${cantidadBasesDisponibles} números base disponibles.`
+      );
+
+      return;
+    }
+
+
+    const basesElegidas =
+      [];
+
+
+    const idsBasesElegidas =
+      new Set();
+
+
+    const basesRevisadas =
+      new Set();
+
+
+    /*
+      Recibe números base candidatos
+      y consulta solamente sus paquetes.
+    */
+
+    async function validarBasesCandidatas(
+      candidatas
+    ) {
+
+      const candidatasNuevas =
+        (candidatas || []).filter(
+          boleto => {
+
+            const clave =
+              String(
+                boleto.numero
+              );
+
+            if (
+              basesRevisadas.has(
+                clave
+              )
+            ) {
+              return false;
+            }
+
+
+            basesRevisadas.add(
+              clave
+            );
+
+            return true;
+          }
+        );
+
+
+      if (
+        candidatasNuevas.length === 0
+      ) {
+        return [];
+      }
+
+
+      const numerosPaqueteTexto =
+        [
+          ...new Set(
+            candidatasNuevas.flatMap(
+              boletoBase => {
+
+                const numeroBase =
+                  Number(
+                    boletoBase.numero
+                  );
+
+
+                return Array.from(
+                  {
+                    length:
+                      modalidadActual
+                  },
+
+                  (_, indice) =>
+                    String(
+                      numeroBase +
+                      (
+                        indice *
+                        saltoNumeros
+                      )
+                    ).padStart(
+                      digitosRifa,
+                      "0"
+                    )
+                );
+              }
+            )
+          )
+        ];
+
+
+      const {
+        data: registrosPaquetes,
+        error: errorPaquetes
+      } =
+        await supabaseClient
+          .from("boletos")
+          .select(
+            "id, rifa_id, numero, estado"
+          )
+          .eq(
+            "rifa_id",
+            RIFA_ID
+          )
+          .in(
+            "numero",
+            numerosPaqueteTexto
+          );
+
+
+      if (errorPaquetes) {
+
+        throw errorPaquetes;
+
+      }
+
+
+      const paquetesPorBase =
+        new Map();
+
+
+      (
+        registrosPaquetes || []
+      ).forEach(
+        boleto => {
+
+          const numero =
+            Number(
+              boleto.numero
+            );
+
+
+          const numeroBase =
+            numero %
+            saltoNumeros;
+
+
+          if (
+            !paquetesPorBase.has(
+              numeroBase
+            )
+          ) {
+
+            paquetesPorBase.set(
+              numeroBase,
+              []
+            );
+
+          }
+
+
+          paquetesPorBase
+            .get(
+              numeroBase
+            )
+            .push(
+              boleto
+            );
+        }
+      );
+
+
+      return candidatasNuevas.filter(
+        boletoBase => {
+
+          const numeroBase =
+            Number(
+              boletoBase.numero
+            );
+
+
+          const paquete =
+            paquetesPorBase.get(
+              numeroBase
+            ) || [];
+
+
+          return (
+            paquete.length ===
+              modalidadActual &&
+
+            paquete.every(
+              boleto =>
+                String(
+                  boleto.estado ||
+                  ""
+                )
+                  .trim()
+                  .toLowerCase() ===
+                "disponible"
+            )
+          );
+        }
+      );
+
+    }
+
+
+    /*
+      Buscar ventanas pequeñas en posiciones
+      aleatorias de los números disponibles.
+    */
+
+    const tamanoVentana =
+      Math.min(
+        cantidadBasesDisponibles,
+        Math.max(
+          30,
+          cantidadSolicitada * 5
+        )
+      );
+
+
+    const MAX_INTENTOS_ALEATORIOS =
+      12;
+
+
+    for (
+      let intento = 0;
+      intento <
+        MAX_INTENTOS_ALEATORIOS &&
+      basesElegidas.length <
+        cantidadSolicitada;
+      intento++
+    ) {
+
+      const desplazamientoMaximo =
+        Math.max(
+          0,
+          cantidadBasesDisponibles -
+          tamanoVentana
+        );
+
+
+      const desplazamiento =
+        desplazamientoMaximo > 0
+
+          ? Math.floor(
+              Math.random() *
+              (
+                desplazamientoMaximo +
+                1
+              )
+            )
+
+          : 0;
+
+
+      const {
+        data: basesCandidatas,
+        error: errorBases
+      } =
+        await supabaseClient
+          .from("boletos")
+          .select(
+            "id, rifa_id, numero, estado"
+          )
+          .eq(
+            "rifa_id",
+            RIFA_ID
+          )
+          .eq(
+            "estado",
+            "disponible"
+          )
+          .lte(
+            "numero",
+            ultimoNumeroBaseTexto
+          )
+          .order(
+            "numero",
+            {
+              ascending: true
+            }
+          )
+          .range(
+            desplazamiento,
+            desplazamiento +
+              tamanoVentana -
+              1
+          );
+
+
+      if (errorBases) {
+
+        throw errorBases;
+
+      }
+
+
+      /*
+        Mezcla Fisher-Yates para evitar
+        ordenar todo el arreglo con Math.random.
+      */
+
+      const mezcla =
+        [
+          ...(
+            basesCandidatas || []
+          )
+        ];
+
+
+      for (
+        let indice =
+          mezcla.length - 1;
+
+        indice > 0;
+
+        indice--
+      ) {
+
+        const indiceAleatorio =
+          Math.floor(
+            Math.random() *
+            (
+              indice + 1
+            )
+          );
+
+
+        [
+          mezcla[indice],
+          mezcla[indiceAleatorio]
+        ] =
+        [
+          mezcla[indiceAleatorio],
+          mezcla[indice]
+        ];
+
+      }
+
+
+      const basesValidas =
+        await validarBasesCandidatas(
+          mezcla
+        );
+
+
+      for (
+        const boletoBase of
+        basesValidas
+      ) {
+
+        if (
+          basesElegidas.length >=
+          cantidadSolicitada
+        ) {
+          break;
+        }
+
+
+        if (
+          idsBasesElegidas.has(
+            boletoBase.id
+          )
+        ) {
+          continue;
+        }
+
+
+        idsBasesElegidas.add(
+          boletoBase.id
+        );
+
+
+        basesElegidas.push(
+          boletoBase
+        );
+
+      }
+
+    }
+
+
+    /*
+      Respaldo para rifas pequeñas o con pocos
+      paquetes completos disponibles.
+    */
+
+    let desplazamientoRespaldo =
+      0;
+
+
+    const LIMITE_REVISION_RESPALDO =
+      Math.min(
+        cantidadBasesDisponibles,
+        500
+      );
+
+
+    while (
+      basesElegidas.length <
+        cantidadSolicitada &&
+
+      desplazamientoRespaldo <
+        LIMITE_REVISION_RESPALDO
+    ) {
+
+      const {
+        data: basesRespaldo,
+        error: errorRespaldo
+      } =
+        await supabaseClient
+          .from("boletos")
+          .select(
+            "id, rifa_id, numero, estado"
+          )
+          .eq(
+            "rifa_id",
+            RIFA_ID
+          )
+          .eq(
+            "estado",
+            "disponible"
+          )
+          .lte(
+            "numero",
+            ultimoNumeroBaseTexto
+          )
+          .order(
+            "numero",
+            {
+              ascending: true
+            }
+          )
+          .range(
+            desplazamientoRespaldo,
+            desplazamientoRespaldo +
+              49
+          );
+
+
+      if (errorRespaldo) {
+
+        throw errorRespaldo;
+
+      }
+
+
+      desplazamientoRespaldo +=
+        50;
+
+
+      const basesValidas =
+        await validarBasesCandidatas(
+          basesRespaldo || []
+        );
+
+
+      for (
+        const boletoBase of
+        basesValidas
+      ) {
+
+        if (
+          basesElegidas.length >=
+          cantidadSolicitada
+        ) {
+          break;
+        }
+
+
+        if (
+          idsBasesElegidas.has(
+            boletoBase.id
+          )
+        ) {
+          continue;
+        }
+
+
+        idsBasesElegidas.add(
+          boletoBase.id
+        );
+
+
+        basesElegidas.push(
+          boletoBase
+        );
+
+      }
+
+    }
+
+
+    if (
+      basesElegidas.length <
+      cantidadSolicitada
+    ) {
+
+      alert(
+        "❌ No encontramos suficientes paquetes completos disponibles.\n\n" +
+        `Solicitados: ${cantidadSolicitada}\n` +
+        `Encontrados: ${basesElegidas.length}\n\n` +
+        "Intenta nuevamente o selecciona menos boletos."
+      );
+
+      return;
+    }
+
+
+    boletosSeleccionados =
+      basesElegidas.slice(
+        0,
+        cantidadSolicitada
+      );
+
+
+    boletoSeleccionado =
+      boletosSeleccionados[0] ||
+      null;
+
+
+    if (selector) {
+
+      selector.style.display =
+        "none";
+
+    }
+
+
+    const seleccionTexto =
+      document.getElementById(
+        "seleccionTexto"
+      );
+
+
+    if (seleccionTexto) {
+
+      seleccionTexto.innerHTML =
+        "Boletos seleccionados:<br>" +
+
+        boletosSeleccionados
+          .map(
+            boleto => `
+              <button
+                onclick="quitarBoletoSeleccionado('${boleto.id}')"
+                style="margin:4px;"
+              >
+                ${boleto.numero} ❌
+              </button>
+            `
+          )
+          .join("");
+
+    }
+
+
+    actualizarResumenCompra();
+
+
+    if (
+      typeof renderBoletos ===
+      "function"
+    ) {
+
+      renderBoletos();
+
+    }
+
+
+    setTimeout(
+      () => {
+
+        const centro =
+          document.getElementById(
+            "resumenCompra"
+          );
+
+
+        if (centro) {
+
+          centro.scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "center"
+          });
+
+        }
+
+      },
+      300
+    );
+
+
+  } catch (errorNumeroSuerte) {
+
+    console.error(
+      "ERROR EN NÚMERO DE LA SUERTE:",
+      errorNumeroSuerte
+    );
+
+
+    alert(
+      "❌ No fue posible seleccionar los números de la suerte.\n\n" +
+      "Intenta nuevamente."
+    );
+
+
+  } finally {
+
+    botonesSelector.forEach(
+      boton => {
+        boton.disabled = false;
+      }
+    );
+
+  }
+
 }
 
 function abrirVideoRifa(){
