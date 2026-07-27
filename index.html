@@ -13607,11 +13607,36 @@ const saltoNumeros =
           🎟️ Incluido en el paquete<br>
         `
   )  
-  : t.giro_usado
-    ? "❌ Giro usado"
-    : rifaActiva
-       ? `<button onclick="girarLuckySpinConBoleto('${t.numero}', '${t.rifa_id || rifaId}')">🎰 Girar Lucky Spin</button>`
-       : "🏁 Rifa finalizada"
+  : (
+    Number(t.numero) < saltoNumeros
+
+      ? (
+          t.giro_usado
+
+            ? "❌ Giro usado"
+
+            : rifaActiva
+
+              ? `
+                  🎡 Giro disponible<br>
+
+                  <button
+                    onclick="girarLuckySpinConBoleto(
+                      '${t.numero}',
+                      '${t.rifa_id || rifaId}'
+                    )"
+                  >
+                    🎰 Girar Lucky Spin
+                  </button>
+                `
+
+              : "🏁 Rifa finalizada"
+        )
+
+      : `
+          🎟️ Incluido en el paquete<br>
+        `
+  )
 }
 
           </div>
