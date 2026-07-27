@@ -10815,49 +10815,14 @@ background:#111;
 		const galeria = document.getElementById("galeriaRifa");
 galeria.innerHTML = "";
 
-const imagenes = [
-  rifa.imagen_url,
-  rifa.imagen2_url,
-  rifa.imagen3_url,
-  rifa.imagen4_url,
-  rifa.imagen5_url
-].filter(Boolean);
+/*
+  Cargar la galería pública unificada
+  con imágenes y videos reales de los premios.
+*/
 
-imagenes.forEach(url => {
-  const mini = document.createElement("img");
-  mini.src = url;
-  mini.style.width = "70px";
-  mini.style.height = "70px";
-  mini.style.objectFit = "cover";
-  mini.style.borderRadius = "10px";
-  mini.style.border = "2px solid #39ff14";
-  mini.style.cursor = "pointer";
-
-  mini.onclick = () => {
-    document.getElementById("imagenRifa").src = url;
-  };
-
-  galeria.appendChild(mini);
-});
-
-		const img = document.getElementById("imagenRifa");
-
-if(rifa.imagen_url){
-    img.src = rifa.imagen_url;
-    img.style.display = "block";
-}else{
-    img.style.display = "none";
-}
-
-const btnVideo = document.getElementById("btnVideoRifa");
-
-if(rifa.video_url){
-    btnVideo.style.display = "inline-block";
-    btnVideo.dataset.video = rifa.video_url;
-}else{
-    btnVideo.style.display = "none";
-    btnVideo.dataset.video = "";		
-    }
+await cargarGaleriaPublicaPremios(
+  rifa
+);
 	  }
 
     await cargarBoletos();
