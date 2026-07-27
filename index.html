@@ -7347,118 +7347,264 @@ async function guardarActividadSorteo(accion, listaBoletos) {
 let comprando = false;
 
 async function apartarBoletosInterno() {
-  if (!boletosSeleccionados || boletosSeleccionados.length === 0) {
-    alert("Selecciona al menos un boleto");
-    return;
-  }
 
-  if (!confirm(`¿ ${boletosSeleccionados.length} boleto(s)?`)) return;
-
-  const telefonoReserva = String(
-  localStorage.getItem("mass_telefono") ||
-  localStorage.getItem("mass_user") ||
-  userActual ||
-  ""
-).trim();
-
-if (!telefonoReserva) {
-  alert("❌ No se encontró el teléfono de la sesión activa.");
-  return;
-}
-
-const rifaActual = rifas.find(
-  r => String(r.id) === String(RIFA_ID)
-);
-
-const modalidadActual = Math.max(
-  1,
-  Number(rifaActual?.modalidad || 1)
-);
-
-const totalNumerosRifa = Number(
-  rifaActual?.total_numeros || 0
-);
-
-const saltoNumeros =
-  totalNumerosRifa / modalidadActual;
-
-const numerosPaquete =
-  boletosSeleccionados.flatMap(b => {
-
-    const numeroBase = Number(b.numero);
-
-    return Array.from(
-      { length: modalidadActual },
-      (_, indice) =>
-        numeroBase + (indice * saltoNumeros)
+  if (
+    !Array.isArray(boletosSeleccionados) ||
+    boletosSeleccionados.length === 0
+  ) {
+    alert(
+      "Selecciona al menos un boleto"
     );
-  });
 
-const numerosPaqueteSet =
-  new Set(numerosPaquete.map(Number));
-
-const boletosPaquete =
-  boletos.filter(b =>
-    String(b.rifa_id) === String(RIFA_ID) &&
-    numerosPaqueteSet.has(Number(b.numero))
-  );
-
-const boletosDisponiblesPaquete =
-  boletosPaquete.filter(
-    b => (b.estado || "disponible") === "disponible"
-  );
-
-if (boletosDisponiblesPaquete.length !== boletosPaquete.length) {
-  alert(
-    "❌ Uno o más números del paquete ya no están disponibles.\n\n" +
-    "Actualiza la rifa y selecciona otro número."
-  );
-  return;
-}	
-
-const ids = boletosDisponiblesPaquete.map(b => b.id);
-
-const cantidadEsperada =
-  boletosSeleccionados.length * modalidadActual;
-
-if (ids.length !== cantidadEsperada) {
-  alert(
-    "❌ No se encontraron todos los números del paquete.\n\n" +
-    `Esperados: ${cantidadEsperada}\n` +
-    `Encontrados: ${ids.length}`
-  );
-
-  return;
-}
-
-  const { error } = await supabaseClient
-    .from("boletos")
-    .update({
-      estado: "apartado",
-      telefono: telefonoReserva
-    })
-    .in("id", ids)
-    .eq("estado", "disponible");
-
-  if (error) {
-    console.error(error);
-    alert("Error reservando boletos");
     return;
   }
 
-  await guardarActividadSorteo("apartado", boletosSeleccionados);	
 
-  alert("🟡 Boletos reservados correctamente");
+  const cantidadSelecciones =
+    boletosSeleccionados.length;
+
+
+  if (
+    !confirm(
+      `¿Reservar ${cantidadSelecciones} boleto(s)?`
+    )
+  ) {
+    return;
+  }
+
+
+  const telefonoReserva =
+    String(
+      localStorage.getItem(
+        "mass_telefono"
+      ) ||
+      localStorage.getItem(
+        "mass_user"
+      ) ||
+      userActual ||
+      ""
+    ).trim();
+
+
+  if (!telefonoReserva) {
+
+    alert(
+      "❌ No se encontró el teléfono de la sesión activa."
+    );
+
+    return;
+  }
+
+
+  /*
+    Consultar directamente en Supabase
+    solamente los números del paquete.
+  */
+
+  const {
+    configuracion,
+    boletosPaquete,
+    error: errorConsulta
+  } =
+    await consultarPaquetesSeleccionadosDesdeSupabase(
+      boletosSeleccionados
+    );
+
+
+  if (
+    errorConsulta ||
+    !configuracion
+  ) {
+
+    console.error(
+      "ERROR CONSULTANDO PAQUETE PARA RESERVA:",
+      errorConsulta
+    );
+
+    alert(
+      "❌ No fue posible consultar los números seleccionados."
+    );
+
+    return;
+  }
+
+
+  const cantidadEsperada =
+    cantidadSelecciones *
+    configuracion.modalidad;
+
+
+  if (
+    boletosPaquete.length !==
+    cantidadEsperada
+  ) {
+
+    alert(
+      "❌ No se encontraron todos los números del paquete.\n\n" +
+      `Esperados: ${cantidadEsperada}\n` +
+      `Encontrados: ${boletosPaquete.length}`
+    );
+
+    return;
+  }
+
+
+  const boletosNoDisponibles =
+    boletosPaquete.filter(
+      boleto =>
+        String(
+          boleto.estado ||
+          "disponible"
+        )
+          .trim()
+          .toLowerCase() !==
+        "disponible"
+    );
+
+
+  if (
+    boletosNoDisponibles.length > 0
+  ) {
+
+    const numerosOcupados =
+      boletosNoDisponibles
+        .map(
+          boleto =>
+            boleto.numero
+        )
+        .join(", ");
+
+
+    alert(
+      "❌ Uno o más números del paquete ya no están disponibles.\n\n" +
+      `Números ocupados: ${numerosOcupados}\n\n` +
+      "Selecciona otro número."
+    );
+
+    return;
+  }
+
+
+  const ids =
+    boletosPaquete.map(
+      boleto =>
+        boleto.id
+    );
+
+
+  const {
+    data: boletosReservados,
+    error: errorReserva
+  } =
+    await supabaseClient
+      .from("boletos")
+      .update({
+        estado:
+          "apartado",
+
+        telefono:
+          telefonoReserva
+      })
+      .eq(
+        "rifa_id",
+        RIFA_ID
+      )
+      .in(
+        "id",
+        ids
+      )
+      .eq(
+        "estado",
+        "disponible"
+      )
+      .select(
+        "id, numero, estado"
+      );
+
+
+  if (errorReserva) {
+
+    console.error(
+      "ERROR RESERVANDO PAQUETE:",
+      errorReserva
+    );
+
+    alert(
+      "❌ No fue posible reservar los boletos."
+    );
+
+    return;
+  }
+
+
+  if (
+    !Array.isArray(
+      boletosReservados
+    ) ||
+    boletosReservados.length !==
+      cantidadEsperada
+  ) {
+
+    console.warn(
+      "RESERVA INCOMPLETA:",
+      {
+        esperados:
+          cantidadEsperada,
+
+        reservados:
+          boletosReservados?.length ||
+          0
+      }
+    );
+
+
+    alert(
+      "⚠️ Uno de los números cambió mientras realizabas la reserva.\n\n" +
+      "Actualiza la rifa antes de continuar."
+    );
+
+
+    await cargarBoletos();
+
+    return;
+  }
+
+
+  await guardarActividadSorteo(
+    "apartado",
+    boletosSeleccionados
+  );
+
+
+  alert(
+    "🟡 Boletos reservados correctamente"
+  );
+
 
   boletosSeleccionados = [];
+
   boletoSeleccionado = null;
 
-  document.getElementById("seleccionTexto").innerHTML =
-    "Selecciona un número disponible";
 
-	actualizarResumenCompra();
+  const seleccionTexto =
+    document.getElementById(
+      "seleccionTexto"
+    );
+
+
+  if (seleccionTexto) {
+
+    seleccionTexto.innerHTML =
+      "Selecciona un número disponible";
+
+  }
+
+
+  actualizarResumenCompra();
+
 
   await cargarBoletos();
+
   await cargarMisBoletos();
 }
 
