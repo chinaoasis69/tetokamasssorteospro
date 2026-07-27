@@ -14354,26 +14354,247 @@ function cerrarSesion(){
 
 let actividadRealtime = [];
 
+
 function mostrarActividadRealtime(info) {
-  const numero = info.numero || "----";
-  const estado = (info.estado || "").toLowerCase();
-  const telefono = info.telefono || "----";
 
-  const accion = estado === "vendido" ? "compró" : "reservó";
-  const icono = estado === "vendido" ? "🟢" : "🟡";
+  const estado =
+    String(
+      info?.estado || ""
+    )
+      .trim()
+      .toLowerCase();
 
-  actividadRealtime.unshift(
-    `${icono} Usuario ****${telefono} ${accion} el boleto ${numero}`
-  );
 
-  actividadRealtime = actividadRealtime.slice(0, 5);
-
-  const box = document.getElementById("actividadLive");
-  if (box) {
-    box.innerHTML = actividadRealtime
-      .map(x => `<div style="margin:6px 0;">${x}</div>`)
-      .join("");
+  if (
+    estado !== "vendido" &&
+    estado !== "apartado"
+  ) {
+    return;
   }
+
+
+  const telefono =
+    String(
+      info?.telefono || "----"
+    )
+      .trim()
+      .slice(-4);
+
+
+  const numeroOficial =
+    Number(
+      info?.numero
+    );
+
+
+  if (
+    !Number.isInteger(numeroOficial)
+  ) {
+    return;
+  }
+
+
+  const configuracion =
+    typeof obtenerConfiguracionPaginacionRifa ===
+      "function"
+
+      ? obtenerConfiguracionPaginacionRifa()
+
+      : null;
+
+
+  const modalidad =
+    Math.max(
+      1,
+      Number(
+        configuracion?.modalidad || 1
+      )
+    );
+
+
+  const totalNumeros =
+    Number(
+      configuracion?.totalNumeros || 0
+    );
+
+
+  const saltoNumeros =
+    modalidad > 0 &&
+    totalNumeros > 0
+
+      ? totalNumeros /
+        modalidad
+
+      : 0;
+
+
+  const digitos =
+    Math.max(
+      2,
+      Number(
+        configuracion?.digitos || 2
+      )
+    );
+
+
+  /*
+    Todos los números complementarios
+    producen el mismo número base.
+  */
+
+  const numeroBase =
+    modalidad > 1 &&
+    saltoNumeros > 0
+
+      ? numeroOficial %
+        saltoNumeros
+
+      : numeroOficial;
+
+
+  const numeroBaseTexto =
+    String(
+      numeroBase
+    ).padStart(
+      digitos,
+      "0"
+    );
+
+
+  const clavePaquete =
+    `${telefono}-${numeroBaseTexto}`;
+
+
+  /*
+    Si llega una compra, quitar primero
+    la reserva anterior del mismo paquete.
+
+    También evita repetir los eventos
+    complementarios enviados por Realtime.
+  */
+
+  const compraYaRegistrada =
+    actividadRealtime.some(
+      actividad =>
+        actividad.clavePaquete ===
+          clavePaquete &&
+        actividad.estado ===
+          "vendido"
+    );
+
+
+  if (
+    estado === "apartado" &&
+    compraYaRegistrada
+  ) {
+    return;
+  }
+
+
+  actividadRealtime =
+    actividadRealtime.filter(
+      actividad =>
+        actividad.clavePaquete !==
+        clavePaquete
+    );
+
+
+  const accion =
+    estado === "vendido"
+      ? "compró"
+      : "reservó";
+
+
+  const icono =
+    estado === "vendido"
+      ? "🟢"
+      : "🟡";
+
+
+  let contenido = "";
+
+
+  if (modalidad === 1) {
+
+    contenido = `
+      <div
+        style="
+          margin:8px 0;
+          line-height:1.45;
+        "
+      >
+        ${icono}
+        Usuario ****${telefono}
+        ${accion} el boleto
+        <b>${numeroBaseTexto}</b>
+      </div>
+    `;
+
+  } else {
+
+    contenido = `
+      <div
+        style="
+          margin:10px 0;
+          line-height:1.45;
+        "
+      >
+        <div>
+          ${icono}
+          Usuario ****${telefono}
+          ${accion} el paquete
+          <b>${numeroBaseTexto}</b>
+        </div>
+
+        <div
+          style="
+            margin-top:2px;
+            color:#ddd;
+            font-size:14px;
+          "
+        >
+          🎟️ Incluye
+          ${modalidad}
+          números oficiales
+        </div>
+      </div>
+    `;
+
+  }
+
+
+  actividadRealtime.unshift({
+    clavePaquete,
+    estado,
+    contenido
+  });
+
+
+  actividadRealtime =
+    actividadRealtime.slice(
+      0,
+      5
+    );
+
+
+  const box =
+    document.getElementById(
+      "actividadLive"
+    );
+
+
+  if (box) {
+
+    box.innerHTML =
+      actividadRealtime
+        .map(
+          actividad =>
+            actividad.contenido
+        )
+        .join("");
+
+  }
+
 }	
 
 let canalRealtimeBoletos = null;
