@@ -818,6 +818,61 @@ Powered by TE-TO-KA SOLUTIONS, LLC
     >
 </div>
 
+<div
+  id="controlesCarruselPremio"
+  style="
+    display:none;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    margin:12px auto;
+  "
+>
+  <button
+    type="button"
+    onclick="moverCarruselPremio(-1)"
+    style="
+      padding:10px 16px;
+      border:2px solid #39ff14;
+      border-radius:10px;
+      background:#111;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    ← Anterior
+  </button>
+
+  <span
+    id="contadorCarruselPremio"
+    style="
+      color:white;
+      font-weight:bold;
+      min-width:55px;
+      text-align:center;
+    "
+  >
+    1 / 1
+  </span>
+
+  <button
+    type="button"
+    onclick="moverCarruselPremio(1)"
+    style="
+      padding:10px 16px;
+      border:2px solid #39ff14;
+      border-radius:10px;
+      background:#111;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    Siguiente →
+  </button>
+</div>	
+
 <div id="galeriaRifa" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0;"></div>
 
 <button id="btnVideoRifa"
@@ -4380,7 +4435,7 @@ async function eliminarMediaPremio(
   ) {
 
     alert(
-      `❌ La ${nombreVisible} no fue eliminada.`
+      `❌ El ${nombreVisible} no fue eliminado.`
     );
 
     return;
@@ -10567,6 +10622,22 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
 }
 
 // =====================================================
+// MASS — ESTADO DEL CARRUSEL PÚBLICO DE PREMIOS
+// Guarda los archivos agrupados y la posición actual.
+// =====================================================
+
+let carruselesPremiosPublicos =
+  {};
+
+
+let premioCarruselActivo =
+  null;
+
+
+let indiceCarruselPremioActivo =
+  0;	
+
+// =====================================================
 // MASS — GALERÍA PÚBLICA DE PREMIOS
 // IMÁGENES Y VIDEOS DESDE premios_rifa / premio_media
 // =====================================================
@@ -10786,6 +10857,11 @@ async function cargarGaleriaPublicaPremios(
       url:
         urlLimpia,
 
+	  premioId:
+        premio?.id ||
+        premio?.premio_id ||
+        null,
+
       lugar:
         premio?.lugar ||
         null,
@@ -10862,6 +10938,76 @@ async function cargarGaleriaPublicaPremios(
     rifa.video_url
   );
 
+/*
+  Agrupar todos los archivos por premio
+  para preparar el carrusel individual.
+*/
+
+carruselesPremiosPublicos =
+  {};
+
+
+archivos.forEach(
+  archivo => {
+
+    const premioId =
+      String(
+        archivo.premioId ||
+        archivo.premio_id ||
+        ""
+      ).trim();
+
+
+    if (!premioId) {
+      return;
+    }
+
+
+    if (
+      !Array.isArray(
+        carruselesPremiosPublicos[
+          premioId
+        ]
+      )
+    ) {
+
+      carruselesPremiosPublicos[
+        premioId
+      ] =
+        [];
+
+    }
+
+
+    carruselesPremiosPublicos[
+      premioId
+    ].push(
+      archivo
+    );
+
+  }
+);
+
+
+/*
+  Seleccionar automáticamente
+  el primer premio disponible.
+*/
+
+const premiosConArchivos =
+  Object.keys(
+    carruselesPremiosPublicos
+  );
+
+
+premioCarruselActivo =
+  premiosConArchivos[0] ||
+  null;
+
+
+indiceCarruselPremioActivo =
+  0;	
+
 
   if (
     archivos.length === 0
@@ -10927,8 +11073,114 @@ async function cargarGaleriaPublicaPremios(
 
     }
 
+	  const controlesCarrusel =
+  document.getElementById(
+    "controlesCarruselPremio"
+  );
+
+const contadorCarrusel =
+  document.getElementById(
+    "contadorCarruselPremio"
+  );
+
+const archivosCarrusel =
+  premioCarruselActivo
+    ? carruselesPremiosPublicos[
+        premioCarruselActivo
+      ]
+    : null;
+
+const cantidadArchivos =
+  Array.isArray(archivosCarrusel)
+    ? archivosCarrusel.length
+    : 0;
+
+if (controlesCarrusel) {
+  controlesCarrusel.style.display =
+    cantidadArchivos > 1
+      ? "flex"
+      : "none";
+}
+
+if (contadorCarrusel) {
+  contadorCarrusel.textContent =
+    cantidadArchivos > 0
+      ? `${
+          indiceCarruselPremioActivo + 1
+        } / ${cantidadArchivos}`
+      : "0 / 0";
+}
+
+  }
+	
+// ============================================================
+// MASS - NAVEGACIÓN DEL CARRUSEL PÚBLICO DE PREMIOS
+// ============================================================
+
+function moverCarruselPremio(direccion = 1) {
+
+  if (!premioCarruselActivo) {
+    return;
   }
 
+  const archivosDelPremio =
+    carruselesPremiosPublicos[
+      premioCarruselActivo
+    ];
+
+  if (
+    !Array.isArray(archivosDelPremio) ||
+    archivosDelPremio.length === 0
+  ) {
+    return;
+  }
+
+  indiceCarruselPremioActivo =
+    (
+      indiceCarruselPremioActivo +
+      direccion +
+      archivosDelPremio.length
+    ) %
+    archivosDelPremio.length;
+
+  const archivoActivo =
+    archivosDelPremio[
+      indiceCarruselPremioActivo
+    ];
+
+  mostrarArchivoPrincipal(
+    archivoActivo
+  );
+
+  galeria
+    .querySelectorAll(
+      "button"
+    )
+    .forEach(
+      boton => {
+        boton.style.boxShadow =
+          "none";
+      }
+    );
+
+  const botonActivo =
+    galeria.querySelector(
+      `[data-url="${CSS.escape(
+        archivoActivo.url
+      )}"]`
+    );
+
+  if (botonActivo) {
+    botonActivo.style.boxShadow =
+      "0 0 14px #39ff14";
+
+    botonActivo.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center"
+    });
+  }
+}
 
   archivos.forEach(
     (
@@ -10940,6 +11192,9 @@ async function cargarGaleriaPublicaPremios(
         document.createElement(
           "button"
         );
+
+	   tarjeta.dataset.url =
+         archivo.url;
 
 
       tarjeta.type =
@@ -11029,31 +11284,81 @@ async function cargarGaleriaPublicaPremios(
 
 
       tarjeta.onclick =
-        () => {
+  () => {
 
-          mostrarArchivoPrincipal(
-            archivo
-          );
-
-
-          galeria
-            .querySelectorAll(
-              "button"
-            )
-            .forEach(
-              boton => {
-
-                boton.style.boxShadow =
-                  "none";
-
-              }
-            );
+    const premioId =
+      String(
+        archivo.premioId ||
+        archivo.premio_id ||
+        ""
+      ).trim();
 
 
-          tarjeta.style.boxShadow =
-            "0 0 14px #39ff14";
+    if (
+      premioId &&
+      Array.isArray(
+        carruselesPremiosPublicos[
+          premioId
+        ]
+      )
+    ) {
 
-        };
+      premioCarruselActivo =
+        premioId;
+
+	const archivosDelPremio =
+  carruselesPremiosPublicos[
+    premioId
+  ];
+
+const indiceSeleccionado =
+  Array.isArray(archivosDelPremio)
+    ? archivosDelPremio.findIndex(
+        item =>
+          String(item.url || "") ===
+          String(archivo.url || "")
+      )
+    : -1;
+
+indiceCarruselPremioActivo =
+  indiceSeleccionado >= 0
+    ? indiceSeleccionado
+    : 0;
+
+    } else {
+
+      premioCarruselActivo =
+        null;
+
+      indiceCarruselPremioActivo =
+        0;
+
+    }
+
+
+    mostrarArchivoPrincipal(
+      archivo
+    );
+
+
+    galeria
+      .querySelectorAll(
+        "button"
+      )
+      .forEach(
+        boton => {
+
+          boton.style.boxShadow =
+            "none";
+
+        }
+      );
+
+
+    tarjeta.style.boxShadow =
+      "0 0 14px #39ff14";
+
+  };
 
 
       galeria.appendChild(
