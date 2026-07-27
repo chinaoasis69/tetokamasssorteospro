@@ -4073,9 +4073,17 @@ const totalNumeros = Number(total);
 
 if (
   !Number.isInteger(totalNumeros) ||
-  ![100, 1000, 10000, 100000].includes(totalNumeros)
+  totalNumeros < 100 ||
+  totalNumeros > 100000 ||
+  totalNumeros % 100 !== 0
 ) {
-  alert("❌ Usa 100, 1000, 10000 o 100000 números.");
+  alert(
+    "❌ Usa una cantidad entre 100 y 100000, " +
+    "en múltiplos de 100.\n\n" +
+    "Ejemplos: 500, 1000, 5000, 50000, " +
+    "60000 o 100000."
+  );
+
   return;
 }
 
