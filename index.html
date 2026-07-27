@@ -10996,6 +10996,20 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
   const nombre = sorteo ? (sorteo.titulo || sorteo.premio) : "Sorteo anterior";
   const idBox = "mis_boletos_" + i;
 
+	const modalidadActual = Math.max(
+  1,
+  Number(sorteo?.modalidad || 1)
+);
+
+const totalNumerosRifa = Number(
+  sorteo?.total_numeros || 0
+);
+
+const saltoNumeros =
+  totalNumerosRifa > 0
+    ? totalNumerosRifa / modalidadActual
+    : 0;
+
   return `
     <div style="border:1px solid #38b000;border-radius:10px;padding:15px;margin:10px 0;text-align:center;">
       <h3>🎁 ${nombre}</h3>
@@ -11012,13 +11026,19 @@ document.getElementById("misBoletosDentroModal").innerHTML = Object.keys(agrupad
             ${t.estado === "apartado"
  ? "🟡 Reservado: <b>" + t.numero + "</b><br>"
  : "🎟️ Comprado: <b>" + t.numero + "</b><br>"}
-           ${t.estado === "apartado"
-  ? `
-    ⏳ Pendiente de compra<br>
-    <button onclick="pagarReservadoConMass('${t.numero}', '${rifaId}')">
-      💰 Pagar con MASS
-    </button>
-  `
+         ${t.estado === "apartado"
+? (
+    Number(t.numero) < saltoNumeros
+      ? `
+          ⏳ Pendiente de compra<br>
+          <button onclick="pagarReservadoConMass('${t.numero}', '${rifaId}')">
+            💰 Pagar con MASS
+          </button>
+        `
+      : `
+          🎟️ Incluido en el paquete<br>
+        `
+  )  
   : t.giro_usado
     ? "❌ Giro usado"
     : rifaActiva
