@@ -7583,7 +7583,8 @@ if (conversion && conversion.mass_calculado) {
 
     cantidad = Number(cantidad);
 }
-
+	
+let organizadorId = null;
 let nombreOrganizador = "Organizador";
 
 if (RIFA_ID) {
@@ -7600,17 +7601,18 @@ if (RIFA_ID) {
         rifaActual?.organizador_id ||
         rifaActual?.cliente_id ||
         null;
+	organizadorId = orgId;
 
-    console.log("ID ORGANIZADOR:", orgId);
+    console.log("ID ORGANIZADOR:", organizadorId);
 
-    if (orgId) {
+    if (organizadorId) {
         const { data: org } = await supabaseClient
             .from("organizadores")
             .select("nombre, nombre_publico, nombre_empresa")
             .eq("id", orgId)
             .maybeSingle();
 
-        console.log("ORGANIZADOR:", org);
+        console.log("ORGANIZADOR:", organizadorId);
 
         nombreOrganizador =
     org?.nombre_publico ||
@@ -7657,7 +7659,13 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
   return;
 }	
 
-  const nombreArchivo = `${telefono}_${Date.now()}_${comprobante.name}`;
+  const nombreArchivoSeguro = String(comprobante.name || "comprobante")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+const nombreArchivo =
+  `${telefono}_${Date.now()}_${nombreArchivoSeguro}`;
 
   const { error: uploadError } = await supabaseClient.storage
     .from("comprobantes-mass")
