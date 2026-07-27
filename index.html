@@ -9602,14 +9602,16 @@ navigator.clipboard.writeText(valor)
 // 🔥 CARGAR BOLETOS
 async function cargarBoletos() {
 
-  if (!RIFA_ID) {
+  const rifaIdValido =
+  RIFA_ID &&
+  String(RIFA_ID).trim() !== "" &&
+  String(RIFA_ID).toLowerCase() !== "null" &&
+  String(RIFA_ID).toLowerCase() !== "undefined";
 
-    alert(
-      "Selecciona una rifa primero"
-    );
-
-    return;
-  }
+if (!rifaIdValido) {
+  console.warn("No se cargaron boletos porque todavía no hay una rifa seleccionada.");
+  return;
+}
 
 
   const TAMANO_LOTE_LECTURA =
