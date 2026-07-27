@@ -11117,7 +11117,7 @@ if (contadorCarrusel) {
 // MASS - NAVEGACIÓN DEL CARRUSEL PÚBLICO DE PREMIOS
 // ============================================================
 
-function moverCarruselPremio(direccion = 1) {
+window.moverCarruselPremio = function(direccion = 1) {
 
   if (!premioCarruselActivo) {
     return;
@@ -11399,7 +11399,7 @@ indiceCarruselPremioActivo =
     }
   );
 
-}	
+};	
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
