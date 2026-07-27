@@ -3800,6 +3800,22 @@ ${(p.premio_media || []).length > 0 ? `
             >
               📸 Imagen adicional
             </div>
+
+			<button
+  onclick="eliminarMediaPremio(
+    '${m.id}',
+    '${rifaId}',
+    'imagen'
+  )"
+  style="
+    margin-top:6px;
+    padding:5px 8px;
+    font-size:11px;
+    border-radius:7px;
+  "
+>
+  🗑️ Eliminar
+</button>
           </div>
         `;
 
@@ -3846,6 +3862,23 @@ ${(p.premio_media || []).length > 0 ? `
             >
               🎥 Video del premio
             </div>
+
+			<button
+  onclick="eliminarMediaPremio(
+    '${m.id}',
+    '${rifaId}',
+    'video'
+  )"
+  style="
+    margin-top:6px;
+    padding:5px 8px;
+    font-size:11px;
+    border-radius:7px;
+  "
+>
+  🗑️ Eliminar
+</button>
+
           </div>
         `;
 
@@ -4275,6 +4308,94 @@ async function subirVideoPremio(event, premioId, rifaId){
 
   alert("✅ Video subido");
   administrarPremiosRifa(rifaId);
+}
+
+// =====================================================
+// ELIMINAR IMAGEN ADICIONAL O VIDEO DE UN PREMIO
+// Elimina el registro seleccionado de premio_media.
+// =====================================================
+
+async function eliminarMediaPremio(
+  mediaId,
+  rifaId,
+  tipo
+) {
+
+  const tipoArchivo =
+    String(
+      tipo || "archivo"
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const nombreVisible =
+    tipoArchivo === "video"
+      ? "video"
+      : "imagen adicional";
+
+
+  if (
+    !confirm(
+      `¿Eliminar esta ${nombreVisible}?`
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("premio_media")
+      .delete()
+      .eq(
+        "id",
+        mediaId
+      )
+      .select();
+
+
+  if (error) {
+
+    console.error(
+      "ERROR ELIMINANDO MULTIMEDIA DEL PREMIO:",
+      error
+    );
+
+
+    alert(
+      `❌ No se pudo eliminar la ${nombreVisible}.`
+    );
+
+    return;
+  }
+
+
+  if (
+    !Array.isArray(data) ||
+    data.length === 0
+  ) {
+
+    alert(
+      `❌ La ${nombreVisible} no fue eliminada.`
+    );
+
+    return;
+  }
+
+
+  alert(
+    `✅ ${nombreVisible === "video" ? "Video" : "Imagen adicional"} eliminada correctamente`
+  );
+
+
+  await administrarPremiosRifa(
+    rifaId
+  );
+
 }	
 
 async function eliminarPremioRifa(id, rifaId){
