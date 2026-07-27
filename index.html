@@ -7114,6 +7114,155 @@ let organizadoresActivosCache = [];
 	
 let RIFA_ID = null;
 
+// =====================================================
+// MOTOR MASS — CONSULTA DIRECTA DE PAQUETES DE BOLETOS
+// =====================================================
+
+function obtenerRifaActualParaBoletos() {
+  const rifaEnLista = Array.isArray(rifas)
+    ? rifas.find(
+        r => String(r.id) === String(RIFA_ID)
+      )
+    : null;
+
+  return (
+    rifaEnLista ||
+    window.rifaSeleccionada ||
+    null
+  );
+}
+
+
+function construirPaquetesSeleccionados(
+  listaBases = boletosSeleccionados
+) {
+  const rifa =
+    obtenerRifaActualParaBoletos();
+
+  const modalidad = Math.max(
+    1,
+    Number(rifa?.modalidad || 1)
+  );
+
+  const totalNumeros = Number(
+    rifa?.total_numeros || 0
+  );
+
+  if (
+    !RIFA_ID ||
+    !rifa ||
+    !Number.isInteger(totalNumeros) ||
+    totalNumeros <= 0 ||
+    totalNumeros % modalidad !== 0
+  ) {
+    return null;
+  }
+
+  const salto =
+    totalNumeros / modalidad;
+
+  const digitos = Math.max(
+    2,
+    String(totalNumeros - 1).length
+  );
+
+  const bases = (
+    Array.isArray(listaBases)
+      ? listaBases
+      : []
+  )
+    .map(b => Number(b?.numero))
+    .filter(numeroBase =>
+      Number.isInteger(numeroBase) &&
+      numeroBase >= 0 &&
+      numeroBase < salto
+    );
+
+  const numeros = [
+    ...new Set(
+      bases.flatMap(numeroBase =>
+        Array.from(
+          { length: modalidad },
+          (_, indice) =>
+            numeroBase +
+            (indice * salto)
+        )
+      )
+    )
+  ];
+
+  const numerosTexto =
+    numeros.map(numero =>
+      String(numero).padStart(
+        digitos,
+        "0"
+      )
+    );
+
+  return {
+    rifa,
+    modalidad,
+    totalNumeros,
+    salto,
+    digitos,
+    bases,
+    numeros,
+    numerosTexto
+  };
+}
+
+
+async function consultarPaquetesSeleccionadosDesdeSupabase(
+  listaBases = boletosSeleccionados
+) {
+  const configuracion =
+    construirPaquetesSeleccionados(
+      listaBases
+    );
+
+  if (
+    !configuracion ||
+    configuracion.numerosTexto.length === 0
+  ) {
+    return {
+      configuracion,
+      boletosPaquete: [],
+      error: new Error(
+        "No se pudo construir el paquete de boletos."
+      )
+    };
+  }
+
+  const {
+    data,
+    error
+  } = await supabaseClient
+    .from("boletos")
+    .select(
+      "id, rifa_id, numero, estado, telefono, nombre, pin_giro, giro_usado"
+    )
+    .eq("rifa_id", RIFA_ID)
+    .in(
+      "numero",
+      configuracion.numerosTexto
+    );
+
+  const boletosPaquete =
+    Array.isArray(data)
+      ? [...data].sort(
+          (a, b) =>
+            Number(a.numero) -
+            Number(b.numero)
+        )
+      : [];
+
+  return {
+    configuracion,
+    boletosPaquete,
+    error
+  };
+}	
+
 async function asegurarWallet() {
   const telefono =
     (localStorage.getItem("mass_telefono") || userActual || "").trim();
