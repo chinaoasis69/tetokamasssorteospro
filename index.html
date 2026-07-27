@@ -4397,45 +4397,56 @@ async function generarBoletosParaRifa(
     return false;
   }
 
+const boletosExistentes =
+  Number(cantidadExistente || 0);
 
-  const boletosExistentes =
-    Number(cantidadExistente || 0);
+/*
+  Si la generación ya está completa,
+  no volvemos a insertar boletos.
+*/
+if (boletosExistentes === cantidadTotal) {
+  console.log(
+    "La rifa ya tiene todos sus boletos:",
+    boletosExistentes
+  );
 
+  return true;
+}
 
-  if (
-    boletosExistentes ===
-    cantidadTotal
-  ) {
+/*
+  Si existen más boletos de los esperados,
+  detenemos el proceso por seguridad.
+*/
+if (boletosExistentes > cantidadTotal) {
+  console.error(
+    "La rifa tiene más boletos de los esperados:",
+    {
+      esperados: cantidadTotal,
+      existentes: boletosExistentes
+    }
+  );
 
-    console.log(
-      "La rifa ya tiene todos sus boletos:",
-      boletosExistentes
-    );
+  alert(
+    `❌ La rifa tiene más boletos de los esperados.\n\n` +
+    `Boletos esperados: ${cantidadTotal}\n` +
+    `Boletos existentes: ${boletosExistentes}`
+  );
 
-    return true;
-  }
+  return false;
+}
 
+/*
+  Si la generación quedó incompleta,
+  continuamos desde el siguiente número.
+*/
+const inicioGeneracion = boletosExistentes;
 
-  if (boletosExistentes > 0) {
-
-    console.error(
-      "La rifa tiene una generación incompleta:",
-      {
-        esperados: cantidadTotal,
-        existentes: boletosExistentes
-      }
-    );
-
-    alert(
-      `⚠️ Esta rifa tiene una generación incompleta.\n\n` +
-      `Boletos esperados: ${cantidadTotal}\n` +
-      `Boletos existentes: ${boletosExistentes}\n\n` +
-      `No se generaron boletos adicionales para evitar duplicados.`
-    );
-
-    return false;
-  }
-
+if (inicioGeneracion > 0) {
+  console.log(
+    `🔄 Reanudando generación desde ${inicioGeneracion} ` +
+    `hasta ${cantidadTotal - 1}.`
+  );
+}
 
   /*
     Generar por lotes para evitar enviar
@@ -4451,7 +4462,7 @@ async function generarBoletosParaRifa(
 
 
   for (
-    let inicio = 0;
+    let inicio = inicioGeneracion;
     inicio < cantidadTotal;
     inicio += TAMANO_LOTE
   ) {
