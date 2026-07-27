@@ -7635,201 +7635,647 @@ ${mensaje}
   }, 2500);
 }	
 
-async function comprarConSaldo() {	
-  if (comprando) return;
-  comprando = true;
+async function comprarConSaldo() {
 
-  if (!boletosSeleccionados || boletosSeleccionados.length === 0) {
-    mostrarNotificacion(
-  "warning",
-  "Selecciona boletos",
-  "Primero elige uno o más números disponibles.",
-  3000
-);
-    comprando = false;
+  if (comprando) {
     return;
   }
 
-  const { data: rifa } = await supabaseClient
-    .from("rifas")
-    .select("precio_boleto, organizador_id, cliente_id, total_numeros, modalidad")
-    .eq("id", RIFA_ID)
-    .single();
 
-  const precioBoleto = Number(rifa?.precio_boleto || 0);
-  const totalPagar = boletosSeleccionados.length * precioBoleto;
+  if (
+    !Array.isArray(boletosSeleccionados) ||
+    boletosSeleccionados.length === 0
+  ) {
 
-const organizadorId =
-  rifa?.organizador_id ||
-  rifa?.cliente_id ||
-  clienteActual?.id ||
-  null;
-
-	if (!organizadorId) {
     mostrarNotificacion(
+      "warning",
+      "Selecciona boletos",
+      "Primero elige uno o más números disponibles.",
+      3000
+    );
+
+    return;
+  }
+
+
+  comprando = true;
+
+
+  try {
+
+    const telefonoCompra =
+      String(
+        localStorage.getItem(
+          "mass_telefono"
+        ) ||
+        localStorage.getItem(
+          "mass_user"
+        ) ||
+        userActual ||
+        ""
+      ).trim();
+
+
+    if (!telefonoCompra) {
+
+      mostrarNotificacion(
+        "error",
+        "Sesión no encontrada",
+        "Inicia sesión antes de comprar boletos.",
+        3000
+      );
+
+      return;
+    }
+
+
+    /*
+      Consultar la información oficial
+      de la rifa seleccionada.
+    */
+
+    const {
+      data: rifa,
+      error: errorRifa
+    } =
+      await supabaseClient
+        .from("rifas")
+        .select(
+          "id, precio_boleto, organizador_id, cliente_id, total_numeros, modalidad"
+        )
+        .eq(
+          "id",
+          RIFA_ID
+        )
+        .single();
+
+
+    if (
+      errorRifa ||
+      !rifa
+    ) {
+
+      console.error(
+        "ERROR CONSULTANDO RIFA PARA COMPRA:",
+        errorRifa
+      );
+
+      mostrarNotificacion(
+        "error",
+        "Sorteo no encontrado",
+        "No fue posible consultar la información del sorteo.",
+        3500
+      );
+
+      return;
+    }
+
+
+    const precioBoleto =
+      Number(
+        rifa.precio_boleto || 0
+      );
+
+
+    const cantidadSelecciones =
+      boletosSeleccionados.length;
+
+
+    const totalPagar =
+      cantidadSelecciones *
+      precioBoleto;
+
+
+    const organizadorId =
+      rifa.organizador_id ||
+      rifa.cliente_id ||
+      clienteActual?.id ||
+      null;
+
+
+    if (!organizadorId) {
+
+      mostrarNotificacion(
         "error",
         "Organizador no encontrado",
         "No fue posible identificar al organizador de este sorteo.",
         3000
+      );
+
+      return;
+    }
+
+
+    /*
+      Consultar únicamente la Wallet MASS
+      del usuario con este organizador.
+    */
+
+    const {
+      data: wallet,
+      error: errorWallet
+    } =
+      await supabaseClient
+        .from("wallets")
+        .select(
+          "id, saldo"
+        )
+        .eq(
+          "user_id",
+          telefonoCompra
+        )
+        .eq(
+          "organizador_id",
+          organizadorId
+        )
+        .maybeSingle();
+
+
+    if (errorWallet) {
+
+      console.error(
+        "ERROR CONSULTANDO WALLET:",
+        errorWallet
+      );
+
+      mostrarNotificacion(
+        "error",
+        "Wallet no disponible",
+        "No fue posible consultar tu saldo MASS.",
+        3000
+      );
+
+      return;
+    }
+
+
+    const saldoDisponible =
+      Number(
+        wallet?.saldo || 0
+      );
+
+
+    if (
+      !wallet ||
+      saldoDisponible <
+      totalPagar
+    ) {
+
+      mostrarNotificacion(
+        "error",
+        "Saldo insuficiente",
+        `Necesitas ${totalPagar} MASS y tienes ${saldoDisponible} MASS.`,
+        3000
+      );
+
+      return;
+    }
+
+
+    /*
+      Consultar directamente en Supabase
+      solamente los números seleccionados
+      y sus números complementarios.
+    */
+
+    const {
+      configuracion,
+      boletosPaquete,
+      error: errorConsultaPaquete
+    } =
+      await consultarPaquetesSeleccionadosDesdeSupabase(
+        boletosSeleccionados
+      );
+
+
+    if (
+      errorConsultaPaquete ||
+      !configuracion
+    ) {
+
+      console.error(
+        "ERROR CONSULTANDO PAQUETE PARA COMPRA:",
+        errorConsultaPaquete
+      );
+
+      mostrarNotificacion(
+        "error",
+        "No se pudo consultar el paquete",
+        "Actualiza la rifa e intenta nuevamente.",
+        4000
+      );
+
+      return;
+    }
+
+
+    const cantidadEsperada =
+      cantidadSelecciones *
+      configuracion.modalidad;
+
+
+    if (
+      boletosPaquete.length !==
+      cantidadEsperada
+    ) {
+
+      mostrarNotificacion(
+        "error",
+        "Paquete incompleto",
+        `Esperados: ${cantidadEsperada}. Encontrados: ${boletosPaquete.length}.`,
+        4000
+      );
+
+      return;
+    }
+
+
+    const boletosNoDisponibles =
+      boletosPaquete.filter(
+        boleto =>
+          String(
+            boleto.estado ||
+            "disponible"
+          )
+            .trim()
+            .toLowerCase() !==
+          "disponible"
+      );
+
+
+    if (
+      boletosNoDisponibles.length > 0
+    ) {
+
+      const numerosOcupados =
+        boletosNoDisponibles
+          .map(
+            boleto =>
+              boleto.numero
+          )
+          .join(", ");
+
+
+      mostrarNotificacion(
+        "error",
+        "Números no disponibles",
+        `Los siguientes números cambiaron de estado: ${numerosOcupados}.`,
+        4500
+      );
+
+      return;
+    }
+
+
+    const idsPaquete =
+      boletosPaquete.map(
+        boleto =>
+          boleto.id
+      );
+
+
+    const pinGiro =
+      Math.floor(
+        100000 +
+        Math.random() *
+        900000
+      ).toString();
+
+
+    const codigoBeneficio =
+      pinGiro;
+
+
+    /*
+      Consultar premios promocionales.
+      Conservamos la lógica actual.
+    */
+
+    let premioLucky =
+      null;
+
+
+    const {
+      data: premiosLucky,
+      error: errorLucky
+    } =
+      await supabaseClient
+        .from("lucky_spin_premios")
+        .select("*")
+        .eq(
+          "activo",
+          true
+        );
+
+
+    if (errorLucky) {
+
+      console.error(
+        "ERROR CONSULTANDO PREMIOS LUCKY:",
+        errorLucky
+      );
+
+    } else if (
+      Array.isArray(premiosLucky) &&
+      premiosLucky.length > 0
+    ) {
+
+      premioLucky =
+        premiosLucky[
+          Math.floor(
+            Math.random() *
+            premiosLucky.length
+          )
+        ];
+
+    }
+
+
+    /*
+      Vender únicamente los registros
+      del paquete consultado.
+    */
+
+    const {
+      data: boletosVendidosPaquete,
+      error: boletoError
+    } =
+      await supabaseClient
+        .from("boletos")
+        .update({
+          estado:
+            "vendido",
+
+          pin_giro:
+            pinGiro,
+
+          giro_usado:
+            false,
+
+          nombre:
+            telefonoCompra,
+
+          telefono:
+            telefonoCompra,
+
+          rifa_id:
+            RIFA_ID,
+
+          fecha:
+            new Date()
+              .toISOString()
+        })
+        .eq(
+          "rifa_id",
+          RIFA_ID
+        )
+        .in(
+          "id",
+          idsPaquete
+        )
+        .eq(
+          "estado",
+          "disponible"
+        )
+        .select(
+          "id, rifa_id, numero, estado"
+        );
+
+
+    if (boletoError) {
+
+      console.error(
+        "ERROR VENDIENDO PAQUETE:",
+        boletoError
+      );
+
+      mostrarNotificacion(
+        "error",
+        "Error en la compra",
+        "No fue posible asignar los números seleccionados.",
+        4000
+      );
+
+      return;
+    }
+
+
+    if (
+      !Array.isArray(
+        boletosVendidosPaquete
+      ) ||
+      boletosVendidosPaquete.length !==
+        cantidadEsperada
+    ) {
+
+      console.warn(
+        "COMPRA INCOMPLETA:",
+        {
+          esperados:
+            cantidadEsperada,
+
+          vendidos:
+            boletosVendidosPaquete
+              ?.length || 0
+        }
+      );
+
+
+      mostrarNotificacion(
+        "error",
+        "Los números cambiaron",
+        "Uno de los números fue tomado mientras realizabas la compra. Actualiza la rifa.",
+        4500
+      );
+
+
+      await cargarBoletos();
+
+      return;
+    }
+
+
+    await guardarActividadSorteo(
+      "vendido",
+      boletosVendidosPaquete
     );
 
-    comprando = false;
-    return;
-}
 
-  const { data: wallet } = await supabaseClient
-  .from("wallets")
-  .select("saldo")
-  .eq("user_id", userActual)
-  .eq("organizador_id", organizadorId)
-  .maybeSingle();
+    const nuevoSaldo =
+      saldoDisponible -
+      totalPagar;
 
-  if (!wallet || wallet.saldo < totalPagar) {
+
+    const {
+      error: errorDescuentoSaldo
+    } =
+      await supabaseClient
+        .from("wallets")
+        .update({
+          saldo:
+            nuevoSaldo
+        })
+        .eq(
+          "id",
+          wallet.id
+        );
+
+
+    if (errorDescuentoSaldo) {
+
+      console.error(
+        "ERROR DESCONTANDO SALDO:",
+        errorDescuentoSaldo
+      );
+
+      mostrarNotificacion(
+        "error",
+        "Error actualizando la Wallet",
+        "Los números fueron asignados, pero no fue posible actualizar el saldo. Contacta al organizador.",
+        5000
+      );
+
+      return;
+    }
+
+
+    const numerosRecibidos =
+      [
+        ...boletosVendidosPaquete
+      ]
+        .sort(
+          (a, b) =>
+            Number(a.numero) -
+            Number(b.numero)
+        )
+        .map(
+          boleto =>
+            boleto.numero
+        );
+
+
     mostrarNotificacion(
-  "error",
-  "Saldo insuficiente",
-  `Necesitas ${totalPagar} MASS y tienes ${wallet?.saldo || 0} MASS.`,
-  3000
-);
-    comprando = false;
-    return;
+      "success",
+      "🎉 Compra exitosa",
+      `🎟️ Números recibidos: ${numerosRecibidos.join(", ")}<br>` +
+      `💰 Total pagado: ${totalPagar} MASS<br>` +
+      `🎡 Tu giro quedó desbloqueado. Ve a MASS LUCKY SPIN.`,
+      4000
+    );
+
+
+    if (premioLucky) {
+
+      const {
+        error: errorBeneficio
+      } =
+        await supabaseClient
+          .from(
+            "beneficios_entregados"
+          )
+          .insert({
+            user_id:
+              telefonoCompra,
+
+            rifa_id:
+              RIFA_ID,
+
+            patrocinador_id:
+              premioLucky
+                .patrocinador_id ||
+              null,
+
+            patrocinador_nombre:
+              premioLucky.nombre ||
+              "",
+
+            patrocinador_logo_url:
+              "",
+
+            patrocinador_whatsapp:
+              "",
+
+            codigo:
+              premioLucky.codigo ||
+              codigoBeneficio,
+
+            promocion:
+              premioLucky.descripcion ||
+              premioLucky.nombre ||
+              "",
+
+            usado:
+              false
+          });
+
+
+      if (errorBeneficio) {
+
+        console.error(
+          "ERROR GUARDANDO BENEFICIO:",
+          errorBeneficio
+        );
+
+      }
+
+    }
+
+
+    boletosSeleccionados =
+      [];
+
+
+    boletoSeleccionado =
+      null;
+
+
+    const seleccionTexto =
+      document.getElementById(
+        "seleccionTexto"
+      );
+
+
+    if (seleccionTexto) {
+
+      seleccionTexto.innerHTML =
+        "Selecciona un número disponible";
+
+    }
+
+
+    actualizarResumenCompra();
+
+
+    await cargarSaldo();
+
+    await cargarBoletos();
+
+    await cargarMisBoletos();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO COMPRANDO CON MASS:",
+      errorInesperado
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "Error inesperado",
+      "No fue posible completar la compra. Intenta nuevamente.",
+      4000
+    );
+
+
+  } finally {
+
+    comprando =
+      false;
+
   }
 
-  const modalidadActual = Number(rifa?.modalidad || 1);
-const totalNumerosRifa = Number(
-  rifa?.total_numeros || boletos.length
-);
-
-const saltoNumeros = totalNumerosRifa / modalidadActual;
-
-const numerosAsignados = boletosSeleccionados.flatMap(b => {
-  const numeroBase = Number(b.numero);
-
-  return Array.from(
-    { length: modalidadActual },
-    (_, indice) => numeroBase + (indice * saltoNumeros)
-  );
-});
-
-const numerosAsignadosSet = new Set(numerosAsignados);
-
-const boletosAsignados = boletos.filter(b =>
-  String(b.rifa_id) === String(RIFA_ID) &&
-  numerosAsignadosSet.has(Number(b.numero))
-);
-
-const cantidadEsperada =
-  boletosSeleccionados.length * modalidadActual;
-
-if (boletosAsignados.length !== cantidadEsperada) {
-  mostrarNotificacion(
-    "error",
-    "Paquete incompleto",
-    "No se encontraron todos los números complementarios.",
-    4000
-  );
-
-	 comprando = false;
-  return;
-}
-
-const ids = boletosAsignados.map(b => b.id);
-
-  const pinGiro = Math.floor(100000 + Math.random() * 900000).toString();
-  const codigoBeneficio = pinGiro;
-
-	let premioLucky = null;
-
-const { data: premiosLucky, error: errorLucky } = await supabaseClient
-  .from("lucky_spin_premios")
-  .select("*")
-  .eq("activo", true);
-
-	console.log("PREMIOS LUCKY", premiosLucky);
-
-if (!errorLucky && premiosLucky && premiosLucky.length > 0) {
-  premioLucky = premiosLucky[Math.floor(Math.random() * premiosLucky.length)];
-}
-	
-const { data: patrocinadores } = await supabaseClient
-  .from("patrocinadores")
-  .select("*")
-  .eq("activo", true)
-  .eq("organizador_id", organizadorId);
-
-const patrocinadorBeneficio =
-  patrocinadores && patrocinadores.length
-    ? patrocinadores[Math.floor(Math.random() * patrocinadores.length)]
-    : null;
-
-  const { error: boletoError } = await supabaseClient
-    .from("boletos")
-    .update({
-      estado: "vendido",
-      pin_giro: pinGiro,
-      giro_usado: false,
-      nombre: localStorage.getItem("mass_telefono") || userActual || "",
-      telefono: localStorage.getItem("mass_telefono") || userActual,
-      rifa_id: RIFA_ID
-    })
-    .in("id", ids)
-    .eq("estado", "disponible");
-
-  if (boletoError) {
-    alert("❌ Error vendiendo boletos");
-    console.error(boletoError);
-    comprando = false;
-    return;
-  }
-
-  await guardarActividadSorteo("vendido", boletosAsignados);
-
-  const nuevoSaldo = wallet.saldo - totalPagar;
-
- await supabaseClient
-  .from("wallets")
-  .update({ saldo: nuevoSaldo })
-  .eq("user_id", userActual)
-  .eq("organizador_id", organizadorId); 
-
-  mostrarNotificacion(
-    "success",
-    "🎉 Compra exitosa",
-    `🎟️ Números recibidos: ${boletosAsignados.map(b => b.numero).join(", ")}<br>
-     💰 Total pagado: ${totalPagar} MASS<br>
-     🎡 Tu giro quedó desbloqueado. Ve a MASS LUCKY SPIN.`,
-    4000
-);
-
-  if (premioLucky) {
-  await supabaseClient
-    .from("beneficios_entregados")
-    .insert({
-      user_id: userActual,
-      rifa_id: RIFA_ID,
-      patrocinador_id: premioLucky.patrocinador_id || null,
-      patrocinador_nombre: premioLucky.nombre || "",
-      patrocinador_logo_url: "",
-      patrocinador_whatsapp: "",
-      codigo: premioLucky.codigo || codigoBeneficio,
-      promocion: premioLucky.descripcion || premioLucky.nombre || "",
-      usado: false
-    });
-}	
-
-  boletosSeleccionados = [];
-  boletoSeleccionado = null;
-
-  document.getElementById("seleccionTexto").innerHTML =
-    "Selecciona un número disponible";
-
-  actualizarResumenCompra();
-
-  await cargarSaldo();
-  await cargarBoletos();
-  await cargarMisBoletos();
-
-  comprando = false;
 }
 
 async function recargarSaldo() {
