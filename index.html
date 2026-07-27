@@ -3761,12 +3761,16 @@ ${(p.premio_media || []).map(m => m.tipo === "video" ? `
 <br><br>
 
 <label class="btn">
-📤 Subir imagen
+📸 Agregar imagen adicional
 <input
-    type="file"
-    accept="image/*"
-    style="display:none"
-    onchange="subirImagenPremio(event, '${p.id}', '${rifaId}')"
+  type="file"
+  accept="image/*"
+  style="display:none"
+  onchange="subirImagenAdicionalPremio(
+    event,
+    '${p.id}',
+    '${rifaId}'
+  )"
 />
 </label>
 
@@ -3899,6 +3903,223 @@ async function subirImagenPremio(event, premioId, rifaId){
   alert("✅ Foto del premio subida");
   administrarPremiosRifa(rifaId);
 }
+
+// =====================================================
+// SUBIR IMAGEN ADICIONAL DE UN PREMIO
+// Guarda la imagen en premio_media sin reemplazar
+// la imagen principal de premios_rifa.
+// =====================================================
+
+async function subirImagenAdicionalPremio(
+  event,
+  premioId,
+  rifaId
+) {
+
+  const input =
+    event.target;
+
+
+  const file =
+    input?.files?.[0];
+
+
+  if (!file) {
+    return;
+  }
+
+
+  if (
+    !String(
+      file.type || ""
+    ).startsWith(
+      "image/"
+    )
+  ) {
+
+    alert(
+      "❌ Selecciona un archivo de imagen válido."
+    );
+
+    input.value =
+      "";
+
+    return;
+  }
+
+
+  /*
+    Límite preventivo de 12 MB por imagen.
+  */
+
+  const LIMITE_IMAGEN =
+    12 *
+    1024 *
+    1024;
+
+
+  if (
+    file.size >
+    LIMITE_IMAGEN
+  ) {
+
+    alert(
+      "❌ La imagen es demasiado grande.\n\n" +
+      "Máximo permitido: 12 MB."
+    );
+
+    input.value =
+      "";
+
+    return;
+  }
+
+
+  const extension =
+    String(
+      file.name || "imagen.jpg"
+    )
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+
+  const nombreArchivo =
+    `${rifaId}/${premioId}-imagen-${Date.now()}.${extension}`;
+
+
+  const {
+    error: uploadError
+  } =
+    await supabaseClient
+      .storage
+      .from("premios")
+      .upload(
+        nombreArchivo,
+        file,
+        {
+          cacheControl:
+            "3600",
+
+          upsert:
+            false
+        }
+      );
+
+
+  if (uploadError) {
+
+    console.error(
+      "ERROR SUBIENDO IMAGEN ADICIONAL:",
+      uploadError
+    );
+
+
+    alert(
+      "❌ Error subiendo la imagen adicional."
+    );
+
+
+    input.value =
+      "";
+
+    return;
+  }
+
+
+  const {
+    data: urlData
+  } =
+    supabaseClient
+      .storage
+      .from("premios")
+      .getPublicUrl(
+        nombreArchivo
+      );
+
+
+  const publicUrl =
+    String(
+      urlData?.publicUrl || ""
+    ).trim();
+
+
+  if (!publicUrl) {
+
+    console.error(
+      "NO SE GENERÓ URL PÚBLICA:",
+      nombreArchivo
+    );
+
+
+    alert(
+      "❌ La imagen subió, pero no se obtuvo su dirección pública."
+    );
+
+
+    input.value =
+      "";
+
+    return;
+  }
+
+
+  /*
+    Guardar la fotografía adicional
+    relacionada con este premio.
+  */
+
+  const {
+    error: errorMedia
+  } =
+    await supabaseClient
+      .from("premio_media")
+      .insert({
+        premio_id:
+          premioId,
+
+        tipo:
+          "imagen",
+
+        url:
+          publicUrl
+      });
+
+
+  if (errorMedia) {
+
+    console.error(
+      "ERROR GUARDANDO IMAGEN EN PREMIO_MEDIA:",
+      errorMedia
+    );
+
+
+    alert(
+      "❌ La imagen subió, pero no se guardó en el premio."
+    );
+
+
+    input.value =
+      "";
+
+    return;
+  }
+
+
+  alert(
+    "✅ Imagen adicional subida correctamente"
+  );
+
+
+  input.value =
+    "";
+
+
+  await administrarPremiosRifa(
+    rifaId
+  );
+
+}	
 
 async function subirVideoPremio(event, premioId, rifaId){
 
