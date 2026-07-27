@@ -11251,8 +11251,800 @@ function apartarBoleto(){
   apartarWhats();
 }
 
-function filtrarNumero(){
-  aplicarFiltros();
+// =====================================================
+// BÚSQUEDA DIRECTA DE NÚMEROS EN SUPABASE
+// =====================================================
+
+let temporizadorBusquedaNumero = null;
+let secuenciaBusquedaNumero = 0;
+
+
+function filtrarNumero() {
+
+  const input =
+    document.getElementById(
+      "buscar"
+    );
+
+
+  const resultado =
+    document.getElementById(
+      "resultadoBusqueda"
+    );
+
+
+  if (
+    !input ||
+    !resultado
+  ) {
+    return;
+  }
+
+
+  clearTimeout(
+    temporizadorBusquedaNumero
+  );
+
+
+  const valorIngresado =
+    String(
+      input.value || ""
+    ).trim();
+
+
+  /*
+    Invalidar cualquier consulta anterior
+    que todavía esté esperando respuesta.
+  */
+
+  secuenciaBusquedaNumero++;
+
+  const secuenciaActual =
+    secuenciaBusquedaNumero;
+
+
+  if (!valorIngresado) {
+
+    resultado.style.display =
+      "none";
+
+    resultado.innerHTML =
+      "";
+
+    resultado.onclick =
+      null;
+
+    return;
+  }
+
+
+  if (!RIFA_ID) {
+
+    resultado.style.display =
+      "block";
+
+    resultado.style.borderColor =
+      "#ff4444";
+
+    resultado.style.cursor =
+      "not-allowed";
+
+    resultado.onclick =
+      null;
+
+    resultado.innerHTML = `
+      <div
+        style="
+          color:#ff4444;
+          font-size:17px;
+          font-weight:bold;
+        "
+      >
+        ❌ Primero selecciona una rifa
+      </div>
+    `;
+
+    return;
+  }
+
+
+  resultado.style.display =
+    "block";
+
+  resultado.style.borderColor =
+    "#39ff14";
+
+  resultado.style.cursor =
+    "default";
+
+  resultado.onclick =
+    null;
+
+  resultado.innerHTML = `
+    <div
+      style="
+        color:#39ff14;
+        font-size:17px;
+        font-weight:bold;
+      "
+    >
+      🔎 Buscando número...
+    </div>
+  `;
+
+
+  /*
+    Esperar un momento para no enviar
+    una consulta por cada tecla.
+  */
+
+  temporizadorBusquedaNumero =
+    setTimeout(
+      () => {
+
+        buscarNumeroDirectoEnSupabase(
+          valorIngresado,
+          secuenciaActual
+        );
+
+      },
+      350
+    );
+
+}
+
+
+async function buscarNumeroDirectoEnSupabase(
+  valorIngresado,
+  secuenciaActual
+) {
+
+  const resultado =
+    document.getElementById(
+      "resultadoBusqueda"
+    );
+
+
+  if (!resultado) {
+    return;
+  }
+
+
+  try {
+
+    const rifaActual =
+      obtenerRifaActualParaBoletos();
+
+
+    if (
+      !rifaActual ||
+      !RIFA_ID
+    ) {
+
+      throw new Error(
+        "No se encontró la rifa seleccionada."
+      );
+
+    }
+
+
+    const modalidadActual =
+      Math.max(
+        1,
+        Number(
+          rifaActual.modalidad || 1
+        )
+      );
+
+
+    const totalNumerosRifa =
+      Number(
+        rifaActual.total_numeros || 0
+      );
+
+
+    if (
+      !Number.isInteger(
+        totalNumerosRifa
+      ) ||
+      totalNumerosRifa <= 0 ||
+      totalNumerosRifa %
+        modalidadActual !== 0
+    ) {
+
+      throw new Error(
+        "La configuración de la rifa no es válida."
+      );
+
+    }
+
+
+    const soloDigitos =
+      String(
+        valorIngresado || ""
+      ).replace(
+        /\D/g,
+        ""
+      );
+
+
+    if (!soloDigitos) {
+
+      resultado.style.borderColor =
+        "#ff4444";
+
+      resultado.style.cursor =
+        "not-allowed";
+
+      resultado.onclick =
+        null;
+
+      resultado.innerHTML = `
+        <div
+          style="
+            color:#ff4444;
+            font-size:17px;
+            font-weight:bold;
+          "
+        >
+          ❌ Escribe un número válido
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const numeroBuscado =
+      Number(
+        soloDigitos
+      );
+
+
+    if (
+      !Number.isInteger(
+        numeroBuscado
+      ) ||
+      numeroBuscado < 0 ||
+      numeroBuscado >=
+        totalNumerosRifa
+    ) {
+
+      resultado.style.borderColor =
+        "#ff4444";
+
+      resultado.style.cursor =
+        "not-allowed";
+
+      resultado.onclick =
+        null;
+
+      resultado.innerHTML = `
+        <div
+          style="
+            color:#ff4444;
+            font-size:18px;
+            font-weight:bold;
+          "
+        >
+          ❌ Número no existe
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const saltoNumeros =
+      totalNumerosRifa /
+      modalidadActual;
+
+
+    const digitosRifa =
+      Math.max(
+        2,
+        String(
+          totalNumerosRifa - 1
+        ).length
+      );
+
+
+    const numeroBuscadoTexto =
+      String(
+        numeroBuscado
+      ).padStart(
+        digitosRifa,
+        "0"
+      );
+
+
+    /*
+      Cualquier número oficial pertenece
+      a un número base del rango visible.
+    */
+
+    const numeroBase =
+      numeroBuscado %
+      saltoNumeros;
+
+
+    const numeroBaseTexto =
+      String(
+        numeroBase
+      ).padStart(
+        digitosRifa,
+        "0"
+      );
+
+
+    const numerosPaqueteTexto =
+      Array.from(
+        {
+          length:
+            modalidadActual
+        },
+
+        (_, indice) =>
+          String(
+            numeroBase +
+            (
+              indice *
+              saltoNumeros
+            )
+          ).padStart(
+            digitosRifa,
+            "0"
+          )
+      );
+
+
+    /*
+      Consultar únicamente el paquete
+      correspondiente al número buscado.
+    */
+
+    const {
+      data: boletosPaquete,
+      error
+    } =
+      await supabaseClient
+        .from("boletos")
+        .select(
+          "id, rifa_id, numero, estado, telefono, nombre"
+        )
+        .eq(
+          "rifa_id",
+          RIFA_ID
+        )
+        .in(
+          "numero",
+          numerosPaqueteTexto
+        );
+
+
+    /*
+      Ignorar una respuesta anterior cuando
+      el usuario ya escribió otro número.
+    */
+
+    if (
+      secuenciaActual !==
+      secuenciaBusquedaNumero
+    ) {
+      return;
+    }
+
+
+    if (error) {
+
+      console.error(
+        "ERROR BUSCANDO NÚMERO:",
+        error
+      );
+
+      throw error;
+
+    }
+
+
+    const paqueteOrdenado =
+      Array.isArray(
+        boletosPaquete
+      )
+        ? [
+            ...boletosPaquete
+          ].sort(
+            (a, b) =>
+              Number(a.numero) -
+              Number(b.numero)
+          )
+        : [];
+
+
+    if (
+      paqueteOrdenado.length !==
+      modalidadActual
+    ) {
+
+      resultado.style.borderColor =
+        "#ff4444";
+
+      resultado.style.cursor =
+        "not-allowed";
+
+      resultado.onclick =
+        null;
+
+      resultado.innerHTML = `
+        <div
+          style="
+            color:#ff4444;
+            font-size:17px;
+            font-weight:bold;
+          "
+        >
+          ❌ Paquete incompleto
+        </div>
+
+        <div
+          style="
+            margin-top:8px;
+            color:#bbb;
+            font-size:13px;
+          "
+        >
+          No se encontraron todos los números
+          relacionados con esta selección.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const boletoBase =
+      paqueteOrdenado.find(
+        boleto =>
+          String(
+            boleto.numero
+          ) ===
+          numeroBaseTexto
+      );
+
+
+    const boletoBuscado =
+      paqueteOrdenado.find(
+        boleto =>
+          String(
+            boleto.numero
+          ) ===
+          numeroBuscadoTexto
+      );
+
+
+    if (
+      !boletoBase ||
+      !boletoBuscado
+    ) {
+
+      resultado.style.borderColor =
+        "#ff4444";
+
+      resultado.style.cursor =
+        "not-allowed";
+
+      resultado.onclick =
+        null;
+
+      resultado.innerHTML = `
+        <div
+          style="
+            color:#ff4444;
+            font-size:18px;
+            font-weight:bold;
+          "
+        >
+          ❌ Número no encontrado
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const paqueteDisponible =
+      paqueteOrdenado.every(
+        boleto =>
+          String(
+            boleto.estado ||
+            "disponible"
+          )
+            .trim()
+            .toLowerCase() ===
+          "disponible"
+      );
+
+
+    const paqueteVendido =
+      paqueteOrdenado.some(
+        boleto =>
+          String(
+            boleto.estado || ""
+          )
+            .trim()
+            .toLowerCase() ===
+          "vendido"
+      );
+
+
+    const paqueteApartado =
+      !paqueteVendido &&
+      paqueteOrdenado.some(
+        boleto =>
+          String(
+            boleto.estado || ""
+          )
+            .trim()
+            .toLowerCase() ===
+          "apartado"
+      );
+
+
+    let color =
+      "#39ff14";
+
+    let textoEstado =
+      "🟢 Disponible";
+
+    let textoAccion =
+      "👇 Toca esta tarjeta para seleccionar el paquete";
+
+
+    if (paqueteVendido) {
+
+      color =
+        "#888";
+
+      textoEstado =
+        "⚫ Vendido";
+
+      textoAccion =
+        "Este paquete ya fue comprado";
+
+    } else if (paqueteApartado) {
+
+      color =
+        "orange";
+
+      textoEstado =
+        "🟠 Apartado";
+
+      textoAccion =
+        "Este paquete ya está reservado";
+
+    } else if (!paqueteDisponible) {
+
+      color =
+        "#ff4444";
+
+      textoEstado =
+        "🔴 No disponible";
+
+      textoAccion =
+        "Uno de los números del paquete no está disponible";
+
+    }
+
+
+    const precioActual =
+      Number(
+        window.precioBoletoActual ||
+        rifaActual.precio_boleto ||
+        0
+      );
+
+
+    const unidadActual =
+      window.unidadMassActual ||
+      "MX";
+
+
+    resultado.style.display =
+      "block";
+
+    resultado.style.borderColor =
+      color;
+
+    resultado.style.cursor =
+      paqueteDisponible
+        ? "pointer"
+        : "not-allowed";
+
+
+    resultado.innerHTML = `
+      <div
+        style="
+          color:#bbb;
+          font-size:13px;
+          margin-bottom:4px;
+        "
+      >
+        Número buscado
+      </div>
+
+      <div
+        style="
+          font-size:28px;
+          font-weight:bold;
+          color:white;
+        "
+      >
+        ${numeroBuscadoTexto}
+      </div>
+
+      <div
+        style="
+          margin-top:8px;
+          color:${color};
+          font-size:21px;
+          font-weight:bold;
+        "
+      >
+        ${textoEstado}
+      </div>
+
+      ${
+        modalidadActual > 1
+          ? `
+            <div
+              style="
+                margin-top:12px;
+                color:#39ff14;
+                font-size:15px;
+                font-weight:bold;
+              "
+            >
+              🎟️ Número base:
+              ${numeroBaseTexto}
+            </div>
+
+            <div
+              style="
+                margin-top:8px;
+                color:#ddd;
+                font-size:14px;
+                line-height:1.6;
+              "
+            >
+              Paquete completo:<br>
+              ${numerosPaqueteTexto.join(", ")}
+            </div>
+          `
+          : ""
+      }
+
+      <div
+        style="
+          margin-top:12px;
+          color:#ddd;
+          font-size:16px;
+        "
+      >
+        💰 ${precioActual} MASS ${unidadActual}
+      </div>
+
+      <div
+        style="
+          margin-top:9px;
+          color:#aaa;
+          font-size:13px;
+        "
+      >
+        ${textoAccion}
+      </div>
+    `;
+
+
+    if (paqueteDisponible) {
+
+      resultado.onclick =
+        () => {
+
+          seleccionarBoleto(
+            boletoBase
+          );
+
+
+          limpiarBusquedaNumero();
+
+
+          setTimeout(
+            () => {
+
+              const centro =
+                document.getElementById(
+                  "resumenCompra"
+                );
+
+
+              if (centro) {
+
+                centro.scrollIntoView({
+                  behavior:
+                    "smooth",
+
+                  block:
+                    "center"
+                });
+
+              }
+
+            },
+            200
+          );
+
+        };
+
+    } else {
+
+      resultado.onclick =
+        null;
+
+    }
+
+
+  } catch (errorBusqueda) {
+
+    if (
+      secuenciaActual !==
+      secuenciaBusquedaNumero
+    ) {
+      return;
+    }
+
+
+    console.error(
+      "ERROR EN BÚSQUEDA DIRECTA:",
+      errorBusqueda
+    );
+
+
+    resultado.style.display =
+      "block";
+
+    resultado.style.borderColor =
+      "#ff4444";
+
+    resultado.style.cursor =
+      "not-allowed";
+
+    resultado.onclick =
+      null;
+
+    resultado.innerHTML = `
+      <div
+        style="
+          color:#ff4444;
+          font-size:17px;
+          font-weight:bold;
+        "
+      >
+        ❌ No fue posible buscar el número
+      </div>
+
+      <div
+        style="
+          margin-top:8px;
+          color:#bbb;
+          font-size:13px;
+        "
+      >
+        Intenta nuevamente.
+      </div>
+    `;
+
+  }
+
 }
 
 function limpiarBusquedaNumero(){
