@@ -7672,9 +7672,15 @@ const nombreArchivo =
     .upload(nombreArchivo, comprobante);
 
   if (uploadError) {
-    alert("Error al subir comprobante ❌");
-    return;
-  }
+  console.error("ERROR SUBIENDO COMPROBANTE:", uploadError);
+
+  alert(
+    "Error al subir comprobante ❌\n\n" +
+    uploadError.message
+  );
+
+  return;
+}
 
   const { data: urlData } = supabaseClient.storage
     .from("comprobantes-mass")
