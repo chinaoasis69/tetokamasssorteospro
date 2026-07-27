@@ -10429,162 +10429,213 @@ navigator.clipboard.writeText(valor)
 });
 }	
 
-// 🔥 CARGAR BOLETOS
-async function cargarBoletos() {
+// =====================================================
+// MASS — PAGINACIÓN REAL DE BOLETOS DESDE SUPABASE
+// =====================================================
 
-  const rifaIdValido =
-  RIFA_ID &&
-  String(RIFA_ID).trim() !== "" &&
-  String(RIFA_ID).toLowerCase() !== "null" &&
-  String(RIFA_ID).toLowerCase() !== "undefined";
+let paginaBoletosActual = 1;
 
-if (!rifaIdValido) {
-  console.warn("No se cargaron boletos porque todavía no hay una rifa seleccionada.");
-  return;
-}
+const BOLETOS_POR_PAGINA = 200;
 
+let totalBoletosVisiblesConsulta = 0;
 
-  const TAMANO_LOTE_LECTURA =
-    1000;
+let totalPaginasBoletosConsulta = 1;
+
+let secuenciaCargaBoletos = 0;
 
 
-  let desde =
-    0;
+// =====================================================
+// CONFIGURACIÓN DE LA RIFA ABIERTA
+// =====================================================
+
+function obtenerConfiguracionPaginacionRifa() {
+
+  const rifa =
+    obtenerRifaActualParaBoletos();
 
 
-  let todosLosBoletos =
-    [];
+  if (
+    !rifa ||
+    !RIFA_ID
+  ) {
+    return null;
+  }
 
 
-  while (true) {
-
-    const hasta =
-      desde +
-      TAMANO_LOTE_LECTURA -
-      1;
-
-
-    const {
-      data: lote,
-      error
-    } = await supabaseClient
-      .from("boletos")
-      .select("*")
-      .eq(
-        "rifa_id",
-        RIFA_ID
+  const modalidad =
+    Math.max(
+      1,
+      Number(
+        rifa.modalidad || 1
       )
-      .order(
-        "numero",
-        {
-          ascending: true
-        }
-      )
-      .range(
-        desde,
-        hasta
-      );
-
-
-    if (error) {
-
-      console.error(
-        "ERROR SUPABASE CARGANDO BOLETOS:",
-        error
-      );
-
-      alert(
-        "❌ No se pudieron cargar los boletos."
-      );
-
-
-      const stats =
-        document.getElementById(
-          "stats"
-        );
-
-
-      if (stats) {
-
-        stats.innerText =
-          "Error cargando boletos";
-
-      }
-
-
-      return;
-    }
-
-
-    const loteSeguro =
-      Array.isArray(lote)
-        ? lote
-        : [];
-
-
-    todosLosBoletos.push(
-      ...loteSeguro
     );
 
 
-    if (
-      loteSeguro.length <
-      TAMANO_LOTE_LECTURA
-    ) {
-
-      break;
-    }
+  const totalNumeros =
+    Number(
+      rifa.total_numeros || 0
+    );
 
 
-    desde +=
-      TAMANO_LOTE_LECTURA;
+  if (
+    !Number.isInteger(
+      totalNumeros
+    ) ||
+    totalNumeros <= 0 ||
+    totalNumeros % modalidad !== 0
+  ) {
+    return null;
+  }
+
+
+  const limiteVisible =
+    totalNumeros /
+    modalidad;
+
+
+  const digitos =
+    Math.max(
+      2,
+      String(
+        totalNumeros - 1
+      ).length
+    );
+
+
+  const ultimoNumeroBaseTexto =
+    String(
+      limiteVisible - 1
+    ).padStart(
+      digitos,
+      "0"
+    );
+
+
+  return {
+    rifa,
+    modalidad,
+    totalNumeros,
+    limiteVisible,
+    digitos,
+    ultimoNumeroBaseTexto
+  };
+}
+
+
+// =====================================================
+// ESTADÍSTICAS SIN DESCARGAR TODOS LOS BOLETOS
+// =====================================================
+
+async function cargarEstadisticasRifaPaginada(
+  configuracion,
+  secuenciaActual
+) {
+
+  const [
+    respuestaVendidos,
+    respuestaReservados
+  ] =
+    await Promise.all([
+
+      supabaseClient
+        .from("boletos")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "rifa_id",
+          RIFA_ID
+        )
+        .eq(
+          "estado",
+          "vendido"
+        ),
+
+      supabaseClient
+        .from("boletos")
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "rifa_id",
+          RIFA_ID
+        )
+        .eq(
+          "estado",
+          "apartado"
+        )
+
+    ]);
+
+
+  /*
+    Ignorar resultados de una rifa anterior
+    cuando el usuario cambió rápidamente.
+  */
+
+  if (
+    secuenciaActual !==
+    secuenciaCargaBoletos
+  ) {
+    return;
+  }
+
+
+  if (
+    respuestaVendidos.error ||
+    respuestaReservados.error
+  ) {
+
+    console.error(
+      "ERROR CARGANDO ESTADÍSTICAS:",
+      {
+        vendidos:
+          respuestaVendidos.error,
+
+        reservados:
+          respuestaReservados.error
+      }
+    );
 
   }
 
 
-  boletos =
-    todosLosBoletos;
-
-
-  boletos.sort(
-    (a, b) =>
-      Number(a.numero) -
-      Number(b.numero)
-  );
-
-
   const vendidos =
-    boletos.filter(
-      b =>
-        (
-          b.estado || ""
-        ).toLowerCase() ===
-        "vendido"
-    ).length;
-
-
-  const total =
-    boletos.length;
+    Number(
+      respuestaVendidos.count || 0
+    );
 
 
   const reservados =
-    boletos.filter(
-      b =>
-        (
-          b.estado || ""
-        ).toLowerCase() ===
-        "apartado"
-    ).length;
+    Number(
+      respuestaReservados.count || 0
+    );
+
+
+  const total =
+    configuracion.totalNumeros;
 
 
   const disponibles =
-    total -
-    vendidos -
-    reservados;
+    Math.max(
+      0,
+      total -
+      vendidos -
+      reservados
+    );
 
 
   const porcentaje =
     total > 0
+
       ? (
           (
             vendidos /
@@ -10592,7 +10643,8 @@ if (!rifaIdValido) {
           ) *
           100
         ).toFixed(1)
-      : 0;
+
+      : "0.0";
 
 
   const avanceRifa =
@@ -10602,10 +10654,7 @@ if (!rifaIdValido) {
 
 
   if (avanceRifa) {
-
-    avanceRifa.innerText =
-      "";
-
+    avanceRifa.innerText = "";
   }
 
 
@@ -10639,436 +10688,698 @@ if (!rifaIdValido) {
 
   }
 
-
-  console.log(
-    "✅ Total de boletos cargados:",
-    boletos.length
-  );
-
-
-  aplicarFiltros();
-
 }
 
-// 🔥 FILTROS
-function aplicarFiltros(){
-  const buscar = document.getElementById("buscar").value.trim();
 
-  const resultado = document.getElementById("resultadoBusqueda");
+// =====================================================
+// CARGAR SOLO LA PÁGINA ACTUAL
+// =====================================================
 
-  const digitosRifa = boletos.length
-    ? Math.max(...boletos.map(b =>
-      String(b.numero).replace(/\D/g, "").length
-      ))
-    : 1;	
+async function cargarBoletos() {
 
-  if(buscar){
+  const secuenciaActual =
+    ++secuenciaCargaBoletos;
 
-    const buscarNormal = buscar.replace(/\D/g, "").padStart(digitosRifa, "0");
 
-    const boleto = boletos.find(b => {
+  const configuracion =
+    obtenerConfiguracionPaginacionRifa();
 
-    const numeroBoleto = String(b.numero)
-        .replace(/\D/g, "")
-        .padStart(digitosRifa, "0");
 
-    return numeroBoleto === buscarNormal;
+  const grid =
+    document.getElementById(
+      "grid"
+    );
 
-});
 
-	console.log("Boleto encontrado:", boleto);
+  const paginacionBox =
+    document.getElementById(
+      "paginacionBoletos"
+    );
 
-    if(boleto){
 
-        const estado = (boleto.estado || "disponible").toLowerCase();
+  if (!configuracion) {
 
-        let color = "#39ff14";
-        let texto = "🟢 Disponible";
-        let extra = "👇 Toca esta tarjeta para seleccionarlo";
+    boletos = [];
 
-        if(estado === "apartado"){
-            color = "orange";
-            texto = "🟠 Apartado";
-            extra = "Este número ya está reservado";
-        }
+    filtrados = [];
 
-        if(estado === "vendido"){
-            color = "#888";
-            texto = "⚫ Vendido";
-            extra = "Este número ya fue comprado";
-        }
+    totalBoletosVisiblesConsulta = 0;
 
-        resultado.style.display = "block";
-        resultado.style.borderColor = color;
-        resultado.style.cursor = estado === "disponible" ? "pointer" : "not-allowed";
+    totalPaginasBoletosConsulta = 1;
 
-        resultado.innerHTML = `
-            <div style="font-size:28px;font-weight:bold;color:white;">
-                ${buscarNormal}
-            </div>
 
-            <div style="margin-top:8px;color:${color};font-size:21px;font-weight:bold;">
-                ${texto}
-            </div>
-
-            <div style="margin-top:10px;color:#ddd;font-size:16px;">
-                💰 ${boleto.precio || rifaSeleccionada?.precio || 0} MASS
-            </div>
-
-            <div style="margin-top:8px;color:#aaa;font-size:13px;">
-                ${extra}
-            </div>
-        `;
-
-        if(estado === "disponible"){
-     resultado.onclick = () => {
-    seleccionarBoleto(boleto);
-    limpiarBusquedaNumero();
-
-    setTimeout(() => {
-        const centro = document.getElementById("resumenCompra");
-        if(centro){
-            centro.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-        }
-    }, 200);
-};       
-        }else{
-            resultado.onclick = null;
-        }
-
-    }else{
-
-        resultado.style.display = "block";
-        resultado.style.borderColor = "#ff4444";
-        resultado.style.cursor = "not-allowed";
-        resultado.onclick = null;
-
-        resultado.innerHTML = `
-            <div style="color:#ff4444;font-size:18px;font-weight:bold;">
-                ❌ Número no existe
-            </div>
-        `;
+    if (grid) {
+      grid.innerHTML = "";
     }
 
-}else{
 
-    resultado.style.display = "none";
-    resultado.onclick = null;
+    if (paginacionBox) {
 
-}	
+      paginacionBox.style.display =
+        "none";
 
-  filtrados = boletos.filter(b => {
-    let pasa = true;
+      paginacionBox.innerHTML =
+        "";
 
-    if(soloDisponibles){
-      pasa = (b.estado || "disponible").toLowerCase() === "disponible";
     }
 
-    if(buscar){
 
-    const numeroNormal = String(b.numero).padStart(digitosRifa, "0");
-    const buscarNormal = buscar.padStart(digitosRifa, "0");
-
-    pasa = pasa && numeroNormal.includes(buscarNormal);
-
-}
-
-    return pasa;
-  });
-
-  renderBoletos();
-}
-
-// 🔥 RENDER
-let paginaBoletosActual = 1;
-
-const BOLETOS_POR_PAGINA = 200;
-	
-function renderBoletos(){
-  const contenedor = document.getElementById("grid");
-  contenedor.innerHTML = "";
-
-const rifaActual = rifas.find(
-  r => String(r.id) === String(RIFA_ID)
-);
-
-const modalidadActual = Number(rifaActual?.modalidad || 1);
-const totalNumerosRifa = Number(
-  rifaActual?.total_numeros || filtrados.length
-);	
-
-const limiteVisible = totalNumerosRifa / modalidadActual;
-
-const boletosVisibles = filtrados.filter(
-  b => Number(b.numero) < limiteVisible
-);
-
-const totalPaginasBoletos = Math.max(
-  1,
-  Math.ceil(
-    boletosVisibles.length /
-    BOLETOS_POR_PAGINA
-  )
-);
-
-
-paginaBoletosActual = Math.min(
-  Math.max(
-    paginaBoletosActual,
-    1
-  ),
-  totalPaginasBoletos
-);
-
-
-const inicioPaginaBoletos =
-  (
-    paginaBoletosActual - 1
-  ) * BOLETOS_POR_PAGINA;
-
-
-const finPaginaBoletos =
-  inicioPaginaBoletos +
-  BOLETOS_POR_PAGINA;
-
-
-const boletosPaginaActual =
-  boletosVisibles.slice(
-    inicioPaginaBoletos,
-    finPaginaBoletos
-  );	
-
-const digitosMostrar = Math.max(
-  2,
-  String(
-    Math.max(
-      totalNumerosRifa - 1,
-      0
-    )
-  ).length
-);	
-
-    boletosPaginaActual.forEach(b => {
-    const btn = document.createElement("button");
-	btn.className = "boleto";
-	  
-    btn.innerText =
-  String(
-    Number(b.numero)
-  ).padStart(
-    digitosMostrar,
-    "0"
-  );
-
-    if(b.estado === "vendido"){
-  btn.style.background = "#444";
-  btn.style.color = "#fff";
-  btn.disabled = true;
-}
-
-if(b.estado === "apartado"){
-  btn.style.background = "orange";
-  btn.style.color = "#111";
-}
-
-	const seleccionado =
-  boletosSeleccionados.some(x => x.id === b.id);
-
-if(seleccionado){
-  btn.style.background = "#39ff14";
-  btn.style.color = "#000";
-  btn.style.fontWeight = "bold";
-}  
-
-    if (b.estado !== "vendido") {
-  btn.onclick = () => seleccionarBoleto(b);
-}
-
-    contenedor.appendChild(btn);
-  });
-
-const paginacionBox =
-  document.getElementById(
-    "paginacionBoletos"
-  );
-
-
-if (paginacionBox) {
-
-  const primerBoletoPagina =
-  boletosPaginaActual[0];
-
-
-const ultimoBoletoPagina =
-  boletosPaginaActual[
-    boletosPaginaActual.length - 1
-  ];
-
-
-const mostrandoDesde =
-  primerBoletoPagina
-    ? String(
-        Number(
-          primerBoletoPagina.numero
-        )
-      ).padStart(
-        digitosMostrar,
-        "0"
-      )
-    : "--";
-
-
-const mostrandoHasta =
-  ultimoBoletoPagina
-    ? String(
-        Number(
-          ultimoBoletoPagina.numero
-        )
-      ).padStart(
-        digitosMostrar,
-        "0"
-      )
-    : "--";
+    return;
+  }
 
 
   if (
-    boletosVisibles.length <=
-    BOLETOS_POR_PAGINA
+    grid &&
+    boletos.length === 0
   ) {
 
-    paginacionBox.style.display =
-      "none";
-
-    paginacionBox.innerHTML =
-      "";
-
-  } else {
-
-    paginacionBox.style.display =
-      "block";
-
-
-    paginacionBox.innerHTML = `
+    grid.innerHTML = `
       <div
         style="
+          grid-column:1/-1;
+          padding:20px;
           color:#39ff14;
           font-weight:bold;
-          margin-bottom:10px;
         "
       >
-        Mostrando
-        ${mostrandoDesde}-${mostrandoHasta}
-        de ${boletosVisibles.length} boletos
-      </div>
-
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          flex-wrap:wrap;
-          gap:8px;
-        "
-      >
-
-        <button
-          type="button"
-          onclick="cambiarPaginaBoletos(
-            ${paginaBoletosActual - 1}
-          )"
-          ${
-            paginaBoletosActual <= 1
-              ? "disabled"
-              : ""
-          }
-        >
-          ⬅️ Anterior
-        </button>
-
-        <span
-          style="
-            min-width:120px;
-            color:white;
-            font-weight:bold;
-          "
-        >
-          Página ${paginaBoletosActual}
-          de ${totalPaginasBoletos}
-        </span>
-
-        <button
-          type="button"
-          onclick="cambiarPaginaBoletos(
-            ${paginaBoletosActual + 1}
-          )"
-          ${
-            paginaBoletosActual >=
-            totalPaginasBoletos
-              ? "disabled"
-              : ""
-          }
-        >
-          Siguiente ➡️
-        </button>
-
-      </div>
-
-      <div
-        style="
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          flex-wrap:wrap;
-          gap:6px;
-          margin-top:12px;
-        "
-      >
-
-        <input
-          id="irPaginaBoletosInput"
-          type="number"
-          min="1"
-          max="${totalPaginasBoletos}"
-          value="${paginaBoletosActual}"
-          onkeydown="
-            if(event.key === 'Enter'){
-              irPaginaBoletos();
-            }
-          "
-          style="
-            width:100px;
-            margin:0;
-            padding:10px 6px;
-          "
-        >
-
-        <button
-          type="button"
-          onclick="irPaginaBoletos()"
-          style="margin:0;"
-        >
-          Ir a página
-        </button>
-
+        ⏳ Cargando números...
       </div>
     `;
 
   }
 
-}	
 
-  document.getElementById("stats").style.display = "none";
+  const inicio =
+    (
+      paginaBoletosActual - 1
+    ) *
+    BOLETOS_POR_PAGINA;
+
+
+  const final =
+    inicio +
+    BOLETOS_POR_PAGINA -
+    1;
+
+
+  /*
+    Lanzar las estadísticas al mismo tiempo
+    que se consulta la página.
+  */
+
+  const promesaEstadisticas =
+    cargarEstadisticasRifaPaginada(
+      configuracion,
+      secuenciaActual
+    );
+
+
+  let consultaPagina =
+    supabaseClient
+      .from("boletos")
+      .select(
+        "id, rifa_id, numero, estado, telefono, nombre, pin_giro, giro_usado",
+        {
+          count: "exact"
+        }
+      )
+      .eq(
+        "rifa_id",
+        RIFA_ID
+      )
+      .lte(
+        "numero",
+        configuracion
+          .ultimoNumeroBaseTexto
+      );
+
+
+  /*
+    El botón Solo disponibles también
+    se procesa directamente en Supabase.
+  */
+
+  if (soloDisponibles) {
+
+    consultaPagina =
+      consultaPagina.eq(
+        "estado",
+        "disponible"
+      );
+
+  }
+
+
+  consultaPagina =
+    consultaPagina
+      .order(
+        "numero",
+        {
+          ascending: true
+        }
+      )
+      .range(
+        inicio,
+        final
+      );
+
+
+  const {
+    data,
+    error,
+    count
+  } =
+    await consultaPagina;
+
+
+  /*
+    Ignorar una respuesta anterior
+    si el usuario ya abrió otra rifa.
+  */
+
+  if (
+    secuenciaActual !==
+    secuenciaCargaBoletos
+  ) {
+    return;
+  }
+
+
+  if (error) {
+
+    console.error(
+      "ERROR SUPABASE CARGANDO PÁGINA DE BOLETOS:",
+      error
+    );
+
+
+    if (grid) {
+
+      grid.innerHTML = `
+        <div
+          style="
+            grid-column:1/-1;
+            padding:20px;
+            color:#ff4444;
+            font-weight:bold;
+          "
+        >
+          ❌ No se pudieron cargar los números.
+        </div>
+      `;
+
+    }
+
+
+    return;
+  }
+
+
+  totalBoletosVisiblesConsulta =
+    Number(
+      count || 0
+    );
+
+
+  totalPaginasBoletosConsulta =
+    Math.max(
+      1,
+      Math.ceil(
+        totalBoletosVisiblesConsulta /
+        BOLETOS_POR_PAGINA
+      )
+    );
+
+
+  /*
+    Si la página dejó de existir porque
+    cambiaron los filtros, cargar la última.
+  */
+
+  if (
+    paginaBoletosActual >
+    totalPaginasBoletosConsulta
+  ) {
+
+    paginaBoletosActual =
+      totalPaginasBoletosConsulta;
+
+
+    await cargarBoletos();
+
+    return;
+  }
+
+
+  boletos =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  filtrados =
+    boletos;
+
+
+  renderBoletos(
+    configuracion
+  );
+
+
+  await promesaEstadisticas;
+
+
+  console.log(
+    "✅ Página de boletos cargada:",
+    {
+      pagina:
+        paginaBoletosActual,
+
+      registrosDescargados:
+        boletos.length,
+
+      totalVisible:
+        totalBoletosVisiblesConsulta,
+
+      modalidad:
+        configuracion.modalidad
+    }
+  );
+
 }
 
-function cambiarPaginaBoletos(
+
+// =====================================================
+// COMPATIBILIDAD CON BOTONES Y FUNCIONES EXISTENTES
+// =====================================================
+
+function aplicarFiltros() {
+
+  return cargarBoletos();
+
+}
+
+
+// =====================================================
+// DIBUJAR ÚNICAMENTE LOS 200 REGISTROS DESCARGADOS
+// =====================================================
+
+function renderBoletos(
+  configuracionRecibida = null
+) {
+
+  const contenedor =
+    document.getElementById(
+      "grid"
+    );
+
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  const configuracion =
+    configuracionRecibida ||
+    obtenerConfiguracionPaginacionRifa();
+
+
+  contenedor.innerHTML = "";
+
+
+  if (!configuracion) {
+    return;
+  }
+
+
+  const boletosPaginaActual =
+    Array.isArray(boletos)
+      ? boletos
+      : [];
+
+
+  const digitosMostrar =
+    configuracion.digitos;
+
+
+  if (
+    boletosPaginaActual.length === 0
+  ) {
+
+    contenedor.innerHTML = `
+      <div
+        style="
+          grid-column:1/-1;
+          padding:20px;
+          color:#bbb;
+          font-weight:bold;
+        "
+      >
+        ${
+          soloDisponibles
+            ? "No hay números disponibles en esta página."
+            : "No se encontraron números."
+        }
+      </div>
+    `;
+
+  }
+
+
+  boletosPaginaActual.forEach(
+    boleto => {
+
+      const btn =
+        document.createElement(
+          "button"
+        );
+
+
+      btn.className =
+        "boleto";
+
+
+      btn.innerText =
+        String(
+          Number(
+            boleto.numero
+          )
+        ).padStart(
+          digitosMostrar,
+          "0"
+        );
+
+
+      const estado =
+        String(
+          boleto.estado ||
+          "disponible"
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        estado ===
+        "disponible"
+      ) {
+
+        btn.style.background =
+          "#16b000";
+
+        btn.style.color =
+          "#fff";
+
+      }
+
+
+      if (
+        estado ===
+        "apartado"
+      ) {
+
+        btn.style.background =
+          "orange";
+
+        btn.style.color =
+          "#111";
+
+      }
+
+
+      if (
+        estado ===
+        "vendido"
+      ) {
+
+        btn.style.background =
+          "#444";
+
+        btn.style.color =
+          "#fff";
+
+        btn.disabled =
+          true;
+
+      }
+
+
+      const seleccionado =
+        boletosSeleccionados.some(
+          seleccionadoActual =>
+            String(
+              seleccionadoActual.id
+            ) ===
+            String(
+              boleto.id
+            )
+        );
+
+
+      if (seleccionado) {
+
+        btn.style.background =
+          "#39ff14";
+
+        btn.style.color =
+          "#000";
+
+        btn.style.fontWeight =
+          "bold";
+
+      }
+
+
+      if (
+        estado !==
+        "vendido"
+      ) {
+
+        btn.onclick =
+          () =>
+            seleccionarBoleto(
+              boleto
+            );
+
+      }
+
+
+      contenedor.appendChild(
+        btn
+      );
+
+    }
+  );
+
+
+  const paginacionBox =
+    document.getElementById(
+      "paginacionBoletos"
+    );
+
+
+  if (paginacionBox) {
+
+    const primerBoleto =
+      boletosPaginaActual[0];
+
+
+    const ultimoBoleto =
+      boletosPaginaActual[
+        boletosPaginaActual.length -
+        1
+      ];
+
+
+    const mostrandoDesde =
+      primerBoleto
+
+        ? String(
+            Number(
+              primerBoleto.numero
+            )
+          ).padStart(
+            digitosMostrar,
+            "0"
+          )
+
+        : "--";
+
+
+    const mostrandoHasta =
+      ultimoBoleto
+
+        ? String(
+            Number(
+              ultimoBoleto.numero
+            )
+          ).padStart(
+            digitosMostrar,
+            "0"
+          )
+
+        : "--";
+
+
+    if (
+      totalBoletosVisiblesConsulta <=
+      BOLETOS_POR_PAGINA
+    ) {
+
+      paginacionBox.style.display =
+        "none";
+
+      paginacionBox.innerHTML =
+        "";
+
+    } else {
+
+      paginacionBox.style.display =
+        "block";
+
+
+      const textoTipo =
+        soloDisponibles
+          ? "números disponibles"
+          : "boletos";
+
+
+      paginacionBox.innerHTML = `
+        <div
+          style="
+            color:#39ff14;
+            font-weight:bold;
+            margin-bottom:10px;
+          "
+        >
+          Mostrando
+          ${mostrandoDesde}-${mostrandoHasta}
+          de ${totalBoletosVisiblesConsulta}
+          ${textoTipo}
+        </div>
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:8px;
+          "
+        >
+
+          <button
+            type="button"
+            onclick="cambiarPaginaBoletos(
+              ${paginaBoletosActual - 1}
+            )"
+            ${
+              paginaBoletosActual <= 1
+                ? "disabled"
+                : ""
+            }
+          >
+            ⬅️ Anterior
+          </button>
+
+          <span
+            style="
+              min-width:120px;
+              color:white;
+              font-weight:bold;
+            "
+          >
+            Página ${paginaBoletosActual}
+            de ${totalPaginasBoletosConsulta}
+          </span>
+
+          <button
+            type="button"
+            onclick="cambiarPaginaBoletos(
+              ${paginaBoletosActual + 1}
+            )"
+            ${
+              paginaBoletosActual >=
+              totalPaginasBoletosConsulta
+                ? "disabled"
+                : ""
+            }
+          >
+            Siguiente ➡️
+          </button>
+
+        </div>
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:6px;
+            margin-top:12px;
+          "
+        >
+
+          <input
+            id="irPaginaBoletosInput"
+            type="number"
+            min="1"
+            max="${totalPaginasBoletosConsulta}"
+            value="${paginaBoletosActual}"
+            onkeydown="
+              if(event.key === 'Enter'){
+                irPaginaBoletos();
+              }
+            "
+            style="
+              width:100px;
+              margin:0;
+              padding:10px 6px;
+            "
+          >
+
+          <button
+            type="button"
+            onclick="irPaginaBoletos()"
+            style="margin:0;"
+          >
+            Ir a página
+          </button>
+
+        </div>
+      `;
+
+    }
+
+  }
+
+
+  const stats =
+    document.getElementById(
+      "stats"
+    );
+
+
+  if (stats) {
+    stats.style.display = "none";
+  }
+
+}
+
+
+// =====================================================
+// CAMBIAR DE PÁGINA CONSULTANDO SUPABASE
+// =====================================================
+
+async function cambiarPaginaBoletos(
   nuevaPagina
 ) {
 
   const paginaSolicitada =
-    Number(nuevaPagina);
+    Number(
+      nuevaPagina
+    );
 
 
   if (
@@ -11081,43 +11392,53 @@ function cambiarPaginaBoletos(
 
 
   paginaBoletosActual =
-    Math.max(
-      1,
-      Math.floor(
-        paginaSolicitada
+    Math.min(
+      totalPaginasBoletosConsulta,
+
+      Math.max(
+        1,
+        Math.floor(
+          paginaSolicitada
+        )
       )
     );
 
 
-  renderBoletos();
+  await cargarBoletos();
 
 
-  requestAnimationFrame(() => {
+  requestAnimationFrame(
+    () => {
 
-    const gridBoletos =
-      document.getElementById(
-        "grid"
-      );
+      const gridBoletos =
+        document.getElementById(
+          "grid"
+        );
 
 
-    if (gridBoletos) {
+      if (gridBoletos) {
 
-      gridBoletos.scrollIntoView({
-        behavior:
-          "smooth",
+        gridBoletos.scrollIntoView({
+          behavior:
+            "smooth",
 
-        block:
-          "start"
-      });
+          block:
+            "start"
+        });
+
+      }
 
     }
-
-  });
+  );
 
 }
 
 
-function irPaginaBoletos() {
+// =====================================================
+// IR A UNA PÁGINA ESPECÍFICA
+// =====================================================
+
+async function irPaginaBoletos() {
 
   const input =
     document.getElementById(
@@ -11130,12 +11451,12 @@ function irPaginaBoletos() {
   }
 
 
-  cambiarPaginaBoletos(
+  await cambiarPaginaBoletos(
     input.value
   );
 
-}	
-
+}
+	
 // 🔥 SELECCIONAR
 function seleccionarBoleto(b){
 
