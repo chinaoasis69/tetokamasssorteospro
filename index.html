@@ -13697,14 +13697,58 @@ if (
   return;
 }
 
-const complementariosOcupados = boletosPaquete.some(
-  b =>
-    b.id !== boletoBase.id &&
-    b.estado !== "disponible"
-);
+const numerosQueNoPertenecenAlUsuario =
+  boletosPaquete.some(
+    b => {
 
-if (complementariosOcupados) {
-  alert("❌ Uno de los números complementarios ya no está disponible");
+      const estado =
+        String(
+          b.estado || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const telefonoBoleto =
+        String(
+          b.telefono || ""
+        ).trim();
+
+
+      /*
+        Permitimos:
+
+        1. Números apartados por este mismo usuario.
+        2. Números disponibles, para conservar
+           compatibilidad con reservas anteriores.
+      */
+
+      const apartadoPorEsteUsuario =
+        estado === "apartado" &&
+        telefonoBoleto === tel;
+
+
+      const disponible =
+        estado === "disponible";
+
+
+      return !(
+        apartadoPorEsteUsuario ||
+        disponible
+      );
+
+    }
+  );
+
+
+if (
+  numerosQueNoPertenecenAlUsuario
+) {
+
+  alert(
+    "❌ Uno de los números del paquete ya no pertenece a esta reserva."
+  );
+
   return;
 }
 
