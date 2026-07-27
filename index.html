@@ -10115,6 +10115,533 @@ function mostrarPatrocinadorPlataforma(mostrar = true) {
   return `${dia} ${mes} ${año}`;
 }
 
+// =====================================================
+// MASS — GALERÍA PÚBLICA DE PREMIOS
+// IMÁGENES Y VIDEOS DESDE premios_rifa / premio_media
+// =====================================================
+
+async function cargarGaleriaPublicaPremios(
+  rifa
+) {
+
+  const imagenPrincipal =
+    document.getElementById(
+      "imagenRifa"
+    );
+
+
+  const galeria =
+    document.getElementById(
+      "galeriaRifa"
+    );
+
+
+  const btnVideoAnterior =
+    document.getElementById(
+      "btnVideoRifa"
+    );
+
+
+  if (
+    !rifa ||
+    !rifa.id ||
+    !imagenPrincipal ||
+    !galeria
+  ) {
+    return;
+  }
+
+
+  /*
+    Crear el visor principal de video
+    sin modificar todavía el HTML.
+  */
+
+  let videoPrincipal =
+    document.getElementById(
+      "videoRifaPrincipal"
+    );
+
+
+  if (!videoPrincipal) {
+
+    videoPrincipal =
+      document.createElement(
+        "video"
+      );
+
+
+    videoPrincipal.id =
+      "videoRifaPrincipal";
+
+
+    videoPrincipal.controls =
+      true;
+
+
+    videoPrincipal.playsInline =
+      true;
+
+
+    videoPrincipal.preload =
+      "metadata";
+
+
+    videoPrincipal.style.cssText = `
+      display:none;
+      width:100%;
+      max-width:520px;
+      max-height:420px;
+      margin:0 auto 15px auto;
+      border-radius:15px;
+      border:3px solid #39ff14;
+      box-shadow:0 0 20px #39ff14;
+      background:#000;
+    `;
+
+
+    imagenPrincipal.insertAdjacentElement(
+      "afterend",
+      videoPrincipal
+    );
+
+  }
+
+
+  /*
+    Limpiar cualquier contenido de
+    la rifa abierta anteriormente.
+  */
+
+  imagenPrincipal.style.display =
+    "none";
+
+
+  imagenPrincipal.src =
+    "";
+
+
+  videoPrincipal.pause();
+
+
+  videoPrincipal.removeAttribute(
+    "src"
+  );
+
+
+  videoPrincipal.load();
+
+
+  videoPrincipal.style.display =
+    "none";
+
+
+  galeria.innerHTML =
+    "";
+
+
+  if (btnVideoAnterior) {
+
+    btnVideoAnterior.style.display =
+      "none";
+
+    btnVideoAnterior.dataset.video =
+      "";
+
+  }
+
+
+  const {
+    data: premios,
+    error
+  } =
+    await supabaseClient
+      .from("premios_rifa")
+      .select(`
+        id,
+        lugar,
+        nombre,
+        descripcion,
+        imagen_url,
+        premio_media (
+          id,
+          tipo,
+          url
+        )
+      `)
+      .eq(
+        "rifa_id",
+        rifa.id
+      )
+      .order(
+        "lugar",
+        {
+          ascending: true
+        }
+      );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO GALERÍA DE PREMIOS:",
+      error
+    );
+
+  }
+
+
+  const archivos =
+    [];
+
+
+  const urlsAgregadas =
+    new Set();
+
+
+  function agregarArchivo(
+    tipo,
+    url,
+    premio = null
+  ) {
+
+    const urlLimpia =
+      String(
+        url || ""
+      ).trim();
+
+
+    if (
+      !urlLimpia ||
+      urlsAgregadas.has(
+        urlLimpia
+      )
+    ) {
+      return;
+    }
+
+
+    urlsAgregadas.add(
+      urlLimpia
+    );
+
+
+    archivos.push({
+      tipo:
+        tipo === "video"
+          ? "video"
+          : "imagen",
+
+      url:
+        urlLimpia,
+
+      lugar:
+        premio?.lugar ||
+        null,
+
+      nombre:
+        premio?.nombre ||
+        rifa.premio ||
+        "Premio"
+    });
+
+  }
+
+
+  /*
+    Archivos oficiales administrados
+    desde Premios de la rifa.
+  */
+
+  (
+    premios || []
+  ).forEach(
+    premio => {
+
+      agregarArchivo(
+        "imagen",
+        premio.imagen_url,
+        premio
+      );
+
+
+      (
+        premio.premio_media || []
+      ).forEach(
+        media => {
+
+          agregarArchivo(
+            media.tipo,
+            media.url,
+            premio
+          );
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+    Compatibilidad con imágenes y videos
+    guardados anteriormente en la tabla rifas.
+  */
+
+  [
+    rifa.imagen_url,
+    rifa.imagen2_url,
+    rifa.imagen3_url,
+    rifa.imagen4_url,
+    rifa.imagen5_url
+  ].forEach(
+    url => {
+
+      agregarArchivo(
+        "imagen",
+        url
+      );
+
+    }
+  );
+
+
+  agregarArchivo(
+    "video",
+    rifa.video_url
+  );
+
+
+  if (
+    archivos.length === 0
+  ) {
+
+    galeria.innerHTML = `
+      <div
+        style="
+          width:100%;
+          padding:14px;
+          color:#aaa;
+          text-align:center;
+          font-size:14px;
+        "
+      >
+        Este sorteo todavía no tiene
+        imágenes o videos publicados.
+      </div>
+    `;
+
+    return;
+  }
+
+
+  function mostrarArchivoPrincipal(
+    archivo
+  ) {
+
+    if (
+      archivo.tipo ===
+      "video"
+    ) {
+
+      imagenPrincipal.style.display =
+        "none";
+
+
+      videoPrincipal.src =
+        archivo.url;
+
+
+      videoPrincipal.style.display =
+        "block";
+
+
+      videoPrincipal.load();
+
+    } else {
+
+      videoPrincipal.pause();
+
+
+      videoPrincipal.style.display =
+        "none";
+
+
+      imagenPrincipal.src =
+        archivo.url;
+
+
+      imagenPrincipal.style.display =
+        "block";
+
+    }
+
+  }
+
+
+  archivos.forEach(
+    (
+      archivo,
+      indice
+    ) => {
+
+      const tarjeta =
+        document.createElement(
+          "button"
+        );
+
+
+      tarjeta.type =
+        "button";
+
+
+      tarjeta.style.cssText = `
+        width:88px;
+        min-height:88px;
+        margin:0;
+        padding:4px;
+        border:2px solid #39ff14;
+        border-radius:11px;
+        background:#111;
+        color:white;
+        cursor:pointer;
+        overflow:hidden;
+      `;
+
+
+      if (
+        archivo.tipo ===
+        "video"
+      ) {
+
+        tarjeta.innerHTML = `
+          <div
+            style="
+              height:56px;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              background:#000;
+              border-radius:7px;
+              font-size:27px;
+            "
+          >
+            ▶️
+          </div>
+
+          <div
+            style="
+              margin-top:4px;
+              font-size:11px;
+              line-height:1.2;
+            "
+          >
+            Video
+          </div>
+        `;
+
+      } else {
+
+        tarjeta.innerHTML = `
+          <img
+            src="${archivo.url}"
+            alt="${archivo.nombre}"
+            style="
+              width:100%;
+              height:56px;
+              object-fit:cover;
+              display:block;
+              border-radius:7px;
+            "
+          >
+
+          <div
+            style="
+              margin-top:4px;
+              font-size:11px;
+              line-height:1.2;
+              white-space:nowrap;
+              overflow:hidden;
+              text-overflow:ellipsis;
+            "
+          >
+            ${
+              archivo.lugar
+                ? archivo.lugar +
+                  "° Premio"
+                : "Premio"
+            }
+          </div>
+        `;
+
+      }
+
+
+      tarjeta.onclick =
+        () => {
+
+          mostrarArchivoPrincipal(
+            archivo
+          );
+
+
+          galeria
+            .querySelectorAll(
+              "button"
+            )
+            .forEach(
+              boton => {
+
+                boton.style.boxShadow =
+                  "none";
+
+              }
+            );
+
+
+          tarjeta.style.boxShadow =
+            "0 0 14px #39ff14";
+
+        };
+
+
+      galeria.appendChild(
+        tarjeta
+      );
+
+
+      if (indice === 0) {
+
+        tarjeta.style.boxShadow =
+          "0 0 14px #39ff14";
+
+      }
+
+    }
+  );
+
+
+  mostrarArchivoPrincipal(
+    archivos[0]
+  );
+
+
+  console.log(
+    "✅ Galería pública de premios cargada:",
+    {
+      rifaId:
+        rifa.id,
+
+      premios:
+        premios?.length || 0,
+
+      archivos:
+        archivos.length
+    }
+  );
+
+}	
+
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
 	paginaBoletosActual = 1;
