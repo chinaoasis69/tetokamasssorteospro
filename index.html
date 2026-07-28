@@ -12530,6 +12530,38 @@ async function (conversacion) {
         mensajes?.length || 0
     }
   );
+};
+
+// ============================================================
+// MASS - CERRAR PANEL DE MENSAJES DEL ORGANIZADOR
+// ============================================================
+
+window.cerrarChatOrganizadorAdmin = function () {
+  const panelChat = document.getElementById(
+    "panelChatOrganizadorAdmin"
+  );
+
+  const listaConversaciones = document.getElementById(
+    "listaConversacionesOrganizadorAdmin"
+  );
+
+  if (panelChat) {
+    panelChat.style.display = "none";
+  }
+
+  if (listaConversaciones) {
+    listaConversaciones.innerHTML = `
+      <div style="
+        color:#aaa;
+        text-align:center;
+        padding:25px;
+      ">
+        No hay conversaciones cargadas.
+      </div>
+    `;
+  }
+
+  CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID = null;
 };	
 
 async function abrirRifa(rifaId){
