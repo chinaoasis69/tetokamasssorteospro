@@ -10910,9 +10910,26 @@ let indiceCarruselPremioActivo =
 // IMÁGENES Y VIDEOS DESDE premios_rifa / premio_media
 // =====================================================
 
-async function cargarGaleriaPublicaPremios(
-  rifa
-) {
+async function cargarGaleriaPublicaPremios(rifa) {
+
+  // Limpiar el carrusel anterior antes de cargar otro sorteo
+  premioCarruselActivo = null;
+  indiceCarruselPremioActivo = 0;
+  carruselesPremiosPublicos = {};
+
+  const controlesCarruselInicial =
+    document.getElementById("controlesCarruselPremio");
+
+  const contadorCarruselInicial =
+    document.getElementById("contadorCarruselPremio");
+
+  if (controlesCarruselInicial) {
+    controlesCarruselInicial.style.display = "none";
+  }
+
+  if (contadorCarruselInicial) {
+    contadorCarruselInicial.textContent = "0 / 0";
+  }	
 
   const imagenPrincipal =
     document.getElementById(
