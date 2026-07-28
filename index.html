@@ -12518,6 +12518,57 @@ async function (conversacion) {
 
   contenedor.appendChild(historial);
 
+	const cajaRespuesta = document.createElement("div");
+
+cajaRespuesta.style.cssText = `
+  margin-top:14px;
+  padding:12px;
+  border:1px solid #333;
+  border-radius:12px;
+  background:#111;
+`;
+
+cajaRespuesta.innerHTML = `
+  <textarea
+    id="textoRespuestaOrganizadorAdmin"
+    maxlength="1000"
+    placeholder="Escribe tu respuesta..."
+    style="
+      width:100%;
+      min-height:90px;
+      padding:10px;
+      box-sizing:border-box;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#181818;
+      color:white;
+      font-size:16px;
+      resize:vertical;
+    "
+  ></textarea>
+
+  <button
+    type="button"
+    onclick="enviarRespuestaOrganizadorAdmin()"
+    style="
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border:2px solid #39ff14;
+      border-radius:10px;
+      background:#111;
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    ➤ Enviar respuesta
+  </button>
+`;
+
+contenedor.appendChild(cajaRespuesta);
+
   historial.scrollTop =
     historial.scrollHeight;
 
@@ -12562,6 +12613,123 @@ window.cerrarChatOrganizadorAdmin = function () {
   }
 
   CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID = null;
+};
+
+// ============================================================
+// MASS - ENVIAR RESPUESTA DEL ORGANIZADOR AL CLIENTE
+// ============================================================
+
+window.enviarRespuestaOrganizadorAdmin =
+async function () {
+
+  const textarea = document.getElementById(
+    "textoRespuestaOrganizadorAdmin"
+  );
+
+  const mensaje = String(
+    textarea?.value || ""
+  ).trim();
+
+  if (!mensaje) {
+    alert("Escribe una respuesta antes de enviarla.");
+    return;
+  }
+
+  if (!CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID) {
+    alert("No hay una conversación activa.");
+    return;
+  }
+
+  const botonEnviar =
+    document.querySelector(
+      'button[onclick="enviarRespuestaOrganizadorAdmin()"]'
+    );
+
+  if (botonEnviar) {
+    botonEnviar.disabled = true;
+    botonEnviar.textContent = "Enviando...";
+  }
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } = await supabaseClient.auth.getSession();
+
+  const authUserId =
+    sessionData?.session?.user?.id || null;
+
+  if (sessionError || !authUserId) {
+    console.error(
+      "ERROR OBTENIENDO SESIÓN DEL ORGANIZADOR:",
+      sessionError
+    );
+
+    alert("No se pudo verificar la sesión.");
+
+    if (botonEnviar) {
+      botonEnviar.disabled = false;
+      botonEnviar.textContent = "➤ Enviar respuesta";
+    }
+
+    return;
+  }
+
+  const {
+    data: mensajeNuevo,
+    error
+  } = await supabaseClient
+    .from("chat_mensajes")
+    .insert({
+      conversacion_id:
+        CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID,
+
+      remitente_auth_id:
+        authUserId,
+
+      remitente_tipo:
+        "organizador",
+
+      mensaje:
+        mensaje
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error(
+      "ERROR ENVIANDO RESPUESTA DEL ORGANIZADOR:",
+      error
+    );
+
+    alert("No fue posible enviar la respuesta.");
+
+    if (botonEnviar) {
+      botonEnviar.disabled = false;
+      botonEnviar.textContent = "➤ Enviar respuesta";
+    }
+
+    return;
+  }
+
+  textarea.value = "";
+
+  console.log(
+    "✅ RESPUESTA DEL ORGANIZADOR ENVIADA:",
+    mensajeNuevo
+  );
+
+  if (botonEnviar) {
+    botonEnviar.disabled = false;
+    botonEnviar.textContent = "➤ Enviar respuesta";
+  }
+
+  const conversacionActiva = {
+    id: CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID
+  };
+
+  await window.abrirConversacionOrganizadorAdmin(
+    conversacionActiva
+  );
 };	
 
 async function abrirRifa(rifaId){
