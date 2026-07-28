@@ -11766,6 +11766,131 @@ window.cerrarChatConOrganizador = function () {
   if (panel) {
     panel.style.display = "none";
   }
+};
+
+// ==========================================================
+// MASS - ENVIAR MENSAJE DEL USUARIO AL ORGANIZADOR
+// ==========================================================
+
+window.enviarMensajeChatOrganizador = async function () {
+  const textarea = document.getElementById(
+    "textoMensajeChatOrganizadorUsuario"
+  );
+
+  const botonEnviar = document.getElementById(
+    "btnEnviarMensajeChatOrganizadorUsuario"
+  );
+
+  const cajaMensajes = document.getElementById(
+    "mensajesChatOrganizadorUsuario"
+  );
+
+  const mensaje = String(textarea?.value || "").trim();
+
+  if (!mensaje) {
+    alert("Escribe un mensaje antes de enviarlo.");
+    return;
+  }
+
+  if (!CHAT_CONVERSACION_USUARIO_ID) {
+    alert("No hay una conversación activa.");
+    return;
+  }
+
+  const {
+    data: sessionData,
+    error: sessionError
+  } = await supabaseClient.auth.getSession();
+
+  const usuarioId =
+    sessionData?.session?.user?.id || null;
+
+  if (sessionError || !usuarioId) {
+    alert("Debes iniciar sesión para enviar mensajes.");
+    return;
+  }
+
+  if (botonEnviar) {
+    botonEnviar.disabled = true;
+    botonEnviar.textContent = "Enviando...";
+  }
+
+  const {
+    data: mensajeNuevo,
+    error: errorMensaje
+  } = await supabaseClient
+    .from("chat_mensajes")
+    .insert({
+      conversacion_id: CHAT_CONVERSACION_USUARIO_ID,
+      remitente_auth_id: usuarioId,
+      remitente_tipo: "usuario",
+      mensaje: mensaje
+    })
+    .select()
+    .single();
+
+  if (errorMensaje) {
+    console.error(
+      "ERROR ENVIANDO MENSAJE:",
+      errorMensaje
+    );
+
+    alert("No fue posible enviar el mensaje.");
+
+    if (botonEnviar) {
+      botonEnviar.disabled = false;
+      botonEnviar.textContent = "➤ Enviar mensaje";
+    }
+
+    return;
+  }
+
+  textarea.value = "";
+
+  if (cajaMensajes) {
+    const mensajeElemento =
+      document.createElement("div");
+
+    mensajeElemento.style.cssText = `
+      max-width:82%;
+      margin:8px 0 8px auto;
+      padding:10px 12px;
+      border-radius:12px 12px 3px 12px;
+      background:#164d16;
+      border:1px solid #39ff14;
+      color:white;
+      overflow-wrap:anywhere;
+    `;
+
+    mensajeElemento.textContent =
+      mensajeNuevo?.mensaje || mensaje;
+
+    const mensajeVacio =
+      cajaMensajes.querySelector(
+        '[data-chat-vacio="true"]'
+      );
+
+    if (mensajeVacio) {
+      mensajeVacio.remove();
+    }
+
+    cajaMensajes.appendChild(
+      mensajeElemento
+    );
+
+    cajaMensajes.scrollTop =
+      cajaMensajes.scrollHeight;
+  }
+
+  if (botonEnviar) {
+    botonEnviar.disabled = false;
+    botonEnviar.textContent = "➤ Enviar mensaje";
+  }
+
+  console.log(
+    "✅ MENSAJE ENVIADO:",
+    mensajeNuevo
+  );
 };	
 
 async function abrirRifa(rifaId){
