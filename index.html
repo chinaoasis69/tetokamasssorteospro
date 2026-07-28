@@ -12516,6 +12516,13 @@ window.abrirMensajesClientesDesdePagina = async function () {
 
   await window.mostrarChatOrganizadorAdmin();
 
+const btnChatFlotanteOrganizador =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizador) {
+  btnChatFlotanteOrganizador.style.display = "none";
+}	
+
   const panelChat =
     document.getElementById(
       "panelChatOrganizadorAdmin"
@@ -13025,14 +13032,22 @@ window.cerrarChatOrganizadorAdmin = function () {
   }
 
   CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID = null;
+
+	const btnChatFlotanteOrganizador =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizador) {
+  btnChatFlotanteOrganizador.style.display = "flex";
+  btnChatFlotanteOrganizador.style.alignItems = "center";
+  btnChatFlotanteOrganizador.style.justifyContent = "center";
+}
 };
 
 // ============================================================
 // MASS - ENVIAR RESPUESTA DEL ORGANIZADOR AL CLIENTE
 // ============================================================
 
-window.enviarRespuestaOrganizadorAdmin =
-async function () {
+window.enviarRespuestaOrganizadorAdmin = async function () {
 
   const textarea = document.getElementById(
     "textoRespuestaOrganizadorAdmin"
