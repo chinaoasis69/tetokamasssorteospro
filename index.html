@@ -12514,6 +12514,103 @@ if (btnChatFlotanteOrganizador) {
       block: "start"
     });
   }
+};
+
+// ==========================================================
+// MASS - CONTAR MENSAJES PENDIENTES DEL ORGANIZADOR
+// Cuenta mensajes de usuario posteriores a la última respuesta
+// ==========================================================
+
+window.actualizarContadorMensajesOrganizador = async function () {
+  const contador =
+    document.getElementById("contadorMensajesOrganizador");
+
+  const organizadorId =
+    localStorage.getItem("admin_organizador_id") ||
+    localStorage.getItem("organizador_admin_id");
+
+  if (!contador || !organizadorId) {
+    return;
+  }
+
+  const {
+    data: conversaciones,
+    error: errorConversaciones
+  } = await supabaseClient
+    .from("chat_conversaciones")
+    .select("id")
+    .eq("organizador_id", organizadorId);
+
+  if (errorConversaciones) {
+    console.error(
+      "ERROR CONTANDO CONVERSACIONES:",
+      errorConversaciones
+    );
+    return;
+  }
+
+  const idsConversaciones =
+    (conversaciones || []).map(item => item.id);
+
+  if (idsConversaciones.length === 0) {
+    contador.textContent = "0";
+    contador.style.display = "none";
+    return;
+  }
+
+  const {
+    data: mensajes,
+    error: errorMensajes
+  } = await supabaseClient
+    .from("chat_mensajes")
+    .select("conversacion_id, remitente_tipo, creado_at")
+    .in("conversacion_id", idsConversaciones)
+    .order("creado_at", { ascending: true });
+
+  if (errorMensajes) {
+    console.error(
+      "ERROR CONTANDO MENSAJES:",
+      errorMensajes
+    );
+    return;
+  }
+
+  let totalPendientes = 0;
+
+  idsConversaciones.forEach(conversacionId => {
+    const mensajesConversacion = (mensajes || []).filter(
+      item => item.conversacion_id === conversacionId
+    );
+
+    let ultimaRespuestaOrganizador = null;
+
+    mensajesConversacion.forEach(item => {
+      if (item.remitente_tipo === "organizador") {
+        ultimaRespuestaOrganizador = new Date(item.creado_at);
+      }
+    });
+
+    mensajesConversacion.forEach(item => {
+      const esUsuario = item.remitente_tipo === "usuario";
+      const fechaMensaje = new Date(item.creado_at);
+
+      if (
+        esUsuario &&
+        (
+          !ultimaRespuestaOrganizador ||
+          fechaMensaje > ultimaRespuestaOrganizador
+        )
+      ) {
+        totalPendientes++;
+      }
+    });
+  });
+
+  contador.textContent =
+    totalPendientes > 9 ? "9+" : String(totalPendientes);
+
+  contador.style.display =
+    totalPendientes > 0 ? "flex" : "none";
 };	
 
 // ============================================================
@@ -12546,6 +12643,14 @@ window.mostrarChatOrganizadorAdmin = async function () {
     alert("No se encontró el organizador asignado.");
     return;
   }
+
+	const contadorMensajesOrganizador =
+  document.getElementById("contadorMensajesOrganizador");
+
+if (contadorMensajesOrganizador) {
+  contadorMensajesOrganizador.style.display = "none";
+  contadorMensajesOrganizador.textContent = "0";
+}
 
   panelChat.style.display = "block";
 
@@ -20115,6 +20220,12 @@ if (btnChatFlotanteOrganizador) {
   btnChatFlotanteOrganizador.style.display = "flex";
   btnChatFlotanteOrganizador.style.alignItems = "center";
   btnChatFlotanteOrganizador.style.justifyContent = "center";
+}
+
+if (
+  typeof window.actualizarContadorMensajesOrganizador === "function"
+) {
+  await window.actualizarContadorMensajesOrganizador();
 }	  
 
 const chatOrganizadorUsuarioBox =
@@ -22254,6 +22365,7 @@ font-family:Arial, sans-serif;">
   style="
     display:none;
     position:fixed;
+	overflow:visible;
     right:18px;
     bottom:22px;
     width:58px;
@@ -22268,7 +22380,31 @@ font-family:Arial, sans-serif;">
     box-shadow:0 0 18px rgba(57,255,20,0.70);
   "
 >
-  💬
+  <span>💬</span>
+
+<span
+  id="contadorMensajesOrganizador"
+  style="
+    display:none;
+    position:absolute;
+    top:-7px;
+    right:-7px;
+    min-width:22px;
+    height:22px;
+    padding:0 5px;
+    border-radius:999px;
+    background:#ff2d2d;
+    color:white;
+    border:2px solid #111;
+    font-size:12px;
+    font-weight:bold;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+  "
+>
+  0
+</span>
 </button>	
 
 </body>
