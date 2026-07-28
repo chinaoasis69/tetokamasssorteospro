@@ -20058,6 +20058,19 @@ if (negocioOrganizador.activo === false) {
       String(organizadorId)
     );
 
+	// ==========================================================
+// MASS - MOSTRAR BOTÓN DE MENSAJES AL INICIAR COMO ORGANIZADOR
+// ==========================================================
+
+const btnMensajesClientesOrganizador =
+  document.getElementById(
+    "btnMensajesClientesOrganizador"
+  );
+
+if (btnMensajesClientesOrganizador) {
+  btnMensajesClientesOrganizador.style.display = "block";
+}  
+
     /*
       Compatibilidad con funciones anteriores
       del panel organizador.
