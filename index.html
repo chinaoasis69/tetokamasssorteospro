@@ -924,6 +924,152 @@ margin:0 auto 10px auto;
        style="color:white;font-size:14px;margin-top:5px;">
   </div>
 
+</div>
+
+<!-- ===================================================== -->
+<!-- MASS - BOTÓN CHAT CON EL ORGANIZADOR -->
+<!-- ===================================================== -->
+
+<div
+  id="chatOrganizadorUsuarioBox"
+  style="
+    display:none;
+    text-align:center;
+    margin:12px auto 18px auto;
+  "
+>
+  <button
+    id="btnChatOrganizadorUsuario"
+    type="button"
+    class="btn-dark"
+    onclick="abrirChatConOrganizador()"
+    style="
+      padding:12px 18px;
+      border:2px solid #39ff14;
+      border-radius:12px;
+      background:#111;
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+      box-shadow:0 0 12px rgba(57,255,20,0.45);
+    "
+  >
+    💬 Chat con el organizador
+  </button>
+</div>
+
+<!-- ===================================================== -->
+<!-- MASS - PANEL CHAT USUARIO CON ORGANIZADOR -->
+<!-- ===================================================== -->
+
+<div
+  id="panelChatOrganizadorUsuario"
+  style="
+    display:none;
+    width:100%;
+    max-width:520px;
+    margin:15px auto 20px auto;
+    padding:15px;
+    border:2px solid #39ff14;
+    border-radius:15px;
+    background:#0b0b0b;
+    box-shadow:0 0 16px rgba(57,255,20,0.35);
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:12px;
+    "
+  >
+    <div
+      id="tituloChatOrganizadorUsuario"
+      style="
+        color:#39ff14;
+        font-size:18px;
+        font-weight:bold;
+      "
+    >
+      💬 Chat con el organizador
+    </div>
+
+    <button
+      type="button"
+      onclick="cerrarChatConOrganizador()"
+      style="
+        padding:7px 11px;
+        border:1px solid #777;
+        border-radius:8px;
+        background:#222;
+        color:white;
+        cursor:pointer;
+      "
+    >
+      ✕ Cerrar
+    </button>
+  </div>
+
+  <div
+    id="mensajesChatOrganizadorUsuario"
+    style="
+      min-height:180px;
+      max-height:330px;
+      overflow-y:auto;
+      padding:10px;
+      border:1px solid #333;
+      border-radius:10px;
+      background:#111;
+      text-align:left;
+      color:white;
+      margin-bottom:12px;
+    "
+  >
+    <div style="color:#aaa;text-align:center;padding:20px;">
+      No hay mensajes todavía.
+    </div>
+  </div>
+
+  <textarea
+    id="textoMensajeChatOrganizadorUsuario"
+    maxlength="1000"
+    placeholder="Escribe tu mensaje..."
+    style="
+      width:100%;
+      min-height:85px;
+      padding:10px;
+      box-sizing:border-box;
+      border:1px solid #555;
+      border-radius:10px;
+      background:#181818;
+      color:white;
+      font-size:16px;
+      resize:vertical;
+    "
+  ></textarea>
+
+  <button
+    id="btnEnviarMensajeChatOrganizadorUsuario"
+    type="button"
+    onclick="enviarMensajeChatOrganizador()"
+    style="
+      width:100%;
+      margin-top:10px;
+      padding:12px;
+      border:2px solid #39ff14;
+      border-radius:10px;
+      background:#111;
+      color:white;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    ➤ Enviar mensaje
+  </button>
 </div>	
 
 <div id="nombreRifa" style="font-size:28px;font-weight:bold;">
@@ -11406,6 +11552,220 @@ indiceCarruselPremioActivo =
     }
   );
 
+};
+
+// =========================================================
+// MASS - CHAT USUARIO CON ORGANIZADOR
+// ESTADO Y APERTURA DEL PANEL
+// =========================================================
+
+let CHAT_CONVERSACION_USUARIO_ID = null;
+let CHAT_ORGANIZADOR_USUARIO_ID = null;
+let CHAT_CANAL_REALTIME_USUARIO = null;
+
+
+// ---------------------------------------------------------
+// ABRIR PANEL DEL CHAT
+// ---------------------------------------------------------
+
+window.abrirChatConOrganizador = async function () {
+
+  const panel =
+    document.getElementById(
+      "panelChatOrganizadorUsuario"
+    );
+
+  const cajaMensajes =
+    document.getElementById(
+      "mensajesChatOrganizadorUsuario"
+    );
+
+  const titulo =
+    document.getElementById(
+      "tituloChatOrganizadorUsuario"
+    );
+
+  if (!panel || !cajaMensajes) {
+    console.error(
+      "No se encontró el panel del chat."
+    );
+
+    return;
+  }
+
+  panel.style.display = "block";
+
+  cajaMensajes.innerHTML = `
+    <div
+      style="
+        color:#aaa;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      Cargando conversación...
+    </div>
+  `;
+
+  if (titulo) {
+    titulo.textContent =
+      "💬 Chat con el organizador";
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+	// =========================================================
+// MASS - BUSCAR O CREAR CONVERSACIÓN DEL USUARIO
+// =========================================================
+
+const {
+  data: sesionChat,
+  error: errorSesionChat
+} = await supabaseClient.auth.getSession();
+
+if (
+  errorSesionChat ||
+  !sesionChat?.session?.user?.id
+) {
+  cajaMensajes.innerHTML = `
+    <div
+      style="
+        color:#ff6b6b;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      Debes iniciar sesión para usar el chat.
+    </div>
+  `;
+  return;
+}
+
+const usuarioAuthId =
+  sesionChat.session.user.id;
+
+if (!CHAT_ORGANIZADOR_USUARIO_ID) {
+  cajaMensajes.innerHTML = `
+    <div
+      style="
+        color:#ff6b6b;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      No se encontró el organizador.
+    </div>
+  `;
+  return;
+}
+
+const {
+  data: conversacionesExistentes,
+  error: errorBuscarConversacion
+} = await supabaseClient
+  .from("chat_conversaciones")
+  .select("id")
+  .eq(
+    "organizador_id",
+    CHAT_ORGANIZADOR_USUARIO_ID
+  )
+  .eq(
+    "usuario_auth_id",
+    usuarioAuthId
+  )
+  .limit(1);
+
+if (errorBuscarConversacion) {
+  console.error(
+    "ERROR BUSCANDO CONVERSACIÓN:",
+    errorBuscarConversacion
+  );
+
+  cajaMensajes.innerHTML = `
+    <div
+      style="
+        color:#ff6b6b;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      No fue posible abrir el chat.
+    </div>
+  `;
+  return;
+}
+
+if (
+  Array.isArray(conversacionesExistentes) &&
+  conversacionesExistentes.length > 0
+) {
+  CHAT_CONVERSACION_USUARIO_ID =
+    conversacionesExistentes[0].id;
+} else {
+
+  const {
+    data: conversacionNueva,
+    error: errorCrearConversacion
+  } = await supabaseClient
+    .from("chat_conversaciones")
+    .insert({
+      organizador_id:
+        CHAT_ORGANIZADOR_USUARIO_ID,
+
+      usuario_auth_id:
+        usuarioAuthId
+    })
+    .select("id")
+    .single();
+
+  if (errorCrearConversacion) {
+    console.error(
+      "ERROR CREANDO CONVERSACIÓN:",
+      errorCrearConversacion
+    );
+
+    cajaMensajes.innerHTML = `
+      <div
+        style="
+          color:#ff6b6b;
+          text-align:center;
+          padding:20px;
+        "
+      >
+        No fue posible iniciar la conversación.
+      </div>
+    `;
+    return;
+  }
+
+  CHAT_CONVERSACION_USUARIO_ID =
+    conversacionNueva.id;
+}
+
+console.log(
+  "✅ CHAT CONVERSACIÓN:",
+  CHAT_CONVERSACION_USUARIO_ID
+);
+};
+
+
+// ---------------------------------------------------------
+// CERRAR PANEL DEL CHAT
+// ---------------------------------------------------------
+
+window.cerrarChatConOrganizador = function () {
+
+  const panel =
+    document.getElementById(
+      "panelChatOrganizadorUsuario"
+    );
+
+  if (panel) {
+    panel.style.display = "none";
+  }
 };	
 
 async function abrirRifa(rifaId){
@@ -11468,6 +11828,70 @@ document.getElementById("nombreOrganizadorSorteo").innerText =
 
 document.getElementById("sloganOrganizadorSorteo").innerText =
 org?.slogan || "";
+
+// =========================================================
+// MASS - PREPARAR CHAT CON EL ORGANIZADOR SELECCIONADO
+// =========================================================
+
+CHAT_ORGANIZADOR_USUARIO_ID =
+  org?.id || null;
+
+const chatOrganizadorBox =
+  document.getElementById(
+    "chatOrganizadorUsuarioBox"
+  );
+
+const btnChatOrganizador =
+  document.getElementById(
+    "btnChatOrganizadorUsuario"
+  );
+
+const panelChatOrganizador =
+  document.getElementById(
+    "panelChatOrganizadorUsuario"
+  );
+
+const tituloChatOrganizador =
+  document.getElementById(
+    "tituloChatOrganizadorUsuario"
+  );
+
+if (
+  CHAT_ORGANIZADOR_USUARIO_ID &&
+  chatOrganizadorBox &&
+  btnChatOrganizador
+) {
+
+  chatOrganizadorBox.style.display =
+    "block";
+
+  btnChatOrganizador.disabled =
+    false;
+
+  if (tituloChatOrganizador) {
+    tituloChatOrganizador.textContent =
+      `💬 Chat con ${
+        org?.nombre_publico ||
+        org?.nombre ||
+        "el organizador"
+      }`;
+  }
+
+} else {
+
+  if (chatOrganizadorBox) {
+    chatOrganizadorBox.style.display =
+      "none";
+  }
+
+  if (panelChatOrganizador) {
+    panelChatOrganizador.style.display =
+      "none";
+  }
+
+  CHAT_CONVERSACION_USUARIO_ID =
+    null;
+}		
 
 		const logoOrg = document.getElementById("logoOrganizadorSorteo");
 
