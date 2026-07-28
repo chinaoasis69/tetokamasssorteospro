@@ -11825,6 +11825,32 @@ console.log(
 );
 
 	await window.cargarMensajesChatOrganizador();
+
+// =======================================
+// MASS - ACTIVAR REALTIME DEL CHAT
+// =======================================
+
+if (CHAT_CANAL_REALTIME_USUARIO) {
+    supabaseClient.removeChannel(CHAT_CANAL_REALTIME_USUARIO);
+}
+
+CHAT_CANAL_REALTIME_USUARIO = supabaseClient
+    .channel("chat-" + CHAT_CONVERSACION_USUARIO_ID)
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_mensajes",
+            filter:
+                "conversacion_id=eq." +
+                CHAT_CONVERSACION_USUARIO_ID
+        },
+        async () => {
+            await window.cargarMensajesChatOrganizador();
+        }
+    )
+    .subscribe();	
 };
 
 
@@ -11842,6 +11868,18 @@ window.cerrarChatConOrganizador = function () {
   if (panel) {
     panel.style.display = "none";
   }
+
+// =======================================
+// MASS - APAGAR REALTIME AL CERRAR CHAT
+// =======================================
+
+if (CHAT_CANAL_REALTIME_USUARIO) {
+    supabaseClient.removeChannel(
+        CHAT_CANAL_REALTIME_USUARIO
+    );
+
+    CHAT_CANAL_REALTIME_USUARIO = null;
+}	
 };
 
 // ==========================================================
