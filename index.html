@@ -11636,8 +11636,9 @@ indiceCarruselPremioActivo =
 let CHAT_CONVERSACION_USUARIO_ID = null;
 let CHAT_ORGANIZADOR_USUARIO_ID = null;
 let CHAT_CANAL_REALTIME_USUARIO = null;
+let CHAT_ULTIMO_MENSAJE_USUARIO_ID = null;
+let CHAT_ULTIMA_FECHA_USUARIO = null;
 let CHAT_INTERVALO_USUARIO = null;	
-
 
 // ---------------------------------------------------------
 // ABRIR PANEL DEL CHAT
@@ -11847,10 +11848,22 @@ CHAT_CANAL_REALTIME_USUARIO = supabaseClient
                 "conversacion_id=eq." +
                 CHAT_CONVERSACION_USUARIO_ID
         },
-        async () => {
-            await window.cargarMensajesChatOrganizador();
-        }
-    )
+        (payload) => {
+    const mensajeNuevo = payload?.new;
+
+    if (
+        !mensajeNuevo ||
+        mensajeNuevo.conversacion_id !==
+            CHAT_CONVERSACION_USUARIO_ID
+    ) {
+        return;
+    }
+
+    window.agregarMensajeNuevoChatUsuario(
+        mensajeNuevo
+    );
+  }
+ )
     .subscribe((status) => {
     console.log(
         "📡 ESTADO REALTIME CHAT USUARIO:",
@@ -11858,29 +11871,18 @@ CHAT_CANAL_REALTIME_USUARIO = supabaseClient
     );
 });
 
-// =======================================
-// MASS - RESPALDO AUTOMÁTICO PARA IPHONE
-// =======================================
+// =====================================================
+// MASS - RESPALDO LIGERO PARA IPHONE
+// =====================================================
 
 if (CHAT_INTERVALO_USUARIO) {
     clearInterval(CHAT_INTERVALO_USUARIO);
 }
 
 CHAT_INTERVALO_USUARIO = setInterval(async () => {
-    const panelChat = document.getElementById(
-        "panelChatOrganizadorUsuario"
-    );
-
-    if (
-        panelChat &&
-        panelChat.style.display !== "none" &&
-        CHAT_CONVERSACION_USUARIO_ID
-    ) {
-        await window.cargarMensajesChatOrganizador();
-    }
+    await window.buscarMensajesNuevosChatUsuario();
 }, 2000);	
 };
-
 
 // ---------------------------------------------------------
 // CERRAR PANEL DEL CHAT
@@ -11909,9 +11911,9 @@ if (CHAT_CANAL_REALTIME_USUARIO) {
     CHAT_CANAL_REALTIME_USUARIO = null;
 }
 
-// =======================================
-// MASS - DETENER RESPALDO AUTOMÁTICO
-// =======================================
+// =====================================================
+// MASS - DETENER RESPALDO LIGERO AL CERRAR CHAT
+// =====================================================
 
 if (CHAT_INTERVALO_USUARIO) {
     clearInterval(CHAT_INTERVALO_USUARIO);
@@ -12037,6 +12039,12 @@ window.enviarMensajeChatOrganizador = async function () {
     botonEnviar.disabled = false;
     botonEnviar.textContent = "➤ Enviar mensaje";
   }
+
+CHAT_ULTIMO_MENSAJE_USUARIO_ID =
+    mensajeNuevo.id;
+
+CHAT_ULTIMA_FECHA_USUARIO =
+    mensajeNuevo.creado_at || null;	
 
   console.log(
     "✅ MENSAJE ENVIADO:",
@@ -12187,11 +12195,186 @@ window.cargarMensajesChatOrganizador = async function () {
   cajaMensajes.scrollTop =
     cajaMensajes.scrollHeight;
 
+if (mensajes.length > 0) {
+    const ultimoMensaje =
+        mensajes[mensajes.length - 1];
+
+    CHAT_ULTIMO_MENSAJE_USUARIO_ID =
+        ultimoMensaje.id;
+
+    CHAT_ULTIMA_FECHA_USUARIO =
+        ultimoMensaje.creado_at;
+} else {
+    CHAT_ULTIMO_MENSAJE_USUARIO_ID = null;
+    CHAT_ULTIMA_FECHA_USUARIO = null;
+}	
+
   console.log(
     "✅ HISTORIAL DEL CHAT CARGADO:",
     mensajes.length
   );
 };
+
+// =====================================================
+// MASS - AGREGAR SOLO UN MENSAJE NUEVO AL CHAT DEL USUARIO
+// =====================================================
+
+window.agregarMensajeNuevoChatUsuario = function (mensajeChat) {
+    const cajaMensajes = document.getElementById(
+        "mensajesChatOrganizadorUsuario"
+    );
+
+    if (!cajaMensajes || !mensajeChat?.id) {
+        return;
+    }
+
+    const mensajeYaExiste =
+    cajaMensajes.querySelector(
+        `[data-mensaje-id="${mensajeChat.id}"]`
+    );
+
+if (
+    mensajeChat.id ===
+        CHAT_ULTIMO_MENSAJE_USUARIO_ID ||
+    mensajeYaExiste
+) {
+    return;
+}
+
+    const mensajeVacio =
+        cajaMensajes.querySelector(
+            "[data-chat-vacio='true']"
+        );
+
+    if (mensajeVacio) {
+        mensajeVacio.remove();
+    }
+
+    const esUsuario =
+        mensajeChat.remitente_tipo === "usuario";
+
+    const burbuja = document.createElement("div");
+
+	burbuja.dataset.mensajeId =
+    mensajeChat.id;
+
+    burbuja.style.cssText = `
+        max-width:85%;
+        margin:8px 0;
+        margin-left:${esUsuario ? "auto" : "0"};
+        margin-right:${esUsuario ? "0" : "auto"};
+        padding:10px 12px;
+        border-radius:12px;
+        border:1px solid ${esUsuario ? "#39ff14" : "#777"};
+        background:${esUsuario ? "rgba(57,255,20,0.25)" : "#333"};
+        color:white;
+        text-align:left;
+        overflow-wrap:anywhere;
+    `;
+
+    const texto = document.createElement("div");
+
+    texto.textContent =
+        mensajeChat.mensaje || "";
+
+    texto.style.cssText = `
+        font-size:16px;
+        font-weight:bold;
+        white-space:pre-wrap;
+    `;
+
+    const fecha = document.createElement("div");
+
+    fecha.textContent =
+        mensajeChat.creado_at
+            ? new Date(
+                  mensajeChat.creado_at
+              ).toLocaleString()
+            : "";
+
+    fecha.style.cssText = `
+        margin-top:6px;
+        font-size:12px;
+        color:#ddd;
+        text-align:right;
+    `;
+
+    burbuja.appendChild(texto);
+    burbuja.appendChild(fecha);
+    cajaMensajes.appendChild(burbuja);
+
+    CHAT_ULTIMO_MENSAJE_USUARIO_ID =
+        mensajeChat.id;
+
+    CHAT_ULTIMA_FECHA_USUARIO =
+        mensajeChat.creado_at || null;
+
+    cajaMensajes.scrollTop =
+        cajaMensajes.scrollHeight;
+
+    console.log(
+        "✅ MENSAJE NUEVO AGREGADO AL CHAT:",
+        mensajeChat.id
+    );
+};
+
+// =====================================================
+// MASS - BUSCAR MENSAJES NUEVOS SIN RECARGAR TODO EL CHAT
+// =====================================================
+
+window.buscarMensajesNuevosChatUsuario = async function () {
+    if (
+        !CHAT_CONVERSACION_USUARIO_ID ||
+        !CHAT_ULTIMA_FECHA_USUARIO
+    ) {
+        return;
+    }
+
+    const panelChat = document.getElementById(
+        "panelChatOrganizadorUsuario"
+    );
+
+    if (
+        !panelChat ||
+        panelChat.style.display === "none"
+    ) {
+        return;
+    }
+
+    const {
+        data: mensajesNuevos,
+        error: errorMensajesNuevos
+    } = await supabaseClient
+        .from("chat_mensajes")
+        .select("*")
+        .eq(
+            "conversacion_id",
+            CHAT_CONVERSACION_USUARIO_ID
+        )
+        .gte(
+            "creado_at",
+            CHAT_ULTIMA_FECHA_USUARIO
+        )
+        .order("creado_at", {
+            ascending: true
+        });
+
+    if (errorMensajesNuevos) {
+        console.error(
+            "ERROR BUSCANDO MENSAJES NUEVOS:",
+            errorMensajesNuevos
+        );
+        return;
+    }
+
+    (mensajesNuevos || []).forEach(
+        (mensajeChat) => {
+            window.agregarMensajeNuevoChatUsuario(
+                mensajeChat
+            );
+        }
+    );
+};	
 
 // ============================================================
 // MASS - ABRIR PANEL DE MENSAJES PARA EL ORGANIZADOR
