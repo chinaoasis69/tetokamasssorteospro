@@ -11681,6 +11681,7 @@ indiceCarruselPremioActivo =
 let CHAT_CONVERSACION_USUARIO_ID = null;
 let CHAT_ORGANIZADOR_USUARIO_ID = null;
 let CHAT_CANAL_REALTIME_USUARIO = null;
+let CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR = null;	
 let CHAT_ULTIMO_MENSAJE_USUARIO_ID = null;
 let CHAT_ULTIMA_FECHA_USUARIO = null;
 let CHAT_INTERVALO_USUARIO = null;	
@@ -12611,6 +12612,48 @@ window.actualizarContadorMensajesOrganizador = async function () {
 
   contador.style.display =
     totalPendientes > 0 ? "flex" : "none";
+};
+
+// =====================================================
+// MASS - REALTIME DEL CONTADOR DE MENSAJES DEL ORGANIZADOR
+// =====================================================
+window.iniciarRealtimeContadorMensajesOrganizador = function () {
+  const organizadorId =
+    localStorage.getItem("admin_organizador_id") ||
+    localStorage.getItem("organizador_admin_id");
+
+  if (!organizadorId) {
+    return;
+  }
+
+  if (CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR) {
+    supabaseClient.removeChannel(
+      CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR
+    );
+  }
+
+  CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR =
+    supabaseClient
+      .channel(
+        "contador_chat_organizador_" + organizadorId
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_mensajes"
+        },
+        async () => {
+          if (
+            typeof window.actualizarContadorMensajesOrganizador ===
+            "function"
+          ) {
+            await window.actualizarContadorMensajesOrganizador();
+          }
+        }
+      )
+      .subscribe();
 };	
 
 // ============================================================
@@ -20226,6 +20269,12 @@ if (
   typeof window.actualizarContadorMensajesOrganizador === "function"
 ) {
   await window.actualizarContadorMensajesOrganizador();
+}
+
+if (
+  typeof window.iniciarRealtimeContadorMensajesOrganizador === "function"
+) {
+  window.iniciarRealtimeContadorMensajesOrganizador();
 }	  
 
 const chatOrganizadorUsuarioBox =
