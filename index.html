@@ -11636,6 +11636,7 @@ indiceCarruselPremioActivo =
 let CHAT_CONVERSACION_USUARIO_ID = null;
 let CHAT_ORGANIZADOR_USUARIO_ID = null;
 let CHAT_CANAL_REALTIME_USUARIO = null;
+let CHAT_INTERVALO_USUARIO = null;	
 
 
 // ---------------------------------------------------------
@@ -11855,7 +11856,29 @@ CHAT_CANAL_REALTIME_USUARIO = supabaseClient
         "📡 ESTADO REALTIME CHAT USUARIO:",
         status
     );
-});	
+});
+
+// =======================================
+// MASS - RESPALDO AUTOMÁTICO PARA IPHONE
+// =======================================
+
+if (CHAT_INTERVALO_USUARIO) {
+    clearInterval(CHAT_INTERVALO_USUARIO);
+}
+
+CHAT_INTERVALO_USUARIO = setInterval(async () => {
+    const panelChat = document.getElementById(
+        "panelChatOrganizadorUsuario"
+    );
+
+    if (
+        panelChat &&
+        panelChat.style.display !== "none" &&
+        CHAT_CONVERSACION_USUARIO_ID
+    ) {
+        await window.cargarMensajesChatOrganizador();
+    }
+}, 2000);	
 };
 
 
@@ -11884,6 +11907,15 @@ if (CHAT_CANAL_REALTIME_USUARIO) {
     );
 
     CHAT_CANAL_REALTIME_USUARIO = null;
+}
+
+// =======================================
+// MASS - DETENER RESPALDO AUTOMÁTICO
+// =======================================
+
+if (CHAT_INTERVALO_USUARIO) {
+    clearInterval(CHAT_INTERVALO_USUARIO);
+    CHAT_INTERVALO_USUARIO = null;
 }	
 };
 
