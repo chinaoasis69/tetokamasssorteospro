@@ -11850,7 +11850,12 @@ CHAT_CANAL_REALTIME_USUARIO = supabaseClient
             await window.cargarMensajesChatOrganizador();
         }
     )
-    .subscribe();	
+    .subscribe((status) => {
+    console.log(
+        "📡 ESTADO REALTIME CHAT USUARIO:",
+        status
+    );
+});	
 };
 
 
