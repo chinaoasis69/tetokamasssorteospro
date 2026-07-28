@@ -11749,6 +11749,8 @@ console.log(
   "✅ CHAT CONVERSACIÓN:",
   CHAT_CONVERSACION_USUARIO_ID
 );
+
+	await window.cargarMensajesChatOrganizador();
 };
 
 
@@ -11890,6 +11892,155 @@ window.enviarMensajeChatOrganizador = async function () {
   console.log(
     "✅ MENSAJE ENVIADO:",
     mensajeNuevo
+  );
+};
+
+// ==========================================================
+// MASS - CARGAR HISTORIAL DEL CHAT USUARIO CON ORGANIZADOR
+// ==========================================================
+
+window.cargarMensajesChatOrganizador = async function () {
+  const cajaMensajes = document.getElementById(
+    "mensajesChatOrganizadorUsuario"
+  );
+
+  if (!cajaMensajes) {
+    return;
+  }
+
+  if (!CHAT_CONVERSACION_USUARIO_ID) {
+    cajaMensajes.innerHTML = `
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:20px;
+        "
+      >
+        No hay una conversación disponible.
+      </div>
+    `;
+    return;
+  }
+
+  cajaMensajes.innerHTML = `
+    <div
+      style="
+        color:#aaa;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      Cargando mensajes...
+    </div>
+  `;
+
+  const {
+    data: mensajes,
+    error
+  } = await supabaseClient
+    .from("chat_mensajes")
+    .select(`
+      id,
+      conversacion_id,
+      remitente_auth_id,
+      remitente_tipo,
+      mensaje,
+      creado_at
+    `)
+    .eq(
+      "conversacion_id",
+      CHAT_CONVERSACION_USUARIO_ID
+    )
+    .order("creado_at", {
+      ascending: true
+    });
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO MENSAJES DEL CHAT:",
+      error
+    );
+
+    cajaMensajes.innerHTML = `
+      <div
+        style="
+          color:#ff6b6b;
+          text-align:center;
+          padding:20px;
+        "
+      >
+        No fue posible cargar los mensajes.
+      </div>
+    `;
+    return;
+  }
+
+  if (!Array.isArray(mensajes) || mensajes.length === 0) {
+    cajaMensajes.innerHTML = `
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:20px;
+        "
+      >
+        No hay mensajes todavía.
+      </div>
+    `;
+    return;
+  }
+
+  cajaMensajes.innerHTML = "";
+
+  mensajes.forEach(mensajeChat => {
+    const esUsuario =
+      mensajeChat.remitente_tipo === "usuario";
+
+    const burbuja = document.createElement("div");
+
+    burbuja.style.cssText = `
+      max-width:82%;
+      margin:8px 0;
+      margin-left:${esUsuario ? "auto" : "0"};
+      margin-right:${esUsuario ? "0" : "auto"};
+      padding:10px 12px;
+      border-radius:12px;
+      background:${esUsuario ? "#163b12" : "#262626"};
+      border:1px solid ${esUsuario ? "#39ff14" : "#555"};
+      color:white;
+      white-space:pre-wrap;
+      overflow-wrap:anywhere;
+    `;
+
+    const texto = document.createElement("div");
+    texto.textContent = mensajeChat.mensaje || "";
+
+    const fecha = document.createElement("div");
+    fecha.style.cssText = `
+      margin-top:6px;
+      font-size:11px;
+      color:#aaa;
+      text-align:${esUsuario ? "right" : "left"};
+    `;
+
+    fecha.textContent = mensajeChat.creado_at
+      ? new Date(
+          mensajeChat.creado_at
+        ).toLocaleString()
+      : "";
+
+    burbuja.appendChild(texto);
+    burbuja.appendChild(fecha);
+    cajaMensajes.appendChild(burbuja);
+  });
+
+  cajaMensajes.scrollTop =
+    cajaMensajes.scrollHeight;
+
+  console.log(
+    "✅ HISTORIAL DEL CHAT CARGADO:",
+    mensajes.length
   );
 };	
 
