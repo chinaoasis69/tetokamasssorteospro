@@ -1753,6 +1753,13 @@ Cargando historial...
 
 <button onclick="mostrarDashboardOrganizador()">
     📊 Dashboard
+</button>
+
+<button
+  type="button"
+  onclick="mostrarChatOrganizadorAdmin()"
+>
+  💬 Mensajes de clientes
 </button>	
 
  <button onclick="cargarPagosPendientes()">
@@ -1793,6 +1800,73 @@ Cargando historial...
     Selecciona una opción.
   </div>
 </div>
+
+<!-- ===================================================== -->
+<!-- MASS - PANEL DE MENSAJES DE CLIENTES PARA ORGANIZADOR -->
+<!-- ===================================================== -->
+
+<div
+  id="panelChatOrganizadorAdmin"
+  class="card"
+  style="
+    display:none;
+    width:100%;
+    max-width:900px;
+    margin:20px auto;
+    padding:18px;
+    border:2px solid #39ff14;
+    border-radius:16px;
+    background:#0b0b0b;
+    box-shadow:0 0 18px rgba(57,255,20,0.35);
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:15px;
+    "
+  >
+    <h2 style="margin:0;color:#39ff14;">
+      💬 Mensajes de clientes
+    </h2>
+
+    <button
+      type="button"
+      onclick="cerrarChatOrganizadorAdmin()"
+      style="
+        padding:9px 14px;
+        border:1px solid #777;
+        border-radius:9px;
+        background:#222;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✕ Cerrar
+    </button>
+  </div>
+
+  <div
+    id="listaConversacionesOrganizadorAdmin"
+    style="
+      min-height:180px;
+      padding:12px;
+      border:1px solid #333;
+      border-radius:12px;
+      background:#111;
+      color:white;
+    "
+  >
+    <div style="color:#aaa;text-align:center;padding:25px;">
+      No hay conversaciones cargadas.
+    </div>
+  </div>
+</div>	  
 
 <div id="modalConvertidorMass" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:99999; padding:20px;">
     <div style="
@@ -12041,6 +12115,420 @@ window.cargarMensajesChatOrganizador = async function () {
   console.log(
     "✅ HISTORIAL DEL CHAT CARGADO:",
     mensajes.length
+  );
+};
+
+// ============================================================
+// MASS - ABRIR PANEL DE MENSAJES PARA EL ORGANIZADOR
+// ============================================================
+
+window.mostrarChatOrganizadorAdmin = async function () {
+
+  const panelChat = document.getElementById(
+    "panelChatOrganizadorAdmin"
+  );
+
+  const listaConversaciones = document.getElementById(
+    "listaConversacionesOrganizadorAdmin"
+  );
+
+  if (!panelChat || !listaConversaciones) {
+    console.error(
+      "No se encontró el panel de mensajes del organizador."
+    );
+    return;
+  }
+
+  const organizadorId =
+    localStorage.getItem("admin_organizador_id") ||
+    localStorage.getItem("organizador_admin_id") ||
+    localStorage.getItem("organizador_actual_id");
+
+  if (!organizadorId) {
+    alert("No se encontró el organizador asignado.");
+    return;
+  }
+
+  panelChat.style.display = "block";
+
+  listaConversaciones.innerHTML = `
+    <div
+      style="
+        color:#aaa;
+        text-align:center;
+        padding:25px;
+      "
+    >
+      Cargando conversaciones...
+    </div>
+  `;
+
+  panelChat.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+
+  const {
+    data: conversaciones,
+    error
+  } = await supabaseClient
+    .from("chat_conversaciones")
+    .select(`
+      id,
+      organizador_id,
+      usuario_auth_id,
+      creado_at
+    `)
+    .eq("organizador_id", organizadorId)
+    .order("creado_at", {
+      ascending: false
+    });
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO CONVERSACIONES:",
+      error
+    );
+
+    listaConversaciones.innerHTML = `
+      <div
+        style="
+          color:#ff6b6b;
+          text-align:center;
+          padding:25px;
+        "
+      >
+        No fue posible cargar las conversaciones.
+      </div>
+    `;
+
+    return;
+  }
+
+  if (!conversaciones || conversaciones.length === 0) {
+    listaConversaciones.innerHTML = `
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:25px;
+        "
+      >
+        No hay mensajes de clientes todavía.
+      </div>
+    `;
+
+    return;
+  }
+
+  listaConversaciones.innerHTML = "";
+
+  conversaciones.forEach((conversacion) => {
+
+    const tarjeta = document.createElement("button");
+
+    tarjeta.type = "button";
+
+    tarjeta.style.cssText = `
+      width:100%;
+      display:block;
+      margin-bottom:10px;
+      padding:14px;
+      border:1px solid #39ff14;
+      border-radius:12px;
+      background:#181818;
+      color:white;
+      text-align:left;
+      cursor:pointer;
+    `;
+
+    const fecha = conversacion.creado_at
+      ? new Date(
+          conversacion.creado_at
+        ).toLocaleString()
+      : "";
+
+    tarjeta.innerHTML = `
+      <div
+        style="
+          color:#39ff14;
+          font-weight:bold;
+          margin-bottom:5px;
+        "
+      >
+        💬 Conversación de cliente
+      </div>
+
+      <div
+        style="
+          font-size:13px;
+          color:#ccc;
+          word-break:break-all;
+        "
+      >
+        Usuario: ${conversacion.usuario_auth_id || "Sin identificar"}
+      </div>
+
+      <div
+        style="
+          font-size:12px;
+          color:#888;
+          margin-top:6px;
+        "
+      >
+        ${fecha}
+      </div>
+    `;
+
+    tarjeta.onclick = function () {
+  window.abrirConversacionOrganizadorAdmin(
+    conversacion
+  );
+};
+
+    listaConversaciones.appendChild(
+      tarjeta
+    );
+  });
+
+  console.log(
+    "✅ CONVERSACIONES DEL ORGANIZADOR:",
+    conversaciones
+  );
+};
+
+// ============================================================
+// MASS - ABRIR CONVERSACIÓN DEL CLIENTE PARA EL ORGANIZADOR
+// ============================================================
+
+let CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID = null;
+
+window.abrirConversacionOrganizadorAdmin =
+async function (conversacion) {
+
+  const contenedor =
+    document.getElementById(
+      "listaConversacionesOrganizadorAdmin"
+    );
+
+  if (!contenedor || !conversacion?.id) {
+    console.error(
+      "No se pudo abrir la conversación:",
+      conversacion
+    );
+    return;
+  }
+
+  CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID =
+    conversacion.id;
+
+  contenedor.innerHTML = `
+    <div
+      style="
+        color:#aaa;
+        text-align:center;
+        padding:25px;
+      "
+    >
+      Cargando mensajes...
+    </div>
+  `;
+
+  const {
+    data: mensajes,
+    error
+  } = await supabaseClient
+    .from("chat_mensajes")
+    .select("*")
+    .eq(
+      "conversacion_id",
+      conversacion.id
+    )
+    .order(
+      "creado_at",
+      { ascending: true }
+    );
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO MENSAJES:",
+      error
+    );
+
+    contenedor.innerHTML = `
+      <div
+        style="
+          color:#ff6b6b;
+          text-align:center;
+          padding:25px;
+        "
+      >
+        No fue posible cargar los mensajes.
+      </div>
+    `;
+
+    return;
+  }
+
+  contenedor.innerHTML = "";
+
+  const encabezado =
+    document.createElement("div");
+
+  encabezado.style.cssText = `
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:15px;
+    padding-bottom:12px;
+    border-bottom:1px solid #333;
+  `;
+
+  const titulo =
+    document.createElement("div");
+
+  titulo.style.cssText = `
+    color:#39ff14;
+    font-size:18px;
+    font-weight:bold;
+  `;
+
+  titulo.textContent =
+    "💬 Conversación con el cliente";
+
+  const botonVolver =
+    document.createElement("button");
+
+  botonVolver.type = "button";
+  botonVolver.textContent =
+    "← Volver";
+
+  botonVolver.style.cssText = `
+    padding:8px 12px;
+    border:1px solid #777;
+    border-radius:8px;
+    background:#222;
+    color:white;
+    cursor:pointer;
+  `;
+
+  botonVolver.onclick = function () {
+    CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID =
+      null;
+
+    window.mostrarChatOrganizadorAdmin();
+  };
+
+  encabezado.appendChild(titulo);
+  encabezado.appendChild(botonVolver);
+  contenedor.appendChild(encabezado);
+
+  const historial =
+    document.createElement("div");
+
+  historial.style.cssText = `
+    min-height:180px;
+    max-height:420px;
+    overflow-y:auto;
+    padding:12px;
+    border:1px solid #333;
+    border-radius:12px;
+    background:#0b0b0b;
+  `;
+
+  if (!mensajes || mensajes.length === 0) {
+
+    historial.innerHTML = `
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:25px;
+        "
+      >
+        No hay mensajes todavía.
+      </div>
+    `;
+
+  } else {
+
+    mensajes.forEach(
+      mensajeChat => {
+
+        const esOrganizador =
+          mensajeChat.remitente_tipo ===
+          "organizador";
+
+        const burbuja =
+          document.createElement("div");
+
+        burbuja.style.cssText = `
+          max-width:85%;
+          margin:
+            8px
+            ${esOrganizador ? "0" : "auto"}
+            8px
+            ${esOrganizador ? "auto" : "0"};
+          padding:10px 12px;
+          border:
+            1px solid
+            ${esOrganizador
+              ? "#39ff14"
+              : "#666"};
+          border-radius:12px;
+          background:
+            ${esOrganizador
+              ? "rgba(57,255,20,0.16)"
+              : "#202020"};
+          color:white;
+          text-align:left;
+          overflow-wrap:anywhere;
+        `;
+
+        const texto =
+          document.createElement("div");
+
+        texto.textContent =
+          mensajeChat.mensaje || "";
+
+        const fecha =
+          document.createElement("div");
+
+        fecha.style.cssText = `
+          margin-top:6px;
+          color:#aaa;
+          font-size:11px;
+          text-align:right;
+        `;
+
+        fecha.textContent =
+          mensajeChat.creado_at
+            ? new Date(
+                mensajeChat.creado_at
+              ).toLocaleString()
+            : "";
+
+        burbuja.appendChild(texto);
+        burbuja.appendChild(fecha);
+        historial.appendChild(burbuja);
+      }
+    );
+  }
+
+  contenedor.appendChild(historial);
+
+  historial.scrollTop =
+    historial.scrollHeight;
+
+  console.log(
+    "✅ HISTORIAL DEL CLIENTE CARGADO:",
+    {
+      conversacion:
+        CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID,
+      mensajes:
+        mensajes?.length || 0
+    }
   );
 };	
 
