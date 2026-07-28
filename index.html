@@ -11717,6 +11717,13 @@ window.abrirChatConOrganizador = async function () {
 
   panel.style.display = "block";
 
+	const btnChatFlotanteUsuario =
+  document.getElementById("btnChatFlotanteUsuario");
+
+if (btnChatFlotanteUsuario) {
+  btnChatFlotanteUsuario.style.display = "none";
+}
+
   cajaMensajes.innerHTML = `
     <div
       style="
@@ -11997,6 +12004,21 @@ window.cerrarChatConOrganizador = function () {
   if (panel) {
     panel.style.display = "none";
   }
+
+	const btnChatFlotanteUsuario =
+  document.getElementById("btnChatFlotanteUsuario");
+
+const modoAcceso =
+  localStorage.getItem("mass_modo_acceso");
+
+if (
+  btnChatFlotanteUsuario &&
+  modoAcceso === "usuario"
+) {
+  btnChatFlotanteUsuario.style.display = "flex";
+  btnChatFlotanteUsuario.style.alignItems = "center";
+  btnChatFlotanteUsuario.style.justifyContent = "center";
+}
 
 // =======================================
 // MASS - APAGAR REALTIME AL CERRAR CHAT
