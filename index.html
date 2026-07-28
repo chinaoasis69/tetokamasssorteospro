@@ -20749,6 +20749,22 @@ function activarModoUsuarioMassId() {
     "usuario"
   );
 
+	const btnChatFlotanteUsuario =
+  document.getElementById("btnChatFlotanteUsuario");
+
+if (btnChatFlotanteUsuario) {
+  btnChatFlotanteUsuario.style.display = "flex";
+  btnChatFlotanteUsuario.style.alignItems = "center";
+  btnChatFlotanteUsuario.style.justifyContent = "center";
+}
+
+	const btnChatFlotanteOrganizador =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizador) {
+  btnChatFlotanteOrganizador.style.display = "none";
+}
+
   localStorage.removeItem(
     "admin_rol"
   );
@@ -22454,6 +22470,39 @@ font-family:Arial, sans-serif;">
 >
   0
 </span>
+</button>
+
+<!-- ===================================================== -->
+<!-- MASS - BOTÓN FLOTANTE DE CHAT PARA USUARIO -->
+<!-- ===================================================== -->
+
+<button
+  id="btnChatFlotanteUsuario"
+  type="button"
+  onclick="abrirChatConOrganizador()"
+  aria-label="Abrir chat con el organizador"
+  title="Chat con el organizador"
+  style="
+    display:none;
+    position:fixed;
+    overflow:visible;
+    right:18px;
+    bottom:22px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    border:2px solid #39ff14;
+    background:#111;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    z-index:99998;
+    box-shadow:0 0 18px rgba(57,255,20,0.70);
+    align-items:center;
+    justify-content:center;
+  "
+>
+  💬
 </button>	
 
 </body>
