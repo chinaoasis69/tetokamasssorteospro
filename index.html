@@ -7617,6 +7617,13 @@ async function loginMASS(){
 	localStorage.removeItem("admin_rol");
     localStorage.removeItem("admin_organizador_id");
 
+	const btnChatFlotanteOrganizadorPrevio =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizadorPrevio) {
+  btnChatFlotanteOrganizadorPrevio.style.display = "none";
+}
+
   if(!telefono){
     alert("Debes ingresar teléfono");
     location.reload();
@@ -18434,8 +18441,16 @@ async function cerrarSesion() {
     localStorage.removeItem("mass_user");
     localStorage.removeItem("admin_rol");
     localStorage.removeItem("organizador_admin_id");
+	localStorage.removeItem("admin_organizador_id");
     localStorage.removeItem("clienteActual");
     localStorage.removeItem("userActual");
+
+	const btnChatFlotanteOrganizador =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizador) {
+  btnChatFlotanteOrganizador.style.display = "none";
+}
 
     setTimeout(() => {
         location.reload();
@@ -20097,6 +20112,15 @@ const btnMensajesClientesOrganizador =
 if (btnMensajesClientesOrganizador) {
   btnMensajesClientesOrganizador.style.display = "block";
 }
+
+const btnChatFlotanteOrganizador =
+  document.getElementById("btnChatFlotanteOrganizador");
+
+if (btnChatFlotanteOrganizador) {
+  btnChatFlotanteOrganizador.style.display = "flex";
+  btnChatFlotanteOrganizador.style.alignItems = "center";
+  btnChatFlotanteOrganizador.style.justifyContent = "center";
+}	  
 
 const chatOrganizadorUsuarioBox =
   document.getElementById(
@@ -22220,7 +22244,37 @@ font-family:Arial, sans-serif;">
   </div>
 </div>	
 
-<script src="mass-id.js"></script>	
+<script src="mass-id.js"></script>
+
+<!-- ========================================================= -->
+<!-- MASS - BOTÓN FLOTANTE DE MENSAJES PARA ORGANIZADOR -->
+<!-- ========================================================= -->
+
+<button
+  id="btnChatFlotanteOrganizador"
+  type="button"
+  onclick="abrirMensajesClientesDesdePagina()"
+  aria-label="Abrir mensajes de clientes"
+  title="Mensajes de clientes"
+  style="
+    display:none;
+    position:fixed;
+    right:18px;
+    bottom:22px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    border:2px solid #39ff14;
+    background:#111;
+    color:white;
+    font-size:28px;
+    cursor:pointer;
+    z-index:99999;
+    box-shadow:0 0 18px rgba(57,255,20,0.70);
+  "
+>
+  💬
+</button>	
 
 </body>
 </html>
