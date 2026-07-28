@@ -13311,6 +13311,22 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
+
+	const modoAcceso =
+  localStorage.getItem("mass_modo_acceso");
+
+const btnChatFlotanteUsuario =
+  document.getElementById("btnChatFlotanteUsuario");
+
+if (
+  btnChatFlotanteUsuario &&
+  modoAcceso === "usuario"
+) {
+  btnChatFlotanteUsuario.style.display = "flex";
+  btnChatFlotanteUsuario.style.alignItems = "center";
+  btnChatFlotanteUsuario.style.justifyContent = "center";
+}
+	
 	paginaBoletosActual = 1;
 
 	const cardSorteo = document.getElementById("patrocinadoresSorteoCard");
@@ -20775,9 +20791,7 @@ function activarModoUsuarioMassId() {
   document.getElementById("btnChatFlotanteUsuario");
 
 if (btnChatFlotanteUsuario) {
-  btnChatFlotanteUsuario.style.display = "flex";
-  btnChatFlotanteUsuario.style.alignItems = "center";
-  btnChatFlotanteUsuario.style.justifyContent = "center";
+  btnChatFlotanteUsuario.style.display = "none";
 }
 
 	const btnChatFlotanteOrganizador =
