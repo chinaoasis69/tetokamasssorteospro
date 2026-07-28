@@ -17712,11 +17712,23 @@ const organizadorIdGuardado =
   localStorage.getItem("admin_organizador_id");
 
 if (btnMensajesClientesOrganizador) {
+  const modoAccesoGuardado =
+    localStorage.getItem("mass_modo_acceso");
+
   if (
-    rolAdminGuardado === "organizador" &&
+    modoAccesoGuardado === "organizador" &&
     organizadorIdGuardado
   ) {
     btnMensajesClientesOrganizador.style.display = "block";
+
+    const chatOrganizadorUsuarioBox =
+      document.getElementById(
+        "chatOrganizadorUsuarioBox"
+      );
+
+    if (chatOrganizadorUsuarioBox) {
+      chatOrganizadorUsuarioBox.style.display = "block";
+    }
   } else {
     btnMensajesClientesOrganizador.style.display = "none";
   }
