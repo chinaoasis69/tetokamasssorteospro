@@ -12778,10 +12778,12 @@ if (contadorMensajesOrganizador) {
   usuario_telefono,
   creado_at
 `)
-    .eq("organizador_id", organizadorId)
-    .order("creado_at", {
-      ascending: false
-    });
+.eq("organizador_id", organizadorId)
+.eq("archivada_organizador", false)
+.eq("eliminada_organizador", false)
+.order("creado_at", {
+  ascending: false
+});
 
   if (error) {
     console.error(
@@ -12844,9 +12846,7 @@ if (errorPendientes) {
   );
 }
 
-    const tarjeta = document.createElement("button");
-
-    tarjeta.type = "button";
+    const tarjeta = document.createElement("div");
 
     tarjeta.style.cssText = `
       width:100%;
@@ -12858,7 +12858,7 @@ if (errorPendientes) {
       background:#181818;
       color:white;
       text-align:left;
-      cursor:pointer;
+      cursor:default;
     `;
 
     const fecha = conversacion.creado_at
@@ -12925,11 +12925,93 @@ ${
       </div>
     `;
 
-    tarjeta.onclick = function () {
+const accionesConversacion = document.createElement("div");
+
+accionesConversacion.style.cssText = `
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+`;
+
+const btnAbrirConversacion = document.createElement("button");
+btnAbrirConversacion.type = "button";
+btnAbrirConversacion.textContent = "💬 Abrir";
+btnAbrirConversacion.style.cssText = `
+  padding:8px 12px;
+  border:1px solid #39ff14;
+  border-radius:8px;
+  background:#111;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+`;
+
+btnAbrirConversacion.onclick = function (event) {
+  event.stopPropagation();
+
   window.abrirConversacionOrganizadorAdmin(
     conversacion
   );
 };
+
+const btnArchivarConversacion = document.createElement("button");
+btnArchivarConversacion.type = "button";
+btnArchivarConversacion.textContent = "📦 Archivar";
+btnArchivarConversacion.style.cssText = `
+  padding:8px 12px;
+  border:1px solid #f0ad4e;
+  border-radius:8px;
+  background:#332400;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+`;
+
+btnArchivarConversacion.onclick = function (event) {
+  event.stopPropagation();
+
+  window.archivarConversacionOrganizador(
+    conversacion
+  );
+};
+
+const btnEliminarConversacion = document.createElement("button");
+btnEliminarConversacion.type = "button";
+btnEliminarConversacion.textContent = "🗑 Eliminar";
+btnEliminarConversacion.style.cssText = `
+  padding:8px 12px;
+  border:1px solid #ff2d2d;
+  border-radius:8px;
+  background:#430000;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+`;
+
+btnEliminarConversacion.onclick = function (event) {
+  event.stopPropagation();
+
+  window.eliminarConversacionOrganizador(
+    conversacion
+  );
+};
+
+accionesConversacion.appendChild(
+  btnAbrirConversacion
+);
+
+accionesConversacion.appendChild(
+  btnArchivarConversacion
+);
+
+accionesConversacion.appendChild(
+  btnEliminarConversacion
+);
+
+tarjeta.appendChild(
+  accionesConversacion
+);  
 
     listaConversaciones.appendChild(
       tarjeta
@@ -12941,6 +13023,94 @@ ${
     conversaciones
   );
 };
+
+// ==========================================================
+// MASS - ARCHIVAR CONVERSACIÓN DEL ORGANIZADOR
+// ==========================================================
+
+window.archivarConversacionOrganizador = async function (conversacion) {
+  if (!conversacion?.id) {
+    alert("No se encontró la conversación.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "¿Deseas archivar esta conversación?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const {
+    error
+  } = await supabaseClient
+    .from("chat_conversaciones")
+    .update({
+      archivada_organizador: true
+    })
+    .eq("id", conversacion.id);
+
+  if (error) {
+    console.error(
+      "ERROR ARCHIVANDO CONVERSACIÓN:",
+      error
+    );
+
+    alert(
+      "No fue posible archivar la conversación."
+    );
+
+    return;
+  }
+
+  alert("Conversación archivada correctamente.");
+
+  await window.mostrarChatOrganizadorAdmin();
+};
+
+// ==========================================================
+// MASS - ELIMINAR CONVERSACIÓN DEL ORGANIZADOR
+// ==========================================================
+
+window.eliminarConversacionOrganizador = async function (conversacion) {
+  if (!conversacion?.id) {
+    alert("No se encontró la conversación.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "¿Deseas eliminar esta conversación de tu lista?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("chat_conversaciones")
+    .update({
+      eliminada_organizador: true
+    })
+    .eq("id", conversacion.id);
+
+  if (error) {
+    console.error(
+      "ERROR ELIMINANDO CONVERSACIÓN:",
+      error
+    );
+
+    alert(
+      "No fue posible eliminar la conversación."
+    );
+
+    return;
+  }
+
+  alert("Conversación eliminada correctamente.");
+
+  await window.mostrarChatOrganizadorAdmin();
+};	
 
 // ============================================================
 // MASS - ABRIR CONVERSACIÓN DEL CLIENTE PARA EL ORGANIZADOR
