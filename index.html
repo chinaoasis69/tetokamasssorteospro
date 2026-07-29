@@ -11744,18 +11744,52 @@ let CHAT_PANEL_USUARIO_ABIERTO = false;
 // ==========================================================
 // MASS - ACTUALIZAR CONTADOR FLOTANTE DEL CHAT DEL USUARIO
 // ==========================================================
-window.actualizarContadorChatUsuario = function () {
+window.actualizarContadorChatUsuario = async function () {
   const contador =
-    document.getElementById("contadorMensajesUsuario");
+    document.getElementById(
+      "contadorMensajesUsuario"
+    );
 
   if (!contador) {
     return;
   }
 
+  if (!CHAT_ORGANIZADOR_USUARIO_ID) {
+    CHAT_CONTADOR_MENSAJES_USUARIO = 0;
+    contador.textContent = "0";
+    contador.style.display = "none";
+    return;
+  }
+
+  const {
+    data: totalNoLeidos,
+    error
+  } = await supabaseClient.rpc(
+    "contar_mensajes_chat_usuario_no_leidos",
+    {
+      p_organizador_id:
+        CHAT_ORGANIZADOR_USUARIO_ID
+    }
+  );
+
+  if (error) {
+    console.error(
+      "ERROR CONTANDO MENSAJES NO LEÍDOS DEL USUARIO:",
+      error
+    );
+
+    return;
+  }
+
+  CHAT_CONTADOR_MENSAJES_USUARIO =
+    Number(totalNoLeidos || 0);
+
   contador.textContent =
     CHAT_CONTADOR_MENSAJES_USUARIO > 9
       ? "9+"
-      : String(CHAT_CONTADOR_MENSAJES_USUARIO);
+      : String(
+          CHAT_CONTADOR_MENSAJES_USUARIO
+        );
 
   contador.style.display =
     CHAT_CONTADOR_MENSAJES_USUARIO > 0
@@ -12019,6 +12053,40 @@ console.log(
 );
 
 	await window.cargarMensajesChatOrganizador();
+
+// =====================================================
+// MASS - MARCAR MENSAJES COMO LEÍDOS AL ABRIR EL CHAT
+// =====================================================
+
+const {
+  data: totalMensajesMarcadosLeidos,
+  error: errorMarcarMensajesLeidos
+} = await supabaseClient.rpc(
+  "marcar_mensajes_chat_usuario_leidos",
+  {
+    p_organizador_id:
+      CHAT_ORGANIZADOR_USUARIO_ID
+  }
+);
+
+if (errorMarcarMensajesLeidos) {
+  console.error(
+    "ERROR MARCANDO MENSAJES COMO LEÍDOS:",
+    errorMarcarMensajesLeidos
+  );
+} else {
+  console.log(
+    "✅ MENSAJES MARCADOS COMO LEÍDOS:",
+    totalMensajesMarcadosLeidos
+  );
+
+  if (
+    typeof window.actualizarContadorChatUsuario ===
+      "function"
+  ) {
+    await window.actualizarContadorChatUsuario();
+  }
+}	
 
 // =======================================
 // MASS - ACTIVAR REALTIME DEL CHAT
@@ -14103,6 +14171,14 @@ org?.slogan || "";
 
 CHAT_ORGANIZADOR_USUARIO_ID =
   org?.id || null;
+
+if (
+  CHAT_ORGANIZADOR_USUARIO_ID &&
+  typeof window.actualizarContadorChatUsuario ===
+    "function"
+) {
+  await window.actualizarContadorChatUsuario();
+}		
 
 const chatOrganizadorBox =
   document.getElementById(
