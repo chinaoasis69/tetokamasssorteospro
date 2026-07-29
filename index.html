@@ -12834,7 +12834,7 @@ if (contadorMensajesOrganizador) {
     head: true
   })
   .eq("conversacion_id", conversacion.id)
-  .eq("remitente_tipo", "usuario");
+  .eq("remitente_tipo", "usuario")
   .eq("leido_organizador", false);	  
 
 if (errorPendientes) {
