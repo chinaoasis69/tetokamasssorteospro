@@ -2203,6 +2203,99 @@ Cargando historial...
   </div>
 </div>
 
+<!-- ================================================================ -->
+<!-- MASS - HISTORIAL DE CAMPAÑAS MASIVAS DEL ORGANIZADOR -->
+<!-- ================================================================ -->
+
+<div
+  id="panelHistorialCampanasMasivasOrganizador"
+  style="
+    display:none;
+    width:100%;
+    box-sizing:border-box;
+    margin:0 0 18px 0;
+    padding:16px;
+    border:2px solid #b56cff;
+    border-radius:14px;
+    background:#140b1d;
+    box-shadow:0 0 18px rgba(181,108,255,0.30);
+    color:white;
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:16px;
+    "
+  >
+    <h3
+      style="
+        margin:0;
+        color:#d5a6ff;
+        font-size:22px;
+      "
+    >
+      📁 Historial de campañas
+    </h3>
+
+    <button
+      type="button"
+      onclick="cerrarHistorialCampanasMasivasOrganizador()"
+      style="
+        padding:9px 14px;
+        border:1px solid #777;
+        border-radius:9px;
+        background:#2b2b2b;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✕ Cerrar
+    </button>
+  </div>
+
+  <div
+    id="resumenHistorialCampanasMasivasOrganizador"
+    style="
+      margin-bottom:14px;
+      padding:12px;
+      border:1px solid #704694;
+      border-radius:10px;
+      background:#21132d;
+      text-align:center;
+      color:#ddd;
+    "
+  >
+    Selecciona este panel para consultar tus campañas.
+  </div>
+
+  <div
+    id="listaHistorialCampanasMasivasOrganizador"
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    "
+  >
+    <div
+      style="
+        padding:16px;
+        border:1px solid #555;
+        border-radius:10px;
+        background:#181818;
+        text-align:center;
+        color:#aaa;
+      "
+    >
+      Todavía no se ha cargado el historial.
+    </div>
+  </div>
+</div>	
+
 <!-- ====================================================== -->
 <!-- MASS - FILTROS DE CONVERSACIONES DEL ORGANIZADOR -->
 <!-- ====================================================== -->
@@ -14861,7 +14954,54 @@ async function () {
       botonEnviar.disabled = false;
     }
   }
-};	
+};
+
+// ================================================================
+// MASS - ABRIR Y CERRAR HISTORIAL DE CAMPAÑAS MASIVAS
+// ================================================================
+
+window.mostrarHistorialCampanasMasivasOrganizador =
+  async function () {
+    const panelHistorial =
+      document.getElementById(
+        "panelHistorialCampanasMasivasOrganizador"
+      );
+
+    const panelMensajeMasivo =
+      document.getElementById(
+        "panelMensajeMasivoOrganizador"
+      );
+
+    if (!panelHistorial) {
+      console.error(
+        "No se encontró el panel del historial de campañas."
+      );
+      return;
+    }
+
+    if (panelMensajeMasivo) {
+      panelMensajeMasivo.style.display = "none";
+    }
+
+    panelHistorial.style.display = "block";
+
+    panelHistorial.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+
+window.cerrarHistorialCampanasMasivasOrganizador =
+  function () {
+    const panelHistorial =
+      document.getElementById(
+        "panelHistorialCampanasMasivasOrganizador"
+      );
+
+    if (panelHistorial) {
+      panelHistorial.style.display = "none";
+    }
+  };	
 
 // ============================================================
 // MASS - ABRIR PANEL DE MENSAJES PARA EL ORGANIZADOR
