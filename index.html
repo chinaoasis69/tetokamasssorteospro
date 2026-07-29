@@ -1864,7 +1864,7 @@ Cargando historial...
       box-shadow:0 0 12px rgba(57,255,20,0.45);
     "
   >
-    💬 Activas
+    🟣 Activas (<span id="contadorConversacionesActivas">0</span>)
   </button>
 
   <button
@@ -1882,7 +1882,7 @@ Cargando historial...
       cursor:pointer;
     "
   >
-    📦 Archivadas
+    📦 Archivadas (<span id="contadorConversacionesArchivadas">0</span>)
   </button>
 
   <button
@@ -1900,7 +1900,7 @@ Cargando historial...
       cursor:pointer;
     "
   >
-    🗑 Eliminadas
+    🗑️ Eliminadas (<span id="contadorConversacionesEliminadas">0</span>)
   </button>
 </div>	
 
@@ -12929,6 +12929,82 @@ if (contadorMensajesOrganizador) {
     behavior: "smooth",
     block: "start"
   });
+
+// ============================================================
+// MASS - CONTADORES DINÁMICOS DE CONVERSACIONES
+// ============================================================
+
+const [
+  { count: totalActivas, error: errorContadorActivas },
+  { count: totalArchivadas, error: errorContadorArchivadas },
+  { count: totalEliminadas, error: errorContadorEliminadas }
+] = await Promise.all([
+  supabaseClient
+    .from("chat_conversaciones")
+    .select("id", {
+      count: "exact",
+      head: true
+    })
+    .eq("organizador_id", organizadorId)
+    .eq("archivada_organizador", false)
+    .eq("eliminada_organizador", false),
+
+  supabaseClient
+    .from("chat_conversaciones")
+    .select("id", {
+      count: "exact",
+      head: true
+    })
+    .eq("organizador_id", organizadorId)
+    .eq("archivada_organizador", true)
+    .eq("eliminada_organizador", false),
+
+  supabaseClient
+    .from("chat_conversaciones")
+    .select("id", {
+      count: "exact",
+      head: true
+    })
+    .eq("organizador_id", organizadorId)
+    .eq("eliminada_organizador", true)
+]);
+
+if (
+  errorContadorActivas ||
+  errorContadorArchivadas ||
+  errorContadorEliminadas
+) {
+  console.error(
+    "ERROR ACTUALIZANDO CONTADORES DE CONVERSACIONES:",
+    errorContadorActivas,
+    errorContadorArchivadas,
+    errorContadorEliminadas
+  );
+} else {
+  const contadorActivas = document.getElementById(
+    "contadorConversacionesActivas"
+  );
+
+  const contadorArchivadas = document.getElementById(
+    "contadorConversacionesArchivadas"
+  );
+
+  const contadorEliminadas = document.getElementById(
+    "contadorConversacionesEliminadas"
+  );
+
+  if (contadorActivas) {
+    contadorActivas.textContent = totalActivas || 0;
+  }
+
+  if (contadorArchivadas) {
+    contadorArchivadas.textContent = totalArchivadas || 0;
+  }
+
+  if (contadorEliminadas) {
+    contadorEliminadas.textContent = totalEliminadas || 0;
+  }
+}	
 
   let consultaConversaciones = supabaseClient
   .from("chat_conversaciones")
