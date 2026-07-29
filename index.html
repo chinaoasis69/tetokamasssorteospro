@@ -12785,6 +12785,74 @@ window.iniciarRealtimeContadorMensajesOrganizador = function () {
 
 let VISTA_CONVERSACIONES_ORGANIZADOR = "activas";
 
+// ==========================================================
+// MASS - RESALTAR VISTA SELECCIONADA DE CONVERSACIONES
+// ==========================================================
+
+window.actualizarEstiloVistaConversacionesOrganizador =
+function () {
+
+  const configuraciones = {
+    activas: {
+      id: "btnConversacionesActivas",
+      fondo: "#123d0b",
+      borde: "#39ff14",
+      brillo: "rgba(57,255,20,0.70)"
+    },
+
+    archivadas: {
+      id: "btnConversacionesArchivadas",
+      fondo: "#4a3200",
+      borde: "#f0ad4e",
+      brillo: "rgba(240,173,78,0.70)"
+    },
+
+    eliminadas: {
+      id: "btnConversacionesEliminadas",
+      fondo: "#5a0000",
+      borde: "#ff2d2d",
+      brillo: "rgba(255,45,45,0.70)"
+    }
+  };
+
+  Object.entries(configuraciones).forEach(
+    ([vista, configuracion]) => {
+
+      const boton =
+        document.getElementById(configuracion.id);
+
+      if (!boton) {
+        return;
+      }
+
+      const seleccionada =
+        VISTA_CONVERSACIONES_ORGANIZADOR === vista;
+
+      boton.style.opacity =
+        seleccionada ? "1" : "0.65";
+
+      boton.style.transform =
+        seleccionada ? "scale(1.05)" : "scale(1)";
+
+      boton.style.background =
+        seleccionada
+          ? configuracion.fondo
+          : "#181818";
+
+      boton.style.borderColor =
+        configuracion.borde;
+
+      boton.style.boxShadow =
+        seleccionada
+          ? `0 0 16px ${configuracion.brillo}`
+          : "none";
+
+      boton.style.transition =
+        "all 0.20s ease";
+    }
+  );
+};	
+
 window.cambiarVistaConversacionesOrganizador =
 async function (vista) {
 
@@ -12799,7 +12867,7 @@ async function (vista) {
   }
 
   VISTA_CONVERSACIONES_ORGANIZADOR = vista;
-
+  window.actualizarEstiloVistaConversacionesOrganizador();
   await window.mostrarChatOrganizadorAdmin();
 };
 	
@@ -12844,7 +12912,7 @@ if (contadorMensajesOrganizador) {
 }
 
   panelChat.style.display = "block";
-
+  window.actualizarEstiloVistaConversacionesOrganizador();
   listaConversaciones.innerHTML = `
     <div
       style="
