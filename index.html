@@ -13297,6 +13297,15 @@ async function () {
       .cambiarTipoDestinatariosMensajeMasivoOrganizador();
   }
 
+	if (
+  typeof
+    window.cargarRifasMensajeMasivoOrganizador ===
+    "function"
+) {
+  await window
+    .cargarRifasMensajeMasivoOrganizador();
+}
+
   panel.scrollIntoView({
     behavior: "smooth",
     block: "start"
@@ -13420,6 +13429,436 @@ function () {
     resumen.textContent =
       mensajesResumen[tipo] ||
       "Aún no se han calculado los destinatarios.";
+  }
+};
+
+// ============================================================
+// MASS - PREVISUALIZACIÓN DE DESTINATARIOS DEL MENSAJE MASIVO
+// ============================================================
+
+let PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR = null;
+
+
+// ============================================================
+// MASS - OBTENER ORGANIZADOR ACTUAL DEL PANEL
+// ============================================================
+
+window.obtenerOrganizadorIdMensajeMasivo =
+function () {
+
+  return (
+    localStorage.getItem(
+      "admin_organizador_id"
+    ) ||
+    localStorage.getItem(
+      "organizador_admin_id"
+    ) ||
+    localStorage.getItem(
+      "organizador_actual_id"
+    ) ||
+    null
+  );
+};
+
+
+// ============================================================
+// MASS - CARGAR SORTEOS DEL ORGANIZADOR EN EL SELECTOR
+// ============================================================
+
+window.cargarRifasMensajeMasivoOrganizador =
+async function () {
+
+  const selectorRifa =
+    document.getElementById(
+      "rifaMensajeMasivoOrganizador"
+    );
+
+  if (!selectorRifa) {
+    return;
+  }
+
+  selectorRifa.innerHTML = "";
+
+  const opcionInicial =
+    document.createElement("option");
+
+  opcionInicial.value = "";
+  opcionInicial.textContent =
+    "Selecciona un sorteo";
+
+  selectorRifa.appendChild(
+    opcionInicial
+  );
+
+  const organizadorId =
+    window.obtenerOrganizadorIdMensajeMasivo();
+
+  if (!organizadorId) {
+    console.error(
+      "No se encontró el organizador para cargar los sorteos."
+    );
+    return;
+  }
+
+  const {
+    data: rifas,
+    error
+  } = await supabaseClient
+    .from("rifas")
+    .select(`
+      id,
+      titulo,
+      estado,
+      created_at
+    `)
+    .eq(
+      "organizador_id",
+      organizadorId
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+  if (error) {
+    console.error(
+      "ERROR CARGANDO SORTEOS PARA MENSAJE MASIVO:",
+      error
+    );
+    return;
+  }
+
+  for (const rifa of rifas || []) {
+
+    const opcion =
+      document.createElement("option");
+
+    opcion.value = rifa.id;
+
+    opcion.textContent =
+      String(
+        rifa.titulo ||
+        "Sorteo sin título"
+      ) +
+      (
+        rifa.estado
+          ? ` — ${rifa.estado}`
+          : ""
+      );
+
+    selectorRifa.appendChild(
+      opcion
+    );
+  }
+};
+
+
+// ============================================================
+// MASS - REVISAR DESTINATARIOS SIN CREAR NI ENVIAR CAMPAÑA
+// ============================================================
+
+window.prepararMensajeMasivoOrganizador =
+async function () {
+
+  const inputTitulo =
+    document.getElementById(
+      "tituloMensajeMasivoOrganizador"
+    );
+
+  const textareaMensaje =
+    document.getElementById(
+      "textoMensajeMasivoOrganizador"
+    );
+
+  const selectorTipo =
+    document.getElementById(
+      "tipoDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const selectorRifa =
+    document.getElementById(
+      "rifaMensajeMasivoOrganizador"
+    );
+
+  const resumen =
+    document.getElementById(
+      "resumenDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const boton =
+    document.getElementById(
+      "btnPrepararMensajeMasivoOrganizador"
+    );
+
+  const titulo =
+    String(
+      inputTitulo?.value || ""
+    ).trim();
+
+  const mensaje =
+    String(
+      textareaMensaje?.value || ""
+    ).trim();
+
+  const tipoDestinatarios =
+    String(
+      selectorTipo?.value || "todos"
+    );
+
+  const organizadorId =
+    window.obtenerOrganizadorIdMensajeMasivo();
+
+  const rifaId =
+    tipoDestinatarios ===
+      "compradores_rifa"
+      ? String(
+          selectorRifa?.value || ""
+        ).trim()
+      : null;
+
+  if (!titulo) {
+    alert(
+      "Escribe el título del aviso."
+    );
+
+    inputTitulo?.focus();
+    return;
+  }
+
+  if (
+    titulo.length < 1 ||
+    titulo.length > 120
+  ) {
+    alert(
+      "El título debe contener entre 1 y 120 caracteres."
+    );
+
+    return;
+  }
+
+  if (!mensaje) {
+    alert(
+      "Escribe el mensaje que recibirán los usuarios."
+    );
+
+    textareaMensaje?.focus();
+    return;
+  }
+
+  if (
+    mensaje.length < 1 ||
+    mensaje.length > 2000
+  ) {
+    alert(
+      "El mensaje debe contener entre 1 y 2000 caracteres."
+    );
+
+    return;
+  }
+
+  if (!organizadorId) {
+    alert(
+      "No se encontró el organizador asignado."
+    );
+
+    return;
+  }
+
+  if (
+    tipoDestinatarios ===
+      "compradores_rifa" &&
+    !rifaId
+  ) {
+    alert(
+      "Selecciona el sorteo cuyos compradores recibirán el mensaje."
+    );
+
+    selectorRifa?.focus();
+    return;
+  }
+
+  PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR =
+    null;
+
+  if (boton) {
+    boton.disabled = true;
+    boton.textContent =
+      "Calculando destinatarios...";
+  }
+
+  if (resumen) {
+    resumen.textContent =
+      "Calculando destinatarios...";
+  }
+
+  try {
+
+    const {
+      data: previsualizacion,
+      error
+    } = await supabaseClient.rpc(
+      "previsualizar_destinatarios_mensaje_masivo",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_tipo_destinatarios:
+          tipoDestinatarios,
+
+        p_rifa_id:
+          rifaId || null
+      }
+    );
+
+    if (error) {
+      console.error(
+        "ERROR PREVISUALIZANDO DESTINATARIOS:",
+        error
+      );
+
+      if (resumen) {
+        resumen.textContent =
+          "No fue posible calcular los destinatarios.";
+      }
+
+      alert(
+        "No fue posible revisar los destinatarios."
+      );
+
+      return;
+    }
+
+    PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR =
+      previsualizacion;
+
+    const totalRelacionados =
+      Number(
+        previsualizacion
+          ?.total_relacionados || 0
+      );
+
+    const totalEntregables =
+      Number(
+        previsualizacion
+          ?.entregables || 0
+      );
+
+    const totalConChat =
+      Number(
+        previsualizacion
+          ?.con_chat || 0
+      );
+
+    const totalSinChat =
+      Number(
+        previsualizacion
+          ?.sin_chat || 0
+      );
+
+    const totalSinAuth =
+      Number(
+        previsualizacion
+          ?.sin_auth_user_id || 0
+      );
+
+    const totalSinCuenta =
+      Number(
+        previsualizacion
+          ?.sin_cuenta_mass || 0
+      );
+
+    if (resumen) {
+
+      resumen.innerHTML = "";
+
+      const lineas = [
+        `👥 Usuarios relacionados: ${totalRelacionados}`,
+        `✅ Entregables ahora: ${totalEntregables}`,
+        `💬 Con chat: ${totalConChat} | Sin chat: ${totalSinChat}`,
+        `⚠️ Cuentas antiguas sin Auth: ${totalSinAuth}`,
+        `🚫 Sin cuenta MASS localizada: ${totalSinCuenta}`
+      ];
+
+      for (const texto of lineas) {
+
+        const linea =
+          document.createElement("div");
+
+        linea.textContent = texto;
+        linea.style.marginBottom = "5px";
+
+        resumen.appendChild(
+          linea
+        );
+      }
+
+      if (
+        tipoDestinatarios ===
+        "seleccionados"
+      ) {
+        const avisoManual =
+          document.createElement("div");
+
+        avisoManual.textContent =
+          "En el siguiente paso podrás seleccionar manualmente a los usuarios.";
+
+        avisoManual.style.marginTop =
+          "9px";
+
+        avisoManual.style.color =
+          "#d8a9ff";
+
+        resumen.appendChild(
+          avisoManual
+        );
+      }
+
+      if (totalEntregables === 0) {
+
+        const avisoSinUsuarios =
+          document.createElement("div");
+
+        avisoSinUsuarios.textContent =
+          "No hay usuarios disponibles para recibir este mensaje.";
+
+        avisoSinUsuarios.style.marginTop =
+          "9px";
+
+        avisoSinUsuarios.style.color =
+          "#ff8b8b";
+
+        resumen.appendChild(
+          avisoSinUsuarios
+        );
+      }
+    }
+
+    console.log(
+      "✅ PREVISUALIZACIÓN DE DESTINATARIOS:",
+      previsualizacion
+    );
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO REVISANDO DESTINATARIOS:",
+      errorInesperado
+    );
+
+    if (resumen) {
+      resumen.textContent =
+        "Ocurrió un error inesperado.";
+    }
+
+  } finally {
+
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent =
+        "🔎 Revisar destinatarios";
+    }
   }
 };	
 
