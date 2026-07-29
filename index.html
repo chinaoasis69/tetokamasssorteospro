@@ -14956,6 +14956,285 @@ async function () {
   }
 };
 
+// ============================================================
+// MASS - CARGAR HISTORIAL DE CAMPAÑAS MASIVAS DEL ORGANIZADOR
+// ============================================================
+
+window.cargarHistorialCampanasMasivasOrganizador =
+  async function () {
+    const resumenHistorial =
+      document.getElementById(
+        "resumenHistorialCampanasMasivasOrganizador"
+      );
+
+    if (!resumenHistorial) {
+      console.error(
+        "No se encontró el contenedor del historial de campañas."
+      );
+      return;
+    }
+
+    resumenHistorial.innerHTML =
+      "⏳ Cargando historial...";
+
+    try {
+      const {
+        data: campañas,
+        error
+      } = await supabaseClient.rpc(
+        "obtener_historial_campanas_masivas"
+      );
+
+      if (error) {
+        console.error(
+          "ERROR CARGANDO HISTORIAL DE CAMPAÑAS:",
+          error
+        );
+
+        resumenHistorial.innerHTML = `
+          <div
+            style="
+              padding:14px;
+              border:1px solid #ff2d2d;
+              border-radius:10px;
+              background:#281414;
+              color:#ffb3b3;
+              text-align:center;
+              font-weight:bold;
+            "
+          >
+            ⚠️ No fue posible cargar el historial.
+          </div>
+        `;
+
+        return;
+      }
+
+      const listaCampañas =
+        Array.isArray(campañas)
+          ? campañas
+          : [];
+
+      if (listaCampañas.length === 0) {
+        resumenHistorial.innerHTML = `
+          <div
+            style="
+              padding:16px;
+              border:1px solid #555;
+              border-radius:10px;
+              background:#181818;
+              color:#aaa;
+              text-align:center;
+            "
+          >
+            Todavía no existen campañas masivas.
+          </div>
+        `;
+
+        return;
+      }
+
+      resumenHistorial.innerHTML = "";
+
+      for (const campaña of listaCampañas) {
+        const tarjeta =
+          document.createElement("div");
+
+        const titulo =
+          campaña.titulo ||
+          "Campaña sin título";
+
+        const mensaje =
+          campaña.mensaje ||
+          campaña.texto ||
+          "";
+
+        const estado =
+          campaña.estado ||
+          campaña.estado_campana ||
+          "borrador";
+
+        const totalDestinatarios =
+          Number(
+            campaña.total_destinatarios ??
+            campaña.total_destina ??
+            0
+          );
+
+        const totalEnviados =
+          Number(
+            campaña.total_enviados ??
+            campaña.total_enviado ??
+            0
+          );
+
+        const totalFallidos =
+          Number(
+            campaña.total_fallidos ??
+            campaña.total_fallido ??
+            0
+          );
+
+        const fechaOriginal =
+          campaña.creado_at ||
+          campaña.created_at ||
+          campaña.campana_creada_at ||
+          campaña.enviado_at ||
+          null;
+
+        let fechaTexto =
+          "Fecha no disponible";
+
+        if (fechaOriginal) {
+          const fecha =
+            new Date(fechaOriginal);
+
+          if (!Number.isNaN(fecha.getTime())) {
+            fechaTexto =
+              fecha.toLocaleString();
+          }
+        }
+
+        let colorEstado = "#b56cff";
+        let iconoEstado = "📌";
+
+        if (
+          String(estado).toLowerCase() ===
+          "enviado"
+        ) {
+          colorEstado = "#39ff14";
+          iconoEstado = "✅";
+        } else if (
+          String(estado).toLowerCase() ===
+          "borrador"
+        ) {
+          colorEstado = "#ffd24a";
+          iconoEstado = "📝";
+        } else if (
+          String(estado).toLowerCase() ===
+          "procesando"
+        ) {
+          colorEstado = "#48c8ff";
+          iconoEstado = "⏳";
+        } else if (
+          String(estado).toLowerCase() ===
+          "fallido"
+        ) {
+          colorEstado = "#ff4545";
+          iconoEstado = "⚠️";
+        }
+
+        tarjeta.style.cssText = `
+          padding:16px;
+          border:2px solid ${colorEstado};
+          border-radius:12px;
+          background:#181818;
+          color:white;
+          box-shadow:0 0 14px ${colorEstado}55;
+        `;
+
+        const encabezado =
+          document.createElement("div");
+
+        encabezado.style.cssText = `
+          font-size:18px;
+          font-weight:bold;
+          color:${colorEstado};
+          margin-bottom:10px;
+        `;
+
+        encabezado.textContent =
+          `${iconoEstado} ${titulo}`;
+
+        const contenidoMensaje =
+          document.createElement("div");
+
+        contenidoMensaje.style.cssText = `
+          white-space:pre-wrap;
+          overflow-wrap:anywhere;
+          padding:10px;
+          margin-bottom:12px;
+          border:1px solid #555;
+          border-radius:9px;
+          background:#222;
+          color:#eee;
+          text-align:left;
+        `;
+
+        contenidoMensaje.textContent =
+          mensaje || "Sin mensaje disponible.";
+
+        const detalles =
+          document.createElement("div");
+
+        detalles.style.cssText = `
+          display:flex;
+          flex-direction:column;
+          gap:5px;
+          text-align:left;
+          font-size:14px;
+        `;
+
+        const lineasDetalles = [
+          `👥 Destinatarios: ${totalDestinatarios}`,
+          `✅ Enviados: ${totalEnviados}`,
+          `⚠️ Fallidos: ${totalFallidos}`,
+          `📌 Estado: ${estado}`,
+          `🗓️ Fecha: ${fechaTexto}`
+        ];
+
+        for (
+          const textoDetalle
+          of lineasDetalles
+        ) {
+          const linea =
+            document.createElement("div");
+
+          linea.textContent =
+            textoDetalle;
+
+          detalles.appendChild(linea);
+        }
+
+        tarjeta.appendChild(encabezado);
+        tarjeta.appendChild(
+          contenidoMensaje
+        );
+        tarjeta.appendChild(detalles);
+
+        resumenHistorial.appendChild(
+          tarjeta
+        );
+      }
+
+      console.log(
+        "✅ HISTORIAL DE CAMPAÑAS CARGADO:",
+        listaCampañas
+      );
+    } catch (errorInesperado) {
+      console.error(
+        "ERROR INESPERADO CARGANDO HISTORIAL:",
+        errorInesperado
+      );
+
+      resumenHistorial.innerHTML = `
+        <div
+          style="
+            padding:14px;
+            border:1px solid #ff2d2d;
+            border-radius:10px;
+            background:#281414;
+            color:#ffb3b3;
+            text-align:center;
+            font-weight:bold;
+          "
+        >
+          ⚠️ Ocurrió un error inesperado al cargar el historial.
+        </div>
+      `;
+    }
+  };	
+
 // ================================================================
 // MASS - ABRIR Y CERRAR HISTORIAL DE CAMPAÑAS MASIVAS
 // ================================================================
