@@ -1834,6 +1834,307 @@ Cargando historial...
   </div>
 
 <!-- ====================================================== -->
+<!-- MASS - BOTÓN PARA CREAR MENSAJE MASIVO -->
+<!-- ====================================================== -->
+
+<div
+  style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:0 0 16px 0;
+  "
+>
+  <button
+    id="btnAbrirMensajeMasivoOrganizador"
+    type="button"
+    onclick="abrirPanelMensajeMasivoOrganizador()"
+    style="
+      padding:11px 18px;
+      border:2px solid #b56cff;
+      border-radius:10px;
+      background:#261138;
+      color:white;
+      font-size:15px;
+      font-weight:bold;
+      cursor:pointer;
+      box-shadow:0 0 14px rgba(181,108,255,0.45);
+    "
+  >
+    📣 Crear mensaje masivo
+  </button>
+</div>
+
+	<!-- ====================================================== -->
+<!-- MASS - FORMULARIO PARA CREAR MENSAJE MASIVO -->
+<!-- ====================================================== -->
+
+<div
+  id="panelMensajeMasivoOrganizador"
+  style="
+    display:none;
+    width:100%;
+    box-sizing:border-box;
+    margin:0 0 18px 0;
+    padding:16px;
+    border:2px solid #b56cff;
+    border-radius:14px;
+    background:#140b1d;
+    box-shadow:0 0 18px rgba(181,108,255,0.30);
+    color:white;
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:15px;
+    "
+  >
+    <h3
+      style="
+        margin:0;
+        color:#d8a9ff;
+      "
+    >
+      📣 Nuevo mensaje masivo
+    </h3>
+
+    <button
+      type="button"
+      onclick="cerrarPanelMensajeMasivoOrganizador()"
+      style="
+        padding:7px 11px;
+        border:1px solid #777;
+        border-radius:8px;
+        background:#222;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✕ Cerrar
+    </button>
+  </div>
+
+  <label
+    for="tituloMensajeMasivoOrganizador"
+    style="
+      display:block;
+      margin-bottom:6px;
+      font-weight:bold;
+      color:#ddd;
+    "
+  >
+    Título del aviso
+  </label>
+
+  <input
+    id="tituloMensajeMasivoOrganizador"
+    type="text"
+    maxlength="120"
+    placeholder="Ejemplo: Aviso importante del sorteo"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:14px;
+      padding:11px;
+      border:1px solid #777;
+      border-radius:9px;
+      background:#181818;
+      color:white;
+      font-size:15px;
+    "
+  >
+
+  <label
+    for="textoMensajeMasivoOrganizador"
+    style="
+      display:block;
+      margin-bottom:6px;
+      font-weight:bold;
+      color:#ddd;
+    "
+  >
+    Mensaje
+  </label>
+
+  <textarea
+    id="textoMensajeMasivoOrganizador"
+    maxlength="2000"
+    placeholder="Escribe aquí el mensaje que recibirán tus usuarios..."
+    oninput="actualizarContadorCaracteresMensajeMasivoOrganizador()"
+    style="
+      width:100%;
+      min-height:130px;
+      box-sizing:border-box;
+      padding:11px;
+      border:1px solid #777;
+      border-radius:9px;
+      background:#181818;
+      color:white;
+      font-size:15px;
+      resize:vertical;
+    "
+  ></textarea>
+
+  <div
+    style="
+      margin:5px 0 14px 0;
+      color:#aaa;
+      font-size:12px;
+      text-align:right;
+    "
+  >
+    <span id="contadorCaracteresMensajeMasivoOrganizador">0</span>/2000
+  </div>
+
+  <label
+    for="tipoDestinatariosMensajeMasivoOrganizador"
+    style="
+      display:block;
+      margin-bottom:6px;
+      font-weight:bold;
+      color:#ddd;
+    "
+  >
+    Destinatarios
+  </label>
+
+  <select
+    id="tipoDestinatariosMensajeMasivoOrganizador"
+    onchange="cambiarTipoDestinatariosMensajeMasivoOrganizador()"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      margin-bottom:14px;
+      padding:11px;
+      border:1px solid #777;
+      border-radius:9px;
+      background:#181818;
+      color:white;
+      font-size:15px;
+    "
+  >
+    <option value="todos">
+      Todos mis usuarios
+    </option>
+
+    <option value="compradores_rifa">
+      Compradores de un sorteo específico
+    </option>
+
+    <option value="usuarios_wallet">
+      Usuarios de Wallet MASS
+    </option>
+
+    <option value="seleccionados">
+      Usuarios seleccionados manualmente
+    </option>
+  </select>
+
+  <div
+    id="grupoRifaMensajeMasivoOrganizador"
+    style="
+      display:none;
+      margin-bottom:14px;
+    "
+  >
+    <label
+      for="rifaMensajeMasivoOrganizador"
+      style="
+        display:block;
+        margin-bottom:6px;
+        font-weight:bold;
+        color:#ddd;
+      "
+    >
+      Selecciona el sorteo
+    </label>
+
+    <select
+      id="rifaMensajeMasivoOrganizador"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:11px;
+        border:1px solid #777;
+        border-radius:9px;
+        background:#181818;
+        color:white;
+        font-size:15px;
+      "
+    >
+      <option value="">
+        Selecciona un sorteo
+      </option>
+    </select>
+  </div>
+
+  <div
+    id="resumenDestinatariosMensajeMasivoOrganizador"
+    style="
+      margin-bottom:15px;
+      padding:12px;
+      border:1px solid #674083;
+      border-radius:10px;
+      background:#21112f;
+      color:#ddd;
+      text-align:center;
+      line-height:1.5;
+    "
+  >
+    Aún no se han calculado los destinatarios.
+  </div>
+
+  <div
+    style="
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      flex-wrap:wrap;
+    "
+  >
+    <button
+      type="button"
+      onclick="cerrarPanelMensajeMasivoOrganizador()"
+      style="
+        padding:10px 15px;
+        border:1px solid #777;
+        border-radius:9px;
+        background:#222;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      Cancelar
+    </button>
+
+    <button
+      id="btnPrepararMensajeMasivoOrganizador"
+      type="button"
+      onclick="prepararMensajeMasivoOrganizador()"
+      style="
+        padding:10px 15px;
+        border:2px solid #b56cff;
+        border-radius:9px;
+        background:#3a1554;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+        box-shadow:0 0 12px rgba(181,108,255,0.40);
+      "
+    >
+      🔎 Revisar destinatarios
+    </button>
+  </div>
+</div>
+
+<!-- ====================================================== -->
 <!-- MASS - FILTROS DE CONVERSACIONES DEL ORGANIZADOR -->
 <!-- ====================================================== -->
 
@@ -12939,6 +13240,188 @@ async function (vista) {
   await window.mostrarChatOrganizadorAdmin();
 };
 	
+// ============================================================
+// MASS - CONTROLES DEL FORMULARIO DE MENSAJE MASIVO
+// ============================================================
+
+window.abrirPanelMensajeMasivoOrganizador =
+async function () {
+
+  const panel =
+    document.getElementById(
+      "panelMensajeMasivoOrganizador"
+    );
+
+  const filtros =
+    document.getElementById(
+      "filtrosConversacionesOrganizador"
+    );
+
+  const lista =
+    document.getElementById(
+      "listaConversacionesOrganizadorAdmin"
+    );
+
+  if (!panel) {
+    console.error(
+      "No se encontró el formulario de mensaje masivo."
+    );
+    return;
+  }
+
+  panel.style.display = "block";
+
+  if (filtros) {
+    filtros.style.display = "none";
+  }
+
+  if (lista) {
+    lista.style.display = "none";
+  }
+
+  if (
+    typeof
+      window.actualizarContadorCaracteresMensajeMasivoOrganizador ===
+      "function"
+  ) {
+    window
+      .actualizarContadorCaracteresMensajeMasivoOrganizador();
+  }
+
+  if (
+    typeof
+      window.cambiarTipoDestinatariosMensajeMasivoOrganizador ===
+      "function"
+  ) {
+    window
+      .cambiarTipoDestinatariosMensajeMasivoOrganizador();
+  }
+
+  panel.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+};
+
+
+// ============================================================
+// MASS - CERRAR FORMULARIO DE MENSAJE MASIVO
+// ============================================================
+
+window.cerrarPanelMensajeMasivoOrganizador =
+function () {
+
+  const panel =
+    document.getElementById(
+      "panelMensajeMasivoOrganizador"
+    );
+
+  const filtros =
+    document.getElementById(
+      "filtrosConversacionesOrganizador"
+    );
+
+  const lista =
+    document.getElementById(
+      "listaConversacionesOrganizadorAdmin"
+    );
+
+  if (panel) {
+    panel.style.display = "none";
+  }
+
+  if (filtros) {
+    filtros.style.display = "flex";
+  }
+
+  if (lista) {
+    lista.style.display = "block";
+  }
+};
+
+
+// ============================================================
+// MASS - CONTADOR DE CARACTERES DEL MENSAJE MASIVO
+// ============================================================
+
+window.actualizarContadorCaracteresMensajeMasivoOrganizador =
+function () {
+
+  const textarea =
+    document.getElementById(
+      "textoMensajeMasivoOrganizador"
+    );
+
+  const contador =
+    document.getElementById(
+      "contadorCaracteresMensajeMasivoOrganizador"
+    );
+
+  if (!contador) {
+    return;
+  }
+
+  contador.textContent =
+    String(textarea?.value?.length || 0);
+};
+
+
+// ============================================================
+// MASS - CAMBIAR TIPO DE DESTINATARIOS
+// ============================================================
+
+window.cambiarTipoDestinatariosMensajeMasivoOrganizador =
+function () {
+
+  const selector =
+    document.getElementById(
+      "tipoDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const grupoRifa =
+    document.getElementById(
+      "grupoRifaMensajeMasivoOrganizador"
+    );
+
+  const resumen =
+    document.getElementById(
+      "resumenDestinatariosMensajeMasivoOrganizador"
+    );
+
+  if (!selector) {
+    return;
+  }
+
+  const tipo =
+    String(selector.value || "todos");
+
+  if (grupoRifa) {
+    grupoRifa.style.display =
+      tipo === "compradores_rifa"
+        ? "block"
+        : "none";
+  }
+
+  const mensajesResumen = {
+    todos:
+      "Se incluirán todos los usuarios relacionados con este organizador.",
+
+    compradores_rifa:
+      "Selecciona el sorteo para localizar a sus compradores.",
+
+    usuarios_wallet:
+      "Se incluirán los usuarios relacionados mediante Wallet MASS.",
+
+    seleccionados:
+      "Después podrás elegir manualmente a los destinatarios."
+  };
+
+  if (resumen) {
+    resumen.textContent =
+      mensajesResumen[tipo] ||
+      "Aún no se han calculado los destinatarios.";
+  }
+};	
 
 // ============================================================
 // MASS - ABRIR PANEL DE MENSAJES PARA EL ORGANIZADOR
