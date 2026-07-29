@@ -14983,7 +14983,24 @@ window.mostrarHistorialCampanasMasivasOrganizador =
       panelMensajeMasivo.style.display = "none";
     }
 
+	const resumenHistorial =
+  document.getElementById(
+    "resumenHistorialCampanasMasivasOrganizador"
+  );
+
+if (resumenHistorial) {
+  resumenHistorial.innerHTML =
+    "⏳ Cargando historial...";
+}
+
     panelHistorial.style.display = "block";
+
+	if (
+  typeof window.cargarHistorialCampanasMasivasOrganizador ===
+  "function"
+) {
+  await window.cargarHistorialCampanasMasivasOrganizador();
+}  
 
     panelHistorial.scrollIntoView({
       behavior: "smooth",
