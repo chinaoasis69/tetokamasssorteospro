@@ -1833,6 +1833,77 @@ Cargando historial...
     </button>
   </div>
 
+<!-- ====================================================== -->
+<!-- MASS - FILTROS DE CONVERSACIONES DEL ORGANIZADOR -->
+<!-- ====================================================== -->
+
+<div
+  id="filtrosConversacionesOrganizador"
+  style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:0 0 16px 0;
+  "
+>
+  <button
+    id="btnConversacionesActivas"
+    type="button"
+    onclick="cambiarVistaConversacionesOrganizador('activas')"
+    style="
+      padding:10px 14px;
+      border:2px solid #39ff14;
+      border-radius:10px;
+      background:#123d0b;
+      color:white;
+      font-size:14px;
+      font-weight:bold;
+      cursor:pointer;
+      box-shadow:0 0 12px rgba(57,255,20,0.45);
+    "
+  >
+    💬 Activas
+  </button>
+
+  <button
+    id="btnConversacionesArchivadas"
+    type="button"
+    onclick="cambiarVistaConversacionesOrganizador('archivadas')"
+    style="
+      padding:10px 14px;
+      border:2px solid #f0ad4e;
+      border-radius:10px;
+      background:#332400;
+      color:white;
+      font-size:14px;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    📦 Archivadas
+  </button>
+
+  <button
+    id="btnConversacionesEliminadas"
+    type="button"
+    onclick="cambiarVistaConversacionesOrganizador('eliminadas')"
+    style="
+      padding:10px 14px;
+      border:2px solid #ff2d2d;
+      border-radius:10px;
+      background:#430000;
+      color:white;
+      font-size:14px;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    🗑 Eliminadas
+  </button>
+</div>	
+
   <div
     id="listaConversacionesOrganizadorAdmin"
     style="
@@ -12706,7 +12777,32 @@ window.iniciarRealtimeContadorMensajesOrganizador = function () {
         }
       )
       .subscribe();
-};	
+};
+
+// ==========================================================
+// MASS - VISTA ACTUAL DE CONVERSACIONES DEL ORGANIZADOR
+// ==========================================================
+
+let VISTA_CONVERSACIONES_ORGANIZADOR = "activas";
+
+window.cambiarVistaConversacionesOrganizador =
+async function (vista) {
+
+  const vistasPermitidas = [
+    "activas",
+    "archivadas",
+    "eliminadas"
+  ];
+
+  if (!vistasPermitidas.includes(vista)) {
+    return;
+  }
+
+  VISTA_CONVERSACIONES_ORGANIZADOR = vista;
+
+  await window.mostrarChatOrganizadorAdmin();
+};
+	
 
 // ============================================================
 // MASS - ABRIR PANEL DE MENSAJES PARA EL ORGANIZADOR
@@ -12766,24 +12862,48 @@ if (contadorMensajesOrganizador) {
     block: "start"
   });
 
-  const {
-    data: conversaciones,
-    error
-  } = await supabaseClient
-    .from("chat_conversaciones")
-    .select(`
-  id,
-  organizador_id,
-  usuario_auth_id,
-  usuario_telefono,
-  creado_at
-`)
-.eq("organizador_id", organizadorId)
-.eq("archivada_organizador", false)
-.eq("eliminada_organizador", false)
-.order("creado_at", {
-  ascending: false
-});
+  let consultaConversaciones = supabaseClient
+  .from("chat_conversaciones")
+  .select(`
+    id,
+    organizador_id,
+    usuario_auth_id,
+    usuario_telefono,
+    creado_at,
+    archivada_organizador,
+    eliminada_organizador
+  `)
+  .eq("organizador_id", organizadorId);
+
+if (
+  VISTA_CONVERSACIONES_ORGANIZADOR === "archivadas"
+) {
+  consultaConversaciones =
+    consultaConversaciones
+      .eq("archivada_organizador", true)
+      .eq("eliminada_organizador", false);
+
+} else if (
+  VISTA_CONVERSACIONES_ORGANIZADOR === "eliminadas"
+) {
+  consultaConversaciones =
+    consultaConversaciones
+      .eq("eliminada_organizador", true);
+
+} else {
+  consultaConversaciones =
+    consultaConversaciones
+      .eq("archivada_organizador", false)
+      .eq("eliminada_organizador", false);
+}
+
+const {
+  data: conversaciones,
+  error
+} = await consultaConversaciones
+  .order("creado_at", {
+    ascending: false
+  });
 
   if (error) {
     console.error(
@@ -12934,6 +13054,12 @@ accionesConversacion.style.cssText = `
   margin-top:12px;
 `;
 
+const vistaArchivadas =
+  VISTA_CONVERSACIONES_ORGANIZADOR === "archivadas";
+
+const vistaEliminadas =
+  VISTA_CONVERSACIONES_ORGANIZADOR === "eliminadas";	
+
 const btnAbrirConversacion = document.createElement("button");
 btnAbrirConversacion.type = "button";
 btnAbrirConversacion.textContent = "💬 Abrir";
@@ -12957,7 +13083,10 @@ btnAbrirConversacion.onclick = function (event) {
 
 const btnArchivarConversacion = document.createElement("button");
 btnArchivarConversacion.type = "button";
-btnArchivarConversacion.textContent = "📦 Archivar";
+btnArchivarConversacion.textContent =
+  vistaArchivadas || vistaEliminadas
+    ? "↩️ Restaurar"
+    : "📦 Archivar";
 btnArchivarConversacion.style.cssText = `
   padding:8px 12px;
   border:1px solid #f0ad4e;
@@ -12968,10 +13097,17 @@ btnArchivarConversacion.style.cssText = `
   cursor:pointer;
 `;
 
-btnArchivarConversacion.onclick = function (event) {
+btnArchivarConversacion.onclick = async function (event) {
   event.stopPropagation();
 
-  window.archivarConversacionOrganizador(
+  if (vistaArchivadas || vistaEliminadas) {
+    await window.restaurarConversacionOrganizador(
+      conversacion
+    );
+    return;
+  }
+
+  await window.archivarConversacionOrganizador(
     conversacion
   );
 };
@@ -12997,17 +13133,55 @@ btnEliminarConversacion.onclick = function (event) {
   );
 };
 
-accionesConversacion.appendChild(
-  btnAbrirConversacion
-);
+const btnEliminarDefinitivamente =
+  document.createElement("button");
+
+btnEliminarDefinitivamente.type = "button";
+
+btnEliminarDefinitivamente.textContent =
+  "⚠️ Eliminar definitivamente";
+
+btnEliminarDefinitivamente.style.cssText = `
+  padding:8px 12px;
+  border:1px solid #ff2d2d;
+  border-radius:8px;
+  background:#7a0000;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+`;
+
+btnEliminarDefinitivamente.onclick =
+async function (event) {
+
+  event.stopPropagation();
+
+  await window.eliminarDefinitivamenteConversacionOrganizador(
+    conversacion
+  );
+};	  
+
+if (!vistaEliminadas) {
+  accionesConversacion.appendChild(
+    btnAbrirConversacion
+  );
+}
 
 accionesConversacion.appendChild(
   btnArchivarConversacion
 );
 
-accionesConversacion.appendChild(
-  btnEliminarConversacion
-);
+if (!vistaEliminadas) {
+  accionesConversacion.appendChild(
+    btnEliminarConversacion
+  );
+}
+
+if (vistaEliminadas) {
+  accionesConversacion.appendChild(
+    btnEliminarDefinitivamente
+  );
+}	  
 
 tarjeta.appendChild(
   accionesConversacion
@@ -13070,6 +13244,52 @@ window.archivarConversacionOrganizador = async function (conversacion) {
 };
 
 // ==========================================================
+// MASS - RESTAURAR CONVERSACIÓN DEL ORGANIZADOR
+// ==========================================================
+
+window.restaurarConversacionOrganizador =
+async function (conversacion) {
+
+  if (!conversacion?.id) {
+    alert("No se encontró la conversación.");
+    return;
+  }
+
+  const confirmar = confirm(
+    "¿Deseas restaurar esta conversación a Activas?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("chat_conversaciones")
+    .update({
+      archivada_organizador: false,
+      eliminada_organizador: false
+    })
+    .eq("id", conversacion.id);
+
+  if (error) {
+    console.error(
+      "ERROR RESTAURANDO CONVERSACIÓN:",
+      error
+    );
+
+    alert(
+      "No fue posible restaurar la conversación."
+    );
+
+    return;
+  }
+
+  alert("Conversación restaurada correctamente.");
+
+  await window.mostrarChatOrganizadorAdmin();
+};	
+
+// ==========================================================
 // MASS - ELIMINAR CONVERSACIÓN DEL ORGANIZADOR
 // ==========================================================
 
@@ -13108,6 +13328,76 @@ window.eliminarConversacionOrganizador = async function (conversacion) {
   }
 
   alert("Conversación eliminada correctamente.");
+
+  await window.mostrarChatOrganizadorAdmin();
+};
+
+// ==========================================================
+// MASS - ELIMINAR DEFINITIVAMENTE CONVERSACIÓN Y MENSAJES
+// ==========================================================
+
+window.eliminarDefinitivamenteConversacionOrganizador =
+async function (conversacion) {
+
+  if (!conversacion?.id) {
+    alert("No se encontró la conversación.");
+    return;
+  }
+
+  const primeraConfirmacion = confirm(
+    "⚠️ Esta acción eliminará definitivamente la conversación y todos sus mensajes.\n\n¿Deseas continuar?"
+  );
+
+  if (!primeraConfirmacion) {
+    return;
+  }
+
+  const palabraConfirmacion = prompt(
+    'Para confirmar la eliminación definitiva, escribe: ELIMINAR'
+  );
+
+  if (
+    String(palabraConfirmacion || "")
+      .trim()
+      .toUpperCase() !== "ELIMINAR"
+  ) {
+    alert("Eliminación definitiva cancelada.");
+    return;
+  }
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "eliminar_conversacion_chat_definitiva",
+    {
+      p_conversacion_id: conversacion.id
+    }
+  );
+
+  if (error) {
+    console.error(
+      "ERROR ELIMINANDO DEFINITIVAMENTE LA CONVERSACIÓN:",
+      error
+    );
+
+    alert(
+      "No fue posible eliminar definitivamente la conversación."
+    );
+
+    return;
+  }
+
+  if (data !== true) {
+    alert(
+      "Supabase no confirmó la eliminación definitiva."
+    );
+    return;
+  }
+
+  alert(
+    "Conversación y mensajes eliminados definitivamente."
+  );
 
   await window.mostrarChatOrganizadorAdmin();
 };	
