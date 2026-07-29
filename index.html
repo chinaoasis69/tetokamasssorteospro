@@ -2057,6 +2057,7 @@ Cargando historial...
 
     <select
       id="rifaMensajeMasivoOrganizador"
+	  onchange="invalidarPrevisualizacionMensajeMasivoOrganizador()"
       style="
         width:100%;
         box-sizing:border-box;
@@ -2131,6 +2132,24 @@ Cargando historial...
     >
       🔎 Revisar destinatarios
     </button>
+	 <button
+  id="btnCrearBorradorMensajeMasivoOrganizador"
+  type="button"
+  onclick="crearBorradorMensajeMasivoOrganizador()"
+  style="
+    display:none;
+    padding:10px 15px;
+    border:2px solid #39ff14;
+    border-radius:9px;
+    background:#123d0b;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(57,255,20,0.40);
+  "
+>
+  📝 Crear borrador
+</button> 
   </div>
 </div>
 
@@ -13430,6 +13449,15 @@ function () {
       mensajesResumen[tipo] ||
       "Aún no se han calculado los destinatarios.";
   }
+
+	if (
+  typeof
+    window.invalidarPrevisualizacionMensajeMasivoOrganizador ===
+    "function"
+) {
+  window
+    .invalidarPrevisualizacionMensajeMasivoOrganizador();
+}
 };
 
 // ============================================================
@@ -13437,6 +13465,30 @@ function () {
 // ============================================================
 
 let PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR = null;
+let BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID = null;
+
+	// ============================================================
+// MASS - INVALIDAR PREVISUALIZACIÓN ANTERIOR
+// ============================================================
+
+window.invalidarPrevisualizacionMensajeMasivoOrganizador =
+function () {
+
+  PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR =
+    null;
+
+  BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID =
+    null;
+
+  const botonCrearBorrador =
+    document.getElementById(
+      "btnCrearBorradorMensajeMasivoOrganizador"
+    );
+
+  if (botonCrearBorrador) {
+    botonCrearBorrador.style.display = "none";
+  }
+};
 
 
 // ============================================================
@@ -13592,6 +13644,11 @@ async function () {
       "btnPrepararMensajeMasivoOrganizador"
     );
 
+	const botonCrearBorrador =
+  document.getElementById(
+    "btnCrearBorradorMensajeMasivoOrganizador"
+  );
+
   const titulo =
     String(
       inputTitulo?.value || ""
@@ -13679,8 +13736,14 @@ async function () {
     return;
   }
 
-  PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR =
-    null;
+  if (
+  typeof
+    window.invalidarPrevisualizacionMensajeMasivoOrganizador ===
+    "function"
+) {
+  window
+    .invalidarPrevisualizacionMensajeMasivoOrganizador();
+}
 
   if (boton) {
     boton.disabled = true;
@@ -13835,6 +13898,14 @@ async function () {
       }
     }
 
+	if (botonCrearBorrador) {
+  botonCrearBorrador.style.display =
+    totalEntregables > 0 &&
+    tipoDestinatarios !== "seleccionados"
+      ? "inline-block"
+      : "none";
+}
+
     console.log(
       "✅ PREVISUALIZACIÓN DE DESTINATARIOS:",
       previsualizacion
@@ -13858,6 +13929,267 @@ async function () {
       boton.disabled = false;
       boton.textContent =
         "🔎 Revisar destinatarios";
+    }
+  }
+};
+
+// ============================================================
+// MASS - CREAR BORRADOR DEL MENSAJE MASIVO
+// TODAVÍA NO ENVÍA MENSAJES
+// ============================================================
+
+window.crearBorradorMensajeMasivoOrganizador =
+async function () {
+
+  const inputTitulo =
+    document.getElementById(
+      "tituloMensajeMasivoOrganizador"
+    );
+
+  const textareaMensaje =
+    document.getElementById(
+      "textoMensajeMasivoOrganizador"
+    );
+
+  const selectorTipo =
+    document.getElementById(
+      "tipoDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const selectorRifa =
+    document.getElementById(
+      "rifaMensajeMasivoOrganizador"
+    );
+
+  const resumen =
+    document.getElementById(
+      "resumenDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const botonCrearBorrador =
+    document.getElementById(
+      "btnCrearBorradorMensajeMasivoOrganizador"
+    );
+
+  const titulo =
+    String(
+      inputTitulo?.value || ""
+    ).trim();
+
+  const mensaje =
+    String(
+      textareaMensaje?.value || ""
+    ).trim();
+
+  const tipoDestinatarios =
+    String(
+      selectorTipo?.value || "todos"
+    );
+
+  const organizadorId =
+    window.obtenerOrganizadorIdMensajeMasivo();
+
+  const rifaId =
+    tipoDestinatarios ===
+      "compradores_rifa"
+      ? String(
+          selectorRifa?.value || ""
+        ).trim()
+      : null;
+
+  const totalEntregables =
+    Number(
+      PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR
+        ?.entregables || 0
+    );
+
+  if (
+    !PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR ||
+    totalEntregables <= 0
+  ) {
+    alert(
+      "Primero revisa los destinatarios de la campaña."
+    );
+
+    return;
+  }
+
+  if (
+    BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID
+  ) {
+    alert(
+      "Ya existe un borrador preparado para este mensaje."
+    );
+
+    return;
+  }
+
+  if (!titulo || !mensaje || !organizadorId) {
+    alert(
+      "Faltan datos para crear el borrador."
+    );
+
+    return;
+  }
+
+  if (
+    tipoDestinatarios === "seleccionados"
+  ) {
+    alert(
+      "La selección manual se habilitará en el siguiente paso."
+    );
+
+    return;
+  }
+
+  if (
+    tipoDestinatarios ===
+      "compradores_rifa" &&
+    !rifaId
+  ) {
+    alert(
+      "Selecciona el sorteo correspondiente."
+    );
+
+    return;
+  }
+
+  const confirmar =
+    window.confirm(
+      `Se creará un borrador para ${totalEntregables} usuario(s).\n\n` +
+      `Todavía no se enviará ningún mensaje.\n\n` +
+      `¿Deseas continuar?`
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+  if (botonCrearBorrador) {
+    botonCrearBorrador.disabled = true;
+    botonCrearBorrador.textContent =
+      "Creando borrador...";
+  }
+
+  try {
+
+    const {
+      data: resultado,
+      error
+    } = await supabaseClient.rpc(
+      "crear_borrador_mensaje_masivo",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_titulo:
+          titulo,
+
+        p_mensaje:
+          mensaje,
+
+        p_tipo_destinatarios:
+          tipoDestinatarios,
+
+        p_rifa_id:
+          rifaId || null
+      }
+    );
+
+    if (error) {
+      console.error(
+        "ERROR CREANDO BORRADOR MASIVO:",
+        error
+      );
+
+      alert(
+        "No fue posible crear el borrador."
+      );
+
+      return;
+    }
+
+    if (
+      !resultado?.ok ||
+      !resultado?.campana_id
+    ) {
+      console.error(
+        "SUPABASE NO CONFIRMÓ EL BORRADOR:",
+        resultado
+      );
+
+      alert(
+        "Supabase no confirmó la creación del borrador."
+      );
+
+      return;
+    }
+
+    BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID =
+      resultado.campana_id;
+
+    const destinatariosInsertados =
+      Number(
+        resultado
+          ?.destinatarios_insertados || 0
+      );
+
+    if (resumen) {
+
+      resumen.innerHTML = "";
+
+      const lineas = [
+        "📝 Borrador creado correctamente",
+        `👥 Destinatarios registrados: ${destinatariosInsertados}`,
+        "📌 Estado: Borrador",
+        "🔒 Todavía no se ha enviado ningún mensaje"
+      ];
+
+      for (const texto of lineas) {
+
+        const linea =
+          document.createElement("div");
+
+        linea.textContent = texto;
+        linea.style.marginBottom = "6px";
+
+        resumen.appendChild(
+          linea
+        );
+      }
+    }
+
+    if (botonCrearBorrador) {
+      botonCrearBorrador.style.display =
+        "none";
+    }
+
+    console.log(
+      "✅ BORRADOR MASIVO CREADO:",
+      resultado
+    );
+
+    alert(
+      "Borrador creado correctamente. Todavía no se enviaron mensajes."
+    );
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CREANDO BORRADOR:",
+      errorInesperado
+    );
+
+    alert(
+      "Ocurrió un error inesperado al crear el borrador."
+    );
+
+  } finally {
+
+    if (botonCrearBorrador) {
+      botonCrearBorrador.disabled = false;
+      botonCrearBorrador.textContent =
+        "📝 Crear borrador";
     }
   }
 };	
