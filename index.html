@@ -12033,7 +12033,11 @@ if (CHAT_INTERVALO_USUARIO) {
 }
 
 CHAT_INTERVALO_USUARIO = setInterval(async () => {
-    await window.buscarMensajesNuevosChatUsuario();
+  if (!CHAT_PANEL_USUARIO_ABIERTO) {
+    return;
+  }
+
+  await window.buscarMensajesNuevosChatUsuario();
 }, 2000);	
 };
 
