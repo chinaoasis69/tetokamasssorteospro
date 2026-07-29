@@ -12822,7 +12822,27 @@ if (contadorMensajesOrganizador) {
 
   listaConversaciones.innerHTML = "";
 
-  conversaciones.forEach((conversacion) => {
+  for (const conversacion of conversaciones) {
+
+	const {
+  count: mensajesPendientes,
+  error: errorPendientes
+} = await supabaseClient
+  .from("chat_mensajes")
+  .select("id", {
+    count: "exact",
+    head: true
+  })
+  .eq("conversacion_id", conversacion.id)
+  .eq("remitente_tipo", "usuario");
+  .eq("leido_organizador", false);	  
+
+if (errorPendientes) {
+  console.error(
+    "ERROR CONTANDO MENSAJES DE LA CONVERSACIÓN:",
+    errorPendientes
+  );
+}
 
     const tarjeta = document.createElement("button");
 
@@ -12856,6 +12876,32 @@ if (contadorMensajesOrganizador) {
         "
       >
         💬 Conversación de cliente
+${
+  mensajesPendientes > 0
+    ? `
+      <span
+        style="
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          margin-left:8px;
+          min-width:24px;
+          height:24px;
+          padding:0 7px;
+          border-radius:999px;
+          background:#ff2d2d;
+          color:white;
+          border:2px solid #111;
+          font-size:12px;
+          font-weight:bold;
+          box-sizing:border-box;
+        "
+      >
+        ${mensajesPendientes > 9 ? "9+" : mensajesPendientes}
+      </span>
+    `
+    : ""
+}
       </div>
 
       <div
@@ -12888,7 +12934,7 @@ if (contadorMensajesOrganizador) {
     listaConversaciones.appendChild(
       tarjeta
     );
-  });
+  }
 
   console.log(
     "✅ CONVERSACIONES DEL ORGANIZADOR:",
@@ -12968,6 +13014,37 @@ async function (conversacion) {
 
     return;
   }
+
+// ======================================================
+// MASS - MARCAR MENSAJES DEL USUARIO COMO LEÍDOS
+// ======================================================
+
+const {
+  error: errorMarcarLeidos
+} = await supabaseClient
+  .from("chat_mensajes")
+  .update({
+    leido_organizador: true
+  })
+  .eq(
+    "conversacion_id",
+    conversacion.id
+  )
+  .eq(
+    "remitente_tipo",
+    "usuario"
+  )
+  .eq(
+    "leido_organizador",
+    false
+  );
+
+if (errorMarcarLeidos) {
+  console.error(
+    "ERROR MARCANDO MENSAJES COMO LEÍDOS:",
+    errorMarcarLeidos
+  );
+}	
 
   contenedor.innerHTML = "";
 
