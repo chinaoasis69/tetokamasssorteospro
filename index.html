@@ -11684,7 +11684,32 @@ let CHAT_CANAL_REALTIME_USUARIO = null;
 let CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR = null;	
 let CHAT_ULTIMO_MENSAJE_USUARIO_ID = null;
 let CHAT_ULTIMA_FECHA_USUARIO = null;
-let CHAT_INTERVALO_USUARIO = null;	
+let CHAT_INTERVALO_USUARIO = null;
+
+let CHAT_CONTADOR_MENSAJES_USUARIO = 0;
+let CHAT_PANEL_USUARIO_ABIERTO = false;
+
+// ==========================================================
+// MASS - ACTUALIZAR CONTADOR FLOTANTE DEL CHAT DEL USUARIO
+// ==========================================================
+window.actualizarContadorChatUsuario = function () {
+  const contador =
+    document.getElementById("contadorMensajesUsuario");
+
+  if (!contador) {
+    return;
+  }
+
+  contador.textContent =
+    CHAT_CONTADOR_MENSAJES_USUARIO > 9
+      ? "9+"
+      : String(CHAT_CONTADOR_MENSAJES_USUARIO);
+
+  contador.style.display =
+    CHAT_CONTADOR_MENSAJES_USUARIO > 0
+      ? "flex"
+      : "none";
+};	
 
 // ---------------------------------------------------------
 // ABRIR PANEL DEL CHAT
@@ -11716,6 +11741,15 @@ window.abrirChatConOrganizador = async function () {
   }
 
   panel.style.display = "block";
+
+	CHAT_PANEL_USUARIO_ABIERTO = true;
+CHAT_CONTADOR_MENSAJES_USUARIO = 0;
+
+if (
+  typeof window.actualizarContadorChatUsuario === "function"
+) {
+  window.actualizarContadorChatUsuario();
+}
 
 	const btnChatFlotanteUsuario =
   document.getElementById("btnChatFlotanteUsuario");
@@ -11965,6 +11999,19 @@ CHAT_CANAL_REALTIME_USUARIO = supabaseClient
         return;
     }
 
+	if (
+  mensajeNuevo.remitente_tipo === "organizador" &&
+  !CHAT_PANEL_USUARIO_ABIERTO
+) {
+  CHAT_CONTADOR_MENSAJES_USUARIO++;
+
+  if (
+    typeof window.actualizarContadorChatUsuario === "function"
+  ) {
+    window.actualizarContadorChatUsuario();
+  }
+}		
+
     window.agregarMensajeNuevoChatUsuario(
         mensajeNuevo
     );
@@ -12005,6 +12052,8 @@ window.cerrarChatConOrganizador = function () {
     panel.style.display = "none";
   }
 
+	CHAT_PANEL_USUARIO_ABIERTO = false;
+
 	const btnChatFlotanteUsuario =
   document.getElementById("btnChatFlotanteUsuario");
 
@@ -12018,18 +12067,6 @@ if (
   btnChatFlotanteUsuario.style.display = "flex";
   btnChatFlotanteUsuario.style.alignItems = "center";
   btnChatFlotanteUsuario.style.justifyContent = "center";
-}
-
-// =======================================
-// MASS - APAGAR REALTIME AL CERRAR CHAT
-// =======================================
-
-if (CHAT_CANAL_REALTIME_USUARIO) {
-    supabaseClient.removeChannel(
-        CHAT_CANAL_REALTIME_USUARIO
-    );
-
-    CHAT_CANAL_REALTIME_USUARIO = null;
 }
 
 // =====================================================
@@ -22539,6 +22576,30 @@ font-family:Arial, sans-serif;">
   "
 >
   💬
+
+	<span
+  id="contadorMensajesUsuario"
+  style="
+    display:none;
+    position:absolute;
+    top:-7px;
+    right:-7px;
+    min-width:22px;
+    height:22px;
+    padding:0 5px;
+    border-radius:999px;
+    background:#ff2d2d;
+    color:white;
+    border:2px solid #111;
+    font-size:12px;
+    font-weight:bold;
+    align-items:center;
+    justify-content:center;
+    box-sizing:border-box;
+  "
+>
+  0
+</span>
 </button>	
 
 </body>
