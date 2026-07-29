@@ -1934,6 +1934,7 @@ Cargando historial...
 
   <input
     id="tituloMensajeMasivoOrganizador"
+	oninput="invalidarPrevisualizacionMensajeMasivoOrganizador()" 
     type="text"
     maxlength="120"
     placeholder="Ejemplo: Aviso importante del sorteo"
@@ -1966,7 +1967,7 @@ Cargando historial...
     id="textoMensajeMasivoOrganizador"
     maxlength="2000"
     placeholder="Escribe aquí el mensaje que recibirán tus usuarios..."
-    oninput="actualizarContadorCaracteresMensajeMasivoOrganizador()"
+    oninput="actualizarContadorCaracteresMensajeMasivoOrganizador(); invalidarPrevisualizacionMensajeMasivoOrganizador()"
     style="
       width:100%;
       min-height:130px;
@@ -2149,7 +2150,26 @@ Cargando historial...
   "
 >
   📝 Crear borrador
-</button> 
+</button>
+
+<button
+  id="btnEnviarMensajeMasivoOrganizador"
+  type="button"
+  onclick="enviarMensajeMasivoOrganizador()"
+  style="
+    display:none;
+    padding:10px 15px;
+    border:2px solid #ff2d2d;
+    border-radius:9px;
+    background:#430000;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 0 12px rgba(255,45,45,0.45);
+  "
+>
+  📨 Enviar ahora
+</button>	  
   </div>
 </div>
 
@@ -13325,6 +13345,15 @@ async function () {
     .cargarRifasMensajeMasivoOrganizador();
 }
 
+	if (
+  typeof
+    window.recuperarUltimoBorradorMensajeMasivoOrganizador ===
+    "function"
+) {
+  await window
+    .recuperarUltimoBorradorMensajeMasivoOrganizador();
+}	
+
   panel.scrollIntoView({
     behavior: "smooth",
     block: "start"
@@ -13488,6 +13517,15 @@ function () {
   if (botonCrearBorrador) {
     botonCrearBorrador.style.display = "none";
   }
+
+	const botonEnviar =
+  document.getElementById(
+    "btnEnviarMensajeMasivoOrganizador"
+  );
+
+if (botonEnviar) {
+  botonEnviar.style.display = "none";
+}
 };
 
 
@@ -13511,6 +13549,222 @@ function () {
     null
   );
 };
+
+// ============================================================
+// MASS - RECUPERAR ÚLTIMO BORRADOR DEL ORGANIZADOR
+// ============================================================
+
+window.recuperarUltimoBorradorMensajeMasivoOrganizador =
+async function () {
+
+  const organizadorId =
+    window.obtenerOrganizadorIdMensajeMasivo();
+
+  const inputTitulo =
+    document.getElementById(
+      "tituloMensajeMasivoOrganizador"
+    );
+
+  const textareaMensaje =
+    document.getElementById(
+      "textoMensajeMasivoOrganizador"
+    );
+
+  const selectorTipo =
+    document.getElementById(
+      "tipoDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const selectorRifa =
+    document.getElementById(
+      "rifaMensajeMasivoOrganizador"
+    );
+
+  const resumen =
+    document.getElementById(
+      "resumenDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const botonCrearBorrador =
+    document.getElementById(
+      "btnCrearBorradorMensajeMasivoOrganizador"
+    );
+
+  const botonEnviar =
+    document.getElementById(
+      "btnEnviarMensajeMasivoOrganizador"
+    );
+
+  if (!organizadorId) {
+    console.error(
+      "No se encontró el organizador para recuperar el borrador."
+    );
+    return;
+  }
+
+  const {
+    data: borrador,
+    error
+  } = await supabaseClient
+    .from("mensajes_masivos")
+    .select(`
+      id,
+      titulo,
+      mensaje,
+      tipo_destinatarios,
+      rifa_id,
+      estado,
+      total_destinatarios,
+      total_enviados,
+      total_fallidos,
+      creado_at
+    `)
+    .eq(
+      "organizador_id",
+      organizadorId
+    )
+    .in(
+      "estado",
+      [
+        "borrador",
+        "procesando"
+      ]
+    )
+    .order(
+      "creado_at",
+      {
+        ascending: false
+      }
+    )
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error(
+      "ERROR RECUPERANDO BORRADOR MASIVO:",
+      error
+    );
+    return;
+  }
+
+  if (!borrador) {
+
+    BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID =
+      null;
+
+    if (botonEnviar) {
+      botonEnviar.style.display = "none";
+    }
+
+    return;
+  }
+
+  if (inputTitulo) {
+    inputTitulo.value =
+      String(borrador.titulo || "");
+  }
+
+  if (textareaMensaje) {
+    textareaMensaje.value =
+      String(borrador.mensaje || "");
+  }
+
+  if (selectorTipo) {
+    selectorTipo.value =
+      String(
+        borrador.tipo_destinatarios ||
+        "todos"
+      );
+  }
+
+  if (
+    typeof
+      window.cambiarTipoDestinatariosMensajeMasivoOrganizador ===
+      "function"
+  ) {
+    window
+      .cambiarTipoDestinatariosMensajeMasivoOrganizador();
+  }
+
+  if (
+    selectorRifa &&
+    borrador.rifa_id
+  ) {
+    selectorRifa.value =
+      String(borrador.rifa_id);
+  }
+
+  if (
+    typeof
+      window.actualizarContadorCaracteresMensajeMasivoOrganizador ===
+      "function"
+  ) {
+    window
+      .actualizarContadorCaracteresMensajeMasivoOrganizador();
+  }
+
+  BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID =
+    borrador.id;
+
+  PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR = {
+    entregables:
+      Number(
+        borrador.total_destinatarios || 0
+      )
+  };
+
+  if (botonCrearBorrador) {
+    botonCrearBorrador.style.display =
+      "none";
+  }
+
+  if (botonEnviar) {
+    botonEnviar.style.display =
+      "inline-block";
+
+    botonEnviar.textContent =
+      borrador.estado === "procesando"
+        ? "📨 Continuar envío"
+        : "📨 Enviar ahora";
+  }
+
+  if (resumen) {
+
+    resumen.innerHTML = "";
+
+    const lineas = [
+      "📝 Borrador recuperado",
+      `👥 Destinatarios: ${Number(
+        borrador.total_destinatarios || 0
+      )}`,
+      `✅ Enviados: ${Number(
+        borrador.total_enviados || 0
+      )}`,
+      `⚠️ Fallidos: ${Number(
+        borrador.total_fallidos || 0
+      )}`,
+      `📌 Estado: ${String(
+        borrador.estado || "borrador"
+      )}`
+    ];
+
+    for (const texto of lineas) {
+
+      const linea =
+        document.createElement("div");
+
+      linea.textContent = texto;
+      linea.style.marginBottom = "6px";
+
+      resumen.appendChild(linea);
+    }
+  }
+
+  console.log(
+    "✅ BORRADOR MASIVO RECUPERADO:",
+    borrador
+  );
+};	
 
 
 // ============================================================
@@ -13971,6 +14225,11 @@ async function () {
       "btnCrearBorradorMensajeMasivoOrganizador"
     );
 
+	const botonEnviar =
+  document.getElementById(
+    "btnEnviarMensajeMasivoOrganizador"
+  );
+
   const titulo =
     String(
       inputTitulo?.value || ""
@@ -14164,6 +14423,14 @@ async function () {
         "none";
     }
 
+	if (botonEnviar) {
+  botonEnviar.style.display =
+    "inline-block";
+
+  botonEnviar.textContent =
+    "📨 Enviar ahora";
+}  
+
     console.log(
       "✅ BORRADOR MASIVO CREADO:",
       resultado
@@ -14190,6 +14457,378 @@ async function () {
       botonCrearBorrador.disabled = false;
       botonCrearBorrador.textContent =
         "📝 Crear borrador";
+    }
+  }
+};
+
+// ============================================================
+// MASS - ENVIAR CAMPAÑA MASIVA POR LOTES
+// ============================================================
+
+window.enviarMensajeMasivoOrganizador =
+async function () {
+
+  const resumen =
+    document.getElementById(
+      "resumenDestinatariosMensajeMasivoOrganizador"
+    );
+
+  const botonEnviar =
+    document.getElementById(
+      "btnEnviarMensajeMasivoOrganizador"
+    );
+
+  const campanaId =
+    BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID;
+
+  if (!campanaId) {
+    alert(
+      "No se encontró un borrador preparado para enviar."
+    );
+
+    return;
+  }
+
+  const {
+    data: campana,
+    error: errorCampana
+  } = await supabaseClient
+    .from("mensajes_masivos")
+    .select(`
+      id,
+      titulo,
+      estado,
+      total_destinatarios,
+      total_enviados,
+      total_fallidos
+    `)
+    .eq("id", campanaId)
+    .single();
+
+  if (errorCampana || !campana) {
+    console.error(
+      "ERROR LOCALIZANDO CAMPAÑA PARA ENVÍO:",
+      errorCampana
+    );
+
+    alert(
+      "No fue posible localizar la campaña."
+    );
+
+    return;
+  }
+
+  if (
+    ![
+      "borrador",
+      "procesando"
+    ].includes(campana.estado)
+  ) {
+    alert(
+      "La campaña ya no está disponible para envío."
+    );
+
+    return;
+  }
+
+  const totalDestinatarios =
+    Number(
+      campana.total_destinatarios || 0
+    );
+
+  const totalEnviados =
+    Number(
+      campana.total_enviados || 0
+    );
+
+  const totalFallidos =
+    Number(
+      campana.total_fallidos || 0
+    );
+
+  const totalPendientes =
+    Math.max(
+      0,
+      totalDestinatarios -
+      totalEnviados -
+      totalFallidos
+    );
+
+  if (totalPendientes <= 0) {
+    alert(
+      "Esta campaña ya no tiene destinatarios pendientes."
+    );
+
+    return;
+  }
+
+  // ==========================================================
+  // PRIMERA CONFIRMACIÓN
+  // ==========================================================
+
+  const primeraConfirmacion =
+    window.confirm(
+      `Vas a enviar "${String(
+        campana.titulo || "Mensaje masivo"
+      )}" a ${totalPendientes} usuario(s).\n\n` +
+      `Cada usuario recibirá una copia privada dentro de su chat.\n\n` +
+      `¿Deseas continuar?`
+    );
+
+  if (!primeraConfirmacion) {
+    return;
+  }
+
+  // ==========================================================
+  // SEGUNDA CONFIRMACIÓN
+  // ==========================================================
+
+  const segundaConfirmacion =
+    window.confirm(
+      `CONFIRMACIÓN FINAL\n\n` +
+      `Después de continuar, el envío comenzará realmente.\n\n` +
+      `No cierres esta ventana durante el proceso.\n\n` +
+      `¿Confirmas el envío a ${totalPendientes} usuario(s)?`
+    );
+
+  if (!segundaConfirmacion) {
+    return;
+  }
+
+  if (botonEnviar) {
+    botonEnviar.disabled = true;
+    botonEnviar.textContent =
+      "Enviando mensajes...";
+  }
+
+  let resultadoFinal = null;
+  let numeroLote = 0;
+
+  try {
+
+    // Máximo de seguridad:
+    // 100 lotes × 50 destinatarios = 5,000 por ejecución.
+    while (numeroLote < 100) {
+
+      numeroLote += 1;
+
+      const {
+        data: resultadoLote,
+        error: errorLote
+      } = await supabaseClient.rpc(
+        "enviar_lote_mensaje_masivo",
+        {
+          p_campana_id:
+            campanaId,
+
+          p_limite:
+            50
+        }
+      );
+
+      if (errorLote) {
+        console.error(
+          "ERROR ENVIANDO LOTE MASIVO:",
+          errorLote
+        );
+
+        throw errorLote;
+      }
+
+      resultadoFinal =
+        resultadoLote;
+
+      const enviados =
+        Number(
+          resultadoLote
+            ?.total_enviados || 0
+        );
+
+      const fallidos =
+        Number(
+          resultadoLote
+            ?.total_fallidos || 0
+        );
+
+      const pendientes =
+        Number(
+          resultadoLote
+            ?.total_pendientes || 0
+        );
+
+      if (resumen) {
+
+        resumen.innerHTML = "";
+
+        const lineasProgreso = [
+          "📨 Envío en progreso",
+          `✅ Enviados: ${enviados}`,
+          `⚠️ Fallidos: ${fallidos}`,
+          `⏳ Pendientes: ${pendientes}`,
+          `📦 Lotes procesados: ${numeroLote}`
+        ];
+
+        for (
+          const texto of lineasProgreso
+        ) {
+
+          const linea =
+            document.createElement("div");
+
+          linea.textContent =
+            texto;
+
+          linea.style.marginBottom =
+            "6px";
+
+          resumen.appendChild(
+            linea
+          );
+        }
+      }
+
+      console.log(
+        `✅ RESULTADO LOTE ${numeroLote}:`,
+        resultadoLote
+      );
+
+      if (
+        resultadoLote?.completada === true ||
+        pendientes <= 0
+      ) {
+        break;
+      }
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            250
+          )
+      );
+    }
+
+    const completada =
+      resultadoFinal?.completada === true ||
+      Number(
+        resultadoFinal
+          ?.total_pendientes || 0
+      ) <= 0;
+
+    const enviadosFinales =
+      Number(
+        resultadoFinal
+          ?.total_enviados || 0
+      );
+
+    const fallidosFinales =
+      Number(
+        resultadoFinal
+          ?.total_fallidos || 0
+      );
+
+    const pendientesFinales =
+      Number(
+        resultadoFinal
+          ?.total_pendientes || 0
+      );
+
+    if (resumen) {
+
+      resumen.innerHTML = "";
+
+      const lineasFinales =
+        completada
+          ? [
+              "✅ Campaña procesada",
+              `📨 Mensajes enviados: ${enviadosFinales}`,
+              `⚠️ Envíos fallidos: ${fallidosFinales}`,
+              "📌 Estado: Enviado"
+            ]
+          : [
+              "⏸️ El envío quedó incompleto",
+              `📨 Mensajes enviados: ${enviadosFinales}`,
+              `⚠️ Envíos fallidos: ${fallidosFinales}`,
+              `⏳ Pendientes: ${pendientesFinales}`,
+              "Presiona Continuar envío para reanudar."
+            ];
+
+      for (
+        const texto of lineasFinales
+      ) {
+
+        const linea =
+          document.createElement("div");
+
+        linea.textContent =
+          texto;
+
+        linea.style.marginBottom =
+          "6px";
+
+        resumen.appendChild(
+          linea
+        );
+      }
+    }
+
+    if (completada) {
+
+      BORRADOR_MENSAJE_MASIVO_ORGANIZADOR_ID =
+        null;
+
+      PREVISUALIZACION_MENSAJE_MASIVO_ORGANIZADOR =
+        null;
+
+      if (botonEnviar) {
+        botonEnviar.style.display =
+          "none";
+      }
+
+      alert(
+        `Campaña procesada.\n\n` +
+        `Enviados: ${enviadosFinales}\n` +
+        `Fallidos: ${fallidosFinales}`
+      );
+
+    } else {
+
+      if (botonEnviar) {
+        botonEnviar.style.display =
+          "inline-block";
+
+        botonEnviar.textContent =
+          "📨 Continuar envío";
+      }
+
+      alert(
+        "El envío no terminó completamente. Puedes continuarlo desde este mismo botón."
+      );
+    }
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO EN EL ENVÍO MASIVO:",
+      errorInesperado
+    );
+
+    if (botonEnviar) {
+      botonEnviar.style.display =
+        "inline-block";
+
+      botonEnviar.textContent =
+        "📨 Continuar envío";
+    }
+
+    alert(
+      "El envío se detuvo. Los mensajes ya entregados no se duplicarán y podrás continuar el proceso."
+    );
+
+  } finally {
+
+    if (botonEnviar) {
+      botonEnviar.disabled = false;
     }
   }
 };	
