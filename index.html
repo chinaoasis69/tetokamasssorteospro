@@ -5806,15 +5806,25 @@ if (inicioGeneracion > 0) {
         generación incompleta.
       */
 
-      const {
-        error: errorLimpieza
-      } = await supabaseClient
-        .from("boletos")
-        .delete()
-        .eq(
-          "rifa_id",
-          rifaId
-        );
+    const numeroInicioLimpieza =
+    String(inicioGeneracion).padStart(
+        digitos,
+        "0"
+    );
+
+const {
+    error: errorLimpieza
+} = await supabaseClient
+    .from("boletos")
+    .delete()
+    .eq(
+        "rifa_id",
+        rifaId
+    )
+    .gte(
+        "numero",
+        numeroInicioLimpieza
+    );  
 
 
       if (errorLimpieza) {
@@ -5972,7 +5982,7 @@ async function activarRifaAdmin(id) {
   }
 
 
-  const boletosGenerados =
+  let boletosGenerados =
     Number(
       totalExistente || 0
     );
@@ -5981,17 +5991,75 @@ async function activarRifaAdmin(id) {
   if (
     boletosGenerados !==
     totalEsperado
-  ) {
+) {
+    const faltantes =
+        totalEsperado - boletosGenerados;
 
-    alert(
-      `⚠️ Esta rifa todavía no puede activarse.\n\n` +
-      `Boletos esperados: ${totalEsperado}\n` +
-      `Boletos generados: ${boletosGenerados}\n\n` +
-      `Primero debe completarse correctamente la generación automática.`
+    const confirmarGeneracion = confirm(
+        `⚠️ La generación de boletos está incompleta.\n\n` +
+        `Boletos esperados: ${totalEsperado}\n` +
+        `Boletos generados: ${boletosGenerados}\n` +
+        `Boletos faltantes: ${faltantes}\n\n` +
+        `¿Deseas generar automáticamente los boletos faltantes?`
     );
 
-    return;
-  }
+    if (!confirmarGeneracion) {
+        return;
+    }
+
+    const generacionCompleta =
+        await generarBoletosParaRifa(
+            id,
+            totalEsperado
+        );
+
+    if (!generacionCompleta) {
+        return;
+    }
+
+    const {
+        count: totalActualizado,
+        error: errorReconteo
+    } = await supabaseClient
+        .from("boletos")
+        .select(
+            "id",
+            {
+                count: "exact",
+                head: true
+            }
+        )
+        .eq(
+            "rifa_id",
+            id
+        );
+
+    if (errorReconteo) {
+        console.error(
+            "Error verificando boletos después de generar:",
+            errorReconteo
+        );
+
+        alert(
+            "❌ No se pudo verificar la generación completada."
+        );
+
+        return;
+    }
+
+    boletosGenerados =
+        Number(totalActualizado || 0);
+
+    if (boletosGenerados !== totalEsperado) {
+        alert(
+            `❌ La generación continúa incompleta.\n\n` +
+            `Boletos esperados: ${totalEsperado}\n` +
+            `Boletos generados: ${boletosGenerados}`
+        );
+
+        return;
+    }
+}
 
 
   const confirmar = confirm(
