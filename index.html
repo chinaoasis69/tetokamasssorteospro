@@ -15245,13 +15245,23 @@ window.cargarHistorialCampanasMasivasOrganizador =
           font-size:14px;
         `;
 
-        const lineasDetalles = [
-          `👥 Destinatarios: ${totalDestinatarios}`,
-          `✅ Enviados: ${totalEnviados}`,
-          `⚠️ Fallidos: ${totalFallidos}`,
-          `📌 Estado: ${estado}`,
-          `🗓️ Fecha: ${fechaTexto}`
-        ];
+    const totalRespuestas = 0;
+
+const totalSinResponder =
+  Math.max(
+    totalDestinatarios - totalRespuestas,
+    0
+  );
+
+const lineasDetalles = [
+  `👥 Destinatarios: ${totalDestinatarios}`,
+  `✅ Enviados: ${totalEnviados}`,
+  `💬 Respuestas: ${totalRespuestas}`,
+  `⏳ Sin responder: ${totalSinResponder}`,
+  `⚠️ Fallidos: ${totalFallidos}`,
+  `📌 Estado: ${estado}`,
+  `📅 Fecha: ${fechaTexto}`
+];    
 
         for (
           const textoDetalle
