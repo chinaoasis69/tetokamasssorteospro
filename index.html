@@ -3887,7 +3887,7 @@ ${r.aviso ? `<b>📢 Aviso:</b> ${r.aviso}<br>` : ""}
 				<br>
                 ${r.estado !== 'activa' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
-✅ Activar rifa
+${r.estado === 'congelada' ? '📅 Reprogramar rifa' : '✅ Activar rifa'}
 </button>
 
 <button onclick='abrirModalRifa(${JSON.stringify(r)})'>
@@ -3898,6 +3898,7 @@ ${r.estado === 'pausada' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
 ▶️ Reanudar rifa
 </button>
+` : r.estado === 'congelada' ? `
 ` : `
 <button onclick="pausarRifa('${r.id}')">
 ⏸️ Pausar rifa
@@ -5844,8 +5845,8 @@ async function activarRifaAdmin(id) {
   } = await supabaseClient
     .from("rifas")
     .select(
-      "id, titulo, total_numeros"
-    )
+    "id, titulo, total_numeros, fecha_sorteo, hora_sorteo, zona_horaria, estado"
+)
     .eq(
       "id",
       id
@@ -5866,6 +5867,18 @@ async function activarRifaAdmin(id) {
 
     return;
   }
+
+	if (
+    rifa.estado === "congelada" &&
+    rifaDebeCongelarse(rifa)
+) {
+    alert(
+        "⚠️ Esta dinámica está congelada y su fecha u hora ya vencieron.\n\n" +
+        "Primero edita la rifa y programa una nueva fecha y hora futuras."
+    );
+
+    return;
+}
 
 
   const totalEsperado =
