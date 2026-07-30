@@ -9842,9 +9842,74 @@ if(sloganBox){
  document.querySelector("h1").innerText = " TE-TO-KA MASS SORTEOS PRO "; 
 }
 
-	let rifas = [];
+let rifas = [];
 
-async function cargarRifasPublicas(){
+function obtenerFechaHoraActualEnZona(zonaHoraria) {
+    try {
+        const partes = new Intl.DateTimeFormat("en-CA", {
+            timeZone: zonaHoraria || "America/Chicago",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hourCycle: "h23"
+        }).formatToParts(new Date());
+
+        const valores = {};
+
+        partes.forEach(parte => {
+            if (parte.type !== "literal") {
+                valores[parte.type] = parte.value;
+            }
+        });
+
+        return (
+            `${valores.year}-${valores.month}-${valores.day}` +
+            `T${valores.hour}:${valores.minute}:${valores.second}`
+        );
+
+    } catch (error) {
+        console.error("Zona horaria no válida:", zonaHoraria, error);
+        return null;
+    }
+}
+
+function rifaDebeCongelarse(rifa) {
+    if (!rifa?.fecha_sorteo || !rifa?.hora_sorteo) {
+        return false;
+    }
+
+    if (!["activa", "programada"].includes(rifa.estado)) {
+        return false;
+    }
+
+    const zonaHoraria =
+        rifa.zona_horaria || "America/Chicago";
+
+    const fechaHoraActual =
+        obtenerFechaHoraActualEnZona(zonaHoraria);
+
+    if (!fechaHoraActual) {
+        return false;
+    }
+
+    const horaOriginal =
+        String(rifa.hora_sorteo).slice(0, 8);
+
+    const horaSorteo =
+        horaOriginal.length === 5
+            ? `${horaOriginal}:00`
+            : horaOriginal;
+
+    const fechaHoraSorteo =
+        `${rifa.fecha_sorteo}T${horaSorteo}`;
+
+    return fechaHoraActual >= fechaHoraSorteo;
+}
+
+async function cargarRifasPublicas(){	
 
   if (!clienteActual) {
     await cargarClienteActual();
@@ -9871,6 +9936,20 @@ mapaOrganizadores = {};
   }	
 
 	rifas = data || [];
+
+const rifasParaCongelar = rifas.filter(rifaDebeCongelarse);
+
+console.log(
+    "Rifas que deben congelarse:",
+    rifasParaCongelar.map(r => ({
+        id: r.id,
+        titulo: r.titulo,
+        fecha_sorteo: r.fecha_sorteo,
+        hora_sorteo: r.hora_sorteo,
+        zona_horaria: r.zona_horaria,
+        estado: r.estado
+    }))
+);	
 
   for (let r of rifas) {
     const { data: premios } = await supabaseClient
