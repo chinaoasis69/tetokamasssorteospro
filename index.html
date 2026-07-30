@@ -15247,11 +15247,17 @@ window.cargarHistorialCampanasMasivasOrganizador =
 
     const totalRespuestas = 0;
 
-const totalSinResponder =
+const totalRespuestas = Number(
+  campaña.total_respuestas ?? 0
+);
+
+const totalSinResponder = Number(
+  campaña.total_sin_responder ??
   Math.max(
-    totalDestinatarios - totalRespuestas,
+    totalEnviados - totalRespuestas,
     0
-  );
+  )
+);
 
 const lineasDetalles = [
   `👥 Destinatarios: ${totalDestinatarios}`,
