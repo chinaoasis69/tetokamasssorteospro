@@ -19632,21 +19632,15 @@ async function numeroSuerte(cantidad = 1) {
       aleatorias de los números disponibles.
     */
 
-    const tamanoVentana =
-      Math.min(
-        cantidadBasesDisponibles,
-        Math.max(
-          30,
-          cantidadSolicitada * 5
-        )
-      );
-
+    const tamanoVentana = 1;
 
     const MAX_INTENTOS_ALEATORIOS =
-      12;
+  Math.max(
+    50,
+    cantidadSolicitada * 20
+  );
 
-
-    for (
+   for (
       let intento = 0;
       intento <
         MAX_INTENTOS_ALEATORIOS &&
