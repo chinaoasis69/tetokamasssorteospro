@@ -3885,15 +3885,17 @@ ${r.aviso ? `<b>📢 Aviso:</b> ${r.aviso}<br>` : ""}
 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
 <b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo ?? 80}%<br>
 				<br>
+${r.estado !== 'activa' ? `
+
 ${r.estado === 'congelada' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
 ✅ Activar rifa reprogramada
 </button>
-` : r.estado !== 'activa' ? `
+` : `
 <button onclick="activarRifaAdmin('${r.id}')">
 ✅ Activar rifa
 </button>
-` : ''}                
+`}               
 
 <button onclick="abrirModalRifaPorId('${r.id}')">
 ✏️ Editar rifa
