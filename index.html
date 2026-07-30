@@ -5281,12 +5281,22 @@ async function eliminarRifa(id,titulo){
     document.getElementById("modalRifa").style.display = "none";
 }
 
-function abrirModalRifaPorId(id) {
-    const rifaEncontrada = (rifas || []).find(
-        rifa => String(rifa.id) === String(id)
-    );
+async function abrirModalRifaPorId(id) {
+    const {
+        data: rifaEncontrada,
+        error
+    } = await supabaseClient
+        .from("rifas")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-    if (!rifaEncontrada) {
+    if (error || !rifaEncontrada) {
+        console.error(
+            "Error consultando la dinámica para editar:",
+            error
+        );
+
         alert("❌ No se encontró la dinámica que deseas editar.");
         return;
     }
