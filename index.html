@@ -15273,11 +15273,42 @@ botonVerDestinatarios.type = "button";
 botonVerDestinatarios.textContent =
   "👥 Ver destinatarios";
 
-botonVerDestinatarios.onclick = function () {
-  window.verDestinatariosCampanaMasivaOrganizador(
-    campaña.id
-  );
-};
+const campanaIdParaDestinatarios =
+  campaña.id;
+
+botonVerDestinatarios.addEventListener(
+  "click",
+  async function (evento) {
+    evento.preventDefault();
+    evento.stopPropagation();
+
+    console.log(
+      "👥 ABRIENDO DESTINATARIOS DE CAMPAÑA:",
+      campanaIdParaDestinatarios
+    );
+
+    if (
+      typeof
+        window.verDestinatariosCampanaMasivaOrganizador !==
+      "function"
+    ) {
+      console.error(
+        "No existe la función verDestinatariosCampanaMasivaOrganizador."
+      );
+
+      alert(
+        "No fue posible abrir los destinatarios."
+      );
+
+      return;
+    }
+
+    await window
+      .verDestinatariosCampanaMasivaOrganizador(
+        campanaIdParaDestinatarios
+      );
+  }
+);
 
 botonVerDestinatarios.style.cssText = `
   margin-top:12px;
