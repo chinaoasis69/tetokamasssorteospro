@@ -5286,6 +5286,7 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formPrecio").value = datos?.precio_boleto || "";
     document.getElementById("formTotal").value = datos?.total_numeros || "";
     document.getElementById("formFecha").value = datos?.fecha_sorteo || "";
+	document.getElementById("formHora").value = datos?.hora_sorteo || "";
     document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
     document.getElementById("formImagen").value = datos?.imagen_url || "";
@@ -5301,6 +5302,7 @@ async function guardarRifaFormulario() {
   const premio = document.getElementById("formPremio").value.trim();
   const precio = document.getElementById("formPrecio").value;
   const total = document.getElementById("formTotal").value;
+  const hora = document.getElementById("formHora").value;	
   const modalidad = Number(
     document.getElementById("formModalidad").value || 1
   );	
@@ -5311,7 +5313,7 @@ async function guardarRifaFormulario() {
   const aviso = document.getElementById("formAviso").value.trim();
   const porcentaje = document.getElementById("formPorcentaje").value || 80;
 
-  if (!titulo || !premio || !precio || !total || !fecha || !metodo || !cifras) {
+  if (!titulo || !premio || !precio || !total || !fecha || !hora || !metodo || !cifras) {
     alert("❌ Completa los campos obligatorios.");
     return;
   }
@@ -5350,6 +5352,7 @@ if (
     total_numeros: Number(total),
 	modalidad: modalidad,  
     fecha_sorteo: fecha,
+	hora_sorteo: hora,  
     metodo_sorteo: metodo,
     cifras_sorteo: Number(cifras),
     imagen_url: imagen,
@@ -25142,8 +25145,11 @@ font-family:Arial, sans-serif;">
   <option value="10">Modalidad 10 — entrega 10 números</option>
 </select>  
 
-    <label>📅 Fecha del sorteo</label>
+    <label>🗓️ Fecha del sorteo</label>
     <input id="formFecha" type="date">
+
+    <label>🕗 Hora del sorteo</label>
+    <input id="formHora" type="time">
 
     <input id="formMetodo" placeholder="Método: Lotería Nacional, Pick 3, Manual">
     <input id="formCifras" type="number" placeholder="Últimas cifras: 2, 3 o 4">
