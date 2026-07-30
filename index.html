@@ -9939,6 +9939,32 @@ mapaOrganizadores = {};
 
 const rifasParaCongelar = rifas.filter(rifaDebeCongelarse);
 
+	if (rifasParaCongelar.length > 0) {
+    const idsParaCongelar =
+        rifasParaCongelar.map(rifa => rifa.id);
+
+    const { error: errorCongelar } =
+        await supabaseClient
+            .from("rifas")
+            .update({
+                estado: "congelada"
+            })
+            .in("id", idsParaCongelar);
+
+    if (errorCongelar) {
+        console.error(
+            "Error congelando dinámicas:",
+            errorCongelar
+        );
+    } else {
+        rifas = rifas.map(rifa =>
+            idsParaCongelar.includes(rifa.id)
+                ? { ...rifa, estado: "congelada" }
+                : rifa
+        );
+    }
+}
+
 console.log(
     "Rifas que deben congelarse:",
     rifasParaCongelar.map(r => ({
