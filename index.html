@@ -5320,6 +5320,10 @@ function abrirModalRifa(datos = null) {
 	document.getElementById("formHora").value = datos?.hora_sorteo || "";
 	document.getElementById("formZonaHoraria").value =
     datos?.zona_horaria || "America/Chicago";
+
+	document.getElementById("formTiempoApartadoHoras").value =
+    String(datos?.tiempo_apartado_horas ?? 24);
+	
     document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
     document.getElementById("formImagen").value = datos?.imagen_url || "";
@@ -5336,7 +5340,12 @@ async function guardarRifaFormulario() {
   const precio = document.getElementById("formPrecio").value;
   const total = document.getElementById("formTotal").value;
   const hora = document.getElementById("formHora").value;
-  const zonaHoraria = document.getElementById("formZonaHoraria").value;	
+  const zonaHoraria = document.getElementById("formZonaHoraria").value;
+
+  const tiempoApartadoHoras = Number(
+    document.getElementById("formTiempoApartadoHoras").value
+  );
+	
   const modalidad = Number(
     document.getElementById("formModalidad").value || 1
   );	
@@ -5387,7 +5396,8 @@ if (
 	modalidad: modalidad,  
     fecha_sorteo: fecha,
 	hora_sorteo: hora,
-	zona_horaria: zonaHoraria,  
+	zona_horaria: zonaHoraria,
+	tiempo_apartado_horas: tiempoApartadoHoras,  
     metodo_sorteo: metodo,
     cifras_sorteo: Number(cifras),
     imagen_url: imagen,
@@ -8835,12 +8845,10 @@ async function apartarBoletosInterno() {
     await supabaseClient
       .from("boletos")
       .update({
-        estado:
-          "apartado",
-
-        telefono:
-          telefonoReserva
-      })
+    estado: "apartado",
+    telefono: telefonoReserva,
+    fecha: new Date().toISOString()
+})
       .eq(
         "rifa_id",
         RIFA_ID
@@ -18479,6 +18487,7 @@ async function apartarWhats(){
       estado: "apartado",
       nombre: nombre,
       telefono: telefono,
+	  fecha: new Date().toISOString(),
 	  rifa_id: RIFA_ID
     })
     .eq("id", boletoSeleccionado.id);
@@ -25383,6 +25392,20 @@ font-family:Arial, sans-serif;">
   <option value="America/New_York">Este de Estados Unidos</option>
   <option value="America/Denver">Montaña de Estados Unidos</option>
   <option value="America/Los_Angeles">Pacífico de Estados Unidos</option>
+</select>
+
+<label>⏳ Tiempo máximo de apartado</label>
+<select id="formTiempoApartadoHoras">
+    <option value="24">24 horas</option>
+    <option value="48">2 días</option>
+    <option value="72">3 días</option>
+    <option value="96">4 días</option>
+    <option value="120">5 días</option>
+    <option value="144">6 días</option>
+    <option value="168">7 días</option>
+    <option value="240">10 días</option>
+    <option value="336">14 días</option>
+    <option value="0">Sin liberación automática</option>
 </select>	  
 
     <input id="formMetodo" placeholder="Método: Lotería Nacional, Pick 3, Manual">
