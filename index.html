@@ -5870,8 +5870,12 @@ async function activarRifaAdmin(id) {
 
 	if (
     rifa.estado === "congelada" &&
-    rifaDebeCongelarse(rifa)
+    rifaDebeCongelarse({
+        ...rifa,
+        estado: "activa"
+    })
 ) {
+		
     alert(
         "⚠️ Esta dinámica está congelada y su fecha u hora ya vencieron.\n\n" +
         "Primero edita la rifa y programa una nueva fecha y hora futuras."
