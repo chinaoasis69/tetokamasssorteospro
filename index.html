@@ -15274,7 +15274,7 @@ botonVerDestinatarios.textContent =
   "👥 Ver destinatarios";
 
 const campanaIdParaDestinatarios =
-  campaña.id.campana_id;
+  campaña.campana_id || campaña.id;
 
 botonVerDestinatarios.addEventListener(
   "click",
