@@ -3895,7 +3895,7 @@ ${r.estado === 'congelada' ? `
 </button>
 ` : ''}                
 
-<button onclick='abrirModalRifa(${JSON.stringify(r)})'>
+<button onclick="abrirModalRifaPorId('${r.id}')">
 ✏️ Editar rifa
 </button>
 
@@ -3936,8 +3936,8 @@ margin-top:8px;
 🟢 Rifa Activa
 </div>
 
-<button onclick='abrirModalRifa(${JSON.stringify(r)})'>
-  ✏️ Editar rifa
+<button onclick="abrirModalRifaPorId('${r.id}')">
+✏️ Editar rifa
 </button>
 
 ${r.estado === 'pausada' ? `
@@ -5278,6 +5278,19 @@ async function eliminarRifa(id,titulo){
 	function cerrarModalRifa() {
     document.getElementById("modalRifa").style.display = "none";
 }
+
+function abrirModalRifaPorId(id) {
+    const rifaEncontrada = (rifas || []).find(
+        rifa => String(rifa.id) === String(id)
+    );
+
+    if (!rifaEncontrada) {
+        alert("❌ No se encontró la dinámica que deseas editar.");
+        return;
+    }
+
+    abrirModalRifa(rifaEncontrada);
+}	
 
 function abrirModalRifa(datos = null) {
 
