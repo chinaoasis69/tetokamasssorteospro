@@ -2282,6 +2282,88 @@ Cargando historial...
     "
   >
   </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- MASS - DETALLE DE DESTINATARIOS DE CAMPAÑA MASIVA -->
+<!-- ========================================================= -->
+
+<div
+  id="panelDestinatariosCampanaMasivaOrganizador"
+  style="
+    display:none;
+    width:100%;
+    box-sizing:border-box;
+    margin:0 0 18px 0;
+    padding:16px;
+    border:2px solid #b56cff;
+    border-radius:14px;
+    background:#140b1d;
+    box-shadow:0 0 18px rgba(181,108,255,0.30);
+    color:white;
+  "
+>
+  <div
+    style="
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    "
+  >
+    <h3
+      style="
+        margin:0;
+        color:#d39cff;
+        font-size:22px;
+      "
+    >
+      👥 Destinatarios de la campaña
+    </h3>
+
+    <button
+      type="button"
+      onclick="cerrarDestinatariosCampanaMasivaOrganizador()"
+      style="
+        padding:9px 14px;
+        border:1px solid #777;
+        border-radius:9px;
+        background:#2b2b2b;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✕ Cerrar
+    </button>
+  </div>
+
+  <div
+    id="resumenDestinatariosCampanaMasivaOrganizador"
+    style="
+      margin-bottom:14px;
+      padding:12px;
+      border:1px solid #8050aa;
+      border-radius:10px;
+      background:#21112f;
+      text-align:center;
+      font-weight:bold;
+      color:#eee;
+    "
+  >
+    Selecciona una campaña para consultar sus destinatarios.
+  </div>
+
+  <div
+    id="listaDestinatariosCampanaMasivaOrganizador"
+    style="
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    "
+  ></div>
 </div>	
 
 <!-- ====================================================== -->
@@ -15184,11 +15266,38 @@ window.cargarHistorialCampanasMasivasOrganizador =
           detalles.appendChild(linea);
         }
 
+	const botonVerDestinatarios =
+  document.createElement("button");
+
+botonVerDestinatarios.type = "button";
+botonVerDestinatarios.textContent =
+  "👥 Ver destinatarios";
+
+botonVerDestinatarios.onclick = function () {
+  window.verDestinatariosCampanaMasivaOrganizador(
+    campana.id
+  );
+};
+
+botonVerDestinatarios.style.cssText = `
+  margin-top:12px;
+  padding:10px 14px;
+  border:2px solid #b56cff;
+  border-radius:9px;
+  background:#261138;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 0 12px rgba(181,108,255,0.40);
+`;
+
         tarjeta.appendChild(encabezado);
         tarjeta.appendChild(
           contenidoMensaje
         );
         tarjeta.appendChild(detalles);
+
+		tarjeta.appendChild(botonVerDestinatarios);  
 
         resumenHistorial.appendChild(
           tarjeta
@@ -15220,6 +15329,254 @@ window.cargarHistorialCampanasMasivasOrganizador =
           ⚠️ Ocurrió un error inesperado al cargar el historial.
         </div>
       `;
+    }
+  };
+
+// ============================================================
+// MASS - VER DESTINATARIOS DE UNA CAMPAÑA MASIVA
+// ============================================================
+
+window.verDestinatariosCampanaMasivaOrganizador =
+  async function (campanaId) {
+    const panel =
+      document.getElementById(
+        "panelDestinatariosCampanaMasivaOrganizador"
+      );
+
+    const resumen =
+      document.getElementById(
+        "resumenDestinatariosCampanaMasivaOrganizador"
+      );
+
+    const lista =
+      document.getElementById(
+        "listaDestinatariosCampanaMasivaOrganizador"
+      );
+
+    if (!panel || !resumen || !lista) {
+      console.error(
+        "No se encontró el panel de destinatarios."
+      );
+      return;
+    }
+
+    if (!campanaId) {
+      resumen.textContent =
+        "No se encontró la campaña seleccionada.";
+      return;
+    }
+
+    panel.style.display = "block";
+
+    resumen.textContent =
+      "⏳ Cargando destinatarios...";
+
+    lista.innerHTML = "";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+    try {
+      const {
+        data: destinatarios,
+        error
+      } = await supabaseClient
+        .from("mensajes_masivos_destinatarios")
+        .select(`
+          id,
+          nombre_destinatario,
+          usuario_telefono,
+          estado_entrega,
+          fuentes,
+          conversacion_id,
+          mensaje_chat_id,
+          enviado_at
+        `)
+        .eq("campana_id", campanaId)
+        .order("nombre_destinatario", {
+          ascending: true
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const listaDestinatarios =
+        Array.isArray(destinatarios)
+          ? destinatarios
+          : [];
+
+      const total =
+        listaDestinatarios.length;
+
+      const enviados =
+        listaDestinatarios.filter(
+          (destinatario) =>
+            destinatario.estado_entrega ===
+            "enviado"
+        ).length;
+
+      const fallidos =
+        listaDestinatarios.filter(
+          (destinatario) =>
+            destinatario.estado_entrega ===
+            "fallido"
+        ).length;
+
+      const pendientes =
+        listaDestinatarios.filter(
+          (destinatario) =>
+            destinatario.estado_entrega ===
+            "pendiente"
+        ).length;
+
+      resumen.textContent =
+        `👥 Total: ${total} | ` +
+        `✅ Enviados: ${enviados} | ` +
+        `⏳ Pendientes: ${pendientes} | ` +
+        `⚠️ Fallidos: ${fallidos}`;
+
+      if (total === 0) {
+        lista.innerHTML = `
+          <div
+            style="
+              padding:14px;
+              border:1px solid #777;
+              border-radius:10px;
+              background:#181818;
+              text-align:center;
+              color:#ccc;
+            "
+          >
+            No se encontraron destinatarios para esta campaña.
+          </div>
+        `;
+        return;
+      }
+
+      for (
+        const destinatario
+        of listaDestinatarios
+      ) {
+        const tarjeta =
+          document.createElement("div");
+
+        const nombre =
+          String(
+            destinatario.nombre_destinatario ||
+            "Usuario MASS"
+          );
+
+        const telefono =
+          String(
+            destinatario.usuario_telefono ||
+            "Sin teléfono"
+          );
+
+        const estado =
+          String(
+            destinatario.estado_entrega ||
+            "pendiente"
+          );
+
+        let colorEstado = "#ffd166";
+        let iconoEstado = "⏳";
+
+        if (estado === "enviado") {
+          colorEstado = "#39ff14";
+          iconoEstado = "✅";
+        }
+
+        if (estado === "fallido") {
+          colorEstado = "#ff4d4d";
+          iconoEstado = "⚠️";
+        }
+
+        const fuentes =
+          Array.isArray(destinatario.fuentes)
+            ? destinatario.fuentes.join(", ")
+            : "Sin fuente registrada";
+
+        const fechaEnvio =
+          destinatario.enviado_at
+            ? new Date(
+                destinatario.enviado_at
+              ).toLocaleString()
+            : "Todavía no enviado";
+
+        tarjeta.style.cssText = `
+          padding:14px;
+          border:2px solid ${colorEstado};
+          border-radius:12px;
+          background:#181818;
+          box-shadow:0 0 12px ${colorEstado}55;
+          color:white;
+        `;
+
+        tarjeta.innerHTML = `
+          <div
+            style="
+              font-size:17px;
+              font-weight:bold;
+              color:${colorEstado};
+              margin-bottom:8px;
+            "
+          >
+            ${iconoEstado} ${nombre}
+          </div>
+
+          <div style="margin-bottom:5px;">
+            📱 Teléfono: ${telefono}
+          </div>
+
+          <div style="margin-bottom:5px;">
+            📌 Estado: ${estado}
+          </div>
+
+          <div style="margin-bottom:5px;">
+            🔗 Fuente: ${fuentes}
+          </div>
+
+          <div>
+            🗓️ Enviado: ${fechaEnvio}
+          </div>
+        `;
+
+        lista.appendChild(tarjeta);
+      }
+
+      console.log(
+        "✅ DESTINATARIOS DE CAMPAÑA:",
+        listaDestinatarios
+      );
+    } catch (errorInesperado) {
+      console.error(
+        "ERROR CARGANDO DESTINATARIOS:",
+        errorInesperado
+      );
+
+      resumen.textContent =
+        "⚠️ No fue posible cargar los destinatarios.";
+
+      lista.innerHTML = "";
+    }
+  };
+
+// ============================================================
+// MASS - CERRAR DESTINATARIOS DE CAMPAÑA MASIVA
+// ============================================================
+
+window.cerrarDestinatariosCampanaMasivaOrganizador =
+  function () {
+    const panel =
+      document.getElementById(
+        "panelDestinatariosCampanaMasivaOrganizador"
+      );
+
+    if (panel) {
+      panel.style.display = "none";
     }
   };	
 
