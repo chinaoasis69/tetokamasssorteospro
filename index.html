@@ -16724,6 +16724,13 @@ contenedor.appendChild(cajaRespuesta);
         mensajes?.length || 0
     }
   );
+
+	setTimeout(() => {
+  contenedor.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}, 100);
 };
 
 // ============================================================
