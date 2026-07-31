@@ -4199,14 +4199,58 @@ async function mostrarGanadoresPreSorteo(
 
     const resumen = ganadores[0];
 
+	const {
+    data: resultadosPublicos,
+    error: errorResultadosPublicos
+} = await supabaseClient.rpc(
+    "listar_resultados_pre_sorteos_publicos",
+    {
+        p_rifa_id: rifaId
+    }
+);
+
+if (errorResultadosPublicos) {
+    console.error(
+        "Error verificando publicación del pre-sorteo:",
+        errorResultadosPublicos
+    );
+}
+
+const resultadoPublicado =
+    (resultadosPublicos || []).some(
+        resultado =>
+            resultado.pre_sorteo_id === preSorteoId
+    );
+
     cont.innerHTML = `
         <h3>🏆 Resultado del pre-sorteo</h3>
 
         <button
-            onclick="mostrarPreSorteosRifa('${rifaId}')"
-        >
-            ⬅️ Volver a pre-sorteos
-        </button>
+    onclick="mostrarPreSorteosRifa('${rifaId}')"
+>
+    ⬅️ Volver a pre-sorteos
+</button>
+
+${
+    resultadoPublicado
+        ? `
+            <p>
+                ✅ Resultado publicado
+            </p>
+        `
+        : `
+            <button
+                onclick="publicarResultadoPreSorteo(
+                    '${preSorteoId}',
+                    '${rifaId}'
+                )"
+            >
+                📢 Publicar resultado
+            </button>
+        `
+}
+
+<br><br>
 
         <br><br>
 
@@ -4312,6 +4356,71 @@ ${
         ).join("")}
     `;
 }
+
+async function publicarResultadoPreSorteo(
+    preSorteoId,
+    rifaId
+) {
+    if (!preSorteoId || !rifaId) {
+        alert(
+            "❌ No se encontró el pre-sorteo seleccionado."
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            "¿Publicar oficialmente este resultado?\n\n" +
+            "Los usuarios podrán ver el número ganador, " +
+            "el premio y un nombre protegido. " +
+            "El teléfono no será mostrado."
+        )
+    ) {
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "publicar_resultado_pre_sorteo",
+        {
+            p_pre_sorteo_id: preSorteoId
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error publicando resultado del pre-sorteo:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible publicar el resultado.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        return;
+    }
+
+    console.log(
+        "Resultado del pre-sorteo publicado:",
+        data
+    );
+
+    alert(
+        "✅ Resultado publicado correctamente."
+    );
+
+    await mostrarGanadoresPreSorteo(
+        preSorteoId,
+        rifaId
+    );
+}	
 
 async function actualizarEstadoEntregaPreSorteo(
     ganadorId,
