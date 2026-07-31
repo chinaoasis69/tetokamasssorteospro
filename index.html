@@ -4080,13 +4080,90 @@ async function mostrarPreSorteosRifa(rifaId) {
                             <br>
 
                             <b>📌 Estado:</b>
-                            ${preSorteo.estado}
-                        </div>
+${preSorteo.estado}
+
+${
+    preSorteo.estado === "borrador"
+        ? `
+            <br><br>
+
+            <button
+                onclick="programarPreSorteo(
+                    '${preSorteo.id}',
+                    '${rifaId}'
+                )"
+            >
+                📅 Publicar y programar
+            </button>
+        `
+        : ""
+}
+</div>
                     `
                 ).join("")
         }
     `;
 }
+
+async function programarPreSorteo(
+    preSorteoId,
+    rifaId
+) {
+    if (!preSorteoId || !rifaId) {
+        alert(
+            "❌ No se encontró el pre-sorteo seleccionado."
+        );
+
+        return;
+    }
+
+    if (
+        !confirm(
+            "¿Publicar y programar este pre-sorteo?\n\n" +
+            "Después de programarlo ya no permanecerá como borrador."
+        )
+    ) {
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "programar_pre_sorteo",
+        {
+            p_pre_sorteo_id: preSorteoId
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error programando pre-sorteo:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible programar el pre-sorteo.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        return;
+    }
+
+    console.log(
+        "Pre-sorteo programado:",
+        data
+    );
+
+    alert(
+        "✅ Pre-sorteo publicado y programado."
+    );
+
+    await mostrarPreSorteosRifa(rifaId);
+}	
 
 function abrirFormularioPreSorteo(rifaId) {
     const cont =
