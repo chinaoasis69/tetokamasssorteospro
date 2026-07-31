@@ -22350,68 +22350,95 @@ if (contador) {
         premiosPreSorteosSeguros.length;
 }
 
- document
+ const premiosCombinados = [
+    ...premiosActuales.map(p => ({
+        tipo: "tradicional",
+        fechaOrden: p.fecha || null,
+        datos: p
+    })),
+
+    ...premiosPreSorteosSeguros.map(p => ({
+        tipo: "pre_sorteo",
+        fechaOrden:
+            p.ejecutado_en ||
+            p.seleccionado_en ||
+            null,
+        datos: p
+    }))
+].sort(
+    (a, b) =>
+        new Date(b.fechaOrden || 0).getTime() -
+        new Date(a.fechaOrden || 0).getTime()
+);
+
+document
     .getElementById("historialPremios")
     .innerHTML =
-        premiosActuales.map(p => `
-            <div style="
-                border:1px solid gold;
-                padding:10px;
-                margin:10px 0;
-                border-radius:10px;
-            ">
-                🏆 Premio:
-                <b>${p.premio}</b>
-                <br>
+        premiosCombinados.map(item => {
+            const p = item.datos;
 
-                🎟️ Número:
-                <b>${p.numero}</b>
-                <br>
+            if (item.tipo === "pre_sorteo") {
+                return `
+                    <div style="
+                        border:1px solid #39ff14;
+                        padding:10px;
+                        margin:10px 0;
+                        border-radius:10px;
+                    ">
+                        <b>🎉 Premio de pre-sorteo</b>
+                        <br>
 
-                📅 ${
-                    p.fecha
-                        ? new Date(
-                            p.fecha
-                        ).toLocaleDateString()
-                        : "Sin fecha"
-                }
-            </div>
-        `).join("")
-        +
-        premiosPreSorteosSeguros.map(p => `
-            <div style="
-                border:1px solid #39ff14;
-                padding:10px;
-                margin:10px 0;
-                border-radius:10px;
-            ">
-                <b>🎉 Premio de pre-sorteo</b>
-                <br>
+                        🎊 ${p.pre_sorteo_titulo}
+                        <br>
 
-                🎊 ${p.pre_sorteo_titulo}
-                <br>
+                        🎟️ Número ganador:
+                        <b>${p.numero_ganador}</b>
+                        <br>
 
-                🎟️ Número ganador:
-                <b>${p.numero_ganador}</b>
-                <br>
+                        🏆 Premio:
+                        <b>${p.premio}</b>
+                        <br>
 
-                🏆 Premio:
-                <b>${p.premio}</b>
-                <br>
+                        📦 Entrega:
+                        ${p.estado_entrega}
+                        <br>
 
-                📦 Entrega:
-                ${p.estado_entrega}
-                <br>
-
-                📅 ${
-                    p.ejecutado_en
-                        ? new Date(
+                        📅 ${
                             p.ejecutado_en
-                        ).toLocaleString()
-                        : "Sin fecha"
-                }
-            </div>
-        `).join("");   
+                                ? new Date(
+                                    p.ejecutado_en
+                                ).toLocaleString()
+                                : "Sin fecha"
+                        }
+                    </div>
+                `;
+            }
+
+            return `
+                <div style="
+                    border:1px solid gold;
+                    padding:10px;
+                    margin:10px 0;
+                    border-radius:10px;
+                ">
+                    🏆 Premio:
+                    <b>${p.premio}</b>
+                    <br>
+
+                    🎟️ Número:
+                    <b>${p.numero}</b>
+                    <br>
+
+                    📅 ${
+                        p.fecha
+                            ? new Date(
+                                p.fecha
+                            ).toLocaleDateString()
+                            : "Sin fecha"
+                    }
+                </div>
+            `;
+        }).join("");   
 }	
 	
 async function usarGiro(numero, rifaId){
