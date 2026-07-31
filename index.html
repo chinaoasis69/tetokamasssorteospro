@@ -22253,6 +22253,35 @@ async function cargarHistorialSorteos() {
 
 async function cargarHistorialPremios(){
 
+	const {
+    data: {
+        session
+    }
+} = await supabaseClient.auth.getSession();
+
+if (!session?.user?.id) {
+    const contador =
+        document.getElementById(
+            "contadorPremios"
+        );
+
+    const historial =
+        document.getElementById(
+            "historialPremios"
+        );
+
+    if (contador) {
+        contador.innerText = "0";
+    }
+
+    if (historial) {
+        historial.innerHTML =
+            "🏆 Sin premios todavía";
+    }
+
+    return;
+}
+
     const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
     const { data, error } = await supabaseClient
