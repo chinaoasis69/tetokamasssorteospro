@@ -21462,8 +21462,31 @@ async function cargarHistorialPremios(){
     .eq("user_id", tel)
     .order("fecha", { ascending:false });
 
+	const {
+    data: premiosPreSorteos,
+    error: errorPremiosPreSorteos
+} = await supabaseClient.rpc(
+    "listar_mis_premios_pre_sorteos"
+);
+
 	console.log("PREMIOS DATA:", data);
     console.log("PREMIOS ERROR:", error);
+
+	console.log(
+    "PREMIOS PRE-SORTEOS:",
+    premiosPreSorteos
+);
+
+console.log(
+    "ERROR PREMIOS PRE-SORTEOS:",
+    errorPremiosPreSorteos
+);
+
+const premiosPreSorteosSeguros =
+    errorPremiosPreSorteos
+        ? []
+        : (premiosPreSorteos || []);
+	
     console.log("USER ACTUAL:", userActual);
     console.log("TEL:", localStorage.getItem("mass_telefono"));
 
@@ -21474,12 +21497,18 @@ async function cargarHistorialPremios(){
 
     const box = document.getElementById("historialPremios");
 
-    if(!data.length){
-        box.innerHTML = "Sin premios todavía";
-        return;
-    }
+    const premiosActuales = data || [];
 
-    box.innerHTML = data.map(p => `
+if (
+    premiosActuales.length === 0 &&
+    premiosPreSorteosSeguros.length === 0
+) {
+    box.innerHTML = "Sin premios todavía";
+    return;
+}
+
+    box.innerHTML =
+    premiosActuales.map(p => `
         <div style="
             background:#111;
             padding:10px;
@@ -21488,7 +21517,34 @@ async function cargarHistorialPremios(){
         ">
             🎟️ ${p.numero}<br>
             🏆 ${p.premio}<br>
-            📅 ${new Date(p.fecha).toLocaleString()}
+            📅 ${
+                p.fecha
+                    ? new Date(p.fecha).toLocaleString()
+                    : "Sin fecha"
+            }
+        </div>
+    `).join("")
+    +
+    premiosPreSorteosSeguros.map(p => `
+        <div style="
+            background:#111;
+            padding:10px;
+            margin-bottom:10px;
+            border-radius:10px;
+            border:1px solid #39ff14;
+        ">
+            <b>🎉 Premio de pre-sorteo</b><br>
+            🎊 ${p.pre_sorteo_titulo}<br>
+            🎟️ Número ganador: ${p.numero_ganador}<br>
+            🏆 ${p.premio}<br>
+            📦 Entrega: ${p.estado_entrega}<br>
+            📅 ${
+                p.ejecutado_en
+                    ? new Date(
+                        p.ejecutado_en
+                    ).toLocaleString()
+                    : "Sin fecha"
+            }
         </div>
     `).join("");
 
@@ -22238,38 +22294,124 @@ async function cargarHistorialPremios(){
         .eq("user_id", tel)
         .order("fecha", { ascending:false });
 
+	const {
+    data: premiosPreSorteos,
+    error: errorPremiosPreSorteos
+} = await supabaseClient.rpc(
+    "listar_mis_premios_pre_sorteos"
+);
+
+	console.log(
+    "PREMIOS PRE-SORTEOS:",
+    premiosPreSorteos
+);
+
+console.log(
+    "ERROR PREMIOS PRE-SORTEOS:",
+    errorPremiosPreSorteos
+);
+
+const premiosPreSorteosSeguros =
+    errorPremiosPreSorteos
+        ? []
+        : (premiosPreSorteos || []);
+
     if(error){
         console.error(error);
         return;
     }
 
-    if(!data || data.length === 0){
+    const premiosActuales = data || [];
 
-    const contador = document.getElementById("contadorPremios");
-    if(contador) contador.innerText = "0";
+if (
+    premiosActuales.length === 0 &&
+    premiosPreSorteosSeguros.length === 0
+) {
+    const contador =
+        document.getElementById("contadorPremios");
 
-    document.getElementById("historialPremios").innerHTML =
-    "🏆 Sin premios todavía";
+    if (contador) {
+        contador.innerText = "0";
+    }
+
+    document
+        .getElementById("historialPremios")
+        .innerHTML = "🏆 Sin premios todavía";
 
     return;
 }
 
-	const contador = document.getElementById("contadorPremios");
-if(contador) contador.innerText = data.length;
+	const contador =
+    document.getElementById("contadorPremios");
 
-    document.getElementById("historialPremios").innerHTML =
-    data.map(p => `
-        <div style="
-            border:1px solid gold;
-            padding:10px;
-            margin:10px 0;
-            border-radius:10px;
-        ">
-            🏆 Premio: <b>${p.premio}</b><br>
-            🎟 Número: <b>${p.numero}</b><br>
-            📅 ${new Date(p.fecha).toLocaleDateString()}
-        </div>
-    `).join("");
+if (contador) {
+    contador.innerText =
+        premiosActuales.length +
+        premiosPreSorteosSeguros.length;
+}
+
+ document
+    .getElementById("historialPremios")
+    .innerHTML =
+        premiosActuales.map(p => `
+            <div style="
+                border:1px solid gold;
+                padding:10px;
+                margin:10px 0;
+                border-radius:10px;
+            ">
+                🏆 Premio:
+                <b>${p.premio}</b>
+                <br>
+
+                🎟️ Número:
+                <b>${p.numero}</b>
+                <br>
+
+                📅 ${
+                    p.fecha
+                        ? new Date(
+                            p.fecha
+                        ).toLocaleDateString()
+                        : "Sin fecha"
+                }
+            </div>
+        `).join("")
+        +
+        premiosPreSorteosSeguros.map(p => `
+            <div style="
+                border:1px solid #39ff14;
+                padding:10px;
+                margin:10px 0;
+                border-radius:10px;
+            ">
+                <b>🎉 Premio de pre-sorteo</b>
+                <br>
+
+                🎊 ${p.pre_sorteo_titulo}
+                <br>
+
+                🎟️ Número ganador:
+                <b>${p.numero_ganador}</b>
+                <br>
+
+                🏆 Premio:
+                <b>${p.premio}</b>
+                <br>
+
+                📦 Entrega:
+                ${p.estado_entrega}
+                <br>
+
+                📅 ${
+                    p.ejecutado_en
+                        ? new Date(
+                            p.ejecutado_en
+                        ).toLocaleString()
+                        : "Sin fecha"
+                }
+            </div>
+        `).join("");   
 }	
 	
 async function usarGiro(numero, rifaId){
