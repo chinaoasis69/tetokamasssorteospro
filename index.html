@@ -4098,12 +4098,186 @@ ${
         `
         : ""
 }
+
+${
+    preSorteo.estado === "ejecutado"
+        ? `
+            <br><br>
+
+            <button
+                onclick="mostrarGanadoresPreSorteo(
+                    '${preSorteo.id}',
+                    '${rifaId}'
+                )"
+            >
+                🏆 Ver ganador
+            </button>
+        `
+        : ""
+}
+	
 </div>
                     `
                 ).join("")
         }
     `;
 }
+
+async function mostrarGanadoresPreSorteo(
+    preSorteoId,
+    rifaId
+) {
+    const cont =
+        document.getElementById("adminContenido");
+
+    if (!cont || !preSorteoId || !rifaId) {
+        alert(
+            "❌ No se encontró el pre-sorteo seleccionado."
+        );
+
+        return;
+    }
+
+    cont.innerHTML = `
+        <h3>🏆 Ganador del pre-sorteo</h3>
+
+        <p>Cargando resultado...</p>
+    `;
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_ganadores_pre_sorteo_admin",
+        {
+            p_pre_sorteo_id: preSorteoId
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error cargando ganador del pre-sorteo:",
+            error
+        );
+
+        cont.innerHTML = `
+            <h3>🏆 Ganador del pre-sorteo</h3>
+
+            <p>
+                ❌ No fue posible cargar el resultado.
+            </p>
+
+            <button
+                onclick="mostrarPreSorteosRifa('${rifaId}')"
+            >
+                ⬅️ Volver a pre-sorteos
+            </button>
+        `;
+
+        return;
+    }
+
+    const ganadores = data || [];
+
+    if (ganadores.length === 0) {
+        cont.innerHTML = `
+            <h3>🏆 Ganador del pre-sorteo</h3>
+
+            <p>
+                No se encontró ningún ganador registrado.
+            </p>
+
+            <button
+                onclick="mostrarPreSorteosRifa('${rifaId}')"
+            >
+                ⬅️ Volver a pre-sorteos
+            </button>
+        `;
+
+        return;
+    }
+
+    const resumen = ganadores[0];
+
+    cont.innerHTML = `
+        <h3>🏆 Resultado del pre-sorteo</h3>
+
+        <button
+            onclick="mostrarPreSorteosRifa('${rifaId}')"
+        >
+            ⬅️ Volver a pre-sorteos
+        </button>
+
+        <br><br>
+
+        <div style="
+            border:1px solid #39ff14;
+            border-radius:14px;
+            padding:16px;
+            margin:12px 0;
+            text-align:left;
+        ">
+            <b>🎉 Pre-sorteo:</b>
+            ${resumen.pre_sorteo_titulo}
+            <br>
+
+            <b>🎟️ Participantes:</b>
+            ${resumen.participantes_total}
+            <br>
+
+            <b>🕘 Ejecutado:</b>
+            ${
+                resumen.ejecutado_en
+                    ? new Date(
+                        resumen.ejecutado_en
+                    ).toLocaleString("es-MX")
+                    : "Sin fecha"
+            }
+        </div>
+
+        ${ganadores.map(
+            ganador => `
+                <div style="
+                    border:2px solid #39ff14;
+                    border-radius:14px;
+                    padding:18px;
+                    margin:14px 0;
+                    text-align:left;
+                ">
+                    <h3 style="
+                        text-align:center;
+                        margin-top:0;
+                    ">
+                        🏆 Ganador ${ganador.lugar_ganador}
+                    </h3>
+
+                    <b>🎟️ Número ganador:</b>
+                    ${ganador.numero_ganador}
+                    <br>
+
+                    <b>👤 Nombre:</b>
+                    ${ganador.nombre || "No registrado"}
+                    <br>
+
+                    <b>📱 Teléfono:</b>
+                    ${ganador.telefono || "No registrado"}
+                    <br>
+
+                    <b>🎁 Premio:</b>
+                    ${ganador.premio}
+                    <br>
+
+                    <b>🎲 Método:</b>
+                    Selección aleatoria del sistema
+                    <br>
+
+                    <b>📦 Entrega:</b>
+                    ${ganador.estado_entrega}
+                </div>
+            `
+        ).join("")}
+    `;
+}	
 
 async function programarPreSorteo(
     preSorteoId,
