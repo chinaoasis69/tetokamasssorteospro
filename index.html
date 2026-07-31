@@ -8643,10 +8643,75 @@ const supabaseClient = createClient(
   }
 );
 
-supabaseClient.auth.onAuthStateChange((event, session) => {
+window.MASS_ONESIGNAL_INSTANCIA =
+    window.MASS_ONESIGNAL_INSTANCIA || null;
+
+window.MASS_ONESIGNAL_LISTO =
+    window.MASS_ONESIGNAL_LISTO || false;
+
+window.MASS_ONESIGNAL_USUARIO_PENDIENTE =
+    window.MASS_ONESIGNAL_USUARIO_PENDIENTE || null;
+
+async function sincronizarUsuarioOneSignal(
+    authUserId
+) {
+    const externalId =
+        authUserId
+            ? String(authUserId).trim()
+            : null;
+
+    window.MASS_ONESIGNAL_USUARIO_PENDIENTE =
+        externalId;
+
+    if (
+        !window.MASS_ONESIGNAL_LISTO ||
+        !window.MASS_ONESIGNAL_INSTANCIA
+    ) {
+        return;
+    }
+
+    try {
+        if (externalId) {
+            await window
+                .MASS_ONESIGNAL_INSTANCIA
+                .login(externalId);
+
+            console.log(
+                "✅ OneSignal vinculado:",
+                externalId
+            );
+        } else {
+            await window
+                .MASS_ONESIGNAL_INSTANCIA
+                .logout();
+
+            console.log(
+                "✅ OneSignal desvinculado."
+            );
+        }
+    } catch (error) {
+        console.error(
+            "❌ Error sincronizando OneSignal:",
+            error
+        );
+    }
+}	
+
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
 
+	if (
+    session?.user?.id &&
+    event !== "PASSWORD_RECOVERY"
+) {
+    sincronizarUsuarioOneSignal(
+        session.user.id
+    );
+}
+
 	if (event === "SIGNED_OUT") {
+  await sincronizarUsuarioOneSignal(null);
+		
   localStorage.removeItem("mass_user");
   localStorage.removeItem("mass_dispositivo_id");
 
@@ -26425,6 +26490,20 @@ OneSignalDeferred.push(async function(OneSignal) {
  serviceWorkerPath: "onesignalsdkworker.js",
 serviceWorkerUpdaterPath: "onesignalsdkupdaterworker.js",
   });
+
+window.MASS_ONESIGNAL_INSTANCIA =
+    OneSignal;
+
+window.MASS_ONESIGNAL_LISTO =
+    true;
+
+if (
+    window.MASS_ONESIGNAL_USUARIO_PENDIENTE
+) {
+    await sincronizarUsuarioOneSignal(
+        window.MASS_ONESIGNAL_USUARIO_PENDIENTE
+    );
+}	
 
 });
 </script>	  
