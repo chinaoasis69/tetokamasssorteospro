@@ -5323,6 +5323,9 @@ function abrirModalRifa(datos = null) {
 
 	document.getElementById("formTiempoApartadoHoras").value =
     String(datos?.tiempo_apartado_horas ?? 24);
+
+	document.getElementById("formCierreApartadosHorasAntes").value =
+    String(datos?.cierre_apartados_horas_antes ?? 0);
 	
     document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
@@ -5345,6 +5348,10 @@ async function guardarRifaFormulario() {
   const tiempoApartadoHoras = Number(
     document.getElementById("formTiempoApartadoHoras").value
   );
+
+  const cierreApartadosHorasAntes = Number(
+    document.getElementById("formCierreApartadosHorasAntes").value
+  );	
 	
   const modalidad = Number(
     document.getElementById("formModalidad").value || 1
@@ -5397,7 +5404,8 @@ if (
     fecha_sorteo: fecha,
 	hora_sorteo: hora,
 	zona_horaria: zonaHoraria,
-	tiempo_apartado_horas: tiempoApartadoHoras,  
+	tiempo_apartado_horas: tiempoApartadoHoras,
+	cierre_apartados_horas_antes: cierreApartadosHorasAntes,  
     metodo_sorteo: metodo,
     cifras_sorteo: Number(cifras),
     imagen_url: imagen,
@@ -8704,7 +8712,45 @@ async function apartarBoletosInterno() {
 
     return;
   }
+	
+const {
+    data: rifaActualApartado,
+    error: errorRifaApartado
+} = await supabaseClient
+    .from("rifas")
+    .select(`
+        id,
+        fecha_sorteo,
+        hora_sorteo,
+        zona_horaria,
+        cierre_apartados_horas_antes
+    `)
+    .eq("id", RIFA_ID)
+    .single();
 
+if (errorRifaApartado || !rifaActualApartado) {
+    console.error(
+        "Error verificando cierre de apartados:",
+        errorRifaApartado
+    );
+
+    alert(
+        "❌ No se pudo verificar si la dinámica permite nuevos apartados."
+    );
+
+    return;
+}
+
+if (rifaCerroApartados(rifaActualApartado)) {
+    alert(
+        "⏰ El periodo para apartar números ya cerró.\n\n" +
+        "Los números disponibles solo pueden comprarse directamente."
+    );
+
+    await cargarBoletos();
+
+    return;
+}
 
   const cantidadSelecciones =
     boletosSeleccionados.length;
@@ -10031,6 +10077,58 @@ function rifaDebeCongelarse(rifa) {
 
     return fechaHoraActual >= fechaHoraSorteo;
 }
+
+function rifaCerroApartados(rifa) {
+    if (!rifa?.fecha_sorteo || !rifa?.hora_sorteo) {
+        return false;
+    }
+
+    const horasAntes = Number(
+        rifa.cierre_apartados_horas_antes ?? 0
+    );
+
+    if (
+        !Number.isFinite(horasAntes) ||
+        horasAntes <= 0
+    ) {
+        return false;
+    }
+
+    const zonaHoraria =
+        rifa.zona_horaria || "America/Chicago";
+
+    const fechaHoraActual =
+        obtenerFechaHoraActualEnZona(zonaHoraria);
+
+    if (!fechaHoraActual) {
+        return false;
+    }
+
+    const horaOriginal =
+        String(rifa.hora_sorteo).slice(0, 8);
+
+    const horaSorteo =
+        horaOriginal.length === 5
+            ? `${horaOriginal}:00`
+            : horaOriginal;
+
+    const fechaHoraSorteoBase = new Date(
+        `${rifa.fecha_sorteo}T${horaSorteo}Z`
+    );
+
+    if (Number.isNaN(fechaHoraSorteoBase.getTime())) {
+        return false;
+    }
+
+    const fechaHoraCierre = new Date(
+        fechaHoraSorteoBase.getTime() -
+        horasAntes * 60 * 60 * 1000
+    )
+        .toISOString()
+        .slice(0, 19);
+
+    return fechaHoraActual >= fechaHoraCierre;
+}	
 
 async function cargarRifasPublicas(){	
 
@@ -25406,6 +25504,20 @@ font-family:Arial, sans-serif;">
     <option value="240">10 días</option>
     <option value="336">14 días</option>
     <option value="0">Sin liberación automática</option>
+</select>
+
+<label>⏰ Cierre de apartados antes del sorteo</label>
+<select id="formCierreApartadosHorasAntes">
+    <option value="0">Sin cierre automático</option>
+    <option value="24">1 día antes (24 horas)</option>
+    <option value="48">2 días antes</option>
+    <option value="72">3 días antes</option>
+    <option value="96">4 días antes</option>
+    <option value="120">5 días antes</option>
+    <option value="144">6 días antes</option>
+    <option value="168">7 días antes</option>
+    <option value="240">10 días antes</option>
+    <option value="336">14 días antes</option>
 </select>	  
 
     <input id="formMetodo" placeholder="Método: Lotería Nacional, Pick 3, Manual">
