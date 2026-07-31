@@ -3921,6 +3921,10 @@ style="background:#a30000;color:white;">
   🏆 Premios
 </button>
 
+<button onclick="mostrarPreSorteosRifa('${r.id}')">
+    🎉 Pre-sorteos
+</button>	
+
 <button onclick="mostrarPatrocinadoresRifa('${r.id}')">
   🤝 Patrocinadores de esta rifa
 </button>
@@ -3961,6 +3965,10 @@ style="background:#a30000;color:white;">
 🏆 Premios
 </button>
 
+<button onclick="mostrarPreSorteosRifa('${r.id}')">
+    🎉 Pre-sorteos
+</button>	
+
 <button onclick="mostrarPatrocinadoresRifa('${r.id}')">
   🤝 Patrocinadores de esta rifa
 </button>
@@ -3970,6 +3978,364 @@ style="background:#a30000;color:white;">
         `).join("")}
     `;
 }
+
+async function mostrarPreSorteosRifa(rifaId) {
+    const cont =
+        document.getElementById("adminContenido");
+
+    if (!cont || !rifaId) {
+        alert(
+            "❌ No se encontró la dinámica seleccionada."
+        );
+
+        return;
+    }
+
+    cont.innerHTML = `
+        <h3>🎉 Pre-sorteos</h3>
+        <p>Cargando pre-sorteos...</p>
+    `;
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .rpc("listar_pre_sorteos_admin");
+
+    if (error) {
+        console.error(
+            "Error cargando pre-sorteos:",
+            error
+        );
+
+        cont.innerHTML = `
+            <h3>🎉 Pre-sorteos</h3>
+
+            <p>
+                ❌ No fue posible cargar los pre-sorteos.
+            </p>
+
+            <button onclick="mostrarSorteosAdmin()">
+                ⬅️ Volver a sorteos
+            </button>
+        `;
+
+        return;
+    }
+
+    const preSorteosRifa =
+        (data || []).filter(
+            preSorteo =>
+                preSorteo.rifa_id === rifaId
+        );
+
+    cont.innerHTML = `
+        <h3>🎉 Pre-sorteos</h3>
+
+        <button onclick="mostrarSorteosAdmin()">
+    ⬅️ Volver a sorteos
+</button>
+
+<button onclick="abrirFormularioPreSorteo('${rifaId}')">
+    ➕ Crear pre-sorteo
+</button>
+
+<br><br>
+
+        ${
+            preSorteosRifa.length === 0
+                ? `
+                    <p>
+                        No hay pre-sorteos creados
+                        para esta dinámica.
+                    </p>
+                `
+                : preSorteosRifa.map(
+                    preSorteo => `
+                        <div style="
+                            border:1px solid #39ff14;
+                            border-radius:12px;
+                            padding:14px;
+                            margin:12px 0;
+                            text-align:left;
+                        ">
+                            <b>🎉 Título:</b>
+                            ${preSorteo.titulo}
+                            <br>
+
+                            <b>🎁 Premio:</b>
+                            ${preSorteo.premio}
+                            <br>
+
+                            <b>📅 Fecha:</b>
+                            ${preSorteo.fecha_sorteo}
+                            <br>
+
+                            <b>🕘 Hora:</b>
+                            ${preSorteo.hora_sorteo}
+                            <br>
+
+                            <b>🏆 Ganadores:</b>
+                            ${preSorteo.cantidad_ganadores}
+                            <br>
+
+                            <b>📌 Estado:</b>
+                            ${preSorteo.estado}
+                        </div>
+                    `
+                ).join("")
+        }
+    `;
+}
+
+function abrirFormularioPreSorteo(rifaId) {
+    const cont =
+        document.getElementById("adminContenido");
+
+    if (!cont || !rifaId) {
+        alert(
+            "❌ No se encontró la dinámica seleccionada."
+        );
+
+        return;
+    }
+
+    cont.innerHTML = `
+        <h3>➕ Crear pre-sorteo</h3>
+
+        <p>
+            Participarán únicamente los boletos
+            pagados y registrados como vendidos.
+        </p>
+
+        <input
+            id="preSorteoTitulo"
+            type="text"
+            placeholder="Título del pre-sorteo"
+        >
+
+        <input
+            id="preSorteoPremio"
+            type="text"
+            placeholder="Premio"
+        >
+
+        <textarea
+            id="preSorteoDescripcion"
+            placeholder="Descripción o aviso del pre-sorteo"
+        ></textarea>
+
+        <label>📅 Fecha del pre-sorteo</label>
+
+        <input
+            id="preSorteoFecha"
+            type="date"
+        >
+
+        <label>🕘 Hora del pre-sorteo</label>
+
+        <input
+            id="preSorteoHora"
+            type="time"
+        >
+
+        <label>🏆 Cantidad de ganadores</label>
+
+        <input
+            id="preSorteoCantidadGanadores"
+            type="number"
+            min="1"
+            max="100"
+            value="1"
+        >
+
+        <label style="
+            display:block;
+            margin:15px 0;
+        ">
+            <input
+                id="preSorteoPublicado"
+                type="checkbox"
+            >
+
+            Publicar y programar inmediatamente
+        </label>
+
+        <button
+            onclick="guardarPreSorteo('${rifaId}')"
+        >
+            💾 Guardar pre-sorteo
+        </button>
+
+        <button
+            onclick="mostrarPreSorteosRifa('${rifaId}')"
+        >
+            ❌ Cancelar
+        </button>
+    `;
+}
+
+async function guardarPreSorteo(rifaId) {
+    const titulo =
+        document
+            .getElementById("preSorteoTitulo")
+            ?.value
+            .trim() || "";
+
+    const premio =
+        document
+            .getElementById("preSorteoPremio")
+            ?.value
+            .trim() || "";
+
+    const descripcion =
+        document
+            .getElementById("preSorteoDescripcion")
+            ?.value
+            .trim() || "";
+
+    const fecha =
+        document
+            .getElementById("preSorteoFecha")
+            ?.value || "";
+
+    const hora =
+        document
+            .getElementById("preSorteoHora")
+            ?.value || "";
+
+    const cantidadGanadores = Number(
+        document
+            .getElementById(
+                "preSorteoCantidadGanadores"
+            )
+            ?.value || 1
+    );
+
+    const publicado =
+        document
+            .getElementById("preSorteoPublicado")
+            ?.checked === true;
+
+    if (!rifaId) {
+        alert(
+            "❌ No se encontró la dinámica seleccionada."
+        );
+
+        return;
+    }
+
+    if (!titulo) {
+        alert(
+            "❌ Escribe el título del pre-sorteo."
+        );
+
+        return;
+    }
+
+    if (!premio) {
+        alert(
+            "❌ Escribe el premio del pre-sorteo."
+        );
+
+        return;
+    }
+
+    if (!fecha) {
+        alert(
+            "❌ Selecciona la fecha del pre-sorteo."
+        );
+
+        return;
+    }
+
+    if (!hora) {
+        alert(
+            "❌ Selecciona la hora del pre-sorteo."
+        );
+
+        return;
+    }
+
+    if (
+        !Number.isInteger(cantidadGanadores) ||
+        cantidadGanadores < 1 ||
+        cantidadGanadores > 100
+    ) {
+        alert(
+            "❌ La cantidad de ganadores debe estar entre 1 y 100."
+        );
+
+        return;
+    }
+
+    const botonGuardar =
+        document.querySelector(
+            `button[onclick="guardarPreSorteo('${rifaId}')"]`
+        );
+
+    if (botonGuardar) {
+        botonGuardar.disabled = true;
+        botonGuardar.textContent =
+            "⏳ Guardando pre-sorteo...";
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "crear_pre_sorteo",
+        {
+            p_rifa_id: rifaId,
+            p_titulo: titulo,
+            p_premio: premio,
+            p_fecha_sorteo: fecha,
+            p_hora_sorteo: hora,
+            p_descripcion:
+                descripcion || null,
+            p_cantidad_ganadores:
+                cantidadGanadores,
+            p_publicado:
+                publicado
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error creando pre-sorteo:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible crear el pre-sorteo.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        if (botonGuardar) {
+            botonGuardar.disabled = false;
+            botonGuardar.textContent =
+                "💾 Guardar pre-sorteo";
+        }
+
+        return;
+    }
+
+    console.log(
+        "Pre-sorteo creado:",
+        data
+    );
+
+    alert(
+        publicado
+            ? "✅ Pre-sorteo creado y programado."
+            : "✅ Pre-sorteo guardado como borrador."
+    );
+
+    await mostrarPreSorteosRifa(rifaId);
+}	
 
 async function mostrarPatrocinadoresRifa(rifaId) {
 
