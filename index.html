@@ -1143,6 +1143,22 @@ Selecciona una rifa
   <div id="actividadLive" style="font-size:15px;">
     Esperando movimientos...
   </div>
+</div>
+
+<div
+    id="preSorteosPublicosCard"
+    class="card"
+    style="
+        text-align:center;
+        margin:20px auto;
+        display:none;
+    "
+>
+    <h3>🏆 Resultados de pre-sorteos</h3>
+
+    <div id="preSorteosPublicosBox">
+        Cargando resultados...
+    </div>
 </div>	  
 
 <div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
@@ -10961,6 +10977,114 @@ function rifaCerroApartados(rifa) {
         .slice(0, 19);
 
     return fechaHoraActual >= fechaHoraCierre;
+}
+
+async function cargarResultadosPreSorteosPublicos(rifaId) {
+    const card =
+        document.getElementById(
+            "preSorteosPublicosCard"
+        );
+
+    const box =
+        document.getElementById(
+            "preSorteosPublicosBox"
+        );
+
+    if (!card || !box) {
+        return;
+    }
+
+    card.style.display = "none";
+    box.innerHTML = "Cargando resultados...";
+
+    if (!rifaId) {
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_resultados_pre_sorteos_publicos",
+        {
+            p_rifa_id: rifaId
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error cargando resultados públicos de pre-sorteos:",
+            error
+        );
+
+        card.style.display = "none";
+        box.innerHTML = "";
+
+        return;
+    }
+
+    const resultados = data || [];
+
+    if (resultados.length === 0) {
+        card.style.display = "none";
+        box.innerHTML = "";
+
+        return;
+    }
+
+    card.style.display = "block";
+
+    box.innerHTML = resultados.map(
+        resultado => `
+            <div style="
+                border:1px solid #39ff14;
+                border-radius:14px;
+                padding:16px;
+                margin:14px 0;
+                text-align:left;
+            ">
+                <h3 style="
+                    text-align:center;
+                    margin-top:0;
+                ">
+                    🏆 Ganador ${resultado.lugar_ganador}
+                </h3>
+
+                <b>🎉 Pre-sorteo:</b>
+                ${resultado.pre_sorteo_titulo}
+                <br>
+
+                <b>🎟️ Número ganador:</b>
+                ${resultado.numero_ganador}
+                <br>
+
+                <b>👤 Ganador:</b>
+                ${resultado.nombre_publico}
+                <br>
+
+                <b>🎁 Premio:</b>
+                ${resultado.premio}
+                <br>
+
+                <b>🎫 Participantes:</b>
+                ${resultado.participantes_total}
+                <br>
+
+                <b>🎲 Método:</b>
+                Selección aleatoria del sistema
+                <br>
+
+                <b>🕘 Ejecutado:</b>
+                ${
+                    resultado.ejecutado_en
+                        ? new Date(
+                            resultado.ejecutado_en
+                        ).toLocaleString("es-MX")
+                        : "Sin fecha"
+                }
+            </div>
+        `
+    ).join("");
 }	
 
 async function cargarRifasPublicas(){	
@@ -17930,6 +18054,8 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
+
+await cargarResultadosPreSorteosPublicos(rifaId);	
 
 	const modoAcceso =
   localStorage.getItem("mass_modo_acceso");
