@@ -4272,11 +4272,118 @@ async function mostrarGanadoresPreSorteo(
                     <br>
 
                     <b>📦 Entrega:</b>
-                    ${ganador.estado_entrega}
-                </div>
+${ganador.estado_entrega}
+
+${
+    ganador.estado_entrega === "pendiente"
+        ? `
+            <br><br>
+
+            <button
+                onclick="actualizarEstadoEntregaPreSorteo(
+                    '${ganador.ganador_id}',
+                    'contactado',
+                    '${preSorteoId}',
+                    '${rifaId}'
+                )"
+            >
+                📱 Marcar como contactado
+            </button>
+        `
+        : ganador.estado_entrega === "contactado"
+            ? `
+                <br><br>
+
+                <button
+                    onclick="actualizarEstadoEntregaPreSorteo(
+                        '${ganador.ganador_id}',
+                        'entregado',
+                        '${preSorteoId}',
+                        '${rifaId}'
+                    )"
+                >
+                    ✅ Marcar como entregado
+                </button>
+            `
+            : ""
+}
+</div>
             `
         ).join("")}
     `;
+}
+
+async function actualizarEstadoEntregaPreSorteo(
+    ganadorId,
+    nuevoEstado,
+    preSorteoId,
+    rifaId
+) {
+    if (
+        !ganadorId ||
+        !nuevoEstado ||
+        !preSorteoId ||
+        !rifaId
+    ) {
+        alert(
+            "❌ No se encontró la información del ganador."
+        );
+
+        return;
+    }
+
+    const mensajeConfirmacion =
+        nuevoEstado === "contactado"
+            ? "¿Confirmas que el ganador ya fue contactado?"
+            : "¿Confirmas que el premio ya fue entregado?";
+
+    if (!confirm(mensajeConfirmacion)) {
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "actualizar_estado_entrega_pre_sorteo",
+        {
+            p_ganador_id: ganadorId,
+            p_nuevo_estado: nuevoEstado
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Error actualizando entrega del pre-sorteo:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible actualizar el estado.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        return;
+    }
+
+    console.log(
+        "Estado de entrega actualizado:",
+        data
+    );
+
+    alert(
+        nuevoEstado === "contactado"
+            ? "✅ Ganador marcado como contactado."
+            : "✅ Premio marcado como entregado."
+    );
+
+    await mostrarGanadoresPreSorteo(
+        preSorteoId,
+        rifaId
+    );
 }	
 
 async function programarPreSorteo(
