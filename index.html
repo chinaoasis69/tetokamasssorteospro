@@ -3983,7 +3983,34 @@ style="background:#a30000;color:white;">
 
 <button onclick="mostrarPreSorteosRifa('${r.id}')">
     🎉 Pre-sorteos
-</button>	
+</button>
+
+${(
+  String(r.metodo_sorteo || "")
+    .trim()
+    .toLowerCase() === "aleatorio automático" ||
+
+  String(r.metodo_sorteo || "")
+    .trim()
+    .toLowerCase() === "aleatorio automatico"
+) &&
+String(r.estado || "")
+  .trim()
+  .toLowerCase() === "activa"
+  ? `
+    <button
+      onclick="ejecutarRifaAleatoria('${r.id}')"
+      style="
+        background:#7c3aed;
+        color:white;
+        font-weight:bold;
+      "
+    >
+      🎲 Ejecutar selección aleatoria
+    </button>
+  `
+  : ""
+}
 
 <button onclick="mostrarPatrocinadoresRifa('${r.id}')">
   🤝 Patrocinadores de esta rifa
@@ -3994,6 +4021,169 @@ style="background:#a30000;color:white;">
         `).join("")}
     `;
 }
+
+const rifasAleatoriasEnProceso =
+  new Set();
+
+
+async function ejecutarRifaAleatoria(
+  rifaId
+) {
+
+  if (!rifaId) {
+    alert(
+      "❌ No se encontró la dinámica."
+    );
+
+    return;
+  }
+
+
+  if (
+    rifasAleatoriasEnProceso.has(
+      rifaId
+    )
+  ) {
+    alert(
+      "⏳ Esta selección ya está en proceso."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    confirm(
+      "⚠️ EJECUTAR SELECCIÓN ALEATORIA\n\n" +
+      "El sistema seleccionará al ganador " +
+      "entre los boletos vendidos elegibles.\n\n" +
+      "La dinámica quedará FINALIZADA y " +
+      "no podrá ejecutarse una segunda vez.\n\n" +
+      "¿Confirmas que deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  rifasAleatoriasEnProceso.add(
+    rifaId
+  );
+
+
+  try {
+
+    const {
+      data: resultado,
+      error
+    } =
+      await supabaseClient.rpc(
+        "ejecutar_rifa_aleatoria",
+        {
+          p_rifa_id:
+            rifaId
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR EJECUTANDO RIFA ALEATORIA:",
+        error
+      );
+
+
+      alert(
+        "❌ No se pudo ejecutar la selección.\n\n" +
+        (
+          error.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true
+    ) {
+
+      console.error(
+        "RESPUESTA INESPERADA:",
+        resultado
+      );
+
+
+      alert(
+        "❌ El sistema no devolvió un resultado válido."
+      );
+
+      return;
+    }
+
+
+    const numeroGanador =
+      String(
+        resultado.numero_ganador ??
+        ""
+      ).trim();
+
+
+    const massIdGanador =
+      String(
+        resultado.mass_id ??
+        ""
+      ).trim();
+
+
+    const premio =
+      String(
+        resultado.premio ??
+        ""
+      ).trim();
+
+
+    alert(
+      "🏆 SELECCIÓN COMPLETADA\n\n" +
+      `🎟️ Número ganador: ${numeroGanador}\n` +
+      `🪪 MASS ID: ${massIdGanador}\n` +
+      `🎁 Premio: ${premio}\n\n` +
+      "✅ La dinámica quedó finalizada."
+    );
+
+
+    await mostrarSorteosAdmin();
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EJECUTANDO LA RIFA:",
+      error
+    );
+
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        error instanceof Error
+          ? error.message
+          : "Intenta nuevamente."
+      )
+    );
+
+  } finally {
+
+    rifasAleatoriasEnProceso.delete(
+      rifaId
+    );
+
+  }
+}	
 
 async function mostrarPreSorteosRifa(rifaId) {
     const cont =
