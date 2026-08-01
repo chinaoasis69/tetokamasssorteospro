@@ -3998,6 +3998,18 @@ String(r.estado || "")
   .trim()
   .toLowerCase() === "activa"
   ? `
+
+	<button
+  onclick="probarRifaAleatoria('${r.id}')"
+  style="
+    background:#facc15;
+    color:#111;
+    font-weight:bold;
+  "
+>
+  🧪 Probar selección aleatoria
+</button>
+
     <button
       onclick="ejecutarRifaAleatoria('${r.id}')"
       style="
@@ -4021,6 +4033,192 @@ String(r.estado || "")
         `).join("")}
     `;
 }
+
+const rifasAleatoriasPruebaEnProceso =
+  new Set();
+
+
+async function probarRifaAleatoria(
+  rifaId
+) {
+
+  if (!rifaId) {
+    alert(
+      "❌ No se encontró la dinámica."
+    );
+
+    return;
+  }
+
+
+  if (
+    rifasAleatoriasPruebaEnProceso.has(
+      rifaId
+    )
+  ) {
+    alert(
+      "⏳ La prueba ya está en proceso."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    confirm(
+      "🧪 PROBAR SELECCIÓN ALEATORIA\n\n" +
+      "Esta simulación NO guardará ganador, " +
+      "NO finalizará la dinámica y " +
+      "NO enviará notificaciones.\n\n" +
+      "¿Deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  rifasAleatoriasPruebaEnProceso.add(
+    rifaId
+  );
+
+
+  try {
+
+    const {
+      data: resultado,
+      error
+    } =
+      await supabaseClient.rpc(
+        "probar_rifa_aleatoria",
+        {
+          p_rifa_id:
+            rifaId
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR PROBANDO RIFA ALEATORIA:",
+        error
+      );
+
+
+      alert(
+        "❌ No se pudo realizar la prueba.\n\n" +
+        (
+          error.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      resultado.modo_prueba !== true
+    ) {
+
+      console.error(
+        "RESPUESTA DE PRUEBA INESPERADA:",
+        resultado
+      );
+
+
+      alert(
+        "❌ El simulador no devolvió un resultado válido."
+      );
+
+      return;
+    }
+
+
+    const numeroSimulado =
+      String(
+        resultado.numero_simulado ??
+        ""
+      ).trim();
+
+
+    const massIdSimulado =
+      String(
+        resultado.mass_id_simulado ??
+        ""
+      ).trim();
+
+
+    const premio =
+      String(
+        resultado.premio ??
+        ""
+      ).trim();
+
+
+    const porcentajeVendido =
+      Number(
+        resultado.porcentaje_vendido ??
+        0
+      );
+
+
+    const porcentajeMinimo =
+      Number(
+        resultado.porcentaje_minimo ??
+        0
+      );
+
+
+    const cumplePorcentaje =
+      resultado.cumple_porcentaje === true;
+
+
+    const disponibleOficial =
+      resultado.ejecucion_oficial_disponible === true;
+
+
+    alert(
+      "🧪 RESULTADO DE PRUEBA\n\n" +
+      `🎟️ Número simulado: ${numeroSimulado}\n` +
+      `🪪 MASS ID simulado: ${massIdSimulado}\n` +
+      `🎁 Premio: ${premio}\n\n` +
+      `📊 Vendido: ${porcentajeVendido}%\n` +
+      `📌 Mínimo: ${porcentajeMinimo}%\n` +
+      `✅ Cumple mínimo: ${cumplePorcentaje ? "Sí" : "No"}\n` +
+      `⏰ Disponible oficialmente: ${disponibleOficial ? "Sí" : "No"}\n\n` +
+      "🔒 No se modificó ningún dato."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EN LA PRUEBA:",
+      error
+    );
+
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        error instanceof Error
+          ? error.message
+          : "Intenta nuevamente."
+      )
+    );
+
+  } finally {
+
+    rifasAleatoriasPruebaEnProceso.delete(
+      rifaId
+    );
+
+  }
+}	
 
 const rifasAleatoriasEnProceso =
   new Set();
