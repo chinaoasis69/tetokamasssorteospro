@@ -3901,7 +3901,61 @@ ${r.aviso ? `<b>📢 Aviso:</b> ${r.aviso}<br>` : ""}
 <b>📌 Estado:</b> ${r.estado || "sin estado"}<br>
 <b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo ?? 80}%<br>
 				<br>
-${r.estado !== 'activa' ? `
+${(
+  (
+    String(r.metodo_sorteo || "")
+      .trim()
+      .toLowerCase() === "aleatorio automático" ||
+
+    String(r.metodo_sorteo || "")
+      .trim()
+      .toLowerCase() === "aleatorio automatico"
+  ) &&
+
+  String(r.estado || "")
+    .trim()
+    .toLowerCase() === "finalizada"
+
+) ? `
+
+<div style="
+  background:#14532d;
+  color:white;
+  padding:10px;
+  border-radius:10px;
+  font-weight:bold;
+  display:inline-block;
+  margin-top:8px;
+  margin-bottom:10px;
+">
+  🏁 Dinámica aleatoria finalizada
+</div>
+
+<div style="
+  background:#111827;
+  border:1px solid #39ff14;
+  padding:10px;
+  border-radius:10px;
+  margin-top:8px;
+">
+  🔒 Resultado protegido<br>
+  Esta dinámica ya no puede activarse,
+  editarse, pausarse ni eliminarse.
+</div>
+
+<button onclick="administrarPremiosRifa('${r.id}')">
+  🏆 Premios
+</button>
+
+<button onclick="mostrarPreSorteosRifa('${r.id}')">
+  🎉 Pre-sorteos
+</button>
+
+<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
+  🤝 Patrocinadores de esta rifa
+</button>
+
+` : r.estado !== 'activa' ? `
 
 ${r.estado === 'congelada' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
