@@ -9967,6 +9967,30 @@ async function comprarConSaldo() {
 
   try {
 
+	const {
+    data: { user: usuarioAuthCompra },
+    error: errorAuthCompra
+} = await supabaseClient.auth.getUser();
+
+const authUserIdCompra =
+    usuarioAuthCompra?.id || null;
+
+if (errorAuthCompra || !authUserIdCompra) {
+    console.error(
+        "ERROR OBTENIENDO USUARIO AUTH PARA COMPRA:",
+        errorAuthCompra
+    );
+
+    mostrarNotificacion(
+        "error",
+        "Sesión no encontrada",
+        "Inicia sesión antes de comprar boletos.",
+        3000
+    );
+
+    return;
+}  
+
     const telefonoCompra =
       String(
         localStorage.getItem(
@@ -10321,6 +10345,9 @@ async function comprarConSaldo() {
 
           telefono:
             telefonoCompra,
+
+		  user_id:
+          authUserIdCompra,	
 
           rifa_id:
             RIFA_ID,
@@ -21660,6 +21687,19 @@ const saltoNumeros =
 async function pagarReservadoConMass(numero, rifaId) {
   const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
+  const {
+    data: { user: usuarioAuth },
+    error: errorUsuarioAuth
+  } = await supabaseClient.auth.getUser();
+
+  const authUserId = usuarioAuth?.id || null;
+
+if (errorUsuarioAuth || !authUserId) {
+    console.error("ERROR OBTENIENDO USUARIO AUTH:", errorUsuarioAuth);
+    alert("❌ No se encontró una sesión autenticada válida.");
+    return;
+}	
+
   const { data: rifa } = await supabaseClient
     .from("rifas")
     .select("precio_boleto, organizador_id, total_numeros, modalidad")
@@ -21802,6 +21842,7 @@ const {
     estado: "vendido",
     telefono: tel,
     nombre: tel,
+	user_id: authUserId,  
     pin_giro: pinGiroReservado,
     giro_usado: false,
     fecha: new Date().toISOString(),
