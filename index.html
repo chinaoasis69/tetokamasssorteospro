@@ -6423,15 +6423,62 @@ Ejemplo:
 );
     if(!fecha) return;
 
-	const metodo = prompt(
-"Metodo de sorteo: Pick 3 Texas, Loteria Nacional, Manual"
-);
-if(!metodo) return;
+	const metodoIngresado = prompt(
+`Método de selección del ganador:
 
-const cifras = prompt(
-"Ultimas cuantas cifras (2, 3 o 4)"
+1 = Pick 3 Texas
+2 = Lotería Nacional
+3 = Resultado manual
+4 = Aleatorio automático
+
+Escribe el número del método:`,
+"1"
 );
-if(!cifras) return;
+
+if(!metodoIngresado) return;
+
+const metodosSorteo = {
+  "1": "pick 3 texas",
+  "2": "lotería nacional",
+  "3": "prueba manual",
+  "4": "aleatorio automático"
+};
+
+const metodo =
+  metodosSorteo[
+    metodoIngresado.trim()
+  ];
+
+if(!metodo){
+  alert(
+    "❌ Método no válido. Escribe 1, 2, 3 o 4."
+  );
+  return;
+}
+
+let cifrasSorteo = null;
+
+if(metodo !== "aleatorio automático"){
+
+  const cifrasIngresadas = prompt(
+    "Últimas cuántas cifras se utilizarán (2, 3 o 4)"
+  );
+
+  if(!cifrasIngresadas) return;
+
+  cifrasSorteo =
+    Number(cifrasIngresadas);
+
+  if(
+    !Number.isInteger(cifrasSorteo) ||
+    ![2, 3, 4].includes(cifrasSorteo)
+  ){
+    alert(
+      "❌ Cantidad de cifras no válida. Usa 2, 3 o 4."
+    );
+    return;
+  }
+}
 
 const imagen = prompt(
 "URL de imagen del premio (opcional)"
@@ -6447,7 +6494,7 @@ total_numeros: Number(total),
 modalidad: modalidad,		
 fecha_sorteo: fecha,
 metodo_sorteo: metodo,
-cifras_sorteo: Number(cifras),
+cifras_sorteo: cifrasSorteo,
 imagen_url: imagen,
 estado: "programada",
 organizador_id: clienteActual.id		
