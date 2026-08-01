@@ -5082,79 +5082,231 @@ function abrirFormularioPreSorteo(rifaId) {
         return;
     }
 
-    cont.innerHTML = `
-        <h3>➕ Crear pre-sorteo</h3>
+   cont.innerHTML = `
+  <div style="
+    width:100%;
+    max-width:620px;
+    margin:0 auto;
+    padding:16px;
+    box-sizing:border-box;
+  ">
 
-        <p>
-            Participarán únicamente los boletos
-            pagados y registrados como vendidos.
-        </p>
+    <h3 style="margin-bottom:8px;">
+      ➕ Crear pre-sorteo
+    </h3>
 
-        <input
-            id="preSorteoTitulo"
-            type="text"
-            placeholder="Título del pre-sorteo"
-        >
+    <p style="
+      margin:0 0 22px;
+      line-height:1.5;
+    ">
+      Participarán únicamente los boletos
+      pagados y registrados como vendidos.
+    </p>
 
-        <input
-            id="preSorteoPremio"
-            type="text"
-            placeholder="Premio"
-        >
 
-        <textarea
-            id="preSorteoDescripcion"
-            placeholder="Descripción o aviso del pre-sorteo"
-        ></textarea>
+    <div style="margin-bottom:16px;">
+      <label
+        for="preSorteoTitulo"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        🎯 Título del pre-sorteo
+      </label>
 
-        <label>📅 Fecha del pre-sorteo</label>
+      <input
+        id="preSorteoTitulo"
+        type="text"
+        placeholder="Ejemplo: Pre-sorteo especial"
+        style="
+          width:100%;
+          box-sizing:border-box;
+        "
+      >
+    </div>
 
-        <input
-            id="preSorteoFecha"
-            type="date"
-        >
 
-        <label>🕘 Hora del pre-sorteo</label>
+    <div style="margin-bottom:16px;">
+      <label
+        for="preSorteoPremio"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        🎁 Premio
+      </label>
 
-        <input
-            id="preSorteoHora"
-            type="time"
-        >
+      <input
+        id="preSorteoPremio"
+        type="text"
+        placeholder="Escribe el premio"
+        style="
+          width:100%;
+          box-sizing:border-box;
+        "
+      >
+    </div>
 
-        <label>🏆 Cantidad de ganadores</label>
 
-        <input
-            id="preSorteoCantidadGanadores"
-            type="number"
-            min="1"
-            max="100"
-            value="1"
-        >
+    <div style="margin-bottom:16px;">
+      <label
+        for="preSorteoDescripcion"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        📢 Descripción o aviso
+      </label>
 
-        <label style="
-            display:block;
-            margin:15px 0;
-        ">
-            <input
-                id="preSorteoPublicado"
-                type="checkbox"
-            >
+      <textarea
+        id="preSorteoDescripcion"
+        placeholder="Escribe la descripción o aviso del pre-sorteo"
+        style="
+          width:100%;
+          min-height:110px;
+          box-sizing:border-box;
+          resize:vertical;
+        "
+      ></textarea>
+    </div>
 
-            Publicar y programar inmediatamente
-        </label>
 
-        <button
-            onclick="guardarPreSorteo('${rifaId}')"
-        >
-            💾 Guardar pre-sorteo
-        </button>
+    <div style="margin-bottom:16px;">
+      <label
+        for="preSorteoFecha"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        📅 Fecha del pre-sorteo
+      </label>
 
-        <button
-            onclick="mostrarPreSorteosRifa('${rifaId}')"
-        >
-            ❌ Cancelar
-        </button>
-    `;
+      <input
+        id="preSorteoFecha"
+        type="date"
+        style="
+          width:100%;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+
+
+    <div style="margin-bottom:16px;">
+      <label
+        for="preSorteoHora"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        🕘 Hora del pre-sorteo
+      </label>
+
+      <input
+        id="preSorteoHora"
+        type="time"
+        style="
+          width:100%;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+
+
+    <div style="margin-bottom:18px;">
+      <label
+        for="preSorteoCantidadGanadores"
+        style="
+          display:block;
+          text-align:left;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        🏆 Cantidad de ganadores
+      </label>
+
+      <input
+        id="preSorteoCantidadGanadores"
+        type="number"
+        min="1"
+        max="100"
+        value="1"
+        style="
+          width:100%;
+          box-sizing:border-box;
+        "
+      >
+    </div>
+
+
+    <label style="
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:10px;
+      width:100%;
+      padding:14px;
+      margin:4px 0 22px;
+      box-sizing:border-box;
+      border:1px solid #39ff14;
+      border-radius:12px;
+      text-align:left;
+      cursor:pointer;
+    ">
+      <input
+        id="preSorteoPublicado"
+        type="checkbox"
+        style="
+          width:22px;
+          height:22px;
+          flex:0 0 auto;
+          margin:0;
+        "
+      >
+
+      <span>
+        📅 Publicar y programar inmediatamente
+      </span>
+    </label>
+
+
+    <div style="
+      display:flex;
+      justify-content:center;
+      gap:12px;
+      flex-wrap:wrap;
+    ">
+      <button
+        onclick="guardarPreSorteo('${rifaId}')"
+      >
+        💾 Guardar pre-sorteo
+      </button>
+
+      <button
+        onclick="mostrarPreSorteosRifa('${rifaId}')"
+      >
+        ❌ Cancelar
+      </button>
+    </div>
+
+  </div>
+`; 
 }
 
 async function guardarPreSorteo(rifaId) {
