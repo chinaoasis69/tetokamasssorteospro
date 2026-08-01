@@ -6126,6 +6126,42 @@ async function eliminarRifa(id,titulo){
   mostrarSorteosAdmin();
 }
 
+function actualizarCampoCifrasRifa() {
+
+  const metodo =
+    document.getElementById("formMetodo")
+      ?.value
+      .trim()
+      .toLowerCase() || "";
+
+  const grupoCifras =
+    document.getElementById("grupoFormCifras");
+
+  const inputCifras =
+    document.getElementById("formCifras");
+
+  if (!grupoCifras || !inputCifras) {
+    return;
+  }
+
+  const esAleatorio =
+    metodo === "aleatorio automático" ||
+    metodo === "aleatorio automatico";
+
+  if (esAleatorio) {
+
+    grupoCifras.style.display = "none";
+    inputCifras.value = "";
+    inputCifras.required = false;
+
+  } else {
+
+    grupoCifras.style.display = "block";
+    inputCifras.required = true;
+
+  }
+}	
+
 	function cerrarModalRifa() {
     document.getElementById("modalRifa").style.display = "none";
 }
@@ -6178,6 +6214,7 @@ function abrirModalRifa(datos = null) {
 	
     document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
+	actualizarCampoCifrasRifa();
     document.getElementById("formImagen").value = datos?.imagen_url || "";
     document.getElementById("formAviso").value = datos?.aviso || "";
     document.getElementById("formPorcentaje").value =
@@ -6208,14 +6245,48 @@ async function guardarRifaFormulario() {
   const fecha = document.getElementById("formFecha").value;
   const metodo = document.getElementById("formMetodo").value.trim();
   const cifras = document.getElementById("formCifras").value;
+
+const metodoNormalizado =
+  metodo.toLowerCase();
+
+const esAleatorio =
+  metodoNormalizado === "aleatorio automático" ||
+  metodoNormalizado === "aleatorio automatico";
+
+let cifrasSorteo = null;
+
+if (!esAleatorio) {
+
+  cifrasSorteo = Number(cifras);
+
+  if (
+    !Number.isInteger(cifrasSorteo) ||
+    ![2, 3, 4].includes(cifrasSorteo)
+  ) {
+    alert(
+      "❌ Para este método selecciona 2, 3 o 4 cifras."
+    );
+    return;
+  }
+
+}	
   const imagen = document.getElementById("formImagen").value.trim();
   const aviso = document.getElementById("formAviso").value.trim();
   const porcentaje = document.getElementById("formPorcentaje").value || 80;
 
-  if (!titulo || !premio || !precio || !total || !fecha || !hora || !zonaHoraria || !metodo || !cifras) {
-    alert("❌ Completa los campos obligatorios.");
-    return;
-  }
+if (
+  !titulo ||
+  !premio ||
+  !precio ||
+  !total ||
+  !fecha ||
+  !hora ||
+  !zonaHoraria ||
+  !metodo
+) {
+  alert("❌ Completa los campos obligatorios.");
+  return;
+}  
 
 const totalNumeros = Number(total);
 
@@ -6256,7 +6327,7 @@ if (
 	tiempo_apartado_horas: tiempoApartadoHoras,
 	cierre_apartados_horas_antes: cierreApartadosHorasAntes,  
     metodo_sorteo: metodo,
-    cifras_sorteo: Number(cifras),
+    cifras_sorteo: cifrasSorteo,
     imagen_url: imagen,
     aviso,
     porcentaje_minimo: Number(porcentaje)
@@ -26753,8 +26824,40 @@ font-family:Arial, sans-serif;">
     <option value="336">14 días antes</option>
 </select>	  
 
-    <input id="formMetodo" placeholder="Método: Lotería Nacional, Pick 3, Manual">
-    <input id="formCifras" type="number" placeholder="Últimas cifras: 2, 3 o 4">
+    <select
+  id="formMetodo"
+  onchange="actualizarCampoCifrasRifa()"
+>
+  <option value="">
+    Selecciona el método del resultado
+  </option>
+
+  <option value="pick 3 texas">
+    Pick 3 Texas
+  </option>
+
+  <option value="lotería nacional">
+    Lotería Nacional
+  </option>
+
+  <option value="prueba manual">
+    Resultado manual
+  </option>
+
+  <option value="aleatorio automático">
+    🎲 Aleatorio automático
+  </option>
+</select>
+
+<div id="grupoFormCifras">
+  <input
+    id="formCifras"
+    type="number"
+    min="2"
+    max="4"
+    placeholder="Últimas cifras: 2, 3 o 4"
+  >
+</div>
     <input id="formImagen" placeholder="URL imagen premio">
     <textarea id="formAviso" placeholder="Aviso del sorteo"></textarea>
     <input id="formPorcentaje" type="number" min="1" max="100" placeholder="Mínimo para sortear %">
