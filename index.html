@@ -3943,16 +3943,16 @@ ${(
   editarse, pausarse ni eliminarse.
 </div>
 
-<button onclick="administrarPremiosRifa('${r.id}')">
-  🏆 Premios
+<button onclick="administrarPremiosRifa('${r.id}', true)">
+  👁️ Ver premios
 </button>
 
-<button onclick="mostrarPreSorteosRifa('${r.id}')">
-  🎉 Pre-sorteos
+<button onclick="mostrarPreSorteosRifa('${r.id}', true)">
+  👁️ Ver pre-sorteos
 </button>
 
-<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
-  🤝 Patrocinadores de esta rifa
+<button onclick="mostrarPatrocinadoresRifa('${r.id}', true)">
+  👁️ Ver patrocinadores
 </button>
 
 ` : r.estado !== 'activa' ? `
@@ -4437,7 +4437,10 @@ async function ejecutarRifaAleatoria(
   }
 }	
 
-async function mostrarPreSorteosRifa(rifaId) {
+async function mostrarPreSorteosRifa(
+  rifaId,
+  soloLectura = false
+) {
     const cont =
         document.getElementById("adminContenido");
 
@@ -4488,17 +4491,44 @@ async function mostrarPreSorteosRifa(rifaId) {
         );
 
     cont.innerHTML = `
-        <h3>🎉 Pre-sorteos</h3>
+    <h3>
+        ${
+            soloLectura === true
+                ? "👁️ Pre-sorteos — Solo lectura"
+                : "🎉 Pre-sorteos"
+        }
+    </h3>
 
-        <button onclick="mostrarSorteosAdmin()">
-    ⬅️ Volver a sorteos
-</button>
+    <button onclick="mostrarSorteosAdmin()">
+        ⬅️ Volver a sorteos
+    </button>
 
-<button onclick="abrirFormularioPreSorteo('${rifaId}')">
-    ➕ Crear pre-sorteo
-</button>
+    ${
+        soloLectura === true
+            ? `
+                <div style="
+                    background:#111827;
+                    border:1px solid #39ff14;
+                    border-radius:12px;
+                    padding:12px;
+                    margin:14px 0;
+                    text-align:left;
+                ">
+                    🔒 Expediente protegido<br>
+                    Los pre-sorteos de esta dinámica
+                    finalizada solamente pueden consultarse.
+                </div>
+            `
+            : `
+                <button
+                    onclick="abrirFormularioPreSorteo('${rifaId}')"
+                >
+                    ➕ Crear pre-sorteo
+                </button>
+            `
+    }
 
-<br><br>
+    <br><br>
 
         ${
             preSorteosRifa.length === 0
@@ -4541,6 +4571,7 @@ async function mostrarPreSorteosRifa(rifaId) {
 ${preSorteo.estado}
 
 ${
+    soloLectura !== true &&
     preSorteo.estado === "borrador"
         ? `
             <br><br>
@@ -4564,9 +4595,10 @@ ${
 
             <button
                 onclick="mostrarGanadoresPreSorteo(
-                    '${preSorteo.id}',
-                    '${rifaId}'
-                )"
+    '${preSorteo.id}',
+    '${rifaId}',
+    ${soloLectura === true}
+)"
             >
                 🏆 Ver ganador
             </button>
@@ -4583,7 +4615,8 @@ ${
 
 async function mostrarGanadoresPreSorteo(
     preSorteoId,
-    rifaId
+    rifaId,
+    soloLectura = false
 ) {
     const cont =
         document.getElementById("adminContenido");
@@ -4626,7 +4659,10 @@ async function mostrarGanadoresPreSorteo(
             </p>
 
             <button
-                onclick="mostrarPreSorteosRifa('${rifaId}')"
+                onclick="mostrarPreSorteosRifa(
+  '${rifaId}',
+  ${soloLectura === true}
+)"
             >
                 ⬅️ Volver a pre-sorteos
             </button>
@@ -4646,7 +4682,10 @@ async function mostrarGanadoresPreSorteo(
             </p>
 
             <button
-                onclick="mostrarPreSorteosRifa('${rifaId}')"
+                onclick="mostrarPreSorteosRifa(
+  '${rifaId}',
+  ${soloLectura === true}
+)"
             >
                 ⬅️ Volver a pre-sorteos
             </button>
@@ -4684,7 +4723,10 @@ const resultadoPublicado =
         <h3>🏆 Resultado del pre-sorteo</h3>
 
         <button
-    onclick="mostrarPreSorteosRifa('${rifaId}')"
+    onclick="mostrarPreSorteosRifa(
+  '${rifaId}',
+  ${soloLectura === true}
+)"
 >
     ⬅️ Volver a pre-sorteos
 </button>
@@ -4696,16 +4738,29 @@ ${
                 ✅ Resultado publicado
             </p>
         `
-        : `
-            <button
-                onclick="publicarResultadoPreSorteo(
-                    '${preSorteoId}',
-                    '${rifaId}'
-                )"
-            >
-                📢 Publicar resultado
-            </button>
-        `
+        : soloLectura === true
+            ? `
+                <p style="
+                    background:#111827;
+                    border:1px solid #39ff14;
+                    border-radius:10px;
+                    padding:10px;
+                ">
+                    🔒 Resultado no publicado<br>
+                    El expediente está protegido y
+                    ya no puede modificarse.
+                </p>
+            `
+            : `
+                <button
+                    onclick="publicarResultadoPreSorteo(
+                        '${preSorteoId}',
+                        '${rifaId}'
+                    )"
+                >
+                    📢 Publicar resultado
+                </button>
+            `
 }
 
 <br><br>
@@ -4777,6 +4832,7 @@ ${
 ${ganador.estado_entrega}
 
 ${
+    soloLectura !== true &&
     ganador.estado_entrega === "pendiente"
         ? `
             <br><br>
@@ -4792,7 +4848,8 @@ ${
                 📱 Marcar como contactado
             </button>
         `
-        : ganador.estado_entrega === "contactado"
+        : soloLectura !== true &&
+          ganador.estado_entrega === "contactado"
             ? `
                 <br><br>
 
@@ -5262,7 +5319,10 @@ async function guardarPreSorteo(rifaId) {
     await mostrarPreSorteosRifa(rifaId);
 }	
 
-async function mostrarPatrocinadoresRifa(rifaId) {
+async function mostrarPatrocinadoresRifa(
+  rifaId,
+  soloLectura = false
+) {
 
   const cont =
     document.getElementById("adminContenido");
@@ -5378,27 +5438,50 @@ async function mostrarPatrocinadoresRifa(rifaId) {
 
   cont.innerHTML = `
     <h3>
-      🤝 Patrocinadores de esta rifa
-    </h3>
+  ${
+    soloLectura === true
+      ? "👁️ Patrocinadores — Solo lectura"
+      : "🤝 Patrocinadores de esta rifa"
+  }
+</h3>
 
-    <div class="card">
-      <b>
-        🎯 ${
-          rifa.titulo ||
-          rifa.premio ||
-          "Sorteo sin título"
-        }
-      </b>
-    </div>
+<div class="card">
+  <b>
+    🎯 ${
+      rifa.titulo ||
+      rifa.premio ||
+      "Sorteo sin título"
+    }
+  </b>
+</div>
 
-    <button
-      type="button"
-      onclick="nuevoPatrocinadorRifa(
-        '${rifa.id}'
-      )"
-    >
-      ➕ Agregar patrocinador a esta rifa
-    </button>
+${
+  soloLectura === true
+    ? `
+      <div style="
+        background:#111827;
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin:14px 0;
+        text-align:left;
+      ">
+        🔒 Expediente protegido<br>
+        Los patrocinadores de esta dinámica
+        finalizada solamente pueden consultarse.
+      </div>
+    `
+    : `
+      <button
+        type="button"
+        onclick="nuevoPatrocinadorRifa(
+          '${rifa.id}'
+        )"
+      >
+        ➕ Agregar patrocinador a esta rifa
+      </button>
+    `
+}
 
     <button
       type="button"
@@ -5792,7 +5875,10 @@ setTimeout(() => {
     document.getElementById("ganadorComentario").value = "";
 }	
 
-async function administrarPremiosRifa(rifaId){
+async function administrarPremiosRifa(
+  rifaId,
+  soloLectura = false
+) {
   document.getElementById("adminContenido").innerHTML =
     "<h3>🏆 Premios de la rifa</h3><p>Cargando premios...</p>";
 
@@ -5813,6 +5899,160 @@ async function administrarPremiosRifa(rifaId){
     console.error(error);
     document.getElementById("adminContenido").innerHTML =
       "<p>❌ Error cargando premios.</p>";
+    return;
+  }
+
+	  if (soloLectura === true) {
+
+    document
+      .getElementById("adminContenido")
+      .innerHTML = `
+        <h3>👁️ Premios — Solo lectura</h3>
+
+        <button onclick="mostrarSorteosAdmin()">
+          ⬅️ Volver a sorteos
+        </button>
+
+        <div style="
+          background:#111827;
+          border:1px solid #39ff14;
+          border-radius:12px;
+          padding:12px;
+          margin:14px 0;
+          text-align:left;
+        ">
+          🔒 Expediente protegido<br>
+          Los premios de esta dinámica finalizada
+          solamente pueden consultarse.
+        </div>
+
+        ${
+          (data || []).length === 0
+            ? `
+              <p>
+                No existen premios registrados
+                para esta dinámica.
+              </p>
+            `
+            : (data || []).map(
+                p => `
+                  <div style="
+                    border:1px solid #39ff14;
+                    border-radius:12px;
+                    padding:14px;
+                    margin:12px 0;
+                    text-align:left;
+                  ">
+
+                    ${
+                      p.imagen_url
+                        ? `
+                          <img
+                            src="${p.imagen_url}"
+                            alt="Imagen del premio"
+                            style="
+                              max-width:220px;
+                              width:100%;
+                              border-radius:12px;
+                              margin:0 auto 12px;
+                              display:block;
+                            "
+                          >
+                        `
+                        : ""
+                    }
+
+                    ${
+                      (p.premio_media || []).length > 0
+                        ? `
+                          <div style="
+                            display:flex;
+                            gap:10px;
+                            flex-wrap:wrap;
+                            justify-content:center;
+                            margin:12px 0;
+                          ">
+                            ${
+                              (p.premio_media || []).map(
+                                m => {
+
+                                  const tipoMedia =
+                                    String(m.tipo || "")
+                                      .trim()
+                                      .toLowerCase();
+
+                                  if (
+                                    tipoMedia === "imagen"
+                                  ) {
+                                    return `
+                                      <img
+                                        src="${m.url}"
+                                        alt="Imagen adicional del premio"
+                                        style="
+                                          width:110px;
+                                          height:82px;
+                                          object-fit:cover;
+                                          border:1px solid #39ff14;
+                                          border-radius:8px;
+                                        "
+                                      >
+                                    `;
+                                  }
+
+                                  if (
+                                    tipoMedia === "video"
+                                  ) {
+                                    return `
+                                      <video
+                                        controls
+                                        playsinline
+                                        preload="metadata"
+                                        style="
+                                          width:220px;
+                                          max-height:170px;
+                                          border:1px solid #39ff14;
+                                          border-radius:8px;
+                                          background:#000;
+                                        "
+                                      >
+                                        <source
+                                          src="${m.url}"
+                                          type="video/mp4"
+                                        >
+                                      </video>
+                                    `;
+                                  }
+
+                                  return "";
+                                }
+                              ).join("")
+                            }
+                          </div>
+                        `
+                        : ""
+                    }
+
+                    <b>
+                      🏆 ${p.lugar}° Premio:
+                    </b>
+
+                    ${p.nombre || "Sin nombre"}
+
+                    ${
+                      p.descripcion
+                        ? `
+                          <br><br>
+                          <b>📝 Descripción:</b>
+                          ${p.descripcion}
+                        `
+                        : ""
+                    }
+                  </div>
+                `
+              ).join("")
+        }
+      `;
+
     return;
   }
 
