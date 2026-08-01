@@ -6057,11 +6057,15 @@ async function administrarPremiosRifa(
   }
 
   document.getElementById("adminContenido").innerHTML = `
-    <h3>🏆 Premios de la rifa</h3>
+  <h3>🏆 Premios de la rifa</h3>
 
-    <button onclick="crearPremioRifa('${rifaId}')">
-      ➕ Agregar premio
-    </button>
+  <button onclick="mostrarSorteosAdmin()">
+    ⬅️ Volver a sorteos
+  </button>
+
+  <button onclick="crearPremioRifa('${rifaId}')">
+    ➕ Agregar premio
+  </button>
 
     <br><br>
 
