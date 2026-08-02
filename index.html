@@ -24644,6 +24644,16 @@ if (btnMensajesClientesOrganizador) {
       const btnRegresarMenuV2 =
         document.getElementById("btnRegresarMenuV2");
 
+	      if (
+        window.MASS_ACCESO_CERRADO_MANUAL === true
+      ) {
+        if (accesoV2) {
+          accesoV2.style.display = "none";
+        }
+
+        return;
+      }	
+
       if (formUsuarioV2) {
         formUsuarioV2.style.display = "none";
       }
@@ -26483,6 +26493,8 @@ async function eliminarSuscripcionBilling(id){
 }
 
 async function abrirAccesoV2() {
+  window.MASS_ACCESO_CERRADO_MANUAL = false;
+	
   const acceso =
     document.getElementById("accesoV2");
 
@@ -26611,6 +26623,9 @@ mostrarSesionActiva();
 }
 
 async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
+  if (!conservarSesionRecuperacion) {
+    window.MASS_ACCESO_CERRADO_MANUAL = true;
+  }	
   const acceso =
     document.getElementById("accesoV2");
 
