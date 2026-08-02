@@ -3813,6 +3813,578 @@ async function eliminarPatrocinador(id){
   alert("✅ Patrocinador eliminado");
   mostrarPatrocinadoresAdmin();
   cargarPatrocinadoresPublicos();
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// FORMULARIO SEGURO PARA REPROGRAMAR DINÁMICA ALEATORIA
+// ============================================================
+
+async function abrirFormularioReprogramacion(rifaId) {
+
+  const adminContenido =
+    document.getElementById("adminContenido");
+
+  if (!adminContenido) {
+    alert("❌ No se encontró el panel administrativo.");
+    return;
+  }
+
+  adminContenido.innerHTML = `
+    <p style="color:#39ff14;font-weight:bold;">
+      Cargando información de la dinámica...
+    </p>
+  `;
+
+  const {
+    data: rifa,
+    error
+  } = await supabaseClient
+    .from("rifas")
+    .select(`
+      id,
+      titulo,
+      estado,
+      metodo_sorteo,
+      fecha_sorteo,
+      hora_sorteo,
+      zona_horaria,
+      cierre_apartados_horas_antes,
+      porcentaje_minimo
+    `)
+    .eq("id", rifaId)
+    .maybeSingle();
+
+  if (error || !rifa) {
+    console.error(
+      "ERROR CARGANDO RIFA PARA REPROGRAMACIÓN:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible cargar la dinámica seleccionada."
+    );
+
+    await mostrarSorteosAdmin();
+    return;
+  }
+
+  const estadoNormalizado =
+    String(rifa.estado || "")
+      .trim()
+      .toLowerCase();
+
+  const metodoNormalizado =
+    String(rifa.metodo_sorteo || "")
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+  if (
+    estadoNormalizado !== "minimo_no_alcanzado" ||
+    metodoNormalizado !== "aleatorio automatico"
+  ) {
+    alert(
+      "❌ Esta dinámica no cumple los requisitos " +
+      "para ser reprogramada."
+    );
+
+    await mostrarSorteosAdmin();
+    return;
+  }
+
+  const porcentajeAnterior =
+    Number(rifa.porcentaje_minimo ?? 80);
+
+  const cierreAnterior =
+    Number(
+      rifa.cierre_apartados_horas_antes ?? 0
+    );
+
+  const zonaActual =
+    String(
+      rifa.zona_horaria ||
+      "America/Chicago"
+    ).trim();
+
+  const zonasDisponibles = [
+    ...new Set([
+      zonaActual,
+      "America/Chicago",
+      "America/Matamoros",
+      "America/Mexico_City"
+    ].filter(Boolean))
+  ];
+
+  const opcionesZona =
+    zonasDisponibles
+      .map(zona => `
+        <option
+          value="${zona}"
+          ${zona === zonaActual ? "selected" : ""}
+        >
+          ${zona}
+        </option>
+      `)
+      .join("");
+
+  const tituloSeguro =
+    String(
+      rifa.titulo ||
+      "Dinámica sin título"
+    )
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  adminContenido.innerHTML = `
+    <div
+      class="card"
+      style="
+        max-width:700px;
+        text-align:left;
+        padding:24px;
+      "
+    >
+      <h2
+        style="
+          color:#39ff14;
+          text-align:center;
+          margin-top:0;
+        "
+      >
+        🔄 Reprogramar dinámica
+      </h2>
+
+      <div
+        style="
+          background:#111827;
+          border:1px solid #39ff14;
+          border-radius:12px;
+          padding:15px;
+          margin-bottom:20px;
+          line-height:1.55;
+        "
+      >
+        <b>🎯 Dinámica:</b>
+        ${tituloSeguro}
+        <br>
+
+        <b>📅 Fecha anterior:</b>
+        ${rifa.fecha_sorteo || "Sin fecha"}
+        <br>
+
+        <b>🕘 Hora anterior:</b>
+        ${rifa.hora_sorteo || "Sin hora"}
+        <br>
+
+        <b>📊 Mínimo anterior:</b>
+        ${porcentajeAnterior}%
+        <br><br>
+
+        <span style="color:#ffcc00;">
+          La dinámica anterior permanecerá cerrada
+          y protegida. Se creará una nueva versión
+          vinculada.
+        </span>
+      </div>
+
+      <label
+        for="reprogramacionFecha"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:12px 0 6px;
+        "
+      >
+        📅 Nueva fecha
+      </label>
+
+      <input
+        id="reprogramacionFecha"
+        type="date"
+        style="
+          width:100%;
+          max-width:none;
+          margin:0;
+          padding:13px;
+        "
+      >
+
+      <label
+        for="reprogramacionHora"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:16px 0 6px;
+        "
+      >
+        🕘 Nueva hora
+      </label>
+
+      <input
+        id="reprogramacionHora"
+        type="time"
+        style="
+          width:100%;
+          max-width:none;
+          margin:0;
+          padding:13px;
+        "
+      >
+
+      <label
+        for="reprogramacionZona"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:16px 0 6px;
+        "
+      >
+        🌎 Zona horaria
+      </label>
+
+      <select
+        id="reprogramacionZona"
+        style="
+          width:100%;
+          padding:13px;
+          border-radius:10px;
+          border:1px solid #39ff14;
+          background:#111;
+          color:white;
+        "
+      >
+        ${opcionesZona}
+      </select>
+
+      <label
+        for="reprogramacionCierre"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:16px 0 6px;
+        "
+      >
+        ⏰ Cerrar apartados cuántas horas antes
+      </label>
+
+      <input
+        id="reprogramacionCierre"
+        type="number"
+        min="0"
+        step="1"
+        value="${cierreAnterior}"
+        style="
+          width:100%;
+          max-width:none;
+          margin:0;
+          padding:13px;
+        "
+      >
+
+      <label
+        for="reprogramacionPorcentaje"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:16px 0 6px;
+        "
+      >
+        📊 Nuevo porcentaje mínimo
+      </label>
+
+      <input
+        id="reprogramacionPorcentaje"
+        type="number"
+        min="1"
+        max="100"
+        step="1"
+        value="${porcentajeAnterior}"
+        style="
+          width:100%;
+          max-width:none;
+          margin:0;
+          padding:13px;
+        "
+      >
+
+      <label
+        for="reprogramacionMotivo"
+        style="
+          display:block;
+          font-weight:bold;
+          margin:16px 0 6px;
+        "
+      >
+        📝 Motivo de la reprogramación
+      </label>
+
+      <textarea
+        id="reprogramacionMotivo"
+        maxlength="500"
+        placeholder="Ejemplo: No se alcanzó el mínimo requerido y se establecerá una nueva fecha."
+        style="
+          width:100%;
+          min-height:110px;
+          padding:13px;
+          border-radius:10px;
+          border:1px solid #39ff14;
+          background:#111;
+          color:white;
+          resize:vertical;
+          box-sizing:border-box;
+          font-family:Arial,sans-serif;
+          font-size:15px;
+        "
+      ></textarea>
+
+      <div
+        style="
+          margin-top:22px;
+          display:flex;
+          justify-content:center;
+          flex-wrap:wrap;
+          gap:10px;
+        "
+      >
+        <button
+          id="btnConfirmarReprogramacion"
+          onclick="
+            confirmarReprogramacion(
+              '${rifa.id}',
+              ${porcentajeAnterior}
+            )
+          "
+          style="
+            background:#0b5ed7;
+            color:white;
+            border:2px solid #6ea8fe;
+          "
+        >
+          ✅ Confirmar reprogramación
+        </button>
+
+        <button
+          onclick="mostrarSorteosAdmin()"
+          style="
+            background:#333;
+            color:white;
+            border:1px solid #777;
+          "
+        >
+          ↩️ Cancelar
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+
+// ============================================================
+// MASS SORTEOS PRO
+// EJECUTAR REPROGRAMACIÓN MEDIANTE RPC PROTEGIDA
+// ============================================================
+
+async function confirmarReprogramacion(
+  rifaId,
+  porcentajeAnterior
+) {
+
+  const fecha =
+    document
+      .getElementById("reprogramacionFecha")
+      ?.value || "";
+
+  const hora =
+    document
+      .getElementById("reprogramacionHora")
+      ?.value || "";
+
+  const zona =
+    document
+      .getElementById("reprogramacionZona")
+      ?.value
+      ?.trim() || "";
+
+  const cierre =
+    Number(
+      document
+        .getElementById("reprogramacionCierre")
+        ?.value
+    );
+
+  const porcentajeNuevo =
+    Number(
+      document
+        .getElementById(
+          "reprogramacionPorcentaje"
+        )
+        ?.value
+    );
+
+  const motivo =
+    document
+      .getElementById("reprogramacionMotivo")
+      ?.value
+      ?.trim() || "";
+
+  const boton =
+    document.getElementById(
+      "btnConfirmarReprogramacion"
+    );
+
+  if (!fecha) {
+    alert("❌ Selecciona la nueva fecha.");
+    return;
+  }
+
+  if (!hora) {
+    alert("❌ Selecciona la nueva hora.");
+    return;
+  }
+
+  if (!zona) {
+    alert("❌ Selecciona la zona horaria.");
+    return;
+  }
+
+  if (
+    !Number.isInteger(cierre) ||
+    cierre < 0
+  ) {
+    alert(
+      "❌ El cierre de apartados debe ser " +
+      "un número entero igual o mayor que cero."
+    );
+    return;
+  }
+
+  if (
+    !Number.isInteger(porcentajeNuevo) ||
+    porcentajeNuevo < 1 ||
+    porcentajeNuevo > 100
+  ) {
+    alert(
+      "❌ El porcentaje mínimo debe estar " +
+      "entre 1% y 100%."
+    );
+    return;
+  }
+
+  if (motivo.length < 5) {
+    alert(
+      "❌ Escribe el motivo de la reprogramación."
+    );
+    return;
+  }
+
+  const confirmar = confirm(
+    "🔄 REPROGRAMAR DINÁMICA\n\n" +
+    "Nueva fecha: " + fecha + "\n" +
+    "Nueva hora: " + hora + "\n" +
+    "Zona horaria: " + zona + "\n" +
+    "Mínimo anterior: " +
+      porcentajeAnterior + "%\n" +
+    "Nuevo mínimo: " +
+      porcentajeNuevo + "%\n\n" +
+    "Los boletos vendidos continuarán " +
+    "participando sin costo adicional.\n\n" +
+    "La dinámica anterior permanecerá " +
+    "cerrada y protegida.\n\n" +
+    "¿Confirmas la reprogramación?"
+  );
+
+  if (!confirmar) {
+    return;
+  }
+
+  if (boton) {
+    boton.disabled = true;
+    boton.textContent =
+      "⏳ Reprogramando...";
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "reprogramar_rifa_aleatoria",
+      {
+        p_rifa_origen_id:
+          rifaId,
+
+        p_fecha_sorteo:
+          fecha,
+
+        p_hora_sorteo:
+          hora,
+
+        p_zona_horaria:
+          zona,
+
+        p_cierre_apartados_horas_antes:
+          cierre,
+
+        p_porcentaje_minimo:
+          porcentajeNuevo,
+
+        p_motivo_reprogramacion:
+          motivo
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data?.ok) {
+      throw new Error(
+        "Supabase no confirmó la reprogramación."
+      );
+    }
+
+    alert(
+      "✅ DINÁMICA REPROGRAMADA\n\n" +
+      "Versión nueva: " +
+        data.numero_reprogramacion + "\n" +
+      "Boletos copiados: " +
+        data.boletos_copiados + "\n" +
+      "Boletos vendidos conservados: " +
+        data.boletos_vendidos_conservados + "\n" +
+      "Nuevo mínimo: " +
+        data.porcentaje_minimo + "%\n\n" +
+      "La nueva dinámica quedó programada."
+    );
+
+    await mostrarSorteosAdmin();
+
+  } catch (errorReprogramacion) {
+
+    console.error(
+      "ERROR REPROGRAMANDO DINÁMICA:",
+      errorReprogramacion
+    );
+
+    alert(
+      "❌ No fue posible reprogramar la dinámica.\n\n" +
+      (
+        errorReprogramacion?.message ||
+        "Error desconocido."
+      )
+    );
+
+    if (boton) {
+      boton.disabled = false;
+      boton.textContent =
+        "✅ Confirmar reprogramación";
+    }
+  }
 }	
 
 async function mostrarSorteosAdmin(){
@@ -3985,6 +4557,26 @@ ${(
 <button onclick="mostrarPatrocinadoresRifa('${r.id}', true)">
   👁️ Ver patrocinadores
 </button>
+
+${
+  String(r.estado || "")
+    .trim()
+    .toLowerCase() === "minimo_no_alcanzado"
+    ? `
+      <button
+        onclick="abrirFormularioReprogramacion('${r.id}')"
+        style="
+          background:#0b5ed7;
+          color:white;
+          border:2px solid #6ea8fe;
+          font-weight:bold;
+        "
+      >
+        🔄 Reprogramar dinámica
+      </button>
+    `
+    : ""
+}
 
 ` : r.estado !== 'activa' ? `
 
