@@ -7657,7 +7657,33 @@ async function pausarRifa(id){
 await mostrarSorteosAdmin();
 }
 
-async function eliminarRifa(id,titulo){
+async function eliminarRifa(id){
+
+	const {
+    data: rifaEliminar,
+    error: errorBuscarRifa
+  } = await supabaseClient
+    .from("rifas")
+    .select("titulo")
+    .eq("id", id)
+    .single();
+
+  if (errorBuscarRifa || !rifaEliminar) {
+    console.error(
+      "ERROR BUSCANDO RIFA PARA ELIMINAR:",
+      errorBuscarRifa
+    );
+
+    alert(
+      "❌ No fue posible identificar la dinámica."
+    );
+
+    return;
+  }
+
+  const titulo =
+    rifaEliminar.titulo ||
+    "Sin título";
 
   alert("ID: " + id + "\nTítulo: " + titulo);
 
