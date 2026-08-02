@@ -6785,26 +6785,24 @@ async function manejarCambioSorteoGanador(){
       automáticamente por Supabase.
     */
     const {
-        data: ganador,
-        error
-    } = await supabaseClient
-        .from("ganadores")
-        .select(`
-            numero_ganador,
-            mass_id,
-            premio,
-            lugar_premio,
-            estado_entrega,
-            creado_en
-        `)
-        .eq("rifa_id", rifaId)
-        .eq("autorizado_publicar", true)
-        .order(
-            "creado_en",
-            { ascending: false }
-        )
-        .limit(1)
-        .maybeSingle();
+  data: ganadores,
+  error
+} = await supabaseClient
+  .from("ganadores")
+  .select(`
+    numero_ganador,
+    mass_id,
+    premio,
+    lugar_premio,
+    estado_entrega,
+    creado_en
+  `)
+  .eq("rifa_id", rifaId)
+  .eq("autorizado_publicar", true)
+  .order(
+    "creado_en",
+    { ascending: true }
+  );
 
     if(error){
         console.error(
@@ -6819,65 +6817,128 @@ async function manejarCambioSorteoGanador(){
         return;
     }
 
-    if(!ganador){
-        resultadoBox.textContent =
-            "⚠️ La dinámica está finalizada, " +
-            "pero no se encontró el registro " +
-            "del ganador oficial.";
+   if (
+  !Array.isArray(ganadores) ||
+  ganadores.length === 0
+) {
 
-        return;
+  resultadoBox.textContent =
+    "⚠️ La dinámica está finalizada, " +
+    "pero no se encontraron los registros " +
+    "de los ganadores oficiales.";
+
+  return;
+}
+
+
+/*
+  Ordenar los resultados por:
+  1.º, 2.º, 3.º, etc.
+*/
+const ganadoresOrdenados =
+  [...ganadores].sort(
+    (ganadorA, ganadorB) => {
+
+      const lugarA =
+        Number.parseInt(
+          String(
+            ganadorA.lugar_premio || ""
+          ),
+          10
+        ) || 999;
+
+      const lugarB =
+        Number.parseInt(
+          String(
+            ganadorB.lugar_premio || ""
+          ),
+          10
+        ) || 999;
+
+      return lugarA - lugarB;
     }
+  );
 
-    /*
-      Mostrar el número oficial dentro
-      del campo bloqueado.
-    */
-    numeroInput.value =
-        ganador.numero_ganador || "";
 
-    /*
-      Seleccionar visualmente el premio
-      correspondiente, si se encuentra.
-    */
-    const opcionPremio =
-        Array.from(
-            premioSelect.options
-        ).find(opcion =>
-            String(opcion.textContent || "")
-                .includes(
-                    String(
-                        ganador.premio || ""
-                    )
-                )
-        );
+/*
+  Mostrar todos los números oficiales
+  dentro del campo bloqueado.
+*/
+numeroInput.value =
+  ganadoresOrdenados
+    .map(ganador =>
+      ganador.numero_ganador ||
+      "No disponible"
+    )
+    .join(", ");
 
-    if(opcionPremio){
-        premioSelect.value =
-            opcionPremio.value;
-    }
 
-    resultadoBox.textContent =
-        "🔒 RESULTADO OFICIAL AUTOMÁTICO\n\n" +
-        "🎟️ Número ganador: " +
-        (
-            ganador.numero_ganador ||
-            "No disponible"
-        ) +
-        "\n" +
-        "🪪 MASS ID ganador: " +
-        (
-            ganador.mass_id ||
-            "No disponible"
-        ) +
-        "\n" +
-        "🏆 Premio: " +
-        (
-            ganador.premio ||
-            "No disponible"
-        ) +
-        "\n\n" +
-        "Este resultado fue generado " +
-        "automáticamente y no puede modificarse.";
+/*
+  Seleccionar visualmente el primer premio
+  para conservar compatibilidad con el
+  formulario anterior.
+*/
+const primerGanador =
+  ganadoresOrdenados[0];
+
+const opcionPremio =
+  Array.from(
+    premioSelect.options
+  ).find(opcion =>
+    String(opcion.textContent || "")
+      .includes(
+        String(
+          primerGanador?.premio || ""
+        )
+      )
+  );
+
+if (opcionPremio) {
+  premioSelect.value =
+    opcionPremio.value;
+}
+
+
+/*
+  Construir el expediente completo
+  de todos los ganadores.
+*/
+const detalleGanadores =
+  ganadoresOrdenados
+    .map((ganador, indice) => {
+
+      const lugar =
+        ganador.lugar_premio ||
+        `${indice + 1}.º Premio`;
+
+      const numero =
+        ganador.numero_ganador ||
+        "No disponible";
+
+      const massId =
+        ganador.mass_id ||
+        "No disponible";
+
+      const premio =
+        ganador.premio ||
+        "No disponible";
+
+      return (
+        `🏆 ${lugar}\n` +
+        `🎟️ Número ganador: ${numero}\n` +
+        `🪪 MASS ID ganador: ${massId}\n` +
+        `🎁 Premio: ${premio}`
+      );
+    })
+    .join("\n\n");
+
+
+resultadoBox.textContent =
+  "🔒 RESULTADOS OFICIALES AUTOMÁTICOS\n\n" +
+  detalleGanadores +
+  "\n\n" +
+  "Estos resultados fueron generados " +
+  "automáticamente y no pueden modificarse.";
 }	
 
 async function cargarPremiosParaGanador(){
