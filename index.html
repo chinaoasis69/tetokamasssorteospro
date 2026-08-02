@@ -7654,7 +7654,7 @@ async function pausarRifa(id){
   if(error) return alert(error.message);
 
   alert("⏸️ Rifa pausada");
-  cargarAdminRifas();
+await mostrarSorteosAdmin();
 }
 
 async function eliminarRifa(id,titulo){
