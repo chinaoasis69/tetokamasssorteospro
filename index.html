@@ -2646,7 +2646,6 @@ async function cargarGanadores(){
   premio,
   numero_ganador,
   mass_id,
-  alias_ganador,
   estado_entrega,
   imagen_url,
   comentario,
@@ -2709,9 +2708,11 @@ async function cargarGanadores(){
             </p>
 
             <p>
-                👤 <b>Ganador:</b><br>
-                ${g.alias_ganador}
-            </p>
+    🪪 <b>MASS ID ganador:</b><br>
+    <span style="font-size:20px;color:#39ff14;font-weight:bold;">
+        ${g.mass_id || "MASS ID no disponible"}
+    </span>
+</p>
 
             <p>
                 📍 <b>Estado:</b><br>
