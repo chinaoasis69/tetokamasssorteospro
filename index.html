@@ -2641,7 +2641,16 @@ async function cargarGanadores(){
 
     const { data, error } = await supabaseClient
     .from("ganadores")
-    .select("*")
+    .select(`
+  lugar_premio,
+  premio,
+  numero_ganador,
+  alias_ganador,
+  estado_entrega,
+  imagen_url,
+  comentario,
+  creado_en
+`)
     .eq("rifa_id", RIFA_ID)
     .eq("autorizado_publicar", true)
     .order("lugar_premio", { ascending: true });
