@@ -7657,7 +7657,7 @@ async function pausarRifa(id){
 await mostrarSorteosAdmin();
 }
 
-async function eliminarRifa(id,titulo){
+async function eliminarRifa(id){
 
 	const {
     data: rifaEliminar,
@@ -7685,9 +7685,17 @@ async function eliminarRifa(id,titulo){
     rifaEliminar.titulo ||
     "Sin título";
 
-  alert("ID: " + id + "\nTítulo: " + titulo);
-
-  if(!confirm("⚠️ Se eliminará la rifa y todos sus boletos. ¿Continuar?")) return;
+  if (
+  !confirm(
+    "⚠️ ELIMINAR DINÁMICA\n\n" +
+    "Título: " + titulo + "\n" +
+    "ID: " + id + "\n\n" +
+    "Se eliminarán la dinámica y todos sus boletos.\n\n" +
+    "¿Deseas continuar?"
+  )
+) {
+  return;
+}
 
   const { error: errorBoletos } = await supabaseClient
     .from("boletos")
