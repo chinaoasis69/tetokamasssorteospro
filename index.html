@@ -8090,6 +8090,126 @@ function actualizarCampoCifrasRifa() {
     inputCantidadPremios.value = "1";
     inputCantidadPremios.required = false;
   }
+}
+
+function actualizarCamposPremiosAutomaticos() {
+
+  const metodo =
+    document
+      .getElementById("formMetodo")
+      ?.value
+      .trim()
+      .toLowerCase() || "";
+
+  const cantidadInput =
+    document.getElementById(
+      "formCantidadPremios"
+    );
+
+  const contenedor =
+    document.getElementById(
+      "camposPremiosAutomaticos"
+    );
+
+  if (!cantidadInput || !contenedor) {
+    return;
+  }
+
+  const esAleatorio =
+    metodo === "aleatorio automático" ||
+    metodo === "aleatorio automatico";
+
+  /*
+    Conservar lo que el organizador
+    ya haya escrito antes de redibujar.
+  */
+  const valoresActuales = new Map();
+
+  contenedor
+    .querySelectorAll(
+      "input[data-lugar-premio]"
+    )
+    .forEach(input => {
+
+      valoresActuales.set(
+        Number(input.dataset.lugarPremio),
+        input.value
+      );
+
+    });
+
+  contenedor.innerHTML = "";
+
+  const cantidad =
+    Number(cantidadInput.value);
+
+  if (
+    !esAleatorio ||
+    !Number.isInteger(cantidad) ||
+    cantidad <= 1
+  ) {
+    contenedor.style.display = "none";
+    return;
+  }
+
+  contenedor.style.display = "block";
+
+  for (
+    let lugar = 2;
+    lugar <= cantidad;
+    lugar++
+  ) {
+
+    const caja =
+      document.createElement("div");
+
+    caja.style.marginTop = "12px";
+    caja.style.padding = "12px";
+    caja.style.border =
+      "1px solid rgba(57,255,20,.45)";
+    caja.style.borderRadius = "12px";
+    caja.style.background =
+      "rgba(0,0,0,.28)";
+
+    const etiqueta =
+      document.createElement("label");
+
+    etiqueta.htmlFor =
+      `formPremio${lugar}`;
+
+    etiqueta.textContent =
+      `🏆 ${lugar}.º Premio`;
+
+    etiqueta.style.display = "block";
+    etiqueta.style.marginBottom = "7px";
+    etiqueta.style.fontWeight = "bold";
+    etiqueta.style.color = "white";
+
+    const input =
+      document.createElement("input");
+
+    input.id =
+      `formPremio${lugar}`;
+
+    input.type = "text";
+
+    input.placeholder =
+      `Escribe el ${lugar}.º premio`;
+
+    input.dataset.lugarPremio =
+      String(lugar);
+
+    input.className =
+      "form-premio-automatico";
+
+    input.value =
+      valoresActuales.get(lugar) || "";
+
+    caja.appendChild(etiqueta);
+    caja.appendChild(input);
+
+    contenedor.appendChild(caja);
+  }
 }	
 
 	function cerrarModalRifa() {
@@ -29020,6 +29140,7 @@ font-family:Arial, sans-serif;">
     step="1"
     value="1"
     placeholder="Cantidad de premios"
+	oninput="actualizarCamposPremiosAutomaticos()"  
   >
 
   <div
@@ -29034,6 +29155,15 @@ font-family:Arial, sans-serif;">
     Debes registrar la misma cantidad de premios
     antes de activar la dinámica.
   </div>
+
+<div
+  id="camposPremiosAutomaticos"
+  style="
+    display:none;
+    margin-top:14px;
+  "
+></div>
+	
 </div>	  
 
 <div id="grupoFormCifras">
