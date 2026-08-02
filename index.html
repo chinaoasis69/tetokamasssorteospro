@@ -8112,7 +8112,22 @@ function actualizarCamposPremiosAutomaticos() {
       "camposPremiosAutomaticos"
     );
 
-  if (!cantidadInput || !contenedor) {
+  const grupoPremioPrincipal =
+    document.getElementById(
+      "grupoPremioPrincipal"
+    );
+
+  const ubicacionOriginal =
+    document.getElementById(
+      "ubicacionPremioPrincipalOriginal"
+    );
+
+  if (
+    !cantidadInput ||
+    !contenedor ||
+    !grupoPremioPrincipal ||
+    !ubicacionOriginal
+  ) {
     return;
   }
 
@@ -8121,8 +8136,8 @@ function actualizarCamposPremiosAutomaticos() {
     metodo === "aleatorio automatico";
 
   /*
-    Conservar lo que el organizador
-    ya haya escrito antes de redibujar.
+    Conservar los premios adicionales
+    que ya hayan sido escritos.
   */
   const valoresActuales = new Map();
 
@@ -8139,15 +8154,46 @@ function actualizarCamposPremiosAutomaticos() {
 
     });
 
+  /*
+    Antes de limpiar el contenedor,
+    regresar el primer premio a su
+    ubicación original para no eliminarlo.
+  */
+  if (
+    grupoPremioPrincipal.parentElement ===
+    contenedor
+  ) {
+    ubicacionOriginal.appendChild(
+      grupoPremioPrincipal
+    );
+  }
+
   contenedor.innerHTML = "";
 
   const cantidad =
     Number(cantidadInput.value);
 
+  /*
+    En dinámicas manuales, el primer premio
+    permanece en su ubicación original.
+  */
+  if (!esAleatorio) {
+
+    contenedor.style.display = "none";
+
+    grupoPremioPrincipal.style.marginTop = "";
+    grupoPremioPrincipal.style.padding = "";
+    grupoPremioPrincipal.style.border = "";
+    grupoPremioPrincipal.style.borderRadius = "";
+    grupoPremioPrincipal.style.background = "";
+
+    return;
+  }
+
   if (
-    !esAleatorio ||
     !Number.isInteger(cantidad) ||
-    cantidad <= 1
+    cantidad < 1 ||
+    cantidad > 20
   ) {
     contenedor.style.display = "none";
     return;
@@ -8155,6 +8201,32 @@ function actualizarCamposPremiosAutomaticos() {
 
   contenedor.style.display = "block";
 
+  /*
+    Mover el primer premio al mismo grupo
+    donde estarán los demás premios.
+  */
+  grupoPremioPrincipal.style.marginTop =
+    "12px";
+
+  grupoPremioPrincipal.style.padding =
+    "12px";
+
+  grupoPremioPrincipal.style.border =
+    "1px solid rgba(57,255,20,.45)";
+
+  grupoPremioPrincipal.style.borderRadius =
+    "12px";
+
+  grupoPremioPrincipal.style.background =
+    "rgba(0,0,0,.28)";
+
+  contenedor.appendChild(
+    grupoPremioPrincipal
+  );
+
+  /*
+    Crear los premios adicionales.
+  */
   for (
     let lugar = 2;
     lugar <= cantidad;
@@ -29083,33 +29155,41 @@ font-family:Arial, sans-serif;">
     <input id="formRifaId" type="hidden">
 
     <input id="formTitulo" placeholder="Título de la dinámica">
+    <div id="ubicacionPremioPrincipalOriginal">
+
+  <div id="grupoPremioPrincipal">
+
     <label
-  for="formPremio"
-  style="
-    display:block;
-    margin:10px 0 8px;
-    color:white;
-    font-weight:bold;
-    text-align:center;
-  "
->
-  🏆 1.º Premio
-</label>
+      for="formPremio"
+      style="
+        display:block;
+        margin:10px 0 8px;
+        color:white;
+        font-weight:bold;
+        text-align:center;
+      "
+    >
+      🏆 1.º Premio
+    </label>
 
-<input
-  id="formPremio"
-  placeholder="Ejemplo: Chevy Silverado"
->
+    <input
+      id="formPremio"
+      placeholder="Ejemplo: Chevy Silverado"
+    >
 
-<div
-  style="
-    margin-top:6px;
-    color:#bbb;
-    font-size:13px;
-    text-align:center;
-  "
->
-  Premio principal
+    <div
+      style="
+        margin-top:6px;
+        color:#bbb;
+        font-size:13px;
+        text-align:center;
+      "
+    >
+      Premio principal
+    </div>
+
+  </div>
+
 </div>
     <input id="formPrecio" type="number" placeholder="Precio por boleto">
     <input id="formTotal" type="number" placeholder="Cantidad de números">
