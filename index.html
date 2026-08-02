@@ -4778,27 +4778,31 @@ String(r.estado || "")
   .toLowerCase() === "activa"
   ? `
 
-	<button
-  onclick="probarRifaAleatoria('${r.id}')"
-  style="
-    background:#facc15;
-    color:#111;
-    font-weight:bold;
-  "
->
-  🧪 Probar selección aleatoria
-</button>
-
     <button
-      onclick="ejecutarRifaAleatoria('${r.id}')"
+      onclick="probarRifaAleatoria('${r.id}')"
       style="
-        background:#7c3aed;
-        color:white;
+        background:#facc15;
+        color:#111;
         font-weight:bold;
       "
     >
-      🎲 Ejecutar selección aleatoria
+      🧪 Probar selección aleatoria
     </button>
+
+    <div
+      style="
+        display:inline-block;
+        margin:8px 0;
+        padding:10px 14px;
+        border:1px solid #7c3aed;
+        border-radius:10px;
+        background:#21123d;
+        color:#d8b4fe;
+        font-weight:bold;
+      "
+    >
+      🤖 Resultado oficial programado automáticamente
+    </div>
   `
   : ""
 }
@@ -20015,7 +20019,29 @@ if (logoOrg) {
 </div>
 
 <div style="font-size:16px;margin-top:6px;color:white;">
-  🔢 Modalidad: Últimas ${rifa.cifras_sorteo || 0} cifras
+  ${
+    [
+      "aleatorio automático",
+      "aleatorio automatico"
+    ].includes(
+      String(rifa.metodo_sorteo || "")
+        .trim()
+        .toLowerCase()
+    )
+      ? `
+        🎟️ Modalidad:
+        ${Number(rifa.modalidad || 1)}
+        ${
+          Number(rifa.modalidad || 1) === 1
+            ? "número por boleto"
+            : "números por boleto"
+        }
+      `
+      : `
+        🔢 Modalidad:
+        Últimas ${rifa.cifras_sorteo || 0} cifras
+      `
+  }
 </div>
 `;
 
