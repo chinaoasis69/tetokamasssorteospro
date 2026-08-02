@@ -8003,18 +8003,38 @@ async function eliminarRifa(id){
 function actualizarCampoCifrasRifa() {
 
   const metodo =
-    document.getElementById("formMetodo")
+    document
+      .getElementById("formMetodo")
       ?.value
       .trim()
       .toLowerCase() || "";
 
   const grupoCifras =
-    document.getElementById("grupoFormCifras");
+    document.getElementById(
+      "grupoFormCifras"
+    );
 
   const inputCifras =
-    document.getElementById("formCifras");
+    document.getElementById(
+      "formCifras"
+    );
 
-  if (!grupoCifras || !inputCifras) {
+  const grupoCantidadPremios =
+    document.getElementById(
+      "grupoCantidadPremiosAutomaticos"
+    );
+
+  const inputCantidadPremios =
+    document.getElementById(
+      "formCantidadPremios"
+    );
+
+  if (
+    !grupoCifras ||
+    !inputCifras ||
+    !grupoCantidadPremios ||
+    !inputCantidadPremios
+  ) {
     return;
   }
 
@@ -8024,15 +8044,51 @@ function actualizarCampoCifrasRifa() {
 
   if (esAleatorio) {
 
+    /*
+      Sorteo automático:
+      no utiliza últimas cifras.
+    */
     grupoCifras.style.display = "none";
     inputCifras.value = "";
     inputCifras.required = false;
 
+    /*
+      Mostrar cantidad de premios.
+    */
+    grupoCantidadPremios.style.display =
+      "block";
+
+    inputCantidadPremios.required = true;
+
+    const cantidadActual =
+      Number(inputCantidadPremios.value);
+
+    if (
+      !Number.isInteger(cantidadActual) ||
+      cantidadActual < 1 ||
+      cantidadActual > 20
+    ) {
+      inputCantidadPremios.value = "1";
+    }
+
   } else {
 
+    /*
+      Sorteo manual:
+      utiliza últimas cifras.
+    */
     grupoCifras.style.display = "block";
     inputCifras.required = true;
 
+    /*
+      Ocultar cantidad de premios
+      automáticos y conservar 1.
+    */
+    grupoCantidadPremios.style.display =
+      "none";
+
+    inputCantidadPremios.value = "1";
+    inputCantidadPremios.required = false;
   }
 }	
 
@@ -8088,11 +8144,13 @@ function abrirModalRifa(datos = null) {
 	
     document.getElementById("formMetodo").value = datos?.metodo_sorteo || "";
     document.getElementById("formCifras").value = datos?.cifras_sorteo || "";
-	actualizarCampoCifrasRifa();
     document.getElementById("formImagen").value = datos?.imagen_url || "";
     document.getElementById("formAviso").value = datos?.aviso || "";
+	document.getElementById("formCantidadPremios").value =
+    datos ? (datos.cantidad_premios ?? 1) : 1;
     document.getElementById("formPorcentaje").value =
       datos ? (datos.porcentaje_minimo ?? "") : "";
+	actualizarCampoCifrasRifa();
 }
 
 async function guardarRifaFormulario() {
@@ -8126,6 +8184,33 @@ const metodoNormalizado =
 const esAleatorio =
   metodoNormalizado === "aleatorio automático" ||
   metodoNormalizado === "aleatorio automatico";
+
+const cantidadPremiosIngresada = Number(
+  document
+    .getElementById("formCantidadPremios")
+    ?.value || 1
+);
+
+let cantidadPremios = 1;
+
+if (esAleatorio) {
+
+  if (
+    !Number.isInteger(cantidadPremiosIngresada) ||
+    cantidadPremiosIngresada < 1 ||
+    cantidadPremiosIngresada > 20
+  ) {
+    alert(
+      "❌ La cantidad de premios automáticos " +
+      "debe ser un número entero entre 1 y 20."
+    );
+
+    return;
+  }
+
+  cantidadPremios =
+    cantidadPremiosIngresada;
+}	
 
 let cifrasSorteo = null;
 
@@ -8201,6 +8286,7 @@ if (
 	tiempo_apartado_horas: tiempoApartadoHoras,
 	cierre_apartados_horas_antes: cierreApartadosHorasAntes,  
     metodo_sorteo: metodo,
+	cantidad_premios: cantidadPremios,  
     cifras_sorteo: cifrasSorteo,
     imagen_url: imagen,
     aviso,
@@ -28905,6 +28991,50 @@ font-family:Arial, sans-serif;">
     🎲 Aleatorio automático
   </option>
 </select>
+
+<div
+  id="grupoCantidadPremiosAutomaticos"
+  style="
+    display:none;
+    margin-top:14px;
+  "
+>
+  <label
+    for="formCantidadPremios"
+    style="
+      display:block;
+      margin-bottom:8px;
+      color:white;
+      font-weight:bold;
+      text-align:center;
+    "
+  >
+    🏆 Cantidad de premios automáticos
+  </label>
+
+  <input
+    id="formCantidadPremios"
+    type="number"
+    min="1"
+    max="20"
+    step="1"
+    value="1"
+    placeholder="Cantidad de premios"
+  >
+
+  <div
+    style="
+      margin-top:7px;
+      color:#bbb;
+      font-size:13px;
+      line-height:1.4;
+      text-align:center;
+    "
+  >
+    Debes registrar la misma cantidad de premios
+    antes de activar la dinámica.
+  </div>
+</div>	  
 
 <div id="grupoFormCifras">
   <input
