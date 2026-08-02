@@ -6526,7 +6526,7 @@ async function mostrarGanadoresAdmin() {
 
     <div class="form-section">
       <label>🎯 Sorteo</label>
-      <select id="ganadorRifa" onchange="cargarPremiosParaGanador()">
+      <select id="ganadorRifa" onchange="manejarCambioSorteoGanador()">
         <option value="">Selecciona un sorteo</option>
       </select>
     </div>
@@ -6544,8 +6544,21 @@ async function mostrarGanadoresAdmin() {
       <label>🎫 Número ganador</label>
       <input id="ganadorNumero" placeholder="Ejemplo: 0099">
 
-      <label>👤 Alias del ganador</label>
-      <input id="ganadorAlias" placeholder="Ejemplo: Juan P.">
+	  <div
+  id="resultadoAutomaticoGanador"
+  style="
+    display:none;
+    margin-top:12px;
+    padding:14px;
+    border:2px solid #39ff14;
+    border-radius:12px;
+    background:#101b0d;
+    color:white;
+    line-height:1.6;
+    text-align:center;
+  "
+ >
+ </div>
 
       <label>📍 Estado</label>
       <select id="ganadorEstado">
@@ -6564,7 +6577,11 @@ async function mostrarGanadoresAdmin() {
       <input type="file" id="imagenGanador" accept="image/*">
     </div>
 
-    <button class="btn-publicar" onclick="publicarGanador()">
+    <button
+  id="btnPublicarGanador"
+  class="btn-publicar"
+  onclick="publicarGanador()"
+>
       🏆 Publicar ganador
     </button>
   </div>
@@ -6586,7 +6603,7 @@ async function cargarSorteosGanador(){
 
     const { data, error } = await supabaseClient
         .from("rifas")
-        .select("id,titulo")
+        .select("id,titulo,metodo_sorteo,estado")
         .eq("organizador_id", organizadorId);
 
 	console.log("organizadorId:", organizadorId);
@@ -6601,14 +6618,267 @@ async function cargarSorteosGanador(){
     data.forEach(rifa=>{
 
         select.innerHTML += `
-            <option value="${rifa.id}">
-                ${rifa.titulo}
-            </option>
-        `;
+    <option
+        value="${rifa.id}"
+        data-metodo="${String(
+            rifa.metodo_sorteo || ""
+        ).trim()}"
+        data-estado="${String(
+            rifa.estado || ""
+        ).trim()}"
+    >
+        ${rifa.titulo}
+    </option>
+`;
 
     });
 
 }
+
+async function manejarCambioSorteoGanador(){
+
+    const rifaSelect =
+        document.getElementById("ganadorRifa");
+
+    const opcionSeleccionada =
+        rifaSelect.options[
+            rifaSelect.selectedIndex
+        ];
+
+    const rifaId =
+        rifaSelect.value;
+
+    const metodo =
+        String(
+            opcionSeleccionada?.dataset?.metodo || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const estadoRifa =
+        String(
+            opcionSeleccionada?.dataset?.estado || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const premioSelect =
+        document.getElementById("ganadorPremio");
+
+    const numeroInput =
+        document.getElementById("ganadorNumero");
+
+    const estadoSelect =
+        document.getElementById("ganadorEstado");
+
+    const comentarioInput =
+        document.getElementById(
+            "ganadorComentario"
+        );
+
+    const imagenInput =
+        document.getElementById(
+            "imagenGanador"
+        );
+
+    const resultadoBox =
+        document.getElementById(
+            "resultadoAutomaticoGanador"
+        );
+
+    const btnPublicar =
+        document.getElementById(
+            "btnPublicarGanador"
+        );
+
+    /*
+      Restaurar el formulario cuando se cambie
+      de una dinámica aleatoria a una manual.
+    */
+    numeroInput.value = "";
+    numeroInput.readOnly = false;
+    numeroInput.placeholder = "Ejemplo: 0099";
+
+    premioSelect.disabled = false;
+    estadoSelect.disabled = false;
+    comentarioInput.disabled = false;
+    imagenInput.disabled = false;
+
+    btnPublicar.disabled = false;
+    btnPublicar.style.opacity = "1";
+    btnPublicar.style.cursor = "pointer";
+
+    resultadoBox.style.display = "none";
+    resultadoBox.style.whiteSpace = "pre-line";
+    resultadoBox.textContent = "";
+
+    /*
+      Cargar normalmente los premios.
+    */
+    await cargarPremiosParaGanador();
+
+    if(!rifaId){
+        return;
+    }
+
+    const esAleatorio =
+        metodo === "aleatorio automático" ||
+        metodo === "aleatorio automatico";
+
+    /*
+      Las dinámicas manuales conservan
+      el formulario editable.
+    */
+    if(!esAleatorio){
+        return;
+    }
+
+    /*
+      Las dinámicas aleatorias solamente
+      muestran el resultado oficial.
+    */
+    numeroInput.readOnly = true;
+    numeroInput.placeholder =
+        "Resultado generado por el sistema";
+
+    premioSelect.disabled = true;
+    estadoSelect.disabled = true;
+    comentarioInput.disabled = true;
+    imagenInput.disabled = true;
+
+    btnPublicar.disabled = true;
+    btnPublicar.style.opacity = "0.55";
+    btnPublicar.style.cursor = "not-allowed";
+
+    resultadoBox.style.display = "block";
+
+    /*
+      Si no alcanzó el mínimo,
+      no existe ganador.
+    */
+    if(
+        estadoRifa ===
+        "minimo_no_alcanzado"
+    ){
+        resultadoBox.textContent =
+            "⚠️ Dinámica cerrada\n" +
+            "No se seleccionó ganador porque " +
+            "no se alcanzó el porcentaje mínimo.";
+
+        return;
+    }
+
+    /*
+      Todavía no ha llegado el resultado.
+    */
+    if(estadoRifa !== "finalizada"){
+        resultadoBox.textContent =
+            "🎲 Resultado automático pendiente\n" +
+            "El sistema seleccionará al ganador " +
+            "cuando llegue la fecha y hora oficial.";
+
+        return;
+    }
+
+    /*
+      Consultar el ganador oficial registrado
+      automáticamente por Supabase.
+    */
+    const {
+        data: ganador,
+        error
+    } = await supabaseClient
+        .from("ganadores")
+        .select(`
+            numero_ganador,
+            mass_id,
+            premio,
+            lugar_premio,
+            estado_entrega,
+            creado_en
+        `)
+        .eq("rifa_id", rifaId)
+        .eq("autorizado_publicar", true)
+        .order(
+            "creado_en",
+            { ascending: false }
+        )
+        .limit(1)
+        .maybeSingle();
+
+    if(error){
+        console.error(
+            "Error cargando resultado automático:",
+            error
+        );
+
+        resultadoBox.textContent =
+            "❌ No fue posible cargar " +
+            "el resultado automático.";
+
+        return;
+    }
+
+    if(!ganador){
+        resultadoBox.textContent =
+            "⚠️ La dinámica está finalizada, " +
+            "pero no se encontró el registro " +
+            "del ganador oficial.";
+
+        return;
+    }
+
+    /*
+      Mostrar el número oficial dentro
+      del campo bloqueado.
+    */
+    numeroInput.value =
+        ganador.numero_ganador || "";
+
+    /*
+      Seleccionar visualmente el premio
+      correspondiente, si se encuentra.
+    */
+    const opcionPremio =
+        Array.from(
+            premioSelect.options
+        ).find(opcion =>
+            String(opcion.textContent || "")
+                .includes(
+                    String(
+                        ganador.premio || ""
+                    )
+                )
+        );
+
+    if(opcionPremio){
+        premioSelect.value =
+            opcionPremio.value;
+    }
+
+    resultadoBox.textContent =
+        "🔒 RESULTADO OFICIAL AUTOMÁTICO\n\n" +
+        "🎟️ Número ganador: " +
+        (
+            ganador.numero_ganador ||
+            "No disponible"
+        ) +
+        "\n" +
+        "🪪 MASS ID ganador: " +
+        (
+            ganador.mass_id ||
+            "No disponible"
+        ) +
+        "\n" +
+        "🏆 Premio: " +
+        (
+            ganador.premio ||
+            "No disponible"
+        ) +
+        "\n\n" +
+        "Este resultado fue generado " +
+        "automáticamente y no puede modificarse.";
+}	
 
 async function cargarPremiosParaGanador(){
 
@@ -6652,7 +6922,6 @@ async function publicarGanador(){
     const premioId = premioSelect.value;
 
     const numero = document.getElementById("ganadorNumero").value.trim();
-    const alias = document.getElementById("ganadorAlias").value.trim();
     const estado = document.getElementById("ganadorEstado").value;
     const comentario = document.getElementById("ganadorComentario").value.trim();
 
@@ -6670,11 +6939,6 @@ async function publicarGanador(){
 
     if(!numero){
         alert("Escribe el número ganador");
-        return;
-    }
-
-    if(!alias){
-        alert("Escribe el alias del ganador");
         return;
     }
 
@@ -6737,7 +7001,6 @@ if (archivoImagen) {
             lugar_premio: lugarPremio,
             premio: premioNombre,
             numero_ganador: numero,
-            alias_ganador: alias,
             estado_entrega: estado,
             comentario: comentario,
 			imagen_url: imagenUrl,
@@ -6763,7 +7026,6 @@ setTimeout(() => {
 }, 2500);
 
     document.getElementById("ganadorNumero").value = "";
-    document.getElementById("ganadorAlias").value = "";
     document.getElementById("ganadorComentario").value = "";
 }	
 
