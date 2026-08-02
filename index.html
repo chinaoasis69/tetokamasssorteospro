@@ -26492,8 +26492,119 @@ async function eliminarSuscripcionBilling(id){
     mostrarBillingSuperAdmin();
 }
 
+// ==========================================================
+// MASS ID — BOTÓN PARA VOLVER A ABRIR EL ACCESO
+// ==========================================================
+
+function asegurarBotonAccesoPublicoMass() {
+
+  let boton =
+    document.getElementById(
+      "btnAccesoPublicoMass"
+    );
+
+  if (!boton) {
+
+    boton =
+      document.createElement(
+        "button"
+      );
+
+    boton.id =
+      "btnAccesoPublicoMass";
+
+    boton.type =
+      "button";
+
+    boton.innerHTML =
+      "🔐 Iniciar sesión / Crear cuenta";
+
+    boton.onclick =
+      async function () {
+
+        boton.style.display =
+          "none";
+
+        await abrirAccesoV2();
+      };
+
+    boton.style.position =
+      "fixed";
+
+    boton.style.right =
+      "18px";
+
+    boton.style.bottom =
+      "18px";
+
+    boton.style.zIndex =
+      "9998";
+
+    boton.style.padding =
+      "13px 16px";
+
+    boton.style.border =
+      "2px solid #39ff14";
+
+    boton.style.borderRadius =
+      "14px";
+
+    boton.style.background =
+      "#111";
+
+    boton.style.color =
+      "white";
+
+    boton.style.fontWeight =
+      "bold";
+
+    boton.style.fontSize =
+      "14px";
+
+    boton.style.boxShadow =
+      "0 0 18px rgba(57,255,20,.55)";
+
+    boton.style.cursor =
+      "pointer";
+
+    boton.style.display =
+      "none";
+
+    document.body.appendChild(
+      boton
+    );
+  }
+
+  return boton;
+}
+
+
+function mostrarBotonAccesoPublicoMass() {
+
+  const boton =
+    asegurarBotonAccesoPublicoMass();
+
+  boton.style.display =
+    "block";
+}
+
+
+function ocultarBotonAccesoPublicoMass() {
+
+  const boton =
+    document.getElementById(
+      "btnAccesoPublicoMass"
+    );
+
+  if (boton) {
+    boton.style.display =
+      "none";
+  }
+}	
+
 async function abrirAccesoV2() {
   window.MASS_ACCESO_CERRADO_MANUAL = false;
+  ocultarBotonAccesoPublicoMass();	
 	
   const acceso =
     document.getElementById("accesoV2");
@@ -26665,6 +26776,10 @@ async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
 
 if (acceso) {
   acceso.style.display = "none";
+}
+
+if (!conservarSesionRecuperacion) {
+  mostrarBotonAccesoPublicoMass();
 }
 
 return;   
