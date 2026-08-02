@@ -4429,6 +4429,17 @@ const { data, error } = await query;
     return;
 }
 
+// ============================================================
+// MASS — IDENTIFICAR DINÁMICAS QUE YA FUERON REPROGRAMADAS
+// ============================================================
+
+const rifasConContinuacion = new Set(
+  (data || [])
+    .map(rifaActual => rifaActual.rifa_origen_id)
+    .filter(Boolean)
+    .map(String)
+);	
+
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
 		<button onclick="abrirModalRifa()">➕ Nueva rifa</button>
@@ -4561,7 +4572,8 @@ ${(
 ${
   String(r.estado || "")
     .trim()
-    .toLowerCase() === "minimo_no_alcanzado"
+    .toLowerCase() === "minimo_no_alcanzado" &&
+  !rifasConContinuacion.has(String(r.id))
     ? `
       <button
         onclick="abrirFormularioReprogramacion('${r.id}')"
@@ -4575,7 +4587,27 @@ ${
         🔄 Reprogramar dinámica
       </button>
     `
-    : ""
+    : String(r.estado || "")
+        .trim()
+        .toLowerCase() === "minimo_no_alcanzado" &&
+      rifasConContinuacion.has(String(r.id))
+        ? `
+          <div
+            style="
+              display:inline-block;
+              margin-top:10px;
+              padding:10px 14px;
+              border:1px solid #6ea8fe;
+              border-radius:10px;
+              background:#102a43;
+              color:#9ec5fe;
+              font-weight:bold;
+            "
+          >
+            🔗 Esta dinámica ya fue reprogramada
+          </div>
+        `
+        : ""
 }
 
 ` : r.estado !== 'activa' ? `
