@@ -8090,6 +8090,7 @@ function actualizarCampoCifrasRifa() {
     inputCantidadPremios.value = "1";
     inputCantidadPremios.required = false;
   }
+actualizarCamposPremiosAutomaticos();	
 }
 
 function actualizarCamposPremiosAutomaticos() {
@@ -8365,7 +8366,50 @@ if (
 ) {
   alert("❌ Completa los campos obligatorios.");
   return;
-}  
+}
+
+const premiosFormulario = [
+  {
+    lugar: 1,
+    nombre: premio
+  }
+];
+
+if (
+  esAleatorio &&
+  cantidadPremios > 1
+) {
+
+  for (
+    let lugar = 2;
+    lugar <= cantidadPremios;
+    lugar++
+  ) {
+
+    const nombrePremio =
+      document
+        .getElementById(
+          `formPremio${lugar}`
+        )
+        ?.value
+        .trim() || "";
+
+    if (!nombrePremio) {
+
+      alert(
+        `❌ Escribe el ${lugar}.º premio ` +
+        `antes de guardar la dinámica.`
+      );
+
+      return;
+    }
+
+    premiosFormulario.push({
+      lugar,
+      nombre: nombrePremio
+    });
+  }
+}	
 
 const totalNumeros = Number(total);
 
@@ -8460,39 +8504,47 @@ if (
     return;
   }
 
-
-  const {
-    error: premioError
-  } = await supabaseClient
-    .from("premios_rifa")
-    .insert([{
+  const premiosParaInsertar =
+  premiosFormulario.map(
+    premioFormulario => ({
       rifa_id:
         nuevaRifa.id,
 
       lugar:
-        1,
+        premioFormulario.lugar,
 
       nombre:
-        premio,
+        premioFormulario.nombre,
 
       descripcion:
-        "Premio principal",
+        premioFormulario.lugar === 1
+          ? "Premio principal"
+          : `${premioFormulario.lugar}.º premio automático`,
 
       imagen_url:
-        imagen
-    }]);
+        premioFormulario.lugar === 1
+          ? imagen
+          : null
+    })
+  );
 
+const {
+  error: premioError
+} = await supabaseClient
+  .from("premios_rifa")
+  .insert(premiosParaInsertar);
 
-  if (premioError) {
+   if (premioError) {
 
     console.error(
-      "Error guardando el premio principal:",
+     "Error guardando los premios de la dinámica:",
       premioError
     );
 
     alert(
-      "⚠️ Los boletos se generaron correctamente, pero no se pudo registrar el premio principal."
-    );
+  "⚠️ Los boletos se generaron correctamente, " +
+  "pero no se pudieron registrar todos los premios."
+);
 
   }
 
@@ -29031,7 +29083,34 @@ font-family:Arial, sans-serif;">
     <input id="formRifaId" type="hidden">
 
     <input id="formTitulo" placeholder="Título de la dinámica">
-    <input id="formPremio" placeholder="Premio principal">
+    <label
+  for="formPremio"
+  style="
+    display:block;
+    margin:10px 0 8px;
+    color:white;
+    font-weight:bold;
+    text-align:center;
+  "
+>
+  🏆 1.º Premio
+</label>
+
+<input
+  id="formPremio"
+  placeholder="Ejemplo: Chevy Silverado"
+>
+
+<div
+  style="
+    margin-top:6px;
+    color:#bbb;
+    font-size:13px;
+    text-align:center;
+  "
+>
+  Premio principal
+</div>
     <input id="formPrecio" type="number" placeholder="Precio por boleto">
     <input id="formTotal" type="number" placeholder="Cantidad de números">
 
