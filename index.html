@@ -26656,36 +26656,18 @@ async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
     }
   }
 	
-    if (!conservarSesionRecuperacion) {
-  await supabaseClient.auth.signOut();
+/*
+  La X solamente cierra la tarjeta de acceso.
+  No cierra sesión y no recarga la página.
+  Para cerrar una sesión existe el botón
+  específico "Cerrar sesión".
+*/
+
+if (acceso) {
+  acceso.style.display = "none";
 }
 
-    localStorage.removeItem("mass_telefono");
-    localStorage.removeItem("mass_user");
-    localStorage.removeItem(
-      "mass_auth_user_id"
-    );
-    localStorage.removeItem("mass_email");
-
-    const sesionActivaBox =
-      document.getElementById(
-        "sesionActivaBox"
-      );
-
-    if (sesionActivaBox) {
-      sesionActivaBox.style.display =
-        "none";
-    }
-
-    if (acceso) {
-      acceso.style.display = "none";
-    }
-
-    if (!conservarSesionRecuperacion) {
-  location.reload();
-}
-
-return;
+return;   
   }
 
 function regresarMenuAccesoV2(){
