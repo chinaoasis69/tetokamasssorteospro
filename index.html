@@ -26531,11 +26531,60 @@ function asegurarBotonAccesoPublicoMass() {
     boton.style.position =
       "fixed";
 
-    boton.style.right =
-      "18px";
+    const esPantallaMovil =
+  window.matchMedia(
+    "(max-width: 600px)"
+  ).matches;
 
-    boton.style.bottom =
-      "18px";
+if (esPantallaMovil) {
+
+  boton.style.left =
+    "50%";
+
+  boton.style.right =
+    "auto";
+
+  boton.style.transform =
+    "translateX(-50%)";
+
+  boton.style.width =
+    "calc(100% - 24px)";
+
+  boton.style.maxWidth =
+    "480px";
+
+  boton.style.bottom =
+    "calc(12px + env(safe-area-inset-bottom))";
+
+} else {
+
+  boton.style.left =
+    "auto";
+
+  boton.style.right =
+    "18px";
+
+  boton.style.transform =
+    "none";
+
+  boton.style.width =
+    "auto";
+
+  boton.style.maxWidth =
+    "calc(100vw - 36px)";
+
+  boton.style.bottom =
+    "18px";
+}
+
+boton.style.boxSizing =
+  "border-box";
+
+boton.style.textAlign =
+  "center";
+
+boton.style.whiteSpace =
+  "normal";
 
     boton.style.zIndex =
       "9998";
