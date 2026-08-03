@@ -8351,26 +8351,86 @@ function actualizarCamposPremiosAutomaticos() {
 }
 
 async function abrirModalRifaPorId(id) {
-    const {
-        data: rifaEncontrada,
-        error
-    } = await supabaseClient
-        .from("rifas")
-        .select("*")
-        .eq("id", id)
-        .single();
 
-    if (error || !rifaEncontrada) {
-        console.error(
-            "Error consultando la dinámica para editar:",
-            error
-        );
+  const {
+    data: rifaEncontrada,
+    error: errorRifa
+  } = await supabaseClient
+    .from("rifas")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-        alert("❌ No se encontró la dinámica que deseas editar.");
-        return;
-    }
 
-    abrirModalRifa(rifaEncontrada);
+  if (
+    errorRifa ||
+    !rifaEncontrada
+  ) {
+
+    console.error(
+      "Error consultando la dinámica para editar:",
+      errorRifa
+    );
+
+    alert(
+      "❌ No se encontró la dinámica que deseas editar."
+    );
+
+    return;
+  }
+
+
+  /*
+    Consultar todos los premios existentes
+    de esta dinámica.
+  */
+  const {
+    data: premiosEncontrados,
+    error: errorPremios
+  } = await supabaseClient
+    .from("premios_rifa")
+    .select(`
+      id,
+      rifa_id,
+      lugar,
+      nombre,
+      descripcion,
+      imagen_url,
+      created_at
+    `)
+    .eq("rifa_id", id)
+    .order(
+      "lugar",
+      { ascending: true }
+    );
+
+
+  if (errorPremios) {
+
+    console.error(
+      "Error consultando los premios de la dinámica:",
+      errorPremios
+    );
+
+    alert(
+      "❌ No fue posible cargar los premios existentes."
+    );
+
+    return;
+  }
+
+
+  /*
+    Adjuntar los premios a la información
+    que recibirá el formulario.
+  */
+  rifaEncontrada.premios_lista =
+    premiosEncontrados || [];
+
+
+  abrirModalRifa(
+    rifaEncontrada
+  );
 }	
 
 function abrirModalRifa(datos = null) {
@@ -8405,6 +8465,64 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formPorcentaje").value =
       datos ? (datos.porcentaje_minimo ?? "") : "";
 	actualizarCampoCifrasRifa();
+
+	/*
+  Cargar los premios existentes
+  al editar una dinámica.
+*/
+const premiosExistentes =
+  Array.isArray(datos?.premios_lista)
+    ? datos.premios_lista
+    : [];
+
+
+/*
+  Cargar el primer premio.
+*/
+const premioPrincipalExistente =
+  premiosExistentes.find(
+    premioExistente =>
+      Number(premioExistente.lugar) === 1
+  );
+
+if (premioPrincipalExistente) {
+
+  document
+    .getElementById("formPremio")
+    .value =
+      premioPrincipalExistente.nombre || "";
+}
+
+
+/*
+  Cargar desde el segundo premio
+  hasta la cantidad configurada.
+*/
+premiosExistentes.forEach(
+  premioExistente => {
+
+    const lugar =
+      Number(premioExistente.lugar);
+
+    if (
+      !Number.isInteger(lugar) ||
+      lugar < 2
+    ) {
+      return;
+    }
+
+    const inputPremio =
+      document.getElementById(
+        `formPremio${lugar}`
+      );
+
+    if (inputPremio) {
+
+      inputPremio.value =
+        premioExistente.nombre || "";
+    }
+  }
+);
 }
 
 async function guardarRifaFormulario() {
