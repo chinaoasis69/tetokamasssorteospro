@@ -8471,8 +8471,12 @@ if (archivoImagen) {
 
     let errorPublicacion = null;
 
-if (ganadorExistente?.id) {
-    const { error } = await supabaseClient
+	if (ganadorExistente?.id) {
+
+    const {
+        data: ganadorActualizado,
+        error
+    } = await supabaseClient
         .from("ganadores")
         .update({
             estado_entrega: estado,
@@ -8480,10 +8484,29 @@ if (ganadorExistente?.id) {
             imagen_url: imagenUrl,
             autorizado_publicar: true
         })
-        .eq("id", ganadorExistente.id);
+        .eq("id", ganadorExistente.id)
+        .select("id")
+        .maybeSingle();
 
-    errorPublicacion = error;
-} else {
+    if (error) {
+
+        errorPublicacion = error;
+
+    } else if (!ganadorActualizado?.id) {
+
+        errorPublicacion = {
+            message:
+                "La política de seguridad no permitió " +
+                "actualizar este ganador."
+        };
+
+    } else {
+
+        errorPublicacion = null;
+    }
+}
+
+ else {
     const { error } = await supabaseClient
         .from("ganadores")
         .insert({
