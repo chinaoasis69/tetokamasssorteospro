@@ -6634,7 +6634,9 @@ async function cargarSorteosGanador(){
     });
 
 }
-
+	
+let ganadoresAutomaticosFormulario = [];
+	
 async function manejarCambioSorteoGanador(){
 
     const rifaSelect =
@@ -6741,14 +6743,18 @@ async function manejarCambioSorteoGanador(){
     numeroInput.placeholder =
         "Resultado generado por el sistema";
 
-    premioSelect.disabled = true;
-    estadoSelect.disabled = true;
-    comentarioInput.disabled = true;
-    imagenInput.disabled = true;
+    /*
+  Mientras el resultado automático no esté
+  finalizado, todo permanece protegido.
+*/
+premioSelect.disabled = true;
+estadoSelect.disabled = true;
+comentarioInput.disabled = true;
+imagenInput.disabled = true;
 
-    btnPublicar.disabled = true;
-    btnPublicar.style.opacity = "0.55";
-    btnPublicar.style.cursor = "not-allowed";
+btnPublicar.disabled = true;
+btnPublicar.style.opacity = "0.55";
+btnPublicar.style.cursor = "not-allowed";
 
     resultadoBox.style.display = "block";
 
@@ -6790,13 +6796,16 @@ async function manejarCambioSorteoGanador(){
 } = await supabaseClient
   .from("ganadores")
   .select(`
+    id,
     numero_ganador,
     mass_id,
     premio,
     lugar_premio,
     estado_entrega,
+    comentario,
+    imagen_url,
     creado_en
-  `)
+`)
   .eq("rifa_id", rifaId)
   .eq("autorizado_publicar", true)
   .order(
@@ -6859,45 +6868,74 @@ const ganadoresOrdenados =
     }
   );
 
-
 /*
-  Mostrar todos los números oficiales
-  dentro del campo bloqueado.
+  Conservar todos los ganadores automáticos
+  para trabajar premio por premio.
 */
-numeroInput.value =
-  ganadoresOrdenados
-    .map(ganador =>
-      ganador.numero_ganador ||
-      "No disponible"
-    )
-    .join(", ");
+ganadoresAutomaticosFormulario =
+  ganadoresOrdenados;
 
 
 /*
-  Seleccionar visualmente el primer premio
-  para conservar compatibilidad con el
-  formulario anterior.
+  El resultado ya es oficial:
+  habilitar solamente los datos de entrega
+  y el selector de premios.
 */
-const primerGanador =
-  ganadoresOrdenados[0];
+premioSelect.disabled = false;
+estadoSelect.disabled = false;
+comentarioInput.disabled = false;
+imagenInput.disabled = false;
 
-const opcionPremio =
-  Array.from(
-    premioSelect.options
-  ).find(opcion =>
-    String(opcion.textContent || "")
-      .includes(
-        String(
-          primerGanador?.premio || ""
-        )
-      )
+btnPublicar.disabled = false;
+btnPublicar.style.opacity = "1";
+btnPublicar.style.cursor = "pointer";
+
+
+/*
+  Cada vez que se seleccione un premio,
+  cargar su ganador correspondiente.
+*/
+premioSelect.onchange =
+  cargarGanadorAutomaticoSeleccionado;
+
+
+/*
+  Seleccionar automáticamente el primer premio.
+*/
+const primerLugar =
+  Number.parseInt(
+    String(
+      ganadoresOrdenados[0]?.lugar_premio || ""
+    ),
+    10
   );
 
-if (opcionPremio) {
+const opcionPrimerPremio =
+  Array.from(
+    premioSelect.options
+  ).find(opcion => {
+
+    const lugarOpcion =
+      Number.parseInt(
+        String(
+          opcion.textContent || ""
+        ),
+        10
+      );
+
+    return lugarOpcion === primerLugar;
+  });
+
+if (opcionPrimerPremio) {
   premioSelect.value =
-    opcionPremio.value;
+    opcionPrimerPremio.value;
 }
 
+
+/*
+  Mostrar el primer ganador.
+*/
+cargarGanadorAutomaticoSeleccionado();
 
 /*
   Construir el expediente completo
@@ -6939,6 +6977,105 @@ resultadoBox.textContent =
   "\n\n" +
   "Estos resultados fueron generados " +
   "automáticamente y no pueden modificarse.";
+}
+
+function cargarGanadorAutomaticoSeleccionado() {
+
+  const premioSelect =
+    document.getElementById(
+      "ganadorPremio"
+    );
+
+  const numeroInput =
+    document.getElementById(
+      "ganadorNumero"
+    );
+
+  const estadoSelect =
+    document.getElementById(
+      "ganadorEstado"
+    );
+
+  const comentarioInput =
+    document.getElementById(
+      "ganadorComentario"
+    );
+
+  const imagenInput =
+    document.getElementById(
+      "imagenGanador"
+    );
+
+  const opcionSeleccionada =
+    premioSelect.options[
+      premioSelect.selectedIndex
+    ];
+
+  const lugarSeleccionado =
+    Number.parseInt(
+      String(
+        opcionSeleccionada?.textContent || ""
+      ),
+      10
+    );
+
+
+  const ganadorSeleccionado =
+    ganadoresAutomaticosFormulario.find(
+      ganador => {
+
+        const lugarGanador =
+          Number.parseInt(
+            String(
+              ganador.lugar_premio || ""
+            ),
+            10
+          );
+
+        return (
+          lugarGanador ===
+          lugarSeleccionado
+        );
+      }
+    );
+
+
+  if (!ganadorSeleccionado) {
+
+    numeroInput.value = "";
+    estadoSelect.value = "pendiente";
+    comentarioInput.value = "";
+    imagenInput.value = "";
+
+    return;
+  }
+
+
+  /*
+    Número oficial protegido.
+  */
+  numeroInput.value =
+    ganadorSeleccionado.numero_ganador || "";
+
+  numeroInput.readOnly = true;
+
+
+  /*
+    Información independiente de entrega
+    para este ganador.
+  */
+  estadoSelect.value =
+    ganadorSeleccionado.estado_entrega ||
+    "pendiente";
+
+  comentarioInput.value =
+    ganadorSeleccionado.comentario || "";
+
+  /*
+    Un input file no puede rellenarse
+    automáticamente por seguridad.
+  */
+  imagenInput.value = "";
 }	
 
 async function cargarPremiosParaGanador(){
@@ -7017,18 +7154,24 @@ async function publicarGanador(){
 
 let imagenUrl = premioInfo?.imagen_url || null;
 
-	const { data: ganadorExistente } = await supabaseClient
-    .from("ganadores")
-    .select("id")
-    .eq("rifa_id", rifaId)
-    .eq("lugar_premio", lugarPremio)
-    .eq("numero_ganador", numero)
-    .maybeSingle();
+const { data: ganadorExistente, error: errorGanadorExistente } =
+    await supabaseClient
+        .from("ganadores")
+        .select("id, autorizado_publicar")
+        .eq("rifa_id", rifaId)
+        .eq("lugar_premio", lugarPremio)
+        .eq("numero_ganador", numero)
+        .maybeSingle();
 
-if (ganadorExistente) {
-    alert("Ese ganador ya fue publicado para este premio ⚠️");
+if (errorGanadorExistente) {
+    console.error(
+        "Error consultando el ganador existente:",
+        errorGanadorExistente
+    );
+
+    alert("No fue posible consultar el ganador ❌");
     return;
-}
+}	
 
 const archivoImagen = document.getElementById("imagenGanador")?.files[0];
 
@@ -7054,6 +7197,21 @@ if (archivoImagen) {
     imagenUrl = publicData.publicUrl;
 }	
 
+    let errorPublicacion = null;
+
+if (ganadorExistente?.id) {
+    const { error } = await supabaseClient
+        .from("ganadores")
+        .update({
+            estado_entrega: estado,
+            comentario: comentario,
+            imagen_url: imagenUrl,
+            autorizado_publicar: true
+        })
+        .eq("id", ganadorExistente.id);
+
+    errorPublicacion = error;
+} else {
     const { error } = await supabaseClient
         .from("ganadores")
         .insert({
@@ -7064,15 +7222,22 @@ if (archivoImagen) {
             numero_ganador: numero,
             estado_entrega: estado,
             comentario: comentario,
-			imagen_url: imagenUrl,
-			autorizado_publicar: true
+            imagen_url: imagenUrl,
+            autorizado_publicar: true
         });
 
-    if(error){
-        console.error("Error publicando ganador:", error);
-        alert("Error al publicar ganador ❌");
-        return;
-    }
+    errorPublicacion = error;
+}
+
+    if (errorPublicacion) {
+    console.error(
+        "Error publicando ganador:",
+        errorPublicacion
+    );
+
+    alert("Error al publicar ganador ❌");
+    return;
+}
 
     const noti = document.getElementById("massNotificacion");
 
