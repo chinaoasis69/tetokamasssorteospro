@@ -8448,28 +8448,85 @@ if (errorGanadorExistente) {
 const archivoImagen = document.getElementById("imagenGanador")?.files[0];
 
 if (archivoImagen) {
-    const nombreArchivo = `ganadores/${Date.now()}_${archivoImagen.name}`;
 
-    const { error: uploadError } = await supabaseClient
-        .storage
-        .from("premios")
-        .upload(nombreArchivo, archivoImagen);
-
-    if (uploadError) {
-        console.error("Error subiendo imagen:", uploadError);
-        alert("Error al subir imagen ❌");
+    if (!organizadorId) {
+        alert(
+            "No fue posible identificar al organizador."
+        );
         return;
     }
 
-    const { data: publicData } = supabaseClient
+    const nombreSeguro =
+        String(
+            archivoImagen.name || "foto-ganador"
+        )
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
+
+    const nombreArchivo =
+        `${organizadorId}/ganadores/` +
+        `${Date.now()}_${nombreSeguro}`;
+
+    const {
+        error: uploadError
+    } = await supabaseClient
         .storage
-        .from("premios")
-        .getPublicUrl(nombreArchivo);
+        .from("ganadores-fotos")
+        .upload(
+            nombreArchivo,
+            archivoImagen,
+            {
+                cacheControl: "3600",
+                upsert: false,
+                contentType:
+                    archivoImagen.type ||
+                    undefined
+            }
+        );
 
-    imagenUrl = publicData.publicUrl;
-}	
+    if (uploadError) {
 
-    let errorPublicacion = null;
+        console.error(
+            "Error subiendo imagen protegida:",
+            uploadError
+        );
+
+        alert(
+            "Error al subir imagen ❌"
+        );
+
+        return;
+    }
+
+    const {
+        data: publicData
+    } = supabaseClient
+        .storage
+        .from("ganadores-fotos")
+        .getPublicUrl(
+            nombreArchivo
+        );
+
+    if (!publicData?.publicUrl) {
+
+        console.error(
+            "No se generó la URL pública:",
+            publicData
+        );
+
+        alert(
+            "No fue posible obtener la URL de la imagen ❌"
+        );
+
+        return;
+    }
+
+    imagenUrl =
+        publicData.publicUrl;
+}
+	
+	let errorPublicacion = null;
 
 	if (ganadorExistente?.id) {
 
