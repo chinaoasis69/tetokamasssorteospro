@@ -8504,10 +8504,13 @@ if (archivoImagen) {
 
         errorPublicacion = null;
     }
-}
 
- else {
-    const { error } = await supabaseClient
+} else {
+
+    const {
+        data: ganadorInsertado,
+        error
+    } = await supabaseClient
         .from("ganadores")
         .insert({
             rifa_id: rifaId,
@@ -8519,10 +8522,27 @@ if (archivoImagen) {
             comentario: comentario,
             imagen_url: imagenUrl,
             autorizado_publicar: true
-        });
+        })
+        .select("id")
+        .maybeSingle();
 
-    errorPublicacion = error;
-}
+    if (error) {
+
+        errorPublicacion = error;
+
+    } else if (!ganadorInsertado?.id) {
+
+        errorPublicacion = {
+            message:
+                "La política de seguridad no permitió " +
+                "registrar este ganador."
+        };
+
+    } else {
+
+        errorPublicacion = null;
+    }
+}		
 
     if (errorPublicacion) {
     console.error(
