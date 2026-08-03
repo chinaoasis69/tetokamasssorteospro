@@ -2940,16 +2940,15 @@ async function cargarOrganizadoresConResultados(){
     }
 
     const {
-        data: organizadoresConResultados,
-        error: errorOrganizadores
-    } = await supabaseClient
-        .from("organizadores")
-        .select(`
-            id,
-            nombre_publico,
-            nombre
-        `)
-        .in("id", organizadorIds);
+    data: organizadoresConResultados,
+    error: errorOrganizadores
+} = await supabaseClient
+    .from("organizadores")
+    .select(`
+        id,
+        nombre
+    `)
+    .in("id", organizadorIds);
 
     if(errorOrganizadores){
 
