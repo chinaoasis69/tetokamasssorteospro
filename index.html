@@ -6931,52 +6931,11 @@ if (opcionPrimerPremio) {
     opcionPrimerPremio.value;
 }
 
-
 /*
   Mostrar el primer ganador.
 */
 cargarGanadorAutomaticoSeleccionado();
 
-/*
-  Construir el expediente completo
-  de todos los ganadores.
-*/
-const detalleGanadores =
-  ganadoresOrdenados
-    .map((ganador, indice) => {
-
-      const lugar =
-        ganador.lugar_premio ||
-        `${indice + 1}.º Premio`;
-
-      const numero =
-        ganador.numero_ganador ||
-        "No disponible";
-
-      const massId =
-        ganador.mass_id ||
-        "No disponible";
-
-      const premio =
-        ganador.premio ||
-        "No disponible";
-
-      return (
-        `🏆 ${lugar}\n` +
-        `🎟️ Número ganador: ${numero}\n` +
-        `🪪 MASS ID ganador: ${massId}\n` +
-        `🎁 Premio: ${premio}`
-      );
-    })
-    .join("\n\n");
-
-
-resultadoBox.textContent =
-  "🔒 RESULTADOS OFICIALES AUTOMÁTICOS\n\n" +
-  detalleGanadores +
-  "\n\n" +
-  "Estos resultados fueron generados " +
-  "automáticamente y no pueden modificarse.";
 }
 
 function cargarGanadorAutomaticoSeleccionado() {
@@ -7005,6 +6964,11 @@ function cargarGanadorAutomaticoSeleccionado() {
     document.getElementById(
       "imagenGanador"
     );
+
+const resultadoBox =
+  document.getElementById(
+    "resultadoAutomaticoGanador"
+  );	
 
   const opcionSeleccionada =
     premioSelect.options[
@@ -7076,6 +7040,38 @@ function cargarGanadorAutomaticoSeleccionado() {
     automáticamente por seguridad.
   */
   imagenInput.value = "";
+
+/*
+  Mostrar solamente el ganador
+  correspondiente al premio seleccionado.
+*/
+const lugar =
+  ganadorSeleccionado.lugar_premio ||
+  "Premio";
+
+const numero =
+  ganadorSeleccionado.numero_ganador ||
+  "No disponible";
+
+const massId =
+  ganadorSeleccionado.mass_id ||
+  "No disponible";
+
+const premio =
+  ganadorSeleccionado.premio ||
+  "No disponible";
+
+resultadoBox.style.display = "block";
+resultadoBox.style.whiteSpace = "pre-line";
+
+resultadoBox.textContent =
+  "🔒 RESULTADO OFICIAL AUTOMÁTICO\n\n" +
+  `🏆 ${lugar}\n` +
+  `🎟️ Número ganador: ${numero}\n` +
+  `🪪 MASS ID ganador: ${massId}\n` +
+  `🎁 Premio: ${premio}\n\n` +
+  "Este resultado fue generado " +
+  "automáticamente y no puede modificarse.";	
 }	
 
 async function cargarPremiosParaGanador(){
