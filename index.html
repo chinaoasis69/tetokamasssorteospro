@@ -3336,6 +3336,273 @@ async function cargarDinamicasConResultados(){
     });
 
     selector.disabled = false;
+}
+
+// =====================================================
+// CARGAR RESULTADOS PÚBLICOS DE UNA DINÁMICA
+// =====================================================
+async function cargarResultadosPublicos(){
+
+    const selector =
+        document.getElementById(
+            "selectorResultadosSorteos"
+        );
+
+    const contenedor =
+        document.getElementById(
+            "resultadosSorteosPublicos"
+        );
+
+    if(!selector || !contenedor){
+        return;
+    }
+
+    const rifaId = selector.value;
+
+    const organizadorId =
+        localStorage.getItem(
+            "organizador_publico_id"
+        );
+
+    if(!rifaId){
+
+        contenedor.innerHTML = `
+            <p>
+                Selecciona una dinámica para consultar
+                sus resultados oficiales.
+            </p>
+        `;
+
+        return;
+    }
+
+    if(!organizadorId){
+
+        contenedor.innerHTML = `
+            <p>
+                Primero selecciona un organizador.
+            </p>
+        `;
+
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <p>
+            Cargando resultados oficiales...
+        </p>
+    `;
+
+    const {
+        data: resultados,
+        error
+    } = await supabaseClient
+        .from("ganadores")
+        .select(`
+            lugar_premio,
+            premio,
+            numero_ganador,
+            mass_id,
+            estado_entrega,
+            imagen_url,
+            comentario,
+            creado_en
+        `)
+        .eq("rifa_id", rifaId)
+        .eq("organizador_id", organizadorId)
+        .eq("autorizado_publicar", true)
+        .order("lugar_premio", {
+            ascending: true
+        });
+
+    if(error){
+
+        console.error(
+            "Error cargando resultados públicos:",
+            error
+        );
+
+        contenedor.innerHTML = `
+            <p>
+                No fue posible cargar los resultados.
+            </p>
+        `;
+
+        return;
+    }
+
+    if(!resultados || resultados.length === 0){
+
+        contenedor.innerHTML = `
+            <p>
+                Esta dinámica todavía no tiene
+                resultados oficiales publicados.
+            </p>
+        `;
+
+        return;
+    }
+
+    const escaparTexto = valor =>
+        String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    contenedor.innerHTML = resultados
+        .map((resultado, indice) => {
+
+            const fechaResultado =
+                resultado.creado_en
+                    ? new Date(resultado.creado_en)
+                    : null;
+
+            const fechaTexto =
+                fechaResultado &&
+                !Number.isNaN(fechaResultado.getTime())
+                    ? fechaResultado.toLocaleDateString(
+                        "es-MX"
+                    )
+                    : "Fecha no disponible";
+
+            const imagenOriginal =
+                String(
+                    resultado.imagen_url || ""
+                ).trim();
+
+            const imagenSegura =
+                /^https?:\/\//i.test(imagenOriginal)
+                    ? imagenOriginal
+                    : "";
+
+            return `
+                <div
+                    class="card"
+                    style="
+                        margin:16px auto;
+                        padding:20px;
+                        max-width:650px;
+                        text-align:center;
+                    "
+                >
+                    <h2>
+                        🏆 RESULTADO OFICIAL
+                    </h2>
+
+                    ${
+                        imagenSegura
+                            ? `
+                                <img
+                                    src="${escaparTexto(imagenSegura)}"
+                                    alt="Foto del ganador o entrega"
+                                    style="
+                                        display:block;
+                                        width:100%;
+                                        max-width:320px;
+                                        height:220px;
+                                        object-fit:contain;
+                                        margin:15px auto;
+                                        background:#111;
+                                        border-radius:15px;
+                                        padding:8px;
+                                        box-shadow:
+                                            0 6px 18px
+                                            rgba(0,0,0,.45);
+                                    "
+                                >
+                            `
+                            : ""
+                    }
+
+                    <h3>
+                        🏆 ${
+                            escaparTexto(
+                                resultado.lugar_premio ||
+                                `${indice + 1}.º Premio`
+                            )
+                        }
+                    </h3>
+
+                    <p>
+                        🎟️ <b>Número ganador:</b><br>
+                        <span
+                            style="
+                                font-size:26px;
+                                color:#39ff14;
+                                font-weight:bold;
+                            "
+                        >
+                            ${
+                                escaparTexto(
+                                    resultado.numero_ganador ||
+                                    "No disponible"
+                                )
+                            }
+                        </span>
+                    </p>
+
+                    <p>
+                        🪪 <b>MASS ID:</b><br>
+                        <span
+                            style="
+                                font-size:20px;
+                                color:#39ff14;
+                                font-weight:bold;
+                            "
+                        >
+                            ${
+                                escaparTexto(
+                                    resultado.mass_id ||
+                                    "MASS ID no disponible"
+                                )
+                            }
+                        </span>
+                    </p>
+
+                    <p>
+                        🎁 <b>Premio:</b><br>
+                        ${
+                            escaparTexto(
+                                resultado.premio ||
+                                "Premio no disponible"
+                            )
+                        }
+                    </p>
+
+                    <p>
+                        📍 <b>Estado de entrega:</b><br>
+                        ${
+                            escaparTexto(
+                                resultado.estado_entrega ||
+                                "Pendiente de entrega"
+                            )
+                        }
+                    </p>
+
+                    ${
+                        resultado.comentario
+                            ? `
+                                <p>
+                                    💬 ${
+                                        escaparTexto(
+                                            resultado.comentario
+                                        )
+                                    }
+                                </p>
+                            `
+                            : ""
+                    }
+
+                    <p>
+                        📅 <b>Fecha del resultado:</b><br>
+                        ${escaparTexto(fechaTexto)}
+                    </p>
+                </div>
+            `;
+        })
+        .join("");
 }	
 
 let tapsAdmin = 0;
