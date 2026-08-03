@@ -1698,6 +1698,35 @@ Cargando historial...
         Consulta los resultados oficiales de las dinámicas.
     </p>
 
+	<label
+    for="selectorOrganizadorResultados"
+    style="
+        display:block;
+        margin-top:15px;
+        margin-bottom:8px;
+        font-weight:bold;
+    "
+>
+    Elige un organizador
+</label>
+
+<select
+    id="selectorOrganizadorResultados"
+    style="
+        width:100%;
+        max-width:600px;
+        padding:12px;
+        border-radius:10px;
+        font-size:16px;
+        margin-bottom:15px;
+    "
+    onchange="seleccionarOrganizadorResultados()"
+>
+    <option value="">
+        Cargando organizadores con resultados...
+    </option>
+</select>
+
     <label
         for="selectorResultadosSorteos"
         style="
@@ -2786,6 +2815,301 @@ async function cargarGanadores(){
     `;
 }); 
 }
+
+// =====================================================
+// SELECTOR PÚBLICO DE ORGANIZADORES CON RESULTADOS
+// =====================================================
+async function cargarOrganizadoresConResultados(){
+
+    const selectorOrganizador =
+        document.getElementById(
+            "selectorOrganizadorResultados"
+        );
+
+    const selectorDinamica =
+        document.getElementById(
+            "selectorResultadosSorteos"
+        );
+
+    const contenedor =
+        document.getElementById(
+            "resultadosSorteosPublicos"
+        );
+
+    if(!selectorOrganizador){
+        return;
+    }
+
+    selectorOrganizador.disabled = true;
+
+    selectorOrganizador.innerHTML = `
+        <option value="">
+            Cargando organizadores con resultados...
+        </option>
+    `;
+
+    if(selectorDinamica){
+
+        selectorDinamica.disabled = true;
+
+        selectorDinamica.innerHTML = `
+            <option value="">
+                Primero elige un organizador
+            </option>
+        `;
+    }
+
+    if(contenedor){
+
+        contenedor.innerHTML = `
+            <p>
+                Primero selecciona un organizador
+                para consultar sus resultados oficiales.
+            </p>
+        `;
+    }
+
+    const {
+        data: ganadoresPublicados,
+        error: errorGanadores
+    } = await supabaseClient
+        .from("ganadores")
+        .select(`
+            organizador_id,
+            creado_en
+        `)
+        .eq("autorizado_publicar", true)
+        .order("creado_en", {
+            ascending: false
+        });
+
+    if(errorGanadores){
+
+        console.error(
+            "Error cargando organizadores con resultados:",
+            errorGanadores
+        );
+
+        selectorOrganizador.innerHTML = `
+            <option value="">
+                Error al cargar organizadores
+            </option>
+        `;
+
+        return;
+    }
+
+    const organizadorIds = [];
+    const organizadoresVistos = new Set();
+
+    (ganadoresPublicados || []).forEach(g => {
+
+        if(!g.organizador_id){
+            return;
+        }
+
+        const claveOrganizador =
+            String(g.organizador_id);
+
+        if(!organizadoresVistos.has(claveOrganizador)){
+
+            organizadoresVistos.add(claveOrganizador);
+            organizadorIds.push(g.organizador_id);
+        }
+    });
+
+    if(organizadorIds.length === 0){
+
+        selectorOrganizador.innerHTML = `
+            <option value="">
+                No hay organizadores con resultados
+            </option>
+        `;
+
+        if(contenedor){
+
+            contenedor.innerHTML = `
+                <p>
+                    Todavía no existen resultados
+                    oficiales publicados.
+                </p>
+            `;
+        }
+
+        return;
+    }
+
+    const {
+        data: organizadoresConResultados,
+        error: errorOrganizadores
+    } = await supabaseClient
+        .from("organizadores")
+        .select(`
+            id,
+            nombre_publico,
+            nombre
+        `)
+        .in("id", organizadorIds);
+
+    if(errorOrganizadores){
+
+        console.error(
+            "Error consultando organizadores:",
+            errorOrganizadores
+        );
+
+        selectorOrganizador.innerHTML = `
+            <option value="">
+                Error al consultar organizadores
+            </option>
+        `;
+
+        return;
+    }
+
+    const mapaOrganizadoresResultados = new Map(
+        (organizadoresConResultados || []).map(org => [
+            String(org.id),
+            org
+        ])
+    );
+
+    const organizadoresOrdenados = organizadorIds
+        .map(id =>
+            mapaOrganizadoresResultados.get(
+                String(id)
+            )
+        )
+        .filter(Boolean);
+
+    if(organizadoresOrdenados.length === 0){
+
+        selectorOrganizador.innerHTML = `
+            <option value="">
+                No hay organizadores disponibles
+            </option>
+        `;
+
+        return;
+    }
+
+    selectorOrganizador.innerHTML = "";
+
+    const opcionInicial =
+        document.createElement("option");
+
+    opcionInicial.value = "";
+    opcionInicial.textContent =
+        "Elige un organizador";
+
+    selectorOrganizador.appendChild(
+        opcionInicial
+    );
+
+    organizadoresOrdenados.forEach(org => {
+
+        const opcion =
+            document.createElement("option");
+
+        opcion.value = org.id;
+
+        opcion.textContent =
+            org.nombre_publico ||
+            org.nombre ||
+            "Organizador";
+
+        selectorOrganizador.appendChild(
+            opcion
+        );
+    });
+
+    selectorOrganizador.disabled = false;
+}
+
+// =====================================================
+// SELECCIONAR ORGANIZADOR PARA VER SUS RESULTADOS
+// =====================================================
+async function seleccionarOrganizadorResultados(){
+
+    const selectorOrganizador =
+        document.getElementById(
+            "selectorOrganizadorResultados"
+        );
+
+    const selectorDinamica =
+        document.getElementById(
+            "selectorResultadosSorteos"
+        );
+
+    const contenedor =
+        document.getElementById(
+            "resultadosSorteosPublicos"
+        );
+
+    if(!selectorOrganizador){
+        return;
+    }
+
+    const organizadorId =
+        selectorOrganizador.value;
+
+    if(!organizadorId){
+
+        localStorage.removeItem(
+            "organizador_publico_id"
+        );
+
+        if(selectorDinamica){
+
+            selectorDinamica.disabled = true;
+
+            selectorDinamica.innerHTML = `
+                <option value="">
+                    Primero elige un organizador
+                </option>
+            `;
+        }
+
+        if(contenedor){
+
+            contenedor.innerHTML = `
+                <p>
+                    Primero selecciona un organizador
+                    para consultar sus resultados oficiales.
+                </p>
+            `;
+        }
+
+        return;
+    }
+
+    localStorage.setItem(
+        "organizador_publico_id",
+        organizadorId
+    );
+
+    if(selectorDinamica){
+
+        selectorDinamica.disabled = true;
+
+        selectorDinamica.innerHTML = `
+            <option value="">
+                Cargando dinámicas con resultados...
+            </option>
+        `;
+    }
+
+    if(contenedor){
+
+        contenedor.innerHTML = `
+            <p>
+                Cargando resultados del organizador...
+            </p>
+        `;
+    }
+
+    await cargarDinamicasConResultados();
+}	
 
 // =====================================================
 // SELECTOR PÚBLICO DE DINÁMICAS CON RESULTADOS
@@ -25803,7 +26127,7 @@ if (b.estado === "vendido" || b.estado === "apartado") {
   await cargarBoletos();
 }
 
-await cargarRifasPublicas();
+await cargarRifasPublicas();		  
 
 const orgIdActual = localStorage.getItem("organizador_publico_id");
 if (orgIdActual) {
@@ -25962,6 +26286,9 @@ Promise.resolve().then(async () => {
 
     cargarSaldo();
     cargarRifasPublicas();
+	
+	await cargarOrganizadoresConResultados();
+	
     cargarMisBoletos();
     cargarHistorialSorteos();
     cargarHistorialPremios();
