@@ -779,6 +779,124 @@ input{
 )
 .mass-sponsor-arrow {
   display: none;
+}
+
+/* =====================================================
+   CARRUSEL PÚBLICO DE RESULTADOS
+===================================================== */
+
+.mass-resultados-carrusel {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    margin: 18px auto 0;
+    overflow: hidden;
+    touch-action: pan-y;
+}
+
+.mass-resultados-pista {
+    display: flex;
+    width: 100%;
+    transition: transform 0.45s ease;
+    will-change: transform;
+}
+
+.mass-resultado-slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 0 5px;
+}
+
+.mass-resultado-slide > .card {
+    width: 100%;
+    max-width: 650px;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.mass-resultados-flecha {
+    position: absolute;
+    top: 50%;
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 2px solid #39ff14;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.85);
+    color: #39ff14;
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.mass-resultados-anterior {
+    left: 8px;
+}
+
+.mass-resultados-siguiente {
+    right: 8px;
+}
+
+.mass-resultados-flecha:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.mass-resultados-puntos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.mass-resultados-punto {
+    width: 11px;
+    height: 11px;
+    padding: 0;
+    border: 1px solid #39ff14;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.mass-resultados-punto.activo {
+    background: #39ff14;
+    transform: scale(1.2);
+}
+
+.mass-resultados-carrusel.unico
+.mass-resultados-flecha,
+
+.mass-resultados-carrusel.unico
+.mass-resultados-puntos {
+    display: none;
+}
+
+@media (max-width: 600px) {
+
+    .mass-resultado-slide {
+        padding: 0 2px;
+    }
+
+    .mass-resultados-flecha {
+        width: 38px;
+        height: 38px;
+        font-size: 21px;
+    }
+
+    .mass-resultados-anterior {
+        left: 3px;
+    }
+
+    .mass-resultados-siguiente {
+        right: 3px;
+    }
 }	
 
 </style>
@@ -3339,6 +3457,216 @@ async function cargarDinamicasConResultados(){
 }
 
 // =====================================================
+// MOTOR DEL CARRUSEL PÚBLICO DE RESULTADOS
+// =====================================================
+
+let massResultadosIndiceActual = 0;
+let massResultadosTotal = 0;
+let massResultadosIntervalo = null;
+let massResultadosTouchInicioX = 0;
+
+function detenerCarruselResultadosAutomatico(){
+
+    if(massResultadosIntervalo){
+
+        clearInterval(
+            massResultadosIntervalo
+        );
+
+        massResultadosIntervalo = null;
+    }
+}
+
+function actualizarCarruselResultados(
+    nuevoIndice,
+    reiniciarAutomatico = true
+){
+
+    const pista = document.querySelector(
+        "#resultadosSorteosPublicos " +
+        ".mass-resultados-pista"
+    );
+
+    const puntos = document.querySelectorAll(
+        "#resultadosSorteosPublicos " +
+        ".mass-resultados-punto"
+    );
+
+    if(!pista || massResultadosTotal <= 0){
+        return;
+    }
+
+    if(nuevoIndice < 0){
+
+        nuevoIndice =
+            massResultadosTotal - 1;
+    }
+
+    if(nuevoIndice >= massResultadosTotal){
+
+        nuevoIndice = 0;
+    }
+
+    massResultadosIndiceActual =
+        nuevoIndice;
+
+    pista.style.transform = `
+        translateX(
+            -${massResultadosIndiceActual * 100}%
+        )
+    `;
+
+    puntos.forEach((punto, indice) => {
+
+        const activo =
+            indice === massResultadosIndiceActual;
+
+        punto.classList.toggle(
+            "activo",
+            activo
+        );
+
+        punto.setAttribute(
+            "aria-current",
+            activo ? "true" : "false"
+        );
+    });
+
+    if(reiniciarAutomatico){
+
+        iniciarCarruselResultadosAutomatico();
+    }
+}
+
+function cambiarResultadoPublico(direccion){
+
+    actualizarCarruselResultados(
+        massResultadosIndiceActual +
+        direccion
+    );
+}
+
+function irAResultadoPublico(indice){
+
+    actualizarCarruselResultados(
+        Number(indice)
+    );
+}
+
+function iniciarCarruselResultadosAutomatico(){
+
+    detenerCarruselResultadosAutomatico();
+
+    if(massResultadosTotal <= 1){
+        return;
+    }
+
+    massResultadosIntervalo =
+        setInterval(() => {
+
+            actualizarCarruselResultados(
+                massResultadosIndiceActual + 1,
+                false
+            );
+
+        }, 5000);
+}
+
+function configurarCarruselResultados(
+    totalResultados
+){
+
+    detenerCarruselResultadosAutomatico();
+
+    massResultadosTotal =
+        Number(totalResultados) || 0;
+
+    massResultadosIndiceActual = 0;
+
+    const carrusel = document.querySelector(
+        "#resultadosSorteosPublicos " +
+        ".mass-resultados-carrusel"
+    );
+
+    if(!carrusel){
+        return;
+    }
+
+    carrusel.classList.toggle(
+        "unico",
+        massResultadosTotal <= 1
+    );
+
+    actualizarCarruselResultados(
+        0,
+        false
+    );
+
+    if(massResultadosTotal <= 1){
+        return;
+    }
+
+    carrusel.addEventListener(
+        "mouseenter",
+        detenerCarruselResultadosAutomatico
+    );
+
+    carrusel.addEventListener(
+        "mouseleave",
+        iniciarCarruselResultadosAutomatico
+    );
+
+    carrusel.addEventListener(
+        "touchstart",
+        evento => {
+
+            massResultadosTouchInicioX =
+                evento.touches[0].clientX;
+
+            detenerCarruselResultadosAutomatico();
+
+        },
+        {
+            passive: true
+        }
+    );
+
+    carrusel.addEventListener(
+        "touchend",
+        evento => {
+
+            const touchFinal =
+                evento.changedTouches[0];
+
+            if(!touchFinal){
+                return;
+            }
+
+            const diferencia =
+                touchFinal.clientX -
+                massResultadosTouchInicioX;
+
+            if(Math.abs(diferencia) >= 45){
+
+                cambiarResultadoPublico(
+                    diferencia < 0 ? 1 : -1
+                );
+
+            } else {
+
+                iniciarCarruselResultadosAutomatico();
+            }
+
+        },
+        {
+            passive: true
+        }
+    );
+
+    iniciarCarruselResultadosAutomatico();
+}	
+
+// =====================================================
 // CARGAR RESULTADOS PÚBLICOS DE UNA DINÁMICA
 // =====================================================
 async function cargarResultadosPublicos(){
@@ -3451,7 +3779,7 @@ async function cargarResultadosPublicos(){
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
 
-    contenedor.innerHTML = resultados
+    const tarjetasResultados = resultados
         .map((resultado, indice) => {
 
             const fechaResultado =
@@ -3478,6 +3806,7 @@ async function cargarResultadosPublicos(){
                     : "";
 
             return `
+			   <div class="mass-resultado-slide">
                 <div
                     class="card"
                     style="
@@ -3600,9 +3929,80 @@ async function cargarResultadosPublicos(){
                         ${escaparTexto(fechaTexto)}
                     </p>
                 </div>
+			</div>
             `;
-        })
+                })
         .join("");
+
+    const totalResultados =
+        resultados.length;
+
+    const puntosResultados =
+        resultados
+            .map((_, indice) => `
+                <button
+                    type="button"
+                    class="
+                        mass-resultados-punto
+                        ${indice === 0 ? "activo" : ""}
+                    "
+                    onclick="
+                        irAResultadoPublico(${indice})
+                    "
+                    aria-label="
+                        Ver resultado ${indice + 1}
+                    "
+                    aria-current="
+                        ${indice === 0 ? "true" : "false"}
+                    "
+                ></button>
+            `)
+            .join("");
+
+    contenedor.innerHTML = `
+        <div
+            class="
+                mass-resultados-carrusel
+                ${totalResultados <= 1 ? "unico" : ""}
+            "
+        >
+            <button
+                type="button"
+                class="
+                    mass-resultados-flecha
+                    mass-resultados-anterior
+                "
+                onclick="cambiarResultadoPublico(-1)"
+                aria-label="Resultado anterior"
+            >
+                ‹
+            </button>
+
+            <div class="mass-resultados-pista">
+                ${tarjetasResultados}
+            </div>
+
+            <button
+                type="button"
+                class="
+                    mass-resultados-flecha
+                    mass-resultados-siguiente
+                "
+                onclick="cambiarResultadoPublico(1)"
+                aria-label="Resultado siguiente"
+            >
+                ›
+            </button>
+
+            <div class="mass-resultados-puntos">
+                ${puntosResultados}
+            </div>
+        </div>
+    `;
+
+    configurarCarruselResultados(
+        totalResultados
+    );
 }	
 
 let tapsAdmin = 0;
