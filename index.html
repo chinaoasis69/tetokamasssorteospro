@@ -2844,7 +2844,7 @@ async function cargarGanadores(){
     }
 
     const { data, error } = await supabaseClient
-    .from("ganadores")
+    .from("ganadores_publicos")
     .select(`
   lugar_premio,
   premio,
@@ -2990,8 +2990,9 @@ async function cargarOrganizadoresConResultados(){
     const {
         data: ganadoresPublicados,
         error: errorGanadores
+		
     } = await supabaseClient
-        .from("ganadores")
+        .from("ganadores_publicos")
         .select(`
             organizador_id,
             creado_en
@@ -3286,7 +3287,7 @@ async function cargarDinamicasConResultados(){
         data: ganadoresPublicados,
         error: errorGanadores
     } = await supabaseClient
-        .from("ganadores")
+        .from("ganadores_publicos")
         .select(`
             rifa_id,
             organizador_id,
@@ -3725,7 +3726,7 @@ async function cargarResultadosPublicos(){
         data: resultados,
         error
     } = await supabaseClient
-        .from("ganadores")
+        .from("ganadores_publicos")
         .select(`
             lugar_premio,
             premio,
