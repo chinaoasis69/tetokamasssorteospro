@@ -27426,7 +27426,7 @@ async function subirImagenOrganizador(tipo){
   const { error } = await supabaseClient.storage
     .from("organizadores")
     .upload(nombreArchivo, archivo, {
-      upsert: true
+      upsert: false
     });
 
   if(error){
