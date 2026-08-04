@@ -9106,7 +9106,7 @@ async function subirImagenPremio(event, premioId, rifaId){
     .from("premios")
     .upload(nombreArchivo, file, {
       cacheControl: "3600",
-      upsert: true
+      upsert: false
     });
 
   if(uploadError){
@@ -9367,7 +9367,7 @@ async function subirVideoPremio(event, premioId, rifaId){
     .from("premios")
     .upload(nombreArchivo, file, {
       cacheControl: "3600",
-      upsert: true
+      upsert: false
     });
 
   if(uploadError){
