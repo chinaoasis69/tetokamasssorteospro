@@ -14642,125 +14642,7 @@ async function comprarConSaldo() {
       )
         ? resultado.numeros_recibidos
         : [];
-
-
-    /*
-      PREMIO PROMOCIONAL
-
-      Se conserva temporalmente esta lógica
-      después de confirmar la compra segura.
-
-      En el siguiente candado moveremos también
-      la entrega del beneficio a Supabase.
-    */
-
-    let premioLucky = null;
-
-
-    const {
-      data: premiosLucky,
-      error: errorLucky
-    } =
-      await supabaseClient
-        .from("lucky_spin_premios")
-        .select("*")
-        .eq("activo", true);
-
-
-    if (errorLucky) {
-
-      console.error(
-        "ERROR CONSULTANDO PREMIOS LUCKY:",
-        errorLucky
-      );
-
-    } else if (
-      Array.isArray(premiosLucky) &&
-      premiosLucky.length > 0
-    ) {
-
-      premioLucky =
-        premiosLucky[
-          Math.floor(
-            Math.random() *
-            premiosLucky.length
-          )
-        ];
-    }
-
-
-    if (premioLucky) {
-
-      const telefonoCompra =
-        String(
-          localStorage.getItem(
-            "mass_telefono"
-          ) ||
-          localStorage.getItem(
-            "mass_user"
-          ) ||
-          userActual ||
-          ""
-        ).trim();
-
-
-      if (telefonoCompra) {
-
-        const {
-          error: errorBeneficio
-        } =
-          await supabaseClient
-            .from(
-              "beneficios_entregados"
-            )
-            .insert({
-              user_id:
-                telefonoCompra,
-
-              rifa_id:
-                resultado.compra_rifa_id ||
-                RIFA_ID,
-
-              patrocinador_id:
-                premioLucky
-                  .patrocinador_id ||
-                null,
-
-              patrocinador_nombre:
-                premioLucky.nombre ||
-                "",
-
-              patrocinador_logo_url:
-                "",
-
-              patrocinador_whatsapp:
-                "",
-
-              codigo:
-                premioLucky.codigo ||
-                resultado.pin_giro,
-
-              promocion:
-                premioLucky.descripcion ||
-                premioLucky.nombre ||
-                "",
-
-              usado:
-                false
-            });
-
-
-        if (errorBeneficio) {
-
-          console.error(
-            "ERROR GUARDANDO BENEFICIO:",
-            errorBeneficio
-          );
-        }
-      }
-    }
-
-
+	  
     /*
       Mostrar la confirmación devuelta
       por la base de datos.
@@ -25731,213 +25613,548 @@ boletoSeleccionado.estado = "apartado";
 cargarBoletos();
 }
 
-async function girarLuckySpin(pinYaValidado = false){
+async function girarLuckySpin(pinYaValidado = false) {
 
-  const digitosRifa = boletos.length
-    ? Math.max(...boletos.map(b =>
-      String(b.numero).replace(/\D/g, "").length
-     ))
-   : 1;
-	
-  if(!boletoSeleccionado){
-    let numeroPin = prompt("Ingresa tu número de boleto, ejemplo: 0002");
+  const digitosRifa =
+    boletos.length
+      ? Math.max(
+          ...boletos.map(b =>
+            String(b.numero)
+              .replace(/\D/g, "")
+              .length
+          )
+        )
+      : 1;
 
-    if(!numeroPin){
-      alert("Debes ingresar tu número de boleto");
-      return;
-    }
 
-    numeroPin = numeroPin.trim().padStart(digitosRifa, "0");
+  if (!boletoSeleccionado) {
 
-    boletoSeleccionado = boletos.find(b => b.numero === numeroPin);
-
-    if(!boletoSeleccionado){
-      alert("Ese número no existe");
-      return;
-    }
-  }
-
-  if(boletoSeleccionado.estado === "disponible"){
-    alert("Compra un boleto para poder participar");
-    return;
-  }
-
-  if(boletoSeleccionado.estado === "apartado"){
-    alert("Tu pago todavía no ha sido validado");
-    return;
-  }
-
-  if(boletoSeleccionado.estado !== "vendido"){
-    alert("Este boleto no está listo para girar");
-    return;
-  }
-
-  if(boletoSeleccionado.giro_usado === true){
-    alert("Este número ya usó su giro");
-    return;
-  }
-
-  let { data: premiosLucky, error: errorLucky } = await supabaseClient
-  .from("lucky_spin_premios")
-  .select("*")
-  .eq("activo", true)
-  .eq("rifa_id", boletoSeleccionado.rifa_id);
-	console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
-    console.log("PREMIOS ENCONTRADOS:", premiosLucky);
-
-if(errorLucky){
-  console.error(errorLucky);
-}
-
-console.log("RIFA DEL BOLETO:", boletoSeleccionado.rifa_id);
-console.log("PREMIOS ENCONTRADOS:", premiosLucky);
-
-if (!premiosLucky || premiosLucky.length === 0) {
-    alert("🎁 Por el momento este sorteo no cuenta con promociones activas. ¡Sigue pendiente de futuras promociones!");
-    return;
-}
-
-let bolsaPremios = [];
-
-premiosLucky.forEach(p => {
-  const prob = Number(p.probabilidad || 0);
-  const disponibles = Number(p.cantidad || 0) - Number(p.entregados || 0);
-
-  if (prob > 0 && disponibles > 0) {
-    for (let i = 0; i < prob; i++) {
-      bolsaPremios.push(p);
-    }
-  }
-});
-
-const totalProbabilidad = bolsaPremios.length;
-const nada = Math.max(0, 100 - totalProbabilidad);
-
-for (let i = 0; i < nada; i++) {
-  bolsaPremios.push({
-    nombre: "Sigue participando",
-    descripcion: "No ganaste premio esta vez",
-    codigo: "N/A",
-    esNada: true
-  });
-}
-
-let vueltas = 0;
-const intervalo = setInterval(async () => {
-  const spinResult = document.getElementById("spinResult");
-
-if(spinResult){
-    spinResult.innerText = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)].nombre;
-}
-
-  vueltas++;
-
-  if (vueltas > 30) {
-    clearInterval(intervalo);
-
-    const premioGanador = bolsaPremios[Math.floor(Math.random() * bolsaPremios.length)];
-    const ganador = premioGanador.nombre;
-    const esNada = premioGanador.esNada === true;
-
-    if(spinResult){
-     spinResult.innerText = "🏆 " + ganador; 
-    }
-
-    alert(
-      "🎰 MASS LUCKY SPIN\n\n" +
-      "🏆 Premio: " + ganador + "\n" +
-      "📢 Descripción: " + (premioGanador.descripcion || "") + "\n" +
-      "🔑 Código: " + (premioGanador.codigo || "N/A")
+    let numeroPin = prompt(
+      "Ingresa tu número de boleto, ejemplo: 0002"
     );
 
-	if (!esNada && !(premioGanador.codigo || "").trim()) {
-  await supabaseClient.from("historial_premios").insert({
-    user_id: userActual,
-    numero: boletoSeleccionado.numero,
-    premio: ganador,
-    rifa_id: boletoSeleccionado.rifa_id
-  }); 
+    if (!numeroPin) {
 
-	if (!esNada && (premioGanador.codigo || "").trim()) {
-  await supabaseClient.from("beneficios_entregados").insert({
-    user_id: userActual,
-    rifa_id: boletoSeleccionado.rifa_id,
-    codigo: premioGanador.codigo || "N/A",
-    promocion: ganador,
-    usado: false,
-    oculto_usuario: false
-  });
-}	
+      mostrarNotificacion(
+        "warning",
+        "Número requerido",
+        "Debes ingresar tu número de boleto.",
+        3000
+      );
 
-      await supabaseClient
-        .from("lucky_spin_premios")
-        .update({ entregados: Number(premioGanador.entregados || 0) + 1 })
-        .eq("id", premioGanador.id);
+      return;
     }
 
-    await supabaseClient.from("boletos").update({
-      giro_usado: true
-    }).eq("id", boletoSeleccionado.id);
 
-    boletoSeleccionado.giro_usado = true;
+    numeroPin =
+      numeroPin
+        .trim()
+        .padStart(
+          digitosRifa,
+          "0"
+        );
 
-    if (typeof botonSpin !== "undefined" && botonSpin) {
-      botonSpin.disabled = false;
-      botonSpin.innerText = "Girar 🎟️";
+
+    boletoSeleccionado =
+      boletos.find(
+        b =>
+          String(b.numero) ===
+          numeroPin
+      );
+
+
+    if (!boletoSeleccionado) {
+
+      mostrarNotificacion(
+        "error",
+        "Boleto no encontrado",
+        `El número ${numeroPin} no existe en este sorteo.`,
+        3500
+      );
+
+      return;
     }
+  }
+
+
+  /*
+    Estas comprobaciones mejoran la experiencia visual.
+
+    La validación verdadera se repite dentro
+    de Supabase usando auth.uid().
+  */
+
+  const estadoBoleto =
+    String(
+      boletoSeleccionado.estado ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (estadoBoleto === "disponible") {
+
+    mostrarNotificacion(
+      "warning",
+      "Boleto no comprado",
+      "Compra el boleto antes de utilizar MASS Lucky Spin.",
+      3500
+    );
 
     boletoSeleccionado = null;
 
-    await cargarBoletos();
-    await cargarMisBoletos();
-    await cargarHistorialPremios();
+    return;
   }
-}, 90);
+
+
+  if (estadoBoleto === "apartado") {
+
+    mostrarNotificacion(
+      "warning",
+      "Pago pendiente",
+      "Tu pago todavía no ha sido validado.",
+      3500
+    );
+
+    boletoSeleccionado = null;
+
+    return;
+  }
+
+
+  if (estadoBoleto !== "vendido") {
+
+    mostrarNotificacion(
+      "warning",
+      "Boleto no disponible",
+      "Este boleto no está listo para utilizar su giro.",
+      3500
+    );
+
+    boletoSeleccionado = null;
+
+    return;
+  }
+
+
+  if (
+    boletoSeleccionado.giro_usado ===
+    true
+  ) {
+
+    mostrarNotificacion(
+      "warning",
+      "Giro utilizado",
+      `El boleto ${boletoSeleccionado.numero} ya utilizó su giro.`,
+      3500
+    );
+
+    boletoSeleccionado = null;
+
+    return;
+  }
+
+
+  if (!boletoSeleccionado.id) {
+
+    mostrarNotificacion(
+      "error",
+      "Boleto inválido",
+      "No fue posible identificar el boleto seleccionado.",
+      3500
+    );
+
+    boletoSeleccionado = null;
+
+    return;
+  }
+
+
+  const boletoParaGirar = {
+    ...boletoSeleccionado
+  };
+
+
+  if (
+    typeof botonSpin !== "undefined" &&
+    botonSpin
+  ) {
+
+    botonSpin.disabled = true;
+
+    botonSpin.innerText =
+      "Girando... 🎰";
+  }
+
+
+  const spinResult =
+    document.getElementById(
+      "spinResult"
+    );
+
+
+  if (spinResult) {
+
+    spinResult.innerText =
+      "🎰 Preparando giro seguro...";
+  }
+
+
+  try {
+
+    /*
+      Supabase decide y registra el resultado.
+
+      Dentro de una sola transacción:
+      • verifica propiedad;
+      • bloquea el boleto;
+      • calcula el resultado;
+      • aparta el premio;
+      • entrega beneficio;
+      • marca giro_usado.
+    */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "girar_lucky_spin_seguro",
+        {
+          p_boleto_id:
+            boletoParaGirar.id
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR EN LUCKY SPIN SEGURO:",
+        error
+      );
+
+
+      mostrarNotificacion(
+        "error",
+        "No fue posible realizar el giro",
+        error.message ||
+        "El giro fue cancelado de forma segura.",
+        5000
+      );
+
+
+      if (spinResult) {
+
+        spinResult.innerText =
+          "Giro no realizado";
+      }
+
+      return;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (!resultado) {
+
+      console.error(
+        "LUCKY SPIN NO DEVOLVIÓ RESULTADO:",
+        data
+      );
+
+
+      mostrarNotificacion(
+        "error",
+        "Confirmación no válida",
+        "El giro no devolvió una confirmación válida.",
+        4000
+      );
+
+      return;
+    }
+
+
+    /*
+      Animación solamente visual.
+
+      El resultado ya fue decidido y guardado
+      de forma segura por Supabase.
+    */
+
+    const mensajesAnimacion = [
+      "🎁 Premio",
+      "🎰 MASS",
+      "🍀 Suerte",
+      "⭐ Beneficio",
+      "🎟️ Sorteo",
+      "✨ Girando"
+    ];
+
+
+    await new Promise(resolve => {
+
+      let vueltas = 0;
+
+      const intervalo =
+        setInterval(() => {
+
+          if (spinResult) {
+
+            spinResult.innerText =
+              mensajesAnimacion[
+                Math.floor(
+                  Math.random() *
+                  mensajesAnimacion.length
+                )
+              ];
+          }
+
+
+          vueltas++;
+
+
+          if (vueltas >= 30) {
+
+            clearInterval(
+              intervalo
+            );
+
+            resolve();
+          }
+
+        }, 90);
+    });
+
+
+    const nombrePremio =
+      resultado.premio_nombre ||
+      "Sigue participando";
+
+
+    const descripcionPremio =
+      resultado.premio_descripcion ||
+      "";
+
+
+    const codigoPremio =
+      resultado.premio_codigo ||
+      "N/A";
+
+
+    const ganoPremio =
+      resultado.gano_premio ===
+      true;
+
+
+    if (spinResult) {
+
+      spinResult.innerText =
+        ganoPremio
+          ? `🏆 ${nombrePremio}`
+          : `🎟️ ${nombrePremio}`;
+    }
+
+
+    if (ganoPremio) {
+
+      mostrarNotificacion(
+        "success",
+        "🏆 Premio ganado",
+
+        `<b>Premio:</b> ${nombrePremio}<br>` +
+
+        (
+          descripcionPremio
+            ? `<b>Descripción:</b> ${descripcionPremio}<br>`
+            : ""
+        ) +
+
+        (
+          codigoPremio &&
+          codigoPremio !== "N/A"
+            ? `<b>Código:</b> ${codigoPremio}<br>`
+            : ""
+        ) +
+
+        (
+          resultado.beneficio_entregado_id
+            ? "🎁 Tu beneficio fue agregado a Mis Beneficios."
+            : "🏆 Tu premio fue agregado a Mis Premios."
+        ),
+
+        6500
+      );
+
+    } else {
+
+      mostrarNotificacion(
+        "info",
+        "🎟️ Sigue participando",
+        descripcionPremio ||
+        "No ganaste premio esta vez. ¡Mucha suerte en tu próximo boleto!",
+        5000
+      );
+    }
+
+
+    boletoParaGirar.giro_usado =
+      true;
+
+    boletoSeleccionado =
+      null;
+
+
+    await cargarBoletos();
+
+    await cargarMisBoletos();
+
+    await cargarHistorialPremios();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO EN LUCKY SPIN:",
+      errorInesperado
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "Error inesperado",
+      "No fue posible completar el giro.",
+      4500
+    );
+
+
+  } finally {
+
+    if (
+      typeof botonSpin !== "undefined" &&
+      botonSpin
+    ) {
+
+      botonSpin.disabled = false;
+
+      botonSpin.innerText =
+        "Girar 🎟️";
+    }
+  }
 }
 
-async function girarLuckySpinConBoleto(numero, rifaId) {
-  const telefono = (
-    localStorage.getItem("mass_telefono") ||
-    userActual ||
-    ""
-  ).trim();
+async function girarLuckySpinConBoleto(
+  numero,
+  rifaId
+) {
 
-  const numeroTexto = String(numero).trim();
+  const numeroTexto =
+    String(
+      numero ?? ""
+    ).trim();
 
-  const { data: boleto, error } = await supabaseClient
-    .from("boletos")
-    .select("*")
-    .eq("rifa_id", rifaId)
-    .eq("numero", numeroTexto)
-    .eq("telefono", telefono)
-    .limit(1)
-    .maybeSingle();
+
+  const rifaTexto =
+    String(
+      rifaId ?? ""
+    ).trim();
+
+
+  if (!numeroTexto || !rifaTexto) {
+
+    mostrarNotificacion(
+      "error",
+      "Boleto inválido",
+      "No fue posible identificar el boleto seleccionado.",
+      3500
+    );
+
+    return;
+  }
+
+
+  const {
+    data: boleto,
+    error
+  } =
+    await supabaseClient
+      .from("boletos")
+      .select(
+        `
+          id,
+          rifa_id,
+          numero,
+          estado,
+          giro_usado
+        `
+      )
+      .eq(
+        "rifa_id",
+        rifaTexto
+      )
+      .eq(
+        "numero",
+        numeroTexto
+      )
+      .limit(1)
+      .maybeSingle();
+
 
   if (error) {
-    console.error(error);
-    alert("❌ Error buscando el boleto");
+
+    console.error(
+      "ERROR BUSCANDO BOLETO PARA GIRO:",
+      error
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "Error buscando boleto",
+      error.message ||
+      "No fue posible consultar el boleto.",
+      4000
+    );
+
     return;
   }
+
 
   if (!boleto) {
-    alert("❌ No se encontró este boleto en tu cuenta");
+
+    mostrarNotificacion(
+      "error",
+      "Boleto no encontrado",
+      "No se encontró este boleto.",
+      3500
+    );
+
     return;
   }
 
-  if (boleto.estado !== "vendido") {
-    alert("❌ Este boleto todavía no está pagado");
-    return;
-  }
 
-  if (boleto.giro_usado === true) {
-    alert("❌ El giro de este boleto ya fue utilizado");
-    return;
-  }
+  /*
+    No confiamos en esta lectura para autorizar.
 
-  RIFA_ID = rifaId;
-  boletoSeleccionado = boleto;
+    Supabase verificará nuevamente que
+    el boleto pertenezca al usuario real.
+  */
 
-  await girarLuckySpin(true);
+  RIFA_ID =
+    boleto.rifa_id;
+
+  boletoSeleccionado =
+    boleto;
+
+
+  await girarLuckySpin(
+    true
+  );
 }	
 	
 async function cargarMisBoletos(){
