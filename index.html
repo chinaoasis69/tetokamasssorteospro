@@ -5033,7 +5033,7 @@ if (adminRol === "organizador") {
     .from("organizadores")
     .upload(nombreArchivo, file, {
       cacheControl: "3600",
-      upsert: true
+      upsert: false
     });
 
   if(uploadError){
