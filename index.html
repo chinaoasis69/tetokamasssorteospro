@@ -26567,40 +26567,83 @@ function cerrarModalMisBoletos() {
 }	
 
 async function ocultarBeneficio(id) {
-  const ok = confirm("¿Ocultar este beneficio de tu lista?");
-  if (!ok) return;
 
-  const { data, error } = await supabaseClient
-    .from("beneficios_entregados")
-    .update({ oculto_usuario: true })
-    .eq("id", id)
-    .eq("user_id", localStorage.getItem("mass_telefono"))
-    .eq("oculto_usuario", false)
-    .select();
+  const ok = confirm(
+    "¿Ocultar este beneficio de tu lista?"
+  );
 
-  if (error) {
-    alert("Error ocultando beneficio");
-    console.error(error);
+  if (!ok) {
     return;
   }
 
-  if (!data || data.length === 0) {
 
-    const card = document.getElementById("beneficio-" + id);
-    if (card) card.remove();
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "ocultar_beneficio_seguro",
+    {
+      p_beneficio_id: id
+    }
+  );
 
-    alert("✅ Beneficio ocultado");
+
+  if (error) {
+
+    console.error(
+      "ERROR OCULTANDO BENEFICIO DE FORMA SEGURA:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible ocultar el beneficio.\n\n" +
+      (error.message || "")
+    );
+
     return;
-}
+  }
 
-	const card = document.getElementById("beneficio-" + id);
-if (card) card.remove();
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    console.error(
+      "LA FUNCIÓN NO DEVOLVIÓ RESULTADO:",
+      data
+    );
+
+    alert(
+      "❌ No se recibió una confirmación válida."
+    );
+
+    return;
+  }
+
+
+  const card = document.getElementById(
+    "beneficio-" + id
+  );
+
+  if (card) {
+    card.remove();
+  }
+
 
   alert("✅ Beneficio ocultado");
+
+
   setTimeout(async () => {
-  await abrirModalBeneficios();
-  await actualizarContadorBeneficios();
-}, 300);
+
+    await abrirModalBeneficios();
+
+    await actualizarContadorBeneficios();
+
+  }, 300);
 }
 
 async function abrirCanjeados(){
@@ -26693,56 +26736,141 @@ async function actualizarContadorBeneficios() {
 }	
 
 async function restaurarBeneficio(id) {
-  const { error } = await supabaseClient
-    .from("beneficios_entregados")
-    .update({ oculto_usuario: false })
-    .eq("id", id)
-    .eq("user_id", localStorage.getItem("mass_telefono"));
 
-  if (error) {
-    alert("Error restaurando beneficio");
-    console.error(error);
+  const ok = confirm(
+    "¿Restaurar este beneficio a tu lista?"
+  );
+
+  if (!ok) {
     return;
   }
 
-  abrirBeneficiosOcultos();
-  abrirModalBeneficios();
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "restaurar_beneficio_seguro",
+    {
+      p_beneficio_id: id
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR RESTAURANDO BENEFICIO DE FORMA SEGURA:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible restaurar el beneficio.\n\n" +
+      (error.message || "")
+    );
+
+    return;
+  }
+
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    console.error(
+      "LA FUNCIÓN DE RESTAURACIÓN NO DEVOLVIÓ RESULTADO:",
+      data
+    );
+
+    alert(
+      "❌ No se recibió una confirmación válida."
+    );
+
+    return;
+  }
+
+
+  alert("✅ Beneficio restaurado");
+
+
+  await abrirBeneficiosOcultos();
+
+  await abrirModalBeneficios();
+
+  await actualizarContadorBeneficios();
 }	
 
 async function marcarBeneficioUsado(id) {
-  const ok = confirm("¿Quieres canjear este beneficio?");
-  if (!ok) return;
 
-  console.log("ID BENEFICIO:", id);
+  const ok = confirm(
+    "¿Quieres canjear este beneficio?"
+  );
 
-const beneficioReal = await supabaseClient
-  .from("beneficios_entregados")
-  .select("*")
-  .eq("id", id);	
+  if (!ok) {
+    return;
+  }
 
-  const { data, error } = await supabaseClient
-    .from("beneficios_entregados")
-    .update({ usado: true })
-.eq("id", id)
-.eq("user_id", localStorage.getItem("mass_telefono"))
-.select("*");
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "canjear_beneficio_seguro",
+    {
+      p_beneficio_id: id
+    }
+  );
+
 
   if (error) {
-    alert("Error marcando beneficio");
-    console.error(error);
+
+    console.error(
+      "ERROR CANJEANDO BENEFICIO DE FORMA SEGURA:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible canjear el beneficio.\n\n" +
+      (error.message || "")
+    );
+
     return;
   }
 
-  if (!data || data.length === 0) {
-    alert("❌ Este beneficio ya fue canjeado o no se encontró");
-    abrirModalBeneficios();
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    console.error(
+      "LA FUNCIÓN DE CANJE NO DEVOLVIÓ RESULTADO:",
+      data
+    );
+
+    alert(
+      "❌ No se recibió una confirmación válida."
+    );
+
     return;
   }
 
- alert("✅ Beneficio canjeado correctamente");
 
-abrirModalBeneficios();
-actualizarContadorBeneficios();
+  alert(
+    "✅ Beneficio canjeado correctamente"
+  );
+
+
+  await abrirModalBeneficios();
+
+  await actualizarContadorBeneficios();
 } 	
 	
 async function cargarHistorialSorteos() {
