@@ -27799,17 +27799,41 @@ async function eliminarOrganizador(id){
 
 async function mostrarRecargasMassAdmin() {
 
-  const orgId = localStorage.getItem("organizador_admin_id");
+  const orgId =
+    localStorage.getItem(
+      "organizador_admin_id"
+    );
 
-  const { data, error } = await supabaseClient
-    .from("recargas_mass")
-    .select("*")
-    .eq("organizador_id", orgId)
-    .eq("estado", "pendiente")
-    .order("created_at", { ascending:false });
+  if (!orgId) {
+    alert(
+      "❌ No fue posible identificar al organizador."
+    );
+    return;
+  }
 
-  if(error){
-    alert("Error cargando recargas");
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "listar_recargas_mass_admin",
+    {
+      p_organizador_id: orgId,
+      p_estado: "pendiente"
+    }
+  );
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO RECARGAS PROTEGIDAS:",
+      error
+    );
+
+    alert(
+      "❌ Error cargando recargas.\n\n" +
+      error.message
+    );
+
     return;
   }
 
@@ -27817,86 +27841,231 @@ async function mostrarRecargasMassAdmin() {
     <h2>💰 Recargas pendientes</h2>
   `;
 
-  data.forEach(r => {
-	  
+  if (!data || data.length === 0) {
+
     html += `
-      <div class="card">
-        <p><b>Teléfono:</b> ${r.telefono}</p>
-        <p><b>Monto:</b> ${r.monto} MASS</p>
-
-        <a href="${r.comprobante_url}" target="_blank">
-          Ver comprobante
-        </a>
-
-        <br><br>
-
-        <button onclick="aprobarRecarga('${r.id}', '${r.user_id}', ${r.monto})">
-          ✅ Aprobar
-        </button>
-
-		<button onclick="rechazarRecarga('${r.id}')">
-  ❌ Rechazar
-</button>
-      </div>
+      <p>
+        No hay recargas pendientes.
+      </p>
     `;
-  });
 
-  document.getElementById("adminContenido").innerHTML = html;
+  } else {
+
+    data.forEach(r => {
+
+      const massId =
+        String(
+          r.mass_id ||
+          "MASS-ID-NO-DISPONIBLE"
+        );
+
+      html += `
+        <div class="card">
+
+          <p>
+            <b>👤 MASS ID:</b>
+            ${massId}
+          </p>
+
+          <p>
+            <b>Monto:</b>
+            ${r.monto} MASS
+          </p>
+
+          <a
+            href="${r.comprobante_url}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver comprobante
+          </a>
+
+          <br><br>
+
+          <button
+            onclick="aprobarRecarga(
+              '${r.id}',
+              '',
+              ${Number(r.monto)}
+            )"
+          >
+            ✅ Aprobar
+          </button>
+
+          <button
+            onclick="rechazarRecarga(
+              '${r.id}'
+            )"
+          >
+            ❌ Rechazar
+          </button>
+
+        </div>
+      `;
+    });
+  }
+
+  document
+    .getElementById(
+      "adminContenido"
+    )
+    .innerHTML = html;
 }
 
 async function mostrarHistorialRecargasMassAdmin() {
-  const orgId = localStorage.getItem("organizador_admin_id");
 
-  const { data, error } = await supabaseClient
-    .from("recargas_mass")
-    .select("*, organizador_id")
-    .eq("organizador_id", orgId)
-    .order("created_at", { ascending:false });
+  const orgId =
+    localStorage.getItem(
+      "organizador_admin_id"
+    );
 
-  if(error){
-    alert("Error cargando historial");
+  if (!orgId) {
+    alert(
+      "❌ No fue posible identificar al organizador."
+    );
     return;
   }
 
-const orgIds = [...new Set((data || []).map(r => r.organizador_id).filter(Boolean))];
+  const [
+    resultadoRecargas,
+    resultadoOrganizador
+  ] = await Promise.all([
 
-const { data: orgs } = await supabaseClient
-  .from("organizadores")
-  .select("id, nombre")
-  .in("id", orgIds);
+    supabaseClient.rpc(
+      "listar_recargas_mass_admin",
+      {
+        p_organizador_id: orgId,
+        p_estado: null
+      }
+    ),
 
-const orgMap = {};
-(orgs || []).forEach(o => {
-  orgMap[o.id] = o.nombre;
-});	
+    supabaseClient
+      .from("organizadores")
+      .select(
+        `
+          id,
+          nombre,
+          nombre_publico,
+          nombre_empresa
+        `
+      )
+      .eq("id", orgId)
+      .maybeSingle()
+  ]);
+
+  const {
+    data,
+    error
+  } = resultadoRecargas;
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO HISTORIAL PROTEGIDO:",
+      error
+    );
+
+    alert(
+      "❌ Error cargando historial.\n\n" +
+      error.message
+    );
+
+    return;
+  }
+
+  const organizador =
+    resultadoOrganizador.data;
+
+  const nombreOrganizador =
+    organizador?.nombre_publico ||
+    organizador?.nombre ||
+    organizador?.nombre_empresa ||
+    "Organizador";
 
   let html = `
     <h2>📜 Historial de recargas</h2>
   `;
 
-  if(!data || data.length === 0){
-    html += `<p>No hay recargas todavía.</p>`;
+  if (!data || data.length === 0) {
+
+    html += `
+      <p>
+        No hay recargas todavía.
+      </p>
+    `;
+
+  } else {
+
+    data.forEach(r => {
+
+      let estadoColor = "⚪";
+
+      if (r.estado === "aprobado") {
+        estadoColor = "🟢";
+      }
+
+      if (r.estado === "pendiente") {
+        estadoColor = "🟡";
+      }
+
+      if (r.estado === "rechazado") {
+        estadoColor = "🔴";
+      }
+
+      const massId =
+        String(
+          r.mass_id ||
+          "MASS-ID-NO-DISPONIBLE"
+        );
+
+      html += `
+        <div class="card">
+
+          <p>
+            <b>👤 MASS ID:</b>
+            ${massId}
+          </p>
+
+          <p>
+            <b>🏢 Organizador:</b>
+            ${nombreOrganizador}
+          </p>
+
+          <p>
+            <b>Monto:</b>
+            ${r.monto} MASS
+          </p>
+
+          <p>
+            <b>Estado:</b>
+            ${estadoColor} ${r.estado}
+          </p>
+
+          <p>
+            <b>Fecha:</b>
+            ${new Date(
+              r.created_at
+            ).toLocaleString()}
+          </p>
+
+          <a
+            href="${r.comprobante_url}"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ver comprobante
+          </a>
+
+        </div>
+      `;
+    });
   }
 
-  data.forEach(r => {
-
-let estadoColor = "⚪";
-if (r.estado === "aprobado") estadoColor = "🟢";
-if (r.estado === "pendiente") estadoColor = "🟡";
-if (r.estado === "rechazado") estadoColor = "🔴";	  
-    html += `
-      <div class="card">
-        <p><b>Teléfono:</b> ${r.telefono}</p>
-		<p><b>🏢 Organizador:</b> ${orgMap[r.organizador_id] || "Sin organizador"}</p>
-        <p><b>Monto:</b> ${r.monto} MASS</p>
-        <p><b>Estado:</b> ${estadoColor} ${r.estado}</p>
-		<p><b>Fecha:</b> ${new Date(r.created_at).toLocaleString()}</p>
-        <a href="${r.comprobante_url}" target="_blank">Ver comprobante</a>
-      </div>
-    `;
-  });
-
-  document.getElementById("adminContenido").innerHTML = html;
+  document
+    .getElementById(
+      "adminContenido"
+    )
+    .innerHTML = html;
 }	
 
 async function aprobarRecarga(id, userId, monto) {
