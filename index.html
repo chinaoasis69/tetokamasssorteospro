@@ -13969,51 +13969,10 @@ async function apartarBoletosInterno() {
     !Array.isArray(boletosSeleccionados) ||
     boletosSeleccionados.length === 0
   ) {
-    alert(
-      "Selecciona al menos un boleto"
-    );
-
+    alert("Selecciona al menos un boleto");
     return;
   }
-	
-const {
-    data: rifaActualApartado,
-    error: errorRifaApartado
-} = await supabaseClient
-    .from("rifas")
-    .select(`
-        id,
-        fecha_sorteo,
-        hora_sorteo,
-        zona_horaria,
-        cierre_apartados_horas_antes
-    `)
-    .eq("id", RIFA_ID)
-    .single();
 
-if (errorRifaApartado || !rifaActualApartado) {
-    console.error(
-        "Error verificando cierre de apartados:",
-        errorRifaApartado
-    );
-
-    alert(
-        "❌ No se pudo verificar si la dinámica permite nuevos apartados."
-    );
-
-    return;
-}
-
-if (rifaCerroApartados(rifaActualApartado)) {
-    alert(
-        "⏰ El periodo para apartar números ya cerró.\n\n" +
-        "Los números disponibles solo pueden comprarse directamente."
-    );
-
-    await cargarBoletos();
-
-    return;
-}
 
   const cantidadSelecciones =
     boletosSeleccionados.length;
@@ -14028,200 +13987,116 @@ if (rifaCerroApartados(rifaActualApartado)) {
   }
 
 
-  const telefonoReserva =
-    String(
-      localStorage.getItem(
-        "mass_telefono"
-      ) ||
-      localStorage.getItem(
-        "mass_user"
-      ) ||
-      userActual ||
-      ""
-    ).trim();
-
-
-  if (!telefonoReserva) {
-
-    alert(
-      "❌ No se encontró el teléfono de la sesión activa."
-    );
-
-    return;
-  }
-
-
   /*
-    Consultar directamente en Supabase
-    solamente los números del paquete.
+    Enviamos únicamente los números base.
+
+    Supabase:
+    • identifica al usuario con auth.uid();
+    • obtiene su teléfono desde usuarios_mass;
+    • calcula todos los números del paquete;
+    • bloquea los boletos;
+    • aparta todos o ninguno.
   */
 
-  const {
-    configuracion,
-    boletosPaquete,
-    error: errorConsulta
-  } =
-    await consultarPaquetesSeleccionadosDesdeSupabase(
-      boletosSeleccionados
-    );
-
-
-  if (
-    errorConsulta ||
-    !configuracion
-  ) {
-
-    console.error(
-      "ERROR CONSULTANDO PAQUETE PARA RESERVA:",
-      errorConsulta
-    );
-
-    alert(
-      "❌ No fue posible consultar los números seleccionados."
-    );
-
-    return;
-  }
-
-
-  const cantidadEsperada =
-    cantidadSelecciones *
-    configuracion.modalidad;
-
-
-  if (
-    boletosPaquete.length !==
-    cantidadEsperada
-  ) {
-
-    alert(
-      "❌ No se encontraron todos los números del paquete.\n\n" +
-      `Esperados: ${cantidadEsperada}\n` +
-      `Encontrados: ${boletosPaquete.length}`
-    );
-
-    return;
-  }
-
-
-  const boletosNoDisponibles =
-    boletosPaquete.filter(
-      boleto =>
+  const numerosBase =
+    boletosSeleccionados
+      .map(boleto =>
         String(
-          boleto.estado ||
-          "disponible"
-        )
-          .trim()
-          .toLowerCase() !==
-        "disponible"
-    );
-
-
-  if (
-    boletosNoDisponibles.length > 0
-  ) {
-
-    const numerosOcupados =
-      boletosNoDisponibles
-        .map(
-          boleto =>
-            boleto.numero
-        )
-        .join(", ");
-
-
-    alert(
-      "❌ Uno o más números del paquete ya no están disponibles.\n\n" +
-      `Números ocupados: ${numerosOcupados}\n\n` +
-      "Selecciona otro número."
-    );
-
-    return;
-  }
-
-
-  const ids =
-    boletosPaquete.map(
-      boleto =>
-        boleto.id
-    );
-
-
-  const {
-    data: boletosReservados,
-    error: errorReserva
-  } =
-    await supabaseClient
-      .from("boletos")
-      .update({
-    estado: "apartado",
-    telefono: telefonoReserva,
-    fecha: new Date().toISOString()
-})
-      .eq(
-        "rifa_id",
-        RIFA_ID
+          boleto?.numero ??
+          boleto ??
+          ""
+        ).trim()
       )
-      .in(
-        "id",
-        ids
-      )
-      .eq(
-        "estado",
-        "disponible"
-      )
-      .select(
-        "id, numero, estado"
+      .filter(numero =>
+        numero !== ""
       );
 
 
-  if (errorReserva) {
-
+  if (
+    numerosBase.length !==
+    cantidadSelecciones
+  ) {
     console.error(
-      "ERROR RESERVANDO PAQUETE:",
-      errorReserva
+      "NÚMEROS BASE INVÁLIDOS:",
+      {
+        boletosSeleccionados,
+        numerosBase
+      }
     );
 
     alert(
-      "❌ No fue posible reservar los boletos."
+      "❌ No fue posible identificar todos los números seleccionados."
     );
 
     return;
   }
 
 
-  if (
-    !Array.isArray(
-      boletosReservados
-    ) ||
-    boletosReservados.length !==
-      cantidadEsperada
-  ) {
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "apartar_boletos_seguro",
+    {
+      p_rifa_id: RIFA_ID,
+      p_numeros_base: numerosBase
+    }
+  );
 
-    console.warn(
-      "RESERVA INCOMPLETA:",
-      {
-        esperados:
-          cantidadEsperada,
 
-        reservados:
-          boletosReservados?.length ||
-          0
-      }
+  if (error) {
+
+    console.error(
+      "ERROR RESERVANDO BOLETOS DE FORMA SEGURA:",
+      error
     );
-
 
     alert(
-      "⚠️ Uno de los números cambió mientras realizabas la reserva.\n\n" +
-      "Actualiza la rifa antes de continuar."
+      "❌ No fue posible reservar los boletos.\n\n" +
+      (error.message || "")
     );
 
+
+    /*
+      Recargamos porque algún número pudo haber sido
+      ocupado por otra persona.
+    */
 
     await cargarBoletos();
 
     return;
   }
 
+
+  const boletosReservados =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  if (
+    boletosReservados.length === 0
+  ) {
+
+    console.error(
+      "LA RESERVACIÓN NO DEVOLVIÓ RESULTADOS:",
+      data
+    );
+
+    alert(
+      "❌ No se recibió una confirmación válida de la reservación."
+    );
+
+    await cargarBoletos();
+
+    return;
+  }
+
+
+  /*
+    Registrar la actividad solamente después de que
+    Supabase confirmó la reservación completa.
+  */
 
   await guardarActividadSorteo(
     "apartado",
