@@ -8994,12 +8994,14 @@ ${(p.premio_media || []).length > 0 ? `
 <br><br>
 
 <label class="btn">
-📸 Agregar imagen adicional
+📸🎥 Subir galería completa
+
 <input
   type="file"
-  accept="image/*"
+  accept="image/*,video/mp4,video/quicktime"
+  multiple
   style="display:none"
-  onchange="subirImagenAdicionalPremio(
+  onchange="subirGaleriaPremio(
     event,
     '${p.id}',
     '${rifaId}'
@@ -9007,17 +9009,16 @@ ${(p.premio_media || []).length > 0 ? `
 />
 </label>
 
-<br><br>
-
-<label class="btn">
-🎥 Subir video
-<input
-    type="file"
-    accept="video/*"
-    style="display:none"
-    onchange="subirVideoPremio(event, '${p.id}', '${rifaId}')"
-/>
-</label>
+<p
+  style="
+    margin:8px auto 0;
+    font-size:12px;
+    color:#ccc;
+    text-align:center;
+  "
+>
+  Puedes seleccionar varias imágenes y videos al mismo tiempo.
+</p>
 
 <br><br>
 
@@ -9092,6 +9093,298 @@ async function editarImagenPremio(id, rifaId, imagenActual){
 
   administrarPremiosRifa(rifaId);
 }
+
+// =====================================================
+// SUBIR GALERÍA COMPLETA DE UN PREMIO
+// Permite seleccionar varias imágenes y videos juntos.
+// =====================================================
+
+async function subirGaleriaPremio(
+    event,
+    premioId,
+    rifaId
+) {
+
+    const input = event?.target;
+
+    const archivos = Array.from(
+        input?.files || []
+    );
+
+    if (archivos.length === 0) {
+        return;
+    }
+
+    const LIMITE_IMAGEN =
+        12 * 1024 * 1024;
+
+    const LIMITE_VIDEO =
+        50 * 1024 * 1024;
+
+    const extensionesImagen = [
+        "jpg",
+        "jpeg",
+        "png",
+        "webp",
+        "heic",
+        "heif"
+    ];
+
+    const extensionesVideo = [
+        "mp4",
+        "mov"
+    ];
+
+    let subidos = 0;
+    let rechazados = 0;
+
+    input.disabled = true;
+
+    try {
+
+        for (
+            let indice = 0;
+            indice < archivos.length;
+            indice++
+        ) {
+
+            const file = archivos[indice];
+
+            const nombreOriginal =
+                String(
+                    file.name ||
+                    `archivo-${indice}`
+                );
+
+            const extension =
+                nombreOriginal.includes(".")
+                    ? nombreOriginal
+                        .split(".")
+                        .pop()
+                        .toLowerCase()
+                    : "";
+
+            const mimeOriginal =
+                String(
+                    file.type || ""
+                ).toLowerCase();
+
+            const esImagen =
+                mimeOriginal.startsWith("image/") ||
+                extensionesImagen.includes(extension);
+
+            const esVideo =
+                mimeOriginal === "video/mp4" ||
+                mimeOriginal === "video/quicktime" ||
+                extensionesVideo.includes(extension);
+
+            if (!esImagen && !esVideo) {
+
+                console.warn(
+                    "Archivo no permitido:",
+                    nombreOriginal
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            if (
+                esImagen &&
+                file.size > LIMITE_IMAGEN
+            ) {
+
+                console.warn(
+                    "Imagen demasiado grande:",
+                    nombreOriginal
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            if (
+                esVideo &&
+                file.size > LIMITE_VIDEO
+            ) {
+
+                console.warn(
+                    "Video demasiado grande:",
+                    nombreOriginal
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            const tipoMedia =
+                esVideo
+                    ? "video"
+                    : "imagen";
+
+            let contentType =
+                mimeOriginal;
+
+            if (!contentType) {
+
+                if (esVideo) {
+
+                    contentType =
+                        extension === "mov"
+                            ? "video/quicktime"
+                            : "video/mp4";
+
+                } else {
+
+                    const tiposImagen = {
+                        jpg: "image/jpeg",
+                        jpeg: "image/jpeg",
+                        png: "image/png",
+                        webp: "image/webp",
+                        heic: "image/heic",
+                        heif: "image/heif"
+                    };
+
+                    contentType =
+                        tiposImagen[extension] ||
+                        "image/jpeg";
+                }
+            }
+
+            let extensionSegura =
+                extension;
+
+            if (!extensionSegura) {
+
+                if (contentType === "video/quicktime") {
+                    extensionSegura = "mov";
+                } else if (contentType === "video/mp4") {
+                    extensionSegura = "mp4";
+                } else if (contentType === "image/png") {
+                    extensionSegura = "png";
+                } else if (contentType === "image/webp") {
+                    extensionSegura = "webp";
+                } else if (contentType === "image/heic") {
+                    extensionSegura = "heic";
+                } else if (contentType === "image/heif") {
+                    extensionSegura = "heif";
+                } else {
+                    extensionSegura = "jpg";
+                }
+            }
+
+            const nombreArchivo =
+                `${rifaId}/` +
+                `${premioId}-${tipoMedia}-` +
+                `${Date.now()}-${indice}.` +
+                `${extensionSegura}`;
+
+            const {
+                error: uploadError
+            } = await supabaseClient
+                .storage
+                .from("premios")
+                .upload(
+                    nombreArchivo,
+                    file,
+                    {
+                        cacheControl: "3600",
+                        upsert: false,
+                        contentType
+                    }
+                );
+
+            if (uploadError) {
+
+                console.error(
+                    "Error subiendo archivo:",
+                    nombreOriginal,
+                    uploadError
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            const {
+                data: urlData
+            } = supabaseClient
+                .storage
+                .from("premios")
+                .getPublicUrl(
+                    nombreArchivo
+                );
+
+            const publicUrl =
+                String(
+                    urlData?.publicUrl || ""
+                ).trim();
+
+            if (!publicUrl) {
+
+                console.error(
+                    "No se generó URL pública:",
+                    nombreArchivo
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            const {
+                error: errorMedia
+            } = await supabaseClient
+                .from("premio_media")
+                .insert({
+                    premio_id: premioId,
+                    tipo: tipoMedia,
+                    url: publicUrl
+                });
+
+            if (errorMedia) {
+
+                console.error(
+                    "Error guardando premio_media:",
+                    nombreOriginal,
+                    errorMedia
+                );
+
+                rechazados++;
+                continue;
+            }
+
+            subidos++;
+        }
+
+    } finally {
+
+        input.value = "";
+        input.disabled = false;
+    }
+
+    if (subidos > 0) {
+
+        await administrarPremiosRifa(
+            rifaId
+        );
+    }
+
+    if (rechazados === 0) {
+
+        alert(
+            `✅ Galería subida correctamente.\n\n` +
+            `Archivos subidos: ${subidos}`
+        );
+
+    } else {
+
+        alert(
+            `📸🎥 Carga terminada.\n\n` +
+            `Subidos correctamente: ${subidos}\n` +
+            `No procesados: ${rechazados}`
+        );
+    }
+}	
 
 async function subirImagenPremio(event, premioId, rifaId){
 
