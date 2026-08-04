@@ -9105,9 +9105,16 @@ async function subirImagenPremio(event, premioId, rifaId){
     .storage
     .from("premios")
     .upload(nombreArchivo, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
+    cacheControl: "3600",
+    upsert: false,
+    contentType:
+        file.type ||
+        (
+            extension.toLowerCase() === "png"
+                ? "image/png"
+                : "image/jpeg"
+        )
+});
 
   if(uploadError){
     console.error(uploadError);
@@ -9231,12 +9238,16 @@ async function subirImagenAdicionalPremio(
         nombreArchivo,
         file,
         {
-          cacheControl:
-            "3600",
-
-          upsert:
-            false
-        }
+    cacheControl: "3600",
+    upsert: false,
+    contentType:
+        file.type ||
+        (
+            extension.toLowerCase() === "png"
+                ? "image/png"
+                : "image/jpeg"
+        )
+}
       );
 
 
@@ -9366,9 +9377,16 @@ async function subirVideoPremio(event, premioId, rifaId){
     .storage
     .from("premios")
     .upload(nombreArchivo, file, {
-      cacheControl: "3600",
-      upsert: false
-    });
+    cacheControl: "3600",
+    upsert: false,
+    contentType:
+        file.type ||
+        (
+            extension.toLowerCase() === "mov"
+                ? "video/quicktime"
+                : "video/mp4"
+        )
+});
 
   if(uploadError){
     console.error(uploadError);
