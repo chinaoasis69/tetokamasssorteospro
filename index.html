@@ -27940,17 +27940,10 @@ async function mostrarHistorialRecargasMassAdmin() {
     ),
 
     supabaseClient
-      .from("organizadores")
-      .select(
-        `
-          id,
-          nombre,
-          nombre_publico,
-          nombre_empresa
-        `
-      )
-      .eq("id", orgId)
-      .maybeSingle()
+  .from("organizadores")
+  .select("id, nombre")
+  .eq("id", orgId)
+  .maybeSingle()
   ]);
 
   const {
@@ -27973,14 +27966,19 @@ async function mostrarHistorialRecargasMassAdmin() {
     return;
   }
 
-  const organizador =
-    resultadoOrganizador.data;
+  if (resultadoOrganizador.error) {
+  console.error(
+    "ERROR CARGANDO NOMBRE DEL ORGANIZADOR:",
+    resultadoOrganizador.error
+  );
+}
 
-  const nombreOrganizador =
-    organizador?.nombre_publico ||
-    organizador?.nombre ||
-    organizador?.nombre_empresa ||
-    "Organizador";
+const organizador =
+  resultadoOrganizador.data;
+
+const nombreOrganizador =
+  organizador?.nombre ||
+  "Organizador";
 
   let html = `
     <h2>📜 Historial de recargas</h2>
