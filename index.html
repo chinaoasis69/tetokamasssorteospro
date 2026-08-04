@@ -23556,20 +23556,28 @@ function renderBoletos(
 
 
       if (
-        estado ===
-        "vendido"
-      ) {
+  estado ===
+  "vendido"
+) {
 
-        btn.style.background =
-          "#444";
+  btn.style.background =
+    "#444";
 
-        btn.style.color =
-          "#fff";
+  btn.style.color =
+    "#fff";
 
-        btn.disabled =
-          true;
+  // Se mantiene gris, pero permite tocarlo
+  // para informar por qué no puede seleccionarse.
+  btn.disabled =
+    false;
 
-      }
+  btn.style.cursor =
+    "pointer";
+
+  btn.title =
+    "Este número ya fue vendido";
+
+}
 
 
       const seleccionado =
@@ -23598,18 +23606,11 @@ function renderBoletos(
       }
 
 
-      if (
-        estado !==
-        "vendido"
-      ) {
-
-        btn.onclick =
-          () =>
-            seleccionarBoleto(
-              boleto
-            );
-
-      }
+      btn.onclick =
+  () =>
+    seleccionarBoleto(
+      boleto
+    );
 
 
       contenedor.appendChild(
@@ -23906,15 +23907,46 @@ async function irPaginaBoletos() {
 }
 	
 // 🔥 SELECCIONAR
-function seleccionarBoleto(b){
 
-  if(b.estado === "vendido"){
-    alert("Ese número ya está vendido");
+  function seleccionarBoleto(b){
+
+  const estadoBoleto =
+    String(
+      b?.estado ||
+      "disponible"
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    estadoBoleto ===
+    "vendido"
+  ) {
+
+    mostrarNotificacion(
+      "warning",
+      "Número vendido",
+      `El número ${b.numero} ya fue comprado. Selecciona otro número disponible.`,
+      3500
+    );
+
     return;
   }
 
-  if(b.estado === "apartado"){
-    alert("Ese número ya está apartado");
+
+  if (
+    estadoBoleto ===
+    "apartado"
+  ) {
+
+    mostrarNotificacion(
+      "warning",
+      "Número reservado",
+      `El número ${b.numero} se encuentra apartado. Selecciona otro número disponible.`,
+      3500
+    );
+
     return;
   }
 
