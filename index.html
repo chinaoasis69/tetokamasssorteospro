@@ -26173,198 +26173,155 @@ const saltoNumeros =
 }
 
 async function pagarReservadoConMass(numero, rifaId) {
-  const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
-  const {
-    data: { user: usuarioAuth },
-    error: errorUsuarioAuth
-  } = await supabaseClient.auth.getUser();
+  const numeroBase =
+    String(
+      numero ?? ""
+    ).trim();
 
-  const authUserId = usuarioAuth?.id || null;
 
-if (errorUsuarioAuth || !authUserId) {
-    console.error("ERROR OBTENIENDO USUARIO AUTH:", errorUsuarioAuth);
-    alert("❌ No se encontró una sesión autenticada válida.");
-    return;
-}	
+  const rifaTexto =
+    String(
+      rifaId ?? ""
+    ).trim();
 
-  const { data: rifa } = await supabaseClient
-    .from("rifas")
-    .select("precio_boleto, organizador_id, total_numeros, modalidad")
-    .eq("id", rifaId)
-    .single();
 
-  const precio = Number(rifa?.precio_boleto || 0);
-  const organizadorId = rifa?.organizador_id;
+  if (!numeroBase || !rifaTexto) {
 
-  const { data: wallet } = await supabaseClient
-    .from("wallets")
-    .select("id, saldo")
-    .eq("user_id", tel)
-    .eq("organizador_id", organizadorId)
-    .maybeSingle();
+    mostrarNotificacion(
+      "error",
+      "Datos incompletos",
+      "No fue posible identificar la reservación seleccionada.",
+      4000
+    );
 
-  if (!wallet || Number(wallet.saldo) < precio) {
-    alert("Saldo MASS insuficiente con este organizador");
     return;
   }
 
-const modalidadActual = Number(rifa?.modalidad || 1);
-const totalNumerosRifa = Number(rifa?.total_numeros || 0);
-const digitosRifa = String(totalNumerosRifa - 1).length;
-const saltoNumeros = totalNumerosRifa / modalidadActual;
 
-const numeroBase = Number(numero);
-
-const numerosPaquete = Array.from(
-  { length: modalidadActual },
-  (_, indice) => numeroBase + (indice * saltoNumeros)
-);
-
-const numerosPaqueteTexto = numerosPaquete.map(n =>
-  String(n).padStart(digitosRifa, "0")
-);
-
-const { data: boletosPaquete, error: errorPaquete } =
-  await supabaseClient
-    .from("boletos")
-    .select("id, numero, estado, telefono")
-    .eq("rifa_id", rifaId)
-    .in("numero", numerosPaqueteTexto);
-
-if (
-  errorPaquete ||
-  !boletosPaquete ||
-  boletosPaquete.length !== modalidadActual
-) {
-  console.error(errorPaquete);
-  alert("❌ No se encontraron todos los números del paquete");
-  return;
-}
-
-const numeroBaseTexto = String(numeroBase).padStart(
-  digitosRifa,
-  "0"
-);
-
-const boletoBase = boletosPaquete.find(
-  b => String(b.numero) === numeroBaseTexto
-);
-
-if (
-  !boletoBase ||
-  boletoBase.estado !== "apartado" ||
-  String(boletoBase.telefono || "").trim() !== tel
-) {
-  alert("❌ Este boleto reservado no pertenece a tu cuenta");
-  return;
-}
-
-const numerosQueNoPertenecenAlUsuario =
-  boletosPaquete.some(
-    b => {
-
-      const estado =
-        String(
-          b.estado || ""
-        )
-          .trim()
-          .toLowerCase();
+  const confirmarPago = confirm(
+    `¿Pagar el boleto reservado ${numeroBase} con tu saldo MASS?`
+  );
 
 
-      const telefonoBoleto =
-        String(
-          b.telefono || ""
-        ).trim();
+  if (!confirmarPago) {
+    return;
+  }
 
 
-      /*
-        Permitimos:
+  /*
+    Supabase realizará todo dentro de una transacción:
 
-        1. Números apartados por este mismo usuario.
-        2. Números disponibles, para conservar
-           compatibilidad con reservas anteriores.
-      */
+    • comprobará la sesión real;
+    • verificará que la reserva pertenezca al usuario;
+    • bloqueará el paquete completo;
+    • bloqueará la Wallet;
+    • descontará el saldo;
+    • convertirá los boletos a vendidos;
+    • generará el PIN del giro;
+    • registrará la transacción.
+  */
 
-      const apartadoPorEsteUsuario =
-        estado === "apartado" &&
-        telefonoBoleto === tel;
-
-
-      const disponible =
-        estado === "disponible";
-
-
-      return !(
-        apartadoPorEsteUsuario ||
-        disponible
-      );
-
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "pagar_reserva_con_saldo_mass_segura",
+    {
+      p_rifa_id: rifaTexto,
+      p_numero_base: numeroBase
     }
   );
 
 
-if (
-  numerosQueNoPertenecenAlUsuario
-) {
+  if (error) {
 
-  alert(
-    "❌ Uno de los números del paquete ya no pertenece a esta reserva."
+    console.error(
+      "ERROR PAGANDO RESERVACIÓN CON MASS:",
+      error
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "No fue posible completar el pago",
+      error.message ||
+        "La operación fue cancelada de forma segura.",
+      5500
+    );
+
+    return;
+  }
+
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    console.error(
+      "EL PAGO NO DEVOLVIÓ RESULTADO:",
+      data
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "Confirmación no válida",
+      "No se recibió una confirmación válida del pago.",
+      4500
+    );
+
+    return;
+  }
+
+
+  const numerosRecibidos =
+    Array.isArray(
+      resultado.numeros_recibidos
+    )
+      ? resultado.numeros_recibidos
+      : [];
+
+
+  mostrarNotificacion(
+    "success",
+    "✅ Compra exitosa",
+
+    `🎟️ Números recibidos: ${
+      numerosRecibidos.join(", ")
+    }<br>` +
+
+    `💰 Total pagado: ${
+      resultado.total_pagado
+    } MASS<br>` +
+
+    `💳 Saldo anterior: ${
+      resultado.saldo_anterior
+    } MASS<br>` +
+
+    `💵 Saldo nuevo: ${
+      resultado.saldo_nuevo
+    } MASS<br>` +
+
+    "🎡 Tu giro Lucky Spin quedó desbloqueado.",
+
+    6500
   );
 
-  return;
-}
 
-const idsPaquete = boletosPaquete.map(b => b.id);
+  /*
+    Actualizar inmediatamente toda la información visible.
+  */
 
-  const pinGiroReservado = Math.floor(
-  100000 + Math.random() * 900000
-).toString();
+  await cargarSaldo();
 
-const {
-  data: vendidosPaquete,
-  error: errorVentaPaquete
-} = await supabaseClient
-  .from("boletos")
-  .update({
-    estado: "vendido",
-    telefono: tel,
-    nombre: tel,
-	user_id: authUserId,  
-    pin_giro: pinGiroReservado,
-    giro_usado: false,
-    fecha: new Date().toISOString(),
-    rifa_id: rifaId
-  })
-  .eq("rifa_id", rifaId)
-  .in("id", idsPaquete)
-  .in("estado", ["apartado", "disponible"])
-  .select("id");
+  await cargarBoletos();
 
-if (
-  errorVentaPaquete ||
-  !vendidosPaquete ||
-  vendidosPaquete.length !== modalidadActual
-) {
-  console.error(errorVentaPaquete);
-  alert("❌ Error vendiendo los números del paquete");
-  return;
-}
-
-const { error: errorSaldo } = await supabaseClient
-  .from("wallets")
-  .update({ saldo: Number(wallet.saldo) - precio })
-  .eq("id", wallet.id);
-
-if (errorSaldo) {
-  console.error(errorSaldo);
-  alert("❌ Los números se asignaron, pero hubo un error descontando el saldo");
-  return;
-}
-
-  alert("✅ Boleto pagado con MASS");
-  cargarSaldo();
-  cargarMisBoletos();
+  await cargarMisBoletos();
 }	
 
 async function abrirModalBeneficios() {
