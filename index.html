@@ -15174,6 +15174,100 @@ if (mensajeSaldo) {
     "Recarga enviada",
     "Espera aprobación del organizador."
 );
+}
+
+// =====================================================
+// REALTIME — SALDO WALLET MASS
+// Actualiza el saldo sin refrescar la página.
+// =====================================================
+
+let canalRealtimeWallet = null;
+let claveRealtimeWallet = "";
+
+async function iniciarRealtimeWallet(organizadorId) {
+
+  const telefono = String(
+    localStorage.getItem("mass_telefono") ||
+    userActual ||
+    ""
+  ).trim();
+
+  const orgId = String(
+    organizadorId ||
+    ""
+  ).trim();
+
+  if (!telefono || !orgId) {
+    return;
+  }
+
+  const nuevaClave =
+    `${telefono}|${orgId}`;
+
+  // Evita crear dos veces la misma suscripción.
+  if (
+    canalRealtimeWallet &&
+    claveRealtimeWallet === nuevaClave
+  ) {
+    return;
+  }
+
+  // Si cambió el usuario o el organizador,
+  // elimina la suscripción anterior.
+  if (canalRealtimeWallet) {
+
+    await supabaseClient.removeChannel(
+      canalRealtimeWallet
+    );
+
+    canalRealtimeWallet = null;
+  }
+
+  claveRealtimeWallet = nuevaClave;
+
+  const nombreCanalSeguro =
+    `${telefono}_${orgId}`
+      .replace(
+        /[^a-zA-Z0-9_-]/g,
+        "_"
+      );
+
+  canalRealtimeWallet =
+    supabaseClient
+
+      .channel(
+        `wallet-realtime-${nombreCanalSeguro}`
+      )
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "wallets",
+          filter:
+            `user_id=eq.${telefono},` +
+            `organizador_id=eq.${orgId}`
+        },
+
+        async (payload) => {
+
+          console.log(
+            "💰 Wallet Realtime:",
+            payload
+          );
+
+          await cargarSaldo();
+        }
+      )
+
+      .subscribe((status) => {
+
+        console.log(
+          "📡 Realtime wallet:",
+          status
+        );
+      });
 }	
 
 async function cargarSaldo() {
@@ -15210,6 +15304,10 @@ console.log("ORGANIZADOR BUSCADO:", organizadorId);
 
     return;
 }
+
+	await iniciarRealtimeWallet(
+  organizadorId
+);
 
   const { data } = await supabaseClient
     .from("wallets")
