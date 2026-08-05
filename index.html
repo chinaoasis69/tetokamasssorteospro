@@ -21798,6 +21798,36 @@ async function (conversacion) {
   CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID =
     conversacion.id;
 
+	  const conversacionIdOrganizadorActual =
+    String(conversacion.id);
+
+  /*
+    Retirar cualquier canal o intervalo perteneciente
+    a una conversación abierta anteriormente.
+  */
+
+  if (
+    window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN
+  ) {
+    await supabaseClient.removeChannel(
+      window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN
+    );
+
+    window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN =
+      null;
+  }
+
+  if (
+    window.CHAT_INTERVALO_ORGANIZADOR_ADMIN
+  ) {
+    clearInterval(
+      window.CHAT_INTERVALO_ORGANIZADOR_ADMIN
+    );
+
+    window.CHAT_INTERVALO_ORGANIZADOR_ADMIN =
+      null;
+  }
+
   contenedor.innerHTML = `
     <div
       style="
@@ -21920,11 +21950,34 @@ if (errorMarcarLeidos) {
     cursor:pointer;
   `;
 
-  botonVolver.onclick = function () {
+    botonVolver.onclick = async function () {
+
     CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID =
       null;
 
-    window.mostrarChatOrganizadorAdmin();
+    if (
+      window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN
+    ) {
+      await supabaseClient.removeChannel(
+        window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN
+      );
+
+      window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN =
+        null;
+    }
+
+    if (
+      window.CHAT_INTERVALO_ORGANIZADOR_ADMIN
+    ) {
+      clearInterval(
+        window.CHAT_INTERVALO_ORGANIZADOR_ADMIN
+      );
+
+      window.CHAT_INTERVALO_ORGANIZADOR_ADMIN =
+        null;
+    }
+
+    await window.mostrarChatOrganizadorAdmin();
   };
 
   encabezado.appendChild(titulo);
@@ -22024,6 +22077,381 @@ if (errorMarcarLeidos) {
   }
 
   contenedor.appendChild(historial);
+
+// =====================================================
+// MASS - REALTIME DEL CHAT ABIERTO POR EL ORGANIZADOR
+// Incluye respaldo para iPhone
+// =====================================================
+
+const idsMensajesOrganizadorAdmin =
+  new Set(
+    (mensajes || [])
+      .filter(item => item?.id)
+      .map(item => String(item.id))
+  );
+
+const ultimoMensajeInicialOrganizador =
+  Array.isArray(mensajes) &&
+  mensajes.length > 0
+    ? mensajes[mensajes.length - 1]
+    : null;
+
+let ultimaFechaOrganizadorAdmin =
+  ultimoMensajeInicialOrganizador?.creado_at ||
+  new Date(0).toISOString();
+
+
+// =====================================================
+// MASS - AGREGAR UN MENSAJE SIN RECARGAR EL CHAT
+// =====================================================
+
+const agregarMensajeOrganizadorAdmin =
+async function (mensajeChat) {
+
+  if (
+    !mensajeChat ||
+    String(mensajeChat.conversacion_id) !==
+      conversacionIdOrganizadorActual
+  ) {
+    return;
+  }
+
+  const mensajeId =
+    String(mensajeChat.id || "");
+
+  if (
+    mensajeId &&
+    idsMensajesOrganizadorAdmin.has(mensajeId)
+  ) {
+    return;
+  }
+
+  if (mensajeId) {
+    idsMensajesOrganizadorAdmin.add(
+      mensajeId
+    );
+  }
+
+  /*
+    Retirar el texto “No hay mensajes todavía”
+    cuando llegue el primer mensaje.
+  */
+
+  if (
+    idsMensajesOrganizadorAdmin.size === 1 &&
+    (!mensajes || mensajes.length === 0)
+  ) {
+    historial.innerHTML = "";
+  }
+
+  const esOrganizador =
+    mensajeChat.remitente_tipo ===
+    "organizador";
+
+  const burbuja =
+    document.createElement("div");
+
+  burbuja.style.cssText = `
+    max-width:85%;
+    margin:
+      8px
+      ${esOrganizador ? "0" : "auto"}
+      8px
+      ${esOrganizador ? "auto" : "0"};
+    padding:10px 12px;
+    border:
+      1px solid
+      ${esOrganizador
+        ? "#39ff14"
+        : "#666"};
+    border-radius:12px;
+    background:
+      ${esOrganizador
+        ? "rgba(57,255,20,0.16)"
+        : "#202020"};
+    color:white;
+    text-align:left;
+    overflow-wrap:anywhere;
+  `;
+
+  const texto =
+    document.createElement("div");
+
+  texto.textContent =
+    mensajeChat.mensaje || "";
+
+  const fecha =
+    document.createElement("div");
+
+  fecha.style.cssText = `
+    margin-top:6px;
+    color:#aaa;
+    font-size:11px;
+    text-align:right;
+  `;
+
+  fecha.textContent =
+    mensajeChat.creado_at
+      ? new Date(
+          mensajeChat.creado_at
+        ).toLocaleString()
+      : "";
+
+  burbuja.appendChild(texto);
+  burbuja.appendChild(fecha);
+  historial.appendChild(burbuja);
+
+  historial.scrollTop =
+    historial.scrollHeight;
+
+  if (mensajeChat.creado_at) {
+    ultimaFechaOrganizadorAdmin =
+      mensajeChat.creado_at;
+  }
+
+  /*
+    Como la conversación está abierta,
+    marcar inmediatamente el mensaje del usuario
+    como leído por el organizador.
+  */
+
+  if (
+    mensajeChat.remitente_tipo === "usuario" &&
+    mensajeChat.id
+  ) {
+    const {
+      error: errorLecturaRealtime
+    } = await supabaseClient
+      .from("chat_mensajes")
+      .update({
+        leido_organizador: true
+      })
+      .eq("id", mensajeChat.id);
+
+    if (errorLecturaRealtime) {
+      console.error(
+        "ERROR MARCANDO MENSAJE REALTIME COMO LEÍDO:",
+        errorLecturaRealtime
+      );
+    }
+
+    if (
+      typeof window
+        .actualizarContadorMensajesOrganizador ===
+      "function"
+    ) {
+      await window
+        .actualizarContadorMensajesOrganizador();
+    }
+  }
+};
+
+
+// =====================================================
+// MASS - RECUPERAR MENSAJES PERDIDOS EN IPHONE
+// =====================================================
+
+window.buscarMensajesNuevosChatOrganizadorAdmin =
+async function () {
+
+  if (
+    String(
+      CHAT_CONVERSACION_ORGANIZADOR_ADMIN_ID || ""
+    ) !== conversacionIdOrganizadorActual
+  ) {
+    return;
+  }
+
+  if (
+    !document.body.contains(historial) ||
+    document.visibilityState === "hidden"
+  ) {
+    return;
+  }
+
+  if (
+    window
+      .CHAT_BUSQUEDA_ORGANIZADOR_ADMIN_EN_CURSO ===
+    true
+  ) {
+    return;
+  }
+
+  window
+    .CHAT_BUSQUEDA_ORGANIZADOR_ADMIN_EN_CURSO =
+    true;
+
+  try {
+
+    const {
+      data: mensajesNuevosOrganizador,
+      error: errorMensajesNuevosOrganizador
+    } = await supabaseClient
+      .from("chat_mensajes")
+      .select("*")
+      .eq(
+        "conversacion_id",
+        conversacionIdOrganizadorActual
+      )
+      .gte(
+        "creado_at",
+        ultimaFechaOrganizadorAdmin
+      )
+      .order(
+        "creado_at",
+        {
+          ascending: true
+        }
+      );
+
+    if (errorMensajesNuevosOrganizador) {
+      console.error(
+        "ERROR RECUPERANDO MENSAJES DEL ORGANIZADOR:",
+        errorMensajesNuevosOrganizador
+      );
+
+      return;
+    }
+
+    for (
+      const mensajeNuevoOrganizador
+      of mensajesNuevosOrganizador || []
+    ) {
+      await agregarMensajeOrganizadorAdmin(
+        mensajeNuevoOrganizador
+      );
+    }
+
+  } finally {
+
+    window
+      .CHAT_BUSQUEDA_ORGANIZADOR_ADMIN_EN_CURSO =
+      false;
+  }
+};
+
+
+// =====================================================
+// MASS - CANAL REALTIME DEL ORGANIZADOR
+// =====================================================
+
+window.CHAT_CANAL_REALTIME_ORGANIZADOR_ADMIN =
+  supabaseClient
+    .channel(
+      "chat-organizador-admin-" +
+      conversacionIdOrganizadorActual +
+      "-" +
+      Date.now()
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "chat_mensajes",
+        filter:
+          "conversacion_id=eq." +
+          conversacionIdOrganizadorActual
+      },
+      async (payload) => {
+
+        await agregarMensajeOrganizadorAdmin(
+          payload?.new
+        );
+
+      }
+    )
+    .subscribe(async (status) => {
+
+      console.log(
+        "📡 REALTIME CHAT ORGANIZADOR:",
+        status
+      );
+
+      if (status === "SUBSCRIBED") {
+        await window
+          .buscarMensajesNuevosChatOrganizadorAdmin();
+      }
+
+    });
+
+
+// =====================================================
+// MASS - RESPALDO POR CONSULTA PARA IPHONE
+// =====================================================
+
+window.CHAT_INTERVALO_ORGANIZADOR_ADMIN =
+  setInterval(async () => {
+
+    await window
+      .buscarMensajesNuevosChatOrganizadorAdmin();
+
+  }, 2000);
+
+
+// =====================================================
+// MASS - RECUPERAR AL REGRESAR A SAFARI
+// Se instala una sola vez.
+// =====================================================
+
+if (
+  window
+    .CHAT_EVENTOS_RECUPERACION_ORGANIZADOR_INSTALADOS !==
+  true
+) {
+
+  const recuperarChatOrganizador =
+  async function () {
+
+    if (
+      document.visibilityState !== "visible"
+    ) {
+      return;
+    }
+
+    if (
+      typeof window
+        .buscarMensajesNuevosChatOrganizadorAdmin ===
+      "function"
+    ) {
+      await window
+        .buscarMensajesNuevosChatOrganizadorAdmin();
+    }
+
+    if (
+      typeof window
+        .actualizarContadorMensajesOrganizador ===
+      "function"
+    ) {
+      await window
+        .actualizarContadorMensajesOrganizador();
+    }
+  };
+
+  document.addEventListener(
+    "visibilitychange",
+    recuperarChatOrganizador
+  );
+
+  window.addEventListener(
+    "pageshow",
+    recuperarChatOrganizador
+  );
+
+  window.addEventListener(
+    "focus",
+    recuperarChatOrganizador
+  );
+
+  window.addEventListener(
+    "online",
+    recuperarChatOrganizador
+  );
+
+  window
+    .CHAT_EVENTOS_RECUPERACION_ORGANIZADOR_INSTALADOS =
+    true;
+}	
 
 	const cajaRespuesta = document.createElement("div");
 
