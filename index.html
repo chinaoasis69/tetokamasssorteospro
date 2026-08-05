@@ -21592,7 +21592,12 @@ if (conversacion.usuario_auth_id) {
         usuarioMassConversacion.mass_id
       ).trim();
   }
-}	
+}
+
+// Guardar temporalmente el MASS ID dentro del objeto
+// para usarlo al abrir la conversación.
+
+conversacion.mass_id = massIdCliente;	
 
     const tarjeta = document.createElement("div");
 
@@ -22179,6 +22184,17 @@ if (errorMarcarLeidos) {
     border-bottom:1px solid #333;
   `;
 
+    const bloqueTitulo =
+    document.createElement("div");
+
+  bloqueTitulo.style.cssText = `
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:5px;
+    min-width:0;
+  `;
+
   const titulo =
     document.createElement("div");
 
@@ -22190,6 +22206,28 @@ if (errorMarcarLeidos) {
 
   titulo.textContent =
     "💬 Conversación con el cliente";
+
+  const massIdConversacion =
+    document.createElement("div");
+
+  massIdConversacion.style.cssText = `
+    color:#ccc;
+    font-size:13px;
+    font-weight:normal;
+    overflow-wrap:anywhere;
+  `;
+
+  massIdConversacion.textContent =
+    "🪪 MASS ID: " +
+    String(
+      conversacion.mass_id ||
+      "MASS ID no disponible"
+    ).trim();
+
+  bloqueTitulo.appendChild(titulo);
+  bloqueTitulo.appendChild(
+    massIdConversacion
+  );
 
   const botonVolver =
     document.createElement("button");
@@ -22237,7 +22275,7 @@ if (errorMarcarLeidos) {
     await window.mostrarChatOrganizadorAdmin();
   };
 
-  encabezado.appendChild(titulo);
+  encabezado.appendChild(bloqueTitulo);
   encabezado.appendChild(botonVolver);
   contenedor.appendChild(encabezado);
 
