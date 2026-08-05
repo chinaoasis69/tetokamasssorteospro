@@ -1279,11 +1279,165 @@ Selecciona una rifa
     </div>
 </div>	  
 
-<div id="spinBox" style="border:3px solid #39ff14; box-shadow:0 0 25px #39ff14; border-radius:18px; padding:25px; margin:25px auto; max-width:520px;">
-  <h2>🎰 MASS LUCKY SPIN</h2>
-  <p>Giro promocional sin valor en efectivo</p>
-  <button class="btn-main" onclick="abrirBoletosParaGirar()">🎟️ Ver mis boletos para girar</button>
-  <div id="spinResult" style="margin-top:18px; min-height:35px; color:#39ff14; font-size:24px; font-weight:bold;"></div>
+<div
+  id="spinBox"
+  style="
+    position:relative;
+    overflow:hidden;
+    border:3px solid #39ff14;
+    box-shadow:
+      0 0 25px rgba(57,255,20,.85),
+      inset 0 0 20px rgba(57,255,20,.10);
+    border-radius:22px;
+    padding:25px;
+    margin:25px auto;
+    max-width:520px;
+    background:
+      radial-gradient(circle at top, rgba(57,255,20,.16), transparent 42%),
+      linear-gradient(145deg,#050505,#111,#050505);
+  "
+>
+
+  <div
+    id="luckySpinBrillo"
+    style="
+      position:absolute;
+      inset:-60%;
+      pointer-events:none;
+      background:conic-gradient(
+        transparent,
+        rgba(57,255,20,.18),
+        transparent,
+        rgba(57,255,20,.10),
+        transparent
+      );
+      opacity:.55;
+    "
+  ></div>
+
+  <div style="position:relative;z-index:2;">
+
+    <h2 style="margin-top:0;">
+      🎰 MASS LUCKY SPIN
+    </h2>
+
+    <p style="color:#ddd;">
+      Giro promocional sin valor en efectivo
+    </p>
+
+    <div
+      id="luckySpinResumen"
+      style="
+        margin:15px auto;
+        padding:12px;
+        max-width:390px;
+        border:1px solid rgba(57,255,20,.65);
+        border-radius:14px;
+        background:rgba(0,0,0,.55);
+        color:#ddd;
+        line-height:1.5;
+      "
+    >
+      🎟️ Aquí aparecerán únicamente tus boletos con giro disponible.
+    </div>
+
+    <button
+      id="btnAbrirLuckySpin"
+      class="btn-main"
+      onclick="abrirBoletosParaGirar()"
+      style="
+        width:100%;
+        max-width:330px;
+        padding:15px;
+        font-size:18px;
+        border:2px solid #8cff75;
+        box-shadow:0 0 18px rgba(57,255,20,.55);
+      "
+    >
+      🎡 GIRAR AHORA
+    </button>
+
+    <!-- EVENTO INTERNO -->
+    <div
+      id="luckySpinEvento"
+      style="
+        display:none;
+        margin-top:20px;
+        padding:18px;
+        border:2px solid #39ff14;
+        border-radius:18px;
+        background:rgba(0,0,0,.82);
+        box-shadow:inset 0 0 18px rgba(57,255,20,.18);
+      "
+    >
+
+      <div
+        id="luckySpinEstado"
+        style="
+          color:#39ff14;
+          font-size:19px;
+          font-weight:bold;
+          margin-bottom:14px;
+        "
+      >
+        🎟️ Elige un boleto para participar
+      </div>
+
+      <div
+        id="luckySpinBoletosDisponibles"
+        style="
+          display:grid;
+          grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
+          gap:10px;
+          margin-top:14px;
+        "
+      ></div>
+
+      <div
+        id="luckySpinAnimacion"
+        style="
+          display:none;
+          margin:20px auto 5px;
+          padding:22px 12px;
+          border-radius:18px;
+          background:linear-gradient(135deg,#050505,#172117,#050505);
+          border:2px solid #39ff14;
+          box-shadow:0 0 25px rgba(57,255,20,.65);
+        "
+      >
+        <div
+          id="luckySpinContador"
+          style="
+            font-size:56px;
+            font-weight:900;
+            color:#39ff14;
+            text-shadow:0 0 22px #39ff14;
+          "
+        >
+          🎰
+        </div>
+
+        <div style="margin-top:8px;color:#ddd;font-weight:bold;">
+          Preparando tu giro MASS...
+        </div>
+      </div>
+
+    </div>
+
+    <div
+      id="spinResult"
+      style="
+        margin-top:18px;
+        min-height:35px;
+        color:#39ff14;
+        font-size:24px;
+        font-weight:bold;
+        text-shadow:0 0 12px rgba(57,255,20,.75);
+      "
+    ></div>
+
+  </div>
+
 </div>
 	  
 </div>
@@ -26402,13 +26556,104 @@ async function girarLuckySpin(pinYaValidado = false) {
       "spinResult"
     );
 
+	const luckySpinAnimacion =
+  document.getElementById(
+    "luckySpinAnimacion"
+  );
+
+
+const luckySpinContador =
+  document.getElementById(
+    "luckySpinContador"
+  );
+
+
+const luckySpinEstado =
+  document.getElementById(
+    "luckySpinEstado"
+  );
+
+
+const luckySpinBoletosDisponibles =
+  document.getElementById(
+    "luckySpinBoletosDisponibles"
+  );
+
 
   if (spinResult) {
 
     spinResult.innerText =
       "🎰 Preparando giro seguro...";
   }
+	
+if (luckySpinAnimacion) {
 
+  luckySpinAnimacion.style.display =
+    "block";
+}
+
+
+if (luckySpinEstado) {
+
+  luckySpinEstado.textContent =
+    `🎰 Boleto ${boletoParaGirar.numero}: prepárate para girar`;
+}
+
+
+if (luckySpinContador) {
+
+  luckySpinContador.textContent =
+    "3";
+}
+
+
+await new Promise(resolve => {
+
+  let cuenta = 3;
+
+
+  const intervaloCuenta =
+    setInterval(() => {
+
+      cuenta--;
+
+
+      if (
+        luckySpinContador &&
+        cuenta > 0
+      ) {
+
+        luckySpinContador.textContent =
+          String(cuenta);
+      }
+
+
+      if (cuenta <= 0) {
+
+        clearInterval(
+          intervaloCuenta
+        );
+
+
+        if (luckySpinContador) {
+
+          luckySpinContador.textContent =
+            "🎰";
+        }
+
+
+        if (luckySpinEstado) {
+
+          luckySpinEstado.textContent =
+            "✨ Girando MASS Lucky Spin...";
+        }
+
+
+        resolve();
+      }
+
+    }, 700);
+});
 
   try {
 
@@ -26496,52 +26741,142 @@ async function girarLuckySpin(pinYaValidado = false) {
       de forma segura por Supabase.
     */
 
-    const mensajesAnimacion = [
-      "🎁 Premio",
-      "🎰 MASS",
-      "🍀 Suerte",
-      "⭐ Beneficio",
-      "🎟️ Sorteo",
-      "✨ Girando"
-    ];
+   const mensajesAnimacion = [
+  "🎁 PREMIO",
+  "🎰 MASS",
+  "🍀 SUERTE",
+  "⭐ BENEFICIO",
+  "🎟️ SORTEO",
+  "✨ GIRANDO"
+];
 
 
-    await new Promise(resolve => {
-
-      let vueltas = 0;
-
-      const intervalo =
-        setInterval(() => {
-
-          if (spinResult) {
-
-            spinResult.innerText =
-              mensajesAnimacion[
-                Math.floor(
-                  Math.random() *
-                  mensajesAnimacion.length
-                )
-              ];
-          }
+const simbolosAnimacion = [
+  "🎁",
+  "🎰",
+  "🍀",
+  "⭐",
+  "🎟️",
+  "✨"
+];
 
 
-          vueltas++;
+if (luckySpinAnimacion) {
+
+  luckySpinAnimacion.style.display =
+    "block";
+
+  luckySpinAnimacion.style.transition =
+    "transform .12s ease, box-shadow .12s ease";
+}
 
 
-          if (vueltas >= 30) {
+if (luckySpinBoletosDisponibles) {
 
-            clearInterval(
-              intervalo
-            );
+  luckySpinBoletosDisponibles.style.opacity =
+    ".20";
 
-            resolve();
-          }
-
-        }, 90);
-    });
+  luckySpinBoletosDisponibles.style.pointerEvents =
+    "none";
+}
 
 
-    const nombrePremio =
+if (luckySpinEstado) {
+
+  luckySpinEstado.textContent =
+    "🔥 La suerte está girando...";
+}
+
+
+await new Promise(resolve => {
+
+  let vueltas = 0;
+
+
+  const intervalo =
+    setInterval(() => {
+
+      const posicion =
+        Math.floor(
+          Math.random() *
+          mensajesAnimacion.length
+        );
+
+
+      if (spinResult) {
+
+        spinResult.innerText =
+          mensajesAnimacion[posicion];
+      }
+
+
+      if (luckySpinContador) {
+
+        luckySpinContador.textContent =
+          simbolosAnimacion[posicion];
+      }
+
+
+      if (luckySpinAnimacion) {
+
+        const escala =
+          vueltas % 2 === 0
+            ? "scale(1.035)"
+            : "scale(1)";
+
+
+        luckySpinAnimacion.style.transform =
+          escala;
+
+
+        luckySpinAnimacion.style.boxShadow =
+          vueltas % 2 === 0
+            ? "0 0 42px rgba(57,255,20,.95), inset 0 0 25px rgba(57,255,20,.30)"
+            : "0 0 24px rgba(57,255,20,.55), inset 0 0 16px rgba(57,255,20,.18)";
+      }
+
+
+      vueltas++;
+
+
+      if (vueltas >= 36) {
+
+        clearInterval(
+          intervalo
+        );
+
+
+        if (luckySpinAnimacion) {
+
+          luckySpinAnimacion.style.transform =
+            "scale(1)";
+        }
+
+
+        if (luckySpinContador) {
+
+          luckySpinContador.textContent =
+            "✨";
+        }
+
+
+        if (luckySpinEstado) {
+
+          luckySpinEstado.textContent =
+            "🎁 Revelando tu resultado...";
+        }
+
+
+        setTimeout(
+          resolve,
+          650
+        );
+      }
+
+    }, 100);
+});
+
+   const nombrePremio =
       resultado.premio_nombre ||
       "Sigue participando";
 
@@ -26561,13 +26896,163 @@ async function girarLuckySpin(pinYaValidado = false) {
       true;
 
 
-    if (spinResult) {
+    if (luckySpinAnimacion) {
 
-      spinResult.innerText =
+  luckySpinAnimacion.style.display =
+    "block";
+
+  luckySpinAnimacion.style.transform =
+    "scale(1)";
+
+  luckySpinAnimacion.style.boxShadow =
+    ganoPremio
+      ? `
+          0 0 55px rgba(255,215,0,.95),
+          inset 0 0 30px rgba(255,215,0,.28)
+        `
+      : `
+          0 0 40px rgba(57,255,20,.85),
+          inset 0 0 24px rgba(57,255,20,.22)
+        `;
+}
+
+
+if (luckySpinContador) {
+
+  luckySpinContador.textContent =
+    ganoPremio
+      ? "🏆"
+      : "🍀";
+
+  luckySpinContador.style.color =
+    ganoPremio
+      ? "#ffd700"
+      : "#39ff14";
+
+  luckySpinContador.style.textShadow =
+    ganoPremio
+      ? "0 0 28px #ffd700"
+      : "0 0 24px #39ff14";
+}
+
+
+if (luckySpinEstado) {
+
+  luckySpinEstado.textContent =
+    ganoPremio
+      ? "🎉 ¡MASS Lucky Spin te premió!"
+      : "🍀 Esta vez no cayó premio";
+}
+
+
+if (spinResult) {
+
+  spinResult.innerHTML = "";
+
+
+  const tituloResultado =
+    document.createElement(
+      "div"
+    );
+
+
+  tituloResultado.textContent =
+    ganoPremio
+      ? `🏆 ${nombrePremio}`
+      : "🎟️ Sigue participando";
+
+
+  tituloResultado.style.cssText = `
+    color:${
+      ganoPremio
+        ? "#ffd700"
+        : "#39ff14"
+    };
+    font-size:${
+      ganoPremio
+        ? "30px"
+        : "27px"
+    };
+    font-weight:900;
+    line-height:1.25;
+    text-shadow:
+      0 0 18px
+      ${
         ganoPremio
-          ? `🏆 ${nombrePremio}`
-          : `🎟️ ${nombrePremio}`;
-    }
+          ? "rgba(255,215,0,.90)"
+          : "rgba(57,255,20,.80)"
+      };
+  `;
+
+
+  spinResult.appendChild(
+    tituloResultado
+  );
+
+
+  if (descripcionPremio) {
+
+    const descripcionResultado =
+      document.createElement(
+        "div"
+      );
+
+
+    descripcionResultado.textContent =
+      descripcionPremio;
+
+
+    descripcionResultado.style.cssText = `
+      margin-top:10px;
+      color:#f1f1f1;
+      font-size:15px;
+      font-weight:600;
+      line-height:1.45;
+      text-shadow:none;
+    `;
+
+
+    spinResult.appendChild(
+      descripcionResultado
+    );
+  }
+
+
+  if (
+    ganoPremio &&
+    codigoPremio &&
+    codigoPremio !== "N/A"
+  ) {
+
+    const codigoResultado =
+      document.createElement(
+        "div"
+      );
+
+
+    codigoResultado.textContent =
+      `Código: ${codigoPremio}`;
+
+
+    codigoResultado.style.cssText = `
+      margin-top:12px;
+      padding:9px 12px;
+      color:#ffd700;
+      font-size:15px;
+      font-weight:bold;
+      border:1px solid rgba(255,215,0,.65);
+      border-radius:10px;
+      background:rgba(255,215,0,.08);
+      text-shadow:none;
+      overflow-wrap:anywhere;
+    `;
+
+
+    spinResult.appendChild(
+      codigoResultado
+    );
+  }
+}
 
 
     if (ganoPremio) {
@@ -27114,18 +27599,568 @@ function abrirModalMisBoletos() {
   document.getElementById("modalMisBoletos").style.display = "block";
 }
 
-function abrirBoletosParaGirar() {
-    abrirModalMisBoletos();
+async function abrirBoletosParaGirar() {
+    const spinBox =
+        document.getElementById("spinBox");
 
-    setTimeout(() => {
-        const spinBox = document.getElementById("spinBox");
-        if (spinBox) {
-            spinBox.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
+    const evento =
+        document.getElementById("luckySpinEvento");
+
+    const estado =
+        document.getElementById("luckySpinEstado");
+
+    const contenedorBoletos =
+        document.getElementById(
+            "luckySpinBoletosDisponibles"
+        );
+
+    const animacion =
+        document.getElementById(
+            "luckySpinAnimacion"
+        );
+
+    const resultado =
+        document.getElementById("spinResult");
+
+
+    if (
+        !spinBox ||
+        !evento ||
+        !estado ||
+        !contenedorBoletos
+    ) {
+        console.error(
+            "No fue posible abrir el evento MASS Lucky Spin."
+        );
+
+        return;
+    }
+
+
+    // Limpiar el evento anterior.
+
+    evento.style.display = "block";
+
+    estado.textContent =
+        "🎟️ Buscando tus boletos con giro disponible...";
+
+    contenedorBoletos.innerHTML = "";
+
+    if (animacion) {
+        animacion.style.display = "none";
+    }
+
+    if (resultado) {
+        resultado.innerHTML = "";
+    }
+
+
+    spinBox.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+
+
+await cargarBoletosDisponiblesLuckySpin();
+}
+
+async function cargarBoletosDisponiblesLuckySpin() {
+
+    const estado =
+        document.getElementById(
+            "luckySpinEstado"
+        );
+
+    const contenedor =
+        document.getElementById(
+            "luckySpinBoletosDisponibles"
+        );
+
+    const resumen =
+        document.getElementById(
+            "luckySpinResumen"
+        );
+
+
+    if (!estado || !contenedor) {
+
+        console.error(
+            "No existe el contenedor del evento Lucky Spin."
+        );
+
+        return;
+    }
+
+
+    const telefonoUsuario =
+        (
+            localStorage.getItem(
+                "mass_telefono"
+            ) ||
+            userActual ||
+            ""
+        ).trim();
+
+
+    if (!telefonoUsuario) {
+
+        estado.textContent =
+            "🔐 Inicia sesión para consultar tus giros.";
+
+        contenedor.innerHTML = "";
+
+        if (resumen) {
+
+            resumen.textContent =
+                "Necesitas una sesión activa para participar.";
         }
-    }, 500);
+
+        return;
+    }
+
+
+    estado.textContent =
+        "🎟️ Buscando tus boletos disponibles...";
+
+    contenedor.innerHTML = "";
+
+	contenedor.style.opacity =
+    "1";
+
+contenedor.style.pointerEvents =
+    "auto";
+
+
+    try {
+
+        // =====================================================
+        // 1. OBTENER BOLETOS VENDIDOS Y SIN GIRO UTILIZADO
+        // =====================================================
+
+        const {
+            data: boletosUsuario,
+            error: errorBoletos
+        } =
+            await supabaseClient
+                .from("boletos")
+                .select(
+                    "id, rifa_id, numero, estado, giro_usado, fecha"
+                )
+                .eq(
+                    "telefono",
+                    telefonoUsuario
+                )
+                .eq(
+                    "estado",
+                    "vendido"
+                )
+                .eq(
+                    "giro_usado",
+                    false
+                )
+                .order(
+                    "fecha",
+                    {
+                        ascending: false
+                    }
+                );
+
+
+        if (errorBoletos) {
+
+            throw errorBoletos;
+        }
+
+
+        if (
+            !boletosUsuario ||
+            boletosUsuario.length === 0
+        ) {
+
+            estado.textContent =
+                "🎟️ No tienes giros disponibles.";
+
+            contenedor.innerHTML = `
+                <div
+                    style="
+                        grid-column:1/-1;
+                        padding:16px;
+                        color:#ddd;
+                        border:1px solid rgba(57,255,20,.45);
+                        border-radius:14px;
+                        background:rgba(0,0,0,.45);
+                    "
+                >
+                    Los boletos que ya utilizaron su giro
+                    permanecen visibles únicamente en
+                    <b>Mis Boletos</b>.
+                </div>
+            `;
+
+            if (resumen) {
+
+                resumen.textContent =
+                    "🎟️ No tienes boletos listos para girar.";
+            }
+
+            return;
+        }
+
+
+        // =====================================================
+        // 2. OBTENER LOS SORTEOS RELACIONADOS
+        // =====================================================
+
+        const rifaIds =
+            [
+                ...new Set(
+                    boletosUsuario
+                        .map(
+                            boleto =>
+                                String(
+                                    boleto.rifa_id ||
+                                    ""
+                                )
+                        )
+                        .filter(Boolean)
+                )
+            ];
+
+
+        const {
+            data: sorteos,
+            error: errorSorteos
+        } =
+            await supabaseClient
+                .from("rifas")
+                .select("*")
+                .in(
+                    "id",
+                    rifaIds
+                );
+
+
+        if (errorSorteos) {
+
+            throw errorSorteos;
+        }
+
+
+        const sorteosPorId =
+            new Map(
+                (sorteos || []).map(
+                    sorteo => [
+                        String(sorteo.id),
+                        sorteo
+                    ]
+                )
+            );
+
+
+        // =====================================================
+        // 3. CONSERVAR SOLAMENTE SORTEOS ACTIVOS
+        // =====================================================
+
+        const boletosElegibles =
+            boletosUsuario.filter(
+                boleto => {
+
+                    const sorteo =
+                        sorteosPorId.get(
+                            String(
+                                boleto.rifa_id
+                            )
+                        );
+
+
+                    if (!sorteo) {
+
+                        return false;
+                    }
+
+
+                    const estadoSorteo =
+                        String(
+                            sorteo.estado ||
+                            ""
+                        )
+                            .trim()
+                            .toLowerCase();
+
+
+                    return (
+                        sorteo.activo === true ||
+
+                        estadoSorteo ===
+                            "activa" ||
+
+                        estadoSorteo ===
+                            "activo"
+                    );
+                }
+            );
+
+
+        if (
+            boletosElegibles.length === 0
+        ) {
+
+            estado.textContent =
+                "🏁 No hay sorteos activos con giros disponibles.";
+
+            contenedor.innerHTML = `
+                <div
+                    style="
+                        grid-column:1/-1;
+                        padding:16px;
+                        color:#ddd;
+                        border:1px solid rgba(57,255,20,.45);
+                        border-radius:14px;
+                        background:rgba(0,0,0,.45);
+                    "
+                >
+                    Los boletos de sorteos finalizados
+                    continúan en <b>Mis Boletos</b>,
+                    pero ya no participan en
+                    MASS Lucky Spin.
+                </div>
+            `;
+
+            if (resumen) {
+
+                resumen.textContent =
+                    "🏁 No tienes giros activos disponibles.";
+            }
+
+            return;
+        }
+
+
+        // =====================================================
+        // 4. MOSTRAR LOS BOLETOS ELEGIBLES
+        // =====================================================
+
+        estado.textContent =
+            `🎡 Tienes ${
+                boletosElegibles.length
+            } ${
+                boletosElegibles.length === 1
+                    ? "boleto listo"
+                    : "boletos listos"
+            } para girar`;
+
+
+        if (resumen) {
+
+            resumen.textContent =
+                `🎟️ Giros disponibles: ${
+                    boletosElegibles.length
+                }`;
+        }
+
+
+        contenedor.innerHTML = "";
+
+
+        boletosElegibles.forEach(
+            boleto => {
+
+                const sorteo =
+                    sorteosPorId.get(
+                        String(
+                            boleto.rifa_id
+                        )
+                    );
+
+
+                const numeroBoleto =
+                    String(
+                        boleto.numero ??
+                        ""
+                    ).trim();
+
+
+                const nombreSorteo =
+                    String(
+                        sorteo?.nombre ||
+                        sorteo?.titulo ||
+                        sorteo?.premio ||
+                        "Sorteo activo"
+                    ).trim();
+
+
+                const boton =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                boton.type = "button";
+
+                boton.className =
+                    "btn-main";
+
+
+                boton.style.cssText = `
+                    min-height:105px;
+                    padding:12px 8px;
+                    border:2px solid #39ff14;
+                    border-radius:16px;
+                    background:
+                        linear-gradient(
+                            145deg,
+                            #050505,
+                            #172117,
+                            #050505
+                        );
+                    color:white;
+                    box-shadow:
+                        0 0 14px
+                        rgba(57,255,20,.42);
+                    cursor:pointer;
+                `;
+
+
+                const numero =
+                    document.createElement(
+                        "div"
+                    );
+
+                numero.textContent =
+                    `🎟️ ${numeroBoleto}`;
+
+                numero.style.cssText = `
+                    color:#39ff14;
+                    font-size:22px;
+                    font-weight:900;
+                    margin-bottom:6px;
+                `;
+
+
+                const nombre =
+                    document.createElement(
+                        "div"
+                    );
+
+                nombre.textContent =
+                    nombreSorteo;
+
+                nombre.style.cssText = `
+                    color:#ddd;
+                    font-size:12px;
+                    line-height:1.3;
+                    overflow-wrap:anywhere;
+                `;
+
+
+                const disponible =
+                    document.createElement(
+                        "div"
+                    );
+
+                disponible.textContent =
+                    "🎡 Giro disponible";
+
+                disponible.style.cssText = `
+                    color:#fff;
+                    font-size:12px;
+                    font-weight:bold;
+                    margin-top:7px;
+                `;
+
+
+                boton.appendChild(numero);
+                boton.appendChild(nombre);
+                boton.appendChild(disponible);
+
+
+                boton.onclick =
+                    async function () {
+
+                        const botones =
+                            contenedor.querySelectorAll(
+                                "button"
+                            );
+
+
+                        botones.forEach(
+                            botonLista => {
+
+                                botonLista.disabled =
+                                    true;
+
+                                botonLista.style.opacity =
+                                    ".55";
+                            }
+                        );
+
+
+                        boton.style.opacity =
+                            "1";
+
+
+                        estado.textContent =
+                            `🎰 Preparando el boleto ${numeroBoleto}...`;
+
+
+                        await girarLuckySpinConBoleto(
+                            numeroBoleto,
+                            String(
+                                boleto.rifa_id
+                            )
+                        );
+
+
+                        // Después del giro, volver a cargar
+                        // únicamente los que sigan disponibles.
+
+                        await cargarBoletosDisponiblesLuckySpin();
+                    };
+
+
+                contenedor.appendChild(
+                    boton
+                );
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CARGANDO BOLETOS PARA LUCKY SPIN:",
+            error
+        );
+
+
+        estado.textContent =
+            "❌ No fue posible cargar tus giros.";
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    grid-column:1/-1;
+                    padding:16px;
+                    color:#ffb3b3;
+                    border:1px solid #ff4d4d;
+                    border-radius:14px;
+                    background:rgba(70,0,0,.30);
+                "
+            >
+                ${
+                    error.message ||
+                    "Ocurrió un error consultando los boletos."
+                }
+            </div>
+        `;
+
+
+        if (resumen) {
+
+            resumen.textContent =
+                "No fue posible consultar tus boletos.";
+        }
+    }
 }	
 
 function cerrarModalMisBoletos() {
