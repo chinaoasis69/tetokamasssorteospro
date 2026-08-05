@@ -18700,26 +18700,84 @@ window.actualizarContadorMensajesOrganizador = async function () {
 
 // =====================================================
 // MASS - REALTIME DEL CONTADOR DE MENSAJES DEL ORGANIZADOR
+// Compatible con iPhone y recuperación de conexión
 // =====================================================
-window.iniciarRealtimeContadorMensajesOrganizador = function () {
+
+window.iniciarRealtimeContadorMensajesOrganizador =
+async function () {
+
   const organizadorId =
-    localStorage.getItem("admin_organizador_id") ||
-    localStorage.getItem("organizador_admin_id");
+    localStorage.getItem(
+      "admin_organizador_id"
+    ) ||
+    localStorage.getItem(
+      "organizador_admin_id"
+    );
 
   if (!organizadorId) {
     return;
   }
 
-  if (CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR) {
-    supabaseClient.removeChannel(
-      CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR
-    );
+
+  // ===================================================
+  // MASS - ACTUALIZAR EL CONTADOR
+  // ===================================================
+
+  const refrescarContadorOrganizador =
+  async function () {
+
+    if (
+      typeof window
+        .actualizarContadorMensajesOrganizador !==
+      "function"
+    ) {
+      return;
+    }
+
+    await window
+      .actualizarContadorMensajesOrganizador();
+  };
+
+
+  // ===================================================
+  // MASS - RETIRAR CANAL ANTERIOR
+  // ===================================================
+
+  if (
+    CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR
+  ) {
+
+    try {
+
+      await supabaseClient.removeChannel(
+        CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR
+      );
+
+    } catch (errorCanalAnterior) {
+
+      console.warn(
+        "NO SE PUDO RETIRAR EL CANAL ANTERIOR DEL CONTADOR:",
+        errorCanalAnterior
+      );
+
+    }
+
+    CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR =
+      null;
   }
+
+
+  // ===================================================
+  // MASS - CREAR CANAL REALTIME NUEVO
+  // ===================================================
 
   CHAT_CANAL_REALTIME_CONTADOR_ORGANIZADOR =
     supabaseClient
       .channel(
-        "contador_chat_organizador_" + organizadorId
+        "contador_chat_organizador_" +
+        organizadorId +
+        "_" +
+        Date.now()
       )
       .on(
         "postgres_changes",
@@ -18729,17 +18787,182 @@ window.iniciarRealtimeContadorMensajesOrganizador = function () {
           table: "chat_mensajes"
         },
         async () => {
-          if (
-            typeof window.actualizarContadorMensajesOrganizador ===
-            "function"
-          ) {
-            await window.actualizarContadorMensajesOrganizador();
-          }
+
+          await refrescarContadorOrganizador();
+
         }
       )
-      .subscribe();
-};
+      .subscribe(async (status) => {
 
+        console.log(
+          "📡 REALTIME CONTADOR ORGANIZADOR:",
+          status
+        );
+
+        /*
+          Al conectarse, actualizar inmediatamente.
+          Así recupera mensajes recibidos antes de que
+          el canal terminara de conectarse.
+        */
+
+        if (status === "SUBSCRIBED") {
+
+          await refrescarContadorOrganizador();
+
+        }
+
+        /*
+          Si Safari pierde temporalmente el canal,
+          realizar una consulta de recuperación.
+        */
+
+        if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT"
+        ) {
+
+          setTimeout(async () => {
+
+            if (
+              document.visibilityState ===
+              "visible"
+            ) {
+              await refrescarContadorOrganizador();
+            }
+
+          }, 800);
+
+        }
+
+      });
+
+
+  // ===================================================
+  // MASS - RESPALDO LIGERO PARA IPHONE
+  // ===================================================
+
+  if (
+    window
+      .CHAT_INTERVALO_CONTADOR_ORGANIZADOR
+  ) {
+
+    clearInterval(
+      window
+        .CHAT_INTERVALO_CONTADOR_ORGANIZADOR
+    );
+
+  }
+
+  window.CHAT_INTERVALO_CONTADOR_ORGANIZADOR =
+    setInterval(async () => {
+
+      if (
+        document.visibilityState !==
+        "visible"
+      ) {
+        return;
+      }
+
+      await refrescarContadorOrganizador();
+
+    }, 3000);
+
+
+  // ===================================================
+  // MASS - RECUPERAR AL REGRESAR A SAFARI
+  // Se instala una sola vez
+  // ===================================================
+
+  if (
+    window
+      .CHAT_EVENTOS_CONTADOR_ORGANIZADOR_INSTALADOS !==
+    true
+  ) {
+
+    const recuperarContadorOrganizador =
+    function () {
+
+      if (
+        document.visibilityState !==
+        "visible"
+      ) {
+        return;
+      }
+
+      /*
+        Evitar varias reconexiones simultáneas por
+        focus, pageshow, online y visibilitychange.
+      */
+
+      if (
+        window
+          .CHAT_TIMER_CONTADOR_ORGANIZADOR
+      ) {
+
+        clearTimeout(
+          window
+            .CHAT_TIMER_CONTADOR_ORGANIZADOR
+        );
+
+      }
+
+      window.CHAT_TIMER_CONTADOR_ORGANIZADOR =
+        setTimeout(async () => {
+
+          window
+            .CHAT_TIMER_CONTADOR_ORGANIZADOR =
+            null;
+
+          if (
+            typeof window
+              .iniciarRealtimeContadorMensajesOrganizador ===
+            "function"
+          ) {
+
+            await window
+              .iniciarRealtimeContadorMensajesOrganizador();
+
+          }
+
+        }, 500);
+
+    };
+
+
+    document.addEventListener(
+      "visibilitychange",
+      recuperarContadorOrganizador
+    );
+
+    window.addEventListener(
+      "pageshow",
+      recuperarContadorOrganizador
+    );
+
+    window.addEventListener(
+      "focus",
+      recuperarContadorOrganizador
+    );
+
+    window.addEventListener(
+      "online",
+      recuperarContadorOrganizador
+    );
+
+    window
+      .CHAT_EVENTOS_CONTADOR_ORGANIZADOR_INSTALADOS =
+      true;
+  }
+
+
+  /*
+    Primera actualización inmediata sin esperar
+    a que llegue otro mensaje.
+  */
+
+  await refrescarContadorOrganizador();
+};
+	
 // ==========================================================
 // MASS - VISTA ACTUAL DE CONVERSACIONES DEL ORGANIZADOR
 // ==========================================================
