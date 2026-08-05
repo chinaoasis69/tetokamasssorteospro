@@ -21560,6 +21560,40 @@ if (errorPendientes) {
   );
 }
 
+// ============================================================
+// MASS - IDENTIFICAR AL CLIENTE MEDIANTE SU MASS ID
+// ============================================================
+
+let massIdCliente = "MASS ID no disponible";
+
+if (conversacion.usuario_auth_id) {
+  const {
+    data: usuarioMassConversacion,
+    error: errorUsuarioMassConversacion
+  } = await supabaseClient
+    .from("usuarios_mass")
+    .select("mass_id")
+    .eq(
+      "auth_user_id",
+      conversacion.usuario_auth_id
+    )
+    .maybeSingle();
+
+  if (errorUsuarioMassConversacion) {
+    console.error(
+      "ERROR OBTENIENDO MASS ID DE LA CONVERSACIÓN:",
+      errorUsuarioMassConversacion
+    );
+  } else if (
+    usuarioMassConversacion?.mass_id
+  ) {
+    massIdCliente =
+      String(
+        usuarioMassConversacion.mass_id
+      ).trim();
+  }
+}	
+
     const tarjeta = document.createElement("div");
 
     tarjeta.style.cssText = `
@@ -21618,14 +21652,14 @@ ${
 }
       </div>
 
-      <div
+            <div
         style="
           font-size:13px;
           color:#ccc;
-          word-break:break-all;
+          overflow-wrap:anywhere;
         "
       >
-        📱 Teléfono: ${conversacion.usuario_telefono || "Sin teléfono registrado"}
+        🪪 MASS ID: ${massIdCliente}
       </div>
 
       <div
