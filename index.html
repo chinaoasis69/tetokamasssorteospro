@@ -17971,248 +17971,68 @@ if (errorMarcarMensajesLeidos) {
 }	
 
 // =======================================
-// MASS - REALTIME SEGURO DEL CHAT USUARIO
-// Compatible con iPhone y reconexión
+// MASS - ACTIVAR REALTIME DEL CHAT
 // =======================================
 
-window.programarReconexionChatUsuario = function (
-  espera = 700
-) {
-
-  if (window.CHAT_TIMER_RECONEXION_USUARIO) {
-
-    clearTimeout(
-      window.CHAT_TIMER_RECONEXION_USUARIO
+if (CHAT_CANAL_REALTIME_USUARIO) {
+    supabaseClient.removeChannel(
+        CHAT_CANAL_REALTIME_USUARIO
     );
+}
 
-  }
-
-  window.CHAT_TIMER_RECONEXION_USUARIO =
-    setTimeout(async () => {
-
-      if (
-        document.visibilityState !== "visible" ||
-        !CHAT_PANEL_USUARIO_ABIERTO ||
-        !CHAT_CONVERSACION_USUARIO_ID
-      ) {
-        return;
-      }
-
-      console.log(
-        "🔄 Reconectando chat del usuario..."
-      );
-
-      await window.iniciarRealtimeChatUsuarioSeguro();
-
-      await window.buscarMensajesNuevosChatUsuario();
-
-    }, espera);
-};
-
-
-// =====================================================
-// MASS - CREAR O RENOVAR CANAL REALTIME DEL CHAT
-// =====================================================
-
-window.iniciarRealtimeChatUsuarioSeguro =
-async function () {
-
-  if (!CHAT_CONVERSACION_USUARIO_ID) {
-    return;
-  }
-
-  const conversacionIdActual =
-    String(
-      CHAT_CONVERSACION_USUARIO_ID
-    );
-
-  /*
-    Desconectar y retirar el canal anterior.
-    Esto evita canales duplicados.
-  */
-
-  const canalAnterior =
-    CHAT_CANAL_REALTIME_USUARIO;
-
-  CHAT_CANAL_REALTIME_USUARIO = null;
-
-  if (canalAnterior) {
-
-    try {
-
-      await supabaseClient.removeChannel(
-        canalAnterior
-      );
-
-    } catch (errorRemoviendoCanal) {
-
-      console.warn(
-        "No fue posible retirar el canal anterior:",
-        errorRemoviendoCanal
-      );
-
-    }
-
-  }
-
-  /*
-    Se utiliza un nombre distinto en cada reconexión
-    para que iPhone no reutilice un canal suspendido.
-  */
-
-  const canalNuevo = supabaseClient
+CHAT_CANAL_REALTIME_USUARIO = supabaseClient
     .channel(
-      "chat-usuario-" +
-      conversacionIdActual +
-      "-" +
-      Date.now()
+        "chat-" +
+        CHAT_CONVERSACION_USUARIO_ID
     )
     .on(
-      "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "chat_mensajes",
-        filter:
-          "conversacion_id=eq." +
-          conversacionIdActual
-      },
-      async (payload) => {
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "chat_mensajes",
+            filter:
+                "conversacion_id=eq." +
+                CHAT_CONVERSACION_USUARIO_ID
+        },
+        (payload) => {
+            const mensajeNuevo = payload?.new;
 
-        const mensajeNuevo =
-          payload?.new;
+            if (
+                !mensajeNuevo ||
+                mensajeNuevo.conversacion_id !==
+                    CHAT_CONVERSACION_USUARIO_ID
+            ) {
+                return;
+            }
 
-        if (
-          !mensajeNuevo ||
-          String(
-            mensajeNuevo.conversacion_id
-          ) !== conversacionIdActual
-        ) {
-          return;
-        }
+            if (
+                mensajeNuevo.remitente_tipo ===
+                    "organizador" &&
+                !CHAT_PANEL_USUARIO_ABIERTO
+            ) {
+                CHAT_CONTADOR_MENSAJES_USUARIO++;
 
-        /*
-          Ignorar eventos de una conversación que
-          ya fue cerrada o sustituida.
-        */
+                if (
+                    typeof window
+                        .actualizarContadorChatUsuario ===
+                    "function"
+                ) {
+                    window.actualizarContadorChatUsuario();
+                }
+            }
 
-        if (
-          String(
-            CHAT_CONVERSACION_USUARIO_ID || ""
-          ) !== conversacionIdActual
-        ) {
-          return;
-        }
-
-        if (
-          mensajeNuevo.remitente_tipo ===
-            "organizador" &&
-          !CHAT_PANEL_USUARIO_ABIERTO
-        ) {
-
-          CHAT_CONTADOR_MENSAJES_USUARIO++;
-
-          if (
-            typeof window
-              .actualizarContadorChatUsuario ===
-            "function"
-          ) {
-
-            window.actualizarContadorChatUsuario();
-
-          }
-
-        }
-
-        window.agregarMensajeNuevoChatUsuario(
-          mensajeNuevo
-        );
-
-        if (mensajeNuevo?.creado_at) {
-
-          CHAT_ULTIMA_FECHA_USUARIO =
-            mensajeNuevo.creado_at;
-
-        }
-
-      }
-    )
-    .subscribe(
-      async (status, errorRealtime) => {
-
-        /*
-          Ignorar estados correspondientes a un canal
-          anterior que ya fue reemplazado.
-        */
-
-        if (
-          CHAT_CANAL_REALTIME_USUARIO !==
-          canalNuevo
-        ) {
-          return;
-        }
-
-        console.log(
-          "📡 ESTADO REALTIME CHAT USUARIO:",
-          status
-        );
-
-        if (status === "SUBSCRIBED") {
-
-          if (
-            window.CHAT_TIMER_RECONEXION_USUARIO
-          ) {
-
-            clearTimeout(
-              window.CHAT_TIMER_RECONEXION_USUARIO
+            window.agregarMensajeNuevoChatUsuario(
+                mensajeNuevo
             );
-
-            window.CHAT_TIMER_RECONEXION_USUARIO =
-              null;
-
-          }
-
-          /*
-            Recuperar cualquier mensaje ocurrido
-            durante la reconexión.
-          */
-
-          await window.buscarMensajesNuevosChatUsuario();
-
-          return;
         }
-
-        if (
-          status === "CHANNEL_ERROR" ||
-          status === "TIMED_OUT" ||
-          status === "CLOSED"
-        ) {
-
-          console.error(
-            "REALTIME DEL CHAT DESCONECTADO:",
-            status,
-            errorRealtime
-          );
-
-          window.programarReconexionChatUsuario(
-            1000
-          );
-
-        }
-
-      }
-    );
-
-  CHAT_CANAL_REALTIME_USUARIO =
-    canalNuevo;
-};
-
-
-// =====================================================
-// MASS - INICIAR CANAL DEL CHAT ACTUAL
-// =====================================================
-
-await window.iniciarRealtimeChatUsuarioSeguro();
+    )
+    .subscribe((status) => {
+        console.log(
+            "📡 ESTADO REALTIME CHAT USUARIO:",
+            status
+        );
+    });
 
 
 // =====================================================
@@ -18220,78 +18040,19 @@ await window.iniciarRealtimeChatUsuarioSeguro();
 // =====================================================
 
 if (CHAT_INTERVALO_USUARIO) {
-
-  clearInterval(
-    CHAT_INTERVALO_USUARIO
-  );
-
+    clearInterval(
+        CHAT_INTERVALO_USUARIO
+    );
 }
 
-CHAT_INTERVALO_USUARIO =
-  setInterval(async () => {
-
-    if (
-      !CHAT_PANEL_USUARIO_ABIERTO ||
-      document.visibilityState !== "visible"
-    ) {
-      return;
+CHAT_INTERVALO_USUARIO = setInterval(async () => {
+    if (!CHAT_PANEL_USUARIO_ABIERTO) {
+        return;
     }
 
     await window.buscarMensajesNuevosChatUsuario();
+}, 2000);
 
-  }, 2000);
-
-
-// =====================================================
-// MASS - RECUPERAR CHAT AL REGRESAR AL IPHONE
-// Se instala una sola vez.
-// =====================================================
-
-if (
-  window
-    .CHAT_EVENTOS_RECUPERACION_USUARIO_INSTALADOS !==
-  true
-) {
-
-  const recuperarChatUsuario = function () {
-
-    if (
-      document.visibilityState === "visible" &&
-      CHAT_PANEL_USUARIO_ABIERTO
-    ) {
-
-      window.programarReconexionChatUsuario(
-        150
-      );
-
-    }
-
-  };
-
-  document.addEventListener(
-    "visibilitychange",
-    recuperarChatUsuario
-  );
-
-  window.addEventListener(
-    "pageshow",
-    recuperarChatUsuario
-  );
-
-  window.addEventListener(
-    "focus",
-    recuperarChatUsuario
-  );
-
-  window.addEventListener(
-    "online",
-    recuperarChatUsuario
-  );
-
-  window
-    .CHAT_EVENTOS_RECUPERACION_USUARIO_INSTALADOS =
-    true;
-}
 };
 	
 // ---------------------------------------------------------
@@ -18743,118 +18504,60 @@ if (
 
 // =====================================================
 // MASS - BUSCAR MENSAJES NUEVOS SIN RECARGAR TODO EL CHAT
-// Compatible con iPhone y recuperación de conexión
 // =====================================================
 
 window.buscarMensajesNuevosChatUsuario = async function () {
+    if (
+        !CHAT_CONVERSACION_USUARIO_ID ||
+        !CHAT_ULTIMA_FECHA_USUARIO
+    ) {
+        return;
+    }
 
-  if (!CHAT_CONVERSACION_USUARIO_ID) {
-    return;
-  }
+    const panelChat = document.getElementById(
+        "panelChatOrganizadorUsuario"
+    );
 
-  /*
-    Evita que el intervalo, Realtime y la reconexión
-    hagan la misma consulta simultáneamente.
-  */
-
-  if (window.CHAT_BUSQUEDA_USUARIO_EN_CURSO === true) {
-    return;
-  }
-
-  const panelChat = document.getElementById(
-    "panelChatOrganizadorUsuario"
-  );
-
-  const panelVisible =
-    panelChat &&
-    window.getComputedStyle(panelChat).display !== "none";
-
-  if (
-    !CHAT_PANEL_USUARIO_ABIERTO ||
-    !panelVisible ||
-    document.visibilityState === "hidden"
-  ) {
-    return;
-  }
-
-  window.CHAT_BUSQUEDA_USUARIO_EN_CURSO = true;
-
-  try {
-
-    let consulta = supabaseClient
-      .from("chat_mensajes")
-      .select("*")
-      .eq(
-        "conversacion_id",
-        CHAT_CONVERSACION_USUARIO_ID
-      );
-
-    /*
-      Cuando ya conocemos la fecha del último mensaje,
-      solicitamos únicamente registros posteriores.
-    */
-
-    if (CHAT_ULTIMA_FECHA_USUARIO) {
-
-      consulta = consulta.gt(
-        "creado_at",
-        CHAT_ULTIMA_FECHA_USUARIO
-      );
-
+    if (
+        !panelChat ||
+        panelChat.style.display === "none"
+    ) {
+        return;
     }
 
     const {
-      data: mensajesNuevos,
-      error: errorMensajesNuevos
-    } = await consulta.order(
-      "creado_at",
-      {
-        ascending: true
-      }
-    );
+        data: mensajesNuevos,
+        error: errorMensajesNuevos
+    } = await supabaseClient
+        .from("chat_mensajes")
+        .select("*")
+        .eq(
+            "conversacion_id",
+            CHAT_CONVERSACION_USUARIO_ID
+        )
+        .gte(
+            "creado_at",
+            CHAT_ULTIMA_FECHA_USUARIO
+        )
+        .order("creado_at", {
+            ascending: true
+        });
 
     if (errorMensajesNuevos) {
-
-      console.error(
-        "ERROR BUSCANDO MENSAJES NUEVOS:",
-        errorMensajesNuevos
-      );
-
-      return;
+        console.error(
+            "ERROR BUSCANDO MENSAJES NUEVOS:",
+            errorMensajesNuevos
+        );
+        return;
     }
 
-    for (const mensajeChat of mensajesNuevos || []) {
-
-      window.agregarMensajeNuevoChatUsuario(
-        mensajeChat
-      );
-
-      /*
-        Actualizamos explícitamente la fecha para que
-        la siguiente consulta no repita este mensaje.
-      */
-
-      if (mensajeChat?.creado_at) {
-
-        CHAT_ULTIMA_FECHA_USUARIO =
-          mensajeChat.creado_at;
-
-      }
-
-    }
-
-  } catch (errorInesperado) {
-
-    console.error(
-      "ERROR INESPERADO RECUPERANDO CHAT:",
-      errorInesperado
+    (mensajesNuevos || []).forEach(
+        (mensajeChat) => {
+            window.agregarMensajeNuevoChatUsuario(
+                mensajeChat
+            );
+        }
     );
-
-  } finally {
-
-    window.CHAT_BUSQUEDA_USUARIO_EN_CURSO = false;
-
-  }
 };
 // ==========================================================
 // MASS - ABRIR MENSAJES DE CLIENTES DESDE LA PÁGINA PRINCIPAL
