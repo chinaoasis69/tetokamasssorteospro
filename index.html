@@ -28368,7 +28368,9 @@ const conservarPosicionLuckySpin =
             }
         });
     };
-
+	
+window.MASS_BLOQUEAR_REALTIME_BOLETOS =
+    true;
 
 await girarLuckySpinConBoleto(
   seleccion.numero,
@@ -28422,6 +28424,9 @@ if (
         botonConfirmar.textContent =
             `🎰 GIRAR AHORA — BOLETO ${seleccion.numero}`;
     }
+
+window.MASS_BLOQUEAR_REALTIME_BOLETOS =
+    false;	
 
     return;
 }
@@ -28582,6 +28587,16 @@ setTimeout(
     conservarPosicionLuckySpin,
     80
 );
+
+setTimeout(
+    () => {
+
+        window.MASS_BLOQUEAR_REALTIME_BOLETOS =
+            false;
+
+    },
+    500
+);		
 }	
 
 function cerrarModalMisBoletos() {
@@ -29551,7 +29566,10 @@ function mostrarActividadRealtime(info) {
 
   }
 
-}	
+}
+
+window.MASS_BLOQUEAR_REALTIME_BOLETOS =
+    false;	
 
 let canalRealtimeBoletos = null;
 
@@ -29591,18 +29609,52 @@ if (b.estado === "vendido" || b.estado === "apartado") {
 
 }
 
-        if (RIFA_ID) {
-  await cargarBoletos();
+	if (
+    window.MASS_BLOQUEAR_REALTIME_BOLETOS ===
+    true
+) {
+
+    console.log(
+        "Realtime de boletos omitido durante operación local."
+    );
+
+    return;
 }
 
-await cargarRifasPublicas();		  
+/*
+  Actualizar únicamente la dinámica abierta.
 
-const orgIdActual = localStorage.getItem("organizador_publico_id");
-if (orgIdActual) {
-  await verSorteosDeOrganizador(orgIdActual);
+  No reconstruimos la lista pública de dinámicas
+  ni la lista del organizador porque eso altera
+  la altura de la página y mueve la pantalla.
+*/
+
+if (RIFA_ID) {
+
+    await cargarBoletos();
 }
 
-cargarMisBoletos();
+
+/*
+  Mis Boletos solo se recarga cuando el modal
+  está realmente abierto.
+*/
+
+const modalMisBoletosRealtime =
+    document.getElementById(
+        "modalMisBoletos"
+    );
+
+
+if (
+    modalMisBoletosRealtime &&
+    window.getComputedStyle(
+        modalMisBoletosRealtime
+    ).display !== "none"
+) {
+
+    await cargarMisBoletos();
+}        
       }
     )
     .subscribe((status) => {
