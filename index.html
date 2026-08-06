@@ -1354,7 +1354,7 @@ Selecciona una rifa
         box-shadow:0 0 18px rgba(57,255,20,.55);
       "
     >
-      🎡 GIRAR AHORA
+      🎟️ ELEGIR BOLETO
     </button>
 
     <!-- EVENTO INTERNO -->
@@ -1392,6 +1392,32 @@ Selecciona una rifa
           margin-top:14px;
         "
       ></div>
+
+	<button
+  id="btnConfirmarGiroLuckySpin"
+  type="button"
+  class="btn-main"
+  onclick="confirmarGiroLuckySpinSeleccionado()"
+  style="
+    display:none;
+    width:100%;
+    max-width:360px;
+    margin:20px auto 4px;
+    padding:16px;
+    font-size:18px;
+    font-weight:900;
+    border:2px solid #ffd700;
+    border-radius:15px;
+    background:linear-gradient(135deg,#39ff14,#159b00);
+    color:#fff;
+    box-shadow:
+      0 0 24px rgba(57,255,20,.75),
+      0 0 12px rgba(255,215,0,.45);
+    cursor:pointer;
+  "
+>
+  🎰 GIRAR AHORA
+</button>	
 
       <div
         id="luckySpinAnimacion"
@@ -27599,6 +27625,8 @@ function abrirModalMisBoletos() {
   document.getElementById("modalMisBoletos").style.display = "block";
 }
 
+let boletoLuckySpinSeleccionado = null;	
+
 async function abrirBoletosParaGirar() {
     const spinBox =
         document.getElementById("spinBox");
@@ -27635,6 +27663,28 @@ async function abrirBoletosParaGirar() {
 
         return;
     }
+
+	boletoLuckySpinSeleccionado =
+    null;
+
+
+const botonConfirmar =
+    document.getElementById(
+        "btnConfirmarGiroLuckySpin"
+    );
+
+
+if (botonConfirmar) {
+
+    botonConfirmar.style.display =
+        "none";
+
+    botonConfirmar.disabled =
+        false;
+
+    botonConfirmar.textContent =
+        "🎰 GIRAR AHORA";
+}
 
 
     // Limpiar el evento anterior.
@@ -28075,47 +28125,84 @@ contenedor.style.pointerEvents =
 
 
                 boton.onclick =
-                    async function () {
+    function () {
 
-                        const botones =
-                            contenedor.querySelectorAll(
-                                "button"
-                            );
-
-
-                        botones.forEach(
-                            botonLista => {
-
-                                botonLista.disabled =
-                                    true;
-
-                                botonLista.style.opacity =
-                                    ".55";
-                            }
-                        );
+        const botones =
+            contenedor.querySelectorAll(
+                "button"
+            );
 
 
-                        boton.style.opacity =
-                            "1";
+        botones.forEach(
+            botonLista => {
+
+                botonLista.disabled =
+                    false;
+
+                botonLista.style.opacity =
+                    "1";
+
+                botonLista.style.transform =
+                    "scale(1)";
+
+                botonLista.style.borderColor =
+                    "#39ff14";
+
+                botonLista.style.boxShadow =
+                    "0 0 14px rgba(57,255,20,.42)";
+            }
+        );
 
 
-                        estado.textContent =
-                            `🎰 Preparando el boleto ${numeroBoleto}...`;
+        boletoLuckySpinSeleccionado = {
+            numero:
+                numeroBoleto,
+
+            rifaId:
+                String(
+                    boleto.rifa_id
+                ),
+
+            boton:
+                boton
+        };
 
 
-                        await girarLuckySpinConBoleto(
-                            numeroBoleto,
-                            String(
-                                boleto.rifa_id
-                            )
-                        );
+        boton.style.transform =
+            "scale(1.045)";
+
+        boton.style.borderColor =
+            "#ffd700";
+
+        boton.style.boxShadow =
+            `
+                0 0 28px rgba(255,215,0,.90),
+                inset 0 0 16px rgba(255,215,0,.14)
+            `;
 
 
-                        // Después del giro, volver a cargar
-                        // únicamente los que sigan disponibles.
+        estado.textContent =
+            `✅ Boleto ${numeroBoleto} seleccionado`;
 
-                        await cargarBoletosDisponiblesLuckySpin();
-                    };
+
+        const botonConfirmar =
+            document.getElementById(
+                "btnConfirmarGiroLuckySpin"
+            );
+
+
+        if (botonConfirmar) {
+
+            botonConfirmar.style.display =
+                "block";
+
+            botonConfirmar.disabled =
+                false;
+
+            botonConfirmar.textContent =
+                `🎰 GIRAR AHORA — BOLETO ${numeroBoleto}`;
+        }
+    };
 
 
                 contenedor.appendChild(
@@ -28160,6 +28247,78 @@ contenedor.style.pointerEvents =
             resumen.textContent =
                 "No fue posible consultar tus boletos.";
         }
+    }
+}
+
+async function confirmarGiroLuckySpinSeleccionado() {
+
+    const botonConfirmar =
+        document.getElementById(
+            "btnConfirmarGiroLuckySpin"
+        );
+
+
+    if (!boletoLuckySpinSeleccionado) {
+
+        mostrarNotificacion(
+            "warning",
+            "Selecciona un boleto",
+            "Primero elige el número que deseas utilizar.",
+            3500
+        );
+
+        return;
+    }
+
+
+    const seleccion = {
+        ...boletoLuckySpinSeleccionado
+    };
+
+
+    if (botonConfirmar) {
+
+        botonConfirmar.disabled =
+            true;
+
+        botonConfirmar.textContent =
+            `🎰 GIRANDO BOLETO ${seleccion.numero}...`;
+    }
+
+
+    if (seleccion.boton) {
+
+        seleccion.boton.disabled =
+            true;
+    }
+
+
+    await girarLuckySpinConBoleto(
+        seleccion.numero,
+        seleccion.rifaId
+    );
+
+
+    /*
+      No recargamos inmediatamente la lista.
+      Así la pantalla permanece en el resultado
+      y no se desplaza hacia arriba.
+    */
+
+    boletoLuckySpinSeleccionado =
+        null;
+
+
+    if (botonConfirmar) {
+
+        botonConfirmar.style.display =
+            "none";
+
+        botonConfirmar.disabled =
+            false;
+
+        botonConfirmar.textContent =
+            "🎰 GIRAR AHORA";
     }
 }	
 
