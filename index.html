@@ -29393,12 +29393,31 @@ function mostrarActividadRealtime(info) {
   }
 
 
-  const telefono =
-    String(
-      info?.telefono || "----"
-    )
-      .trim()
-      .slice(-4);
+  const massIdRecibido =
+  String(
+    info?.massId || ""
+  ).trim();
+
+
+const identificadorActividad =
+  /^MASS-\d+$/i.test(
+    massIdRecibido
+  )
+    ? massIdRecibido.toUpperCase()
+    : "Usuario MASS";
+
+
+const identificadorSeguro =
+  identificadorActividad.replace(
+    /[&<>"']/g,
+    caracter => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[caracter]
+  );
 
 
   const numeroOficial =
@@ -29482,7 +29501,7 @@ function mostrarActividadRealtime(info) {
 
 
   const clavePaquete =
-    `${telefono}-${numeroBaseTexto}`;
+  `${identificadorActividad}-${numeroBaseTexto}`;
 
 
   /*
@@ -29544,9 +29563,9 @@ function mostrarActividadRealtime(info) {
         "
       >
         ${icono}
-        Usuario ****${telefono}
-        ${accion} el boleto
-        <b>${numeroBaseTexto}</b>
+🪪 ${identificadorSeguro}
+${accion} el boleto
+<b>${numeroBaseTexto}</b>
       </div>
     `;
 
@@ -29561,9 +29580,9 @@ function mostrarActividadRealtime(info) {
       >
         <div>
           ${icono}
-          Usuario ****${telefono}
-          ${accion} el paquete
-          <b>${numeroBaseTexto}</b>
+🪪 ${identificadorSeguro}
+${accion} el paquete
+<b>${numeroBaseTexto}</b>
         </div>
 
         <div
@@ -29646,16 +29665,65 @@ if (!b || String(b.rifa_id) !== String(RIFA_ID)) {
   return;
 }
 
-if (b.estado === "vendido" || b.estado === "apartado") {
+if (
+    b.estado === "vendido" ||
+    b.estado === "apartado"
+) {
 
-    const ultimos4 = (b.telefono || "").slice(-4);
+    let massIdActividad =
+        "Usuario MASS";
+
+
+    const {
+        data: massIdObtenido,
+        error: errorMassIdActividad
+    } =
+        await supabaseClient.rpc(
+            "obtener_mass_id_actividad_boleto",
+            {
+                p_boleto_id:
+                    b.id,
+
+                p_rifa_id:
+                    b.rifa_id
+            }
+        );
+
+
+    if (errorMassIdActividad) {
+
+        console.error(
+            "ERROR OBTENIENDO MASS ID PARA ACTIVIDAD:",
+            errorMassIdActividad
+        );
+
+    } else {
+
+        const massIdLimpio =
+            String(
+                massIdObtenido ||
+                ""
+            ).trim();
+
+
+        if (massIdLimpio) {
+
+            massIdActividad =
+                massIdLimpio;
+        }
+    }
+
 
     mostrarActividadRealtime({
-        numero: b.numero,
-        telefono: ultimos4,
-        estado: b.estado
-    });
+        numero:
+            b.numero,
 
+        massId:
+            massIdActividad,
+
+        estado:
+            b.estado
+    });
 }
 
 	if (
