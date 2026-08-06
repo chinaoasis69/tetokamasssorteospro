@@ -26402,7 +26402,10 @@ boletoSeleccionado.estado = "apartado";
 cargarBoletos();
 }
 
-async function girarLuckySpin(pinYaValidado = false) {
+async function girarLuckySpin(
+  pinYaValidado = false,
+  mantenerVistaLuckySpin = false
+) {
 
   const digitosRifa =
     boletos.length
@@ -27113,28 +27116,51 @@ if (spinResult) {
 
     } else {
 
-      mostrarNotificacion(
-        "info",
-        "🎟️ Sigue participando",
-        descripcionPremio ||
-        "No ganaste premio esta vez. ¡Mucha suerte en tu próximo boleto!",
-        5000
-      );
-    }
+  /*
+    Dentro del evento interactivo el resultado
+    ya aparece directamente en MASS Lucky Spin.
+
+    Conservamos la notificación solamente para
+    el flujo anterior fuera de esta tarjeta.
+  */
+
+  if (!mantenerVistaLuckySpin) {
+
+    mostrarNotificacion(
+      "info",
+      "🎟️ Sigue participando",
+      descripcionPremio ||
+      "No ganaste premio esta vez. ¡Mucha suerte en tu próximo boleto!",
+      5000
+    );
+  }
+}
 
 
     boletoParaGirar.giro_usado =
-      true;
+  true;
 
-    boletoSeleccionado =
-      null;
+boletoSeleccionado =
+  null;
 
 
-    await cargarBoletos();
+/*
+  En el evento interno de MASS Lucky Spin
+  no reconstruimos la página ni los modales.
 
-    await cargarMisBoletos();
+  Al volver a presionar ELEGIR BOLETO,
+  cargarBoletosDisponiblesLuckySpin()
+  consultará directamente los datos nuevos.
+*/
 
-    await cargarHistorialPremios();
+if (!mantenerVistaLuckySpin) {
+
+  await cargarBoletos();
+
+  await cargarMisBoletos();
+
+  await cargarHistorialPremios();
+}
 
 
   } catch (errorInesperado) {
@@ -27170,7 +27196,8 @@ if (spinResult) {
 
 async function girarLuckySpinConBoleto(
   numero,
-  rifaId
+  rifaId,
+  mantenerVistaLuckySpin = false
 ) {
 
   const numeroTexto =
@@ -27273,8 +27300,9 @@ async function girarLuckySpinConBoleto(
 
 
   await girarLuckySpin(
-    true
-  );
+  true,
+  mantenerVistaLuckySpin
+);
 }	
 	
 async function cargarMisBoletos(){
@@ -28343,8 +28371,9 @@ const conservarPosicionLuckySpin =
 
 
 await girarLuckySpinConBoleto(
-    seleccion.numero,
-    seleccion.rifaId
+  seleccion.numero,
+  seleccion.rifaId,
+  true
 );
 
 
