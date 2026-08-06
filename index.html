@@ -28293,33 +28293,266 @@ async function confirmarGiroLuckySpinSeleccionado() {
     }
 
 
-    await girarLuckySpinConBoleto(
-        seleccion.numero,
-        seleccion.rifaId
+    const spinBox =
+    document.getElementById(
+        "spinBox"
     );
 
 
-    /*
-      No recargamos inmediatamente la lista.
-      Así la pantalla permanece en el resultado
-      y no se desplaza hacia arriba.
-    */
+const posicionVisualSpinBox =
+    spinBox
+        ? spinBox.getBoundingClientRect().top
+        : null;
 
-    boletoLuckySpinSeleccionado =
-        null;
 
+/*
+  Conserva la tarjeta en la misma posición
+  aunque se actualicen elementos de la página.
+*/
+
+const conservarPosicionLuckySpin =
+    function () {
+
+        requestAnimationFrame(() => {
+
+            if (
+                !spinBox ||
+                posicionVisualSpinBox === null
+            ) {
+                return;
+            }
+
+
+            const diferencia =
+                spinBox.getBoundingClientRect().top -
+                posicionVisualSpinBox;
+
+
+            if (
+                Math.abs(diferencia) > 1
+            ) {
+
+                window.scrollBy({
+                    top: diferencia,
+                    left: 0,
+                    behavior: "auto"
+                });
+            }
+        });
+    };
+
+
+await girarLuckySpinConBoleto(
+    seleccion.numero,
+    seleccion.rifaId
+);
+
+
+/*
+  Evitar que cualquier actualización visual
+  mueva la pantalla hacia arriba.
+*/
+
+conservarPosicionLuckySpin();
+
+
+/*
+  Confirmar que Supabase realmente marcó
+  el giro como utilizado antes de cerrar.
+*/
+
+const {
+    data: boletoVerificado,
+    error: errorVerificacion
+} =
+    await supabaseClient
+        .from("boletos")
+        .select("giro_usado")
+        .eq(
+            "rifa_id",
+            seleccion.rifaId
+        )
+        .eq(
+            "numero",
+            seleccion.numero
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+if (
+    errorVerificacion ||
+    boletoVerificado?.giro_usado !== true
+) {
 
     if (botonConfirmar) {
-
-        botonConfirmar.style.display =
-            "none";
 
         botonConfirmar.disabled =
             false;
 
         botonConfirmar.textContent =
-            "🎰 GIRAR AHORA";
+            `🎰 GIRAR AHORA — BOLETO ${seleccion.numero}`;
     }
+
+    return;
+}
+
+
+/*
+  Mantener el resultado visible durante
+  tres segundos completos.
+*/
+
+await new Promise(resolve => {
+
+    setTimeout(
+        resolve,
+        3000
+    );
+});
+
+
+const evento =
+    document.getElementById(
+        "luckySpinEvento"
+    );
+
+
+const animacion =
+    document.getElementById(
+        "luckySpinAnimacion"
+    );
+
+
+const contador =
+    document.getElementById(
+        "luckySpinContador"
+    );
+
+
+const estado =
+    document.getElementById(
+        "luckySpinEstado"
+    );
+
+
+const contenedor =
+    document.getElementById(
+        "luckySpinBoletosDisponibles"
+    );
+
+
+const resultado =
+    document.getElementById(
+        "spinResult"
+    );
+
+
+const resumen =
+    document.getElementById(
+        "luckySpinResumen"
+    );
+
+
+/*
+  Cerrar y restaurar el evento.
+*/
+
+if (evento) {
+
+    evento.style.display =
+        "none";
+}
+
+
+if (animacion) {
+
+    animacion.style.display =
+        "none";
+
+    animacion.style.transform =
+        "scale(1)";
+
+    animacion.style.boxShadow =
+        "0 0 25px rgba(57,255,20,.65)";
+}
+
+
+if (contador) {
+
+    contador.textContent =
+        "🎰";
+
+    contador.style.color =
+        "#39ff14";
+
+    contador.style.textShadow =
+        "0 0 22px #39ff14";
+}
+
+
+if (estado) {
+
+    estado.textContent =
+        "🎟️ Elige un boleto para participar";
+}
+
+
+if (contenedor) {
+
+    contenedor.innerHTML =
+        "";
+
+    contenedor.style.opacity =
+        "1";
+
+    contenedor.style.pointerEvents =
+        "auto";
+}
+
+
+if (resultado) {
+
+    resultado.innerHTML =
+        "";
+}
+
+
+if (resumen) {
+
+    resumen.textContent =
+        "🎟️ Aquí aparecerán únicamente tus boletos con giro disponible.";
+}
+
+
+boletoLuckySpinSeleccionado =
+    null;
+
+
+if (botonConfirmar) {
+
+    botonConfirmar.style.display =
+        "none";
+
+    botonConfirmar.disabled =
+        false;
+
+    botonConfirmar.textContent =
+        "🎰 GIRAR AHORA";
+}
+
+
+/*
+  Aplicar nuevamente la compensación después
+  de cerrar el panel y cambiar su altura.
+*/
+
+conservarPosicionLuckySpin();
+
+setTimeout(
+    conservarPosicionLuckySpin,
+    80
+);
 }	
 
 function cerrarModalMisBoletos() {
