@@ -27649,8 +27649,51 @@ function cerrarModalBeneficios() {
   document.getElementById("modalBeneficios").style.display = "none";
 }
 
-function abrirModalMisBoletos() {
-  document.getElementById("modalMisBoletos").style.display = "block";
+async function abrirModalMisBoletos() {
+
+    const modal =
+        document.getElementById(
+            "modalMisBoletos"
+        );
+
+
+    const contenedor =
+        document.getElementById(
+            "misBoletos"
+        );
+
+
+    if (!modal) {
+
+        console.error(
+            "No existe el modal Mis Boletos."
+        );
+
+        return;
+    }
+
+
+    modal.style.display =
+        "block";
+
+
+    if (contenedor) {
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:20px;
+                    text-align:center;
+                    color:#ddd;
+                "
+            >
+                ⏳ Actualizando tus boletos...
+            </div>
+        `;
+    }
+
+
+    await cargarMisBoletos();
 }
 
 let boletoLuckySpinSeleccionado = null;	
@@ -28431,6 +28474,12 @@ window.MASS_BLOQUEAR_REALTIME_BOLETOS =
     return;
 }
 
+mostrarNotificacion(
+    "success",
+    "🎟️ Giro registrado",
+    `El boleto ${seleccion.numero} utilizó correctamente su giro MASS Lucky Spin.`,
+    3500
+);
 
 /*
   Mantener el resultado visible durante
