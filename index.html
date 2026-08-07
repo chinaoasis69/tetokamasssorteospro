@@ -23917,7 +23917,7 @@ async function cargarBoletos() {
     supabaseClient
       .from("boletos")
       .select(
-        "id, rifa_id, numero, estado, telefono, nombre, pin_giro, giro_usado",
+        "id, rifa_id, numero, estado",
         {
           count: "exact"
         }
