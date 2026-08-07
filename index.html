@@ -14031,18 +14031,18 @@ async function consultarPaquetesSeleccionadosDesdeSupabase(
   }
 
   const {
-    data,
-    error
-  } = await supabaseClient
-    .from("boletos")
-    .select(
-      "id, rifa_id, numero, estado, telefono, nombre, pin_giro, giro_usado"
-    )
-    .eq("rifa_id", RIFA_ID)
-    .in(
-      "numero",
-      configuracion.numerosTexto
-    );
+  data,
+  error
+} = await supabaseClient
+  .from("boletos")
+  .select(
+    "id, rifa_id, numero, estado"
+  )
+  .eq("rifa_id", RIFA_ID)
+  .in(
+    "numero",
+    configuracion.numerosTexto
+  );
 
   const boletosPaquete =
     Array.isArray(data)
@@ -25083,8 +25083,8 @@ async function buscarNumeroDirectoEnSupabase(
       await supabaseClient
         .from("boletos")
         .select(
-          "id, rifa_id, numero, estado, telefono, nombre"
-        )
+  "id, rifa_id, numero, estado"
+)
         .eq(
           "rifa_id",
           RIFA_ID
