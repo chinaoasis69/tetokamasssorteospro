@@ -15826,7 +15826,7 @@ async function verSorteosDeOrganizador(orgId){
 for (const r of rifasOrg) {
   const { count, error } = await supabaseClient
     .from("boletos")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("rifa_id", r.id)
     .eq("estado", "vendido");
 
@@ -15836,7 +15836,7 @@ for (const r of rifasOrg) {
 for (const r of rifasOrg) {
   const { count, error } = await supabaseClient
     .from("boletos")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("rifa_id", r.id)
     .eq("estado", "apartado");
 
