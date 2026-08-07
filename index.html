@@ -29651,10 +29651,16 @@ function iniciarRealtime() {
     .on(
       "postgres_changes",
       {
-        event: "*",
-        schema: "public",
-        table: "boletos"
-      },
+  event: "*",
+  schema: "public",
+  table: "boletos",
+  select: [
+    "id",
+    "rifa_id",
+    "numero",
+    "estado"
+  ]
+},
       async (payload) => {
         console.log("🔥 Cambio realtime boletos:", payload);
 
