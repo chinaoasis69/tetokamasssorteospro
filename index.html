@@ -23392,7 +23392,18 @@ document.getElementById("precioRifa").innerText =
 
         window.rifaSeleccionada = rifa;
 
-		actualizarResumenCompra();
+/*
+  Cargar el historial público reciente
+  y después activar los canales de esta rifa.
+*/
+
+await cargarActividadPublicaRifa(
+  rifa.id
+);
+
+iniciarRealtime();
+
+actualizarResumenCompra();
 
         document.getElementById("fechaRifa").innerText =
             `📅 Sorteo: ${formatearFechaCorta(rifa.fecha_sorteo || rifa.fecha || "")}`;
@@ -23487,7 +23498,13 @@ if (cardSorteo) {
     if(zonaRifa) zonaRifa.style.display = "none";
 
     RIFA_ID = null;
-    window.rifaSeleccionada = null;
+window.rifaSeleccionada = null;
+
+/*
+  Retirar los canales de la dinámica cerrada.
+*/
+
+iniciarRealtime();
 
 if (lista) {
   setTimeout(() => {
@@ -29712,149 +29729,585 @@ window.MASS_BLOQUEAR_REALTIME_BOLETOS =
     false;	
 
 let canalRealtimeBoletos = null;
+let canalRealtimeActividadSorteo = null;
 
-function iniciarRealtime() {
-  if (canalRealtimeBoletos) {
-    supabaseClient.removeChannel(canalRealtimeBoletos);
+
+/*
+  Escapar cualquier texto antes de colocarlo
+  dentro de Actividad en vivo.
+*/
+
+function escaparTextoActividadPublica(valor) {
+
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/*
+  Mostrar exclusivamente premios reales
+  obtenidos mediante MASS Lucky Spin.
+*/
+
+function mostrarPremioLuckySpinActividad(
+  registro
+) {
+
+  const massIdRecibido =
+    String(
+      registro?.mass_id || ""
+    ).trim();
+
+
+  const massIdSeguro =
+    escaparTextoActividadPublica(
+
+      /^MASS-\d+$/i.test(
+        massIdRecibido
+      )
+
+        ? massIdRecibido.toUpperCase()
+
+        : "Usuario MASS"
+    );
+
+
+  const numeroSeguro =
+    escaparTextoActividadPublica(
+
+      String(
+        registro?.numero || ""
+      ).trim()
+    );
+
+
+  const premioOriginal =
+    String(
+      registro?.premio_nombre || ""
+    ).trim();
+
+
+  const premioSeguro =
+    escaparTextoActividadPublica(
+      premioOriginal
+    );
+
+
+  /*
+    Un giro sin premio no debe mostrarse.
+  */
+
+  if (
+    !numeroSeguro ||
+    !premioSeguro
+  ) {
+    return;
   }
 
-  canalRealtimeBoletos = supabaseClient
-    .channel("realtime_boletos")
-    .on(
-      "postgres_changes",
-      {
-  event: "*",
-  schema: "public",
-  table: "boletos",
-  select: [
-    "id",
-    "rifa_id",
-    "numero",
-    "estado"
-  ]
-},
-      async (payload) => {
-        console.log("🔥 Cambio realtime boletos:", payload);
 
-		  const b = payload.new;
+  /*
+    La identificación del giro evita
+    mostrar dos veces el mismo premio.
+  */
 
-// Solo mostrar actividad si el boleto pertenece a la rifa abierta
-if (!b || String(b.rifa_id) !== String(RIFA_ID)) {
-  return;
+  const clavePremio =
+
+    "premio-" +
+
+    String(
+
+      registro?.origen_giro_id ||
+
+      registro?.id ||
+
+      `${massIdRecibido}-${numeroSeguro}-${premioOriginal}`
+    );
+
+
+  const premioYaMostrado =
+    actividadRealtime.some(
+
+      actividad =>
+        actividad.clavePaquete ===
+        clavePremio
+    );
+
+
+  if (premioYaMostrado) {
+    return;
+  }
+
+
+  const contenido = `
+
+    <div
+      style="
+        margin:10px 0;
+        line-height:1.5;
+        color:#ffd700;
+      "
+    >
+      🏆 🪪 ${massIdSeguro}
+      ganó <b>${premioSeguro}</b>
+      con el boleto <b>${numeroSeguro}</b>
+    </div>
+
+  `;
+
+
+  actividadRealtime.unshift({
+
+    clavePaquete:
+      clavePremio,
+
+    estado:
+      "premio_lucky_spin",
+
+    contenido
+  });
+
+
+  actividadRealtime =
+    actividadRealtime.slice(
+      0,
+      5
+    );
+
+
+  const box =
+    document.getElementById(
+      "actividadLive"
+    );
+
+
+  if (box) {
+
+    box.innerHTML =
+      actividadRealtime
+        .map(
+          actividad =>
+            actividad.contenido
+        )
+        .join("");
+  }
 }
 
-if (
-    b.estado === "vendido" ||
-    b.estado === "apartado"
+
+/*
+  Procesar solamente registros provenientes
+  de actividad_sorteo_publica.
+*/
+
+function procesarActividadPublicaSegura(
+  registro
 ) {
 
-    let massIdActividad =
-        "Usuario MASS";
+  if (
+    !registro ||
+    !RIFA_ID ||
+    String(registro.rifa_id) !==
+      String(RIFA_ID)
+  ) {
+    return;
+  }
 
 
-    const {
-        data: massIdObtenido,
-        error: errorMassIdActividad
-    } =
-        await supabaseClient.rpc(
-            "obtener_mass_id_actividad_boleto",
-            {
-                p_boleto_id:
-                    b.id,
-
-                p_rifa_id:
-                    b.rifa_id
-            }
-        );
+  const accion =
+    String(
+      registro.accion || ""
+    )
+      .trim()
+      .toLowerCase();
 
 
-    if (errorMassIdActividad) {
+  /*
+    Compras y reservaciones reales.
 
-        console.error(
-            "ERROR OBTENIENDO MASS ID PARA ACTIVIDAD:",
-            errorMassIdActividad
-        );
+    Se reutiliza el agrupamiento por modalidad
+    que ya funciona en mostrarActividadRealtime().
+  */
 
-    } else {
-
-        const massIdLimpio =
-            String(
-                massIdObtenido ||
-                ""
-            ).trim();
-
-
-        if (massIdLimpio) {
-
-            massIdActividad =
-                massIdLimpio;
-        }
-    }
-
+  if (
+    accion === "vendido" ||
+    accion === "apartado"
+  ) {
 
     mostrarActividadRealtime({
-        numero:
-            b.numero,
 
-        massId:
-            massIdActividad,
+      numero:
+        registro.numero,
 
-        estado:
-            b.estado
+      massId:
+        registro.mass_id,
+
+      estado:
+        accion
     });
+
+
+    return;
+  }
+
+
+  /*
+    Premio real de MASS Lucky Spin.
+  */
+
+  if (
+    accion ===
+    "premio_lucky_spin"
+  ) {
+
+    mostrarPremioLuckySpinActividad(
+      registro
+    );
+  }
 }
 
-	if (
-    window.MASS_BLOQUEAR_REALTIME_BOLETOS ===
-    true
+
+/*
+  Cargar la actividad reciente cuando
+  se abre una dinámica.
+
+  La consulta se realiza únicamente sobre
+  la tabla pública segura.
+*/
+
+async function cargarActividadPublicaRifa(
+  rifaId = RIFA_ID
 ) {
 
-    console.log(
-        "Realtime de boletos omitido durante operación local."
+  const rifaConsultadaId =
+    String(
+      rifaId || ""
+    ).trim();
+
+
+  if (!rifaConsultadaId) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "actividad_sorteo_publica"
+      )
+      .select(`
+        id,
+        origen_actividad_id,
+        origen_giro_id,
+        rifa_id,
+        numero,
+        accion,
+        mass_id,
+        premio_nombre,
+        created_at
+      `)
+      .eq(
+        "rifa_id",
+        rifaConsultadaId
+      )
+      .order(
+        "created_at",
+        {
+          ascending: false
+        }
+      )
+      .limit(100);
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO ACTIVIDAD PÚBLICA:",
+      error
     );
 
     return;
+  }
+
+
+  /*
+    Ignorar la respuesta si el usuario
+    abrió otra dinámica mientras se consultaba.
+  */
+
+  if (
+    String(RIFA_ID) !==
+    rifaConsultadaId
+  ) {
+    return;
+  }
+
+
+  actividadRealtime = [];
+
+
+  /*
+    Procesar de más antiguo a más reciente
+    para conservar el orden correcto
+    y reemplazar una reserva por su compra.
+  */
+
+  const registros =
+    Array.isArray(data)
+
+      ? [...data].reverse()
+
+      : [];
+
+
+  registros.forEach(
+    procesarActividadPublicaSegura
+  );
+
+
+  if (
+    registros.length === 0
+  ) {
+
+    const box =
+      document.getElementById(
+        "actividadLive"
+      );
+
+
+    if (box) {
+
+      box.innerHTML =
+        "Esperando movimientos...";
+    }
+  }
 }
 
-/*
-  Actualizar únicamente la dinámica abierta.
-
-  No reconstruimos la lista pública de dinámicas
-  ni la lista del organizador porque eso altera
-  la altura de la página y mueve la pantalla.
-*/
-
-if (RIFA_ID) {
-
-    await cargarBoletos();
-}
-
 
 /*
-  Mis Boletos solo se recarga cuando el modal
-  está realmente abierto.
+  INICIAR LOS DOS CANALES REALTIME.
+
+  1. boletos:
+     solamente cuadrícula y Mis Boletos.
+
+  2. actividad_sorteo_publica:
+     exclusivamente Actividad en vivo.
 */
 
-const modalMisBoletosRealtime =
-    document.getElementById(
-        "modalMisBoletos"
+function iniciarRealtime() {
+
+  /*
+    Retirar los canales anteriores.
+  */
+
+  if (canalRealtimeBoletos) {
+
+    supabaseClient.removeChannel(
+      canalRealtimeBoletos
     );
 
+    canalRealtimeBoletos = null;
+  }
 
-if (
-    modalMisBoletosRealtime &&
-    window.getComputedStyle(
-        modalMisBoletosRealtime
-    ).display !== "none"
-) {
 
-    await cargarMisBoletos();
-}        
-      }
-    )
-    .subscribe((status) => {
-      console.log("📡 Realtime boletos:", status);
-    });
+  if (
+    canalRealtimeActividadSorteo
+  ) {
+
+    supabaseClient.removeChannel(
+      canalRealtimeActividadSorteo
+    );
+
+    canalRealtimeActividadSorteo =
+      null;
+  }
+
+
+  const rifaRealtimeId =
+    String(
+      RIFA_ID || ""
+    ).trim();
+
+
+  /*
+    Todavía no existe una dinámica abierta.
+  */
+
+  if (!rifaRealtimeId) {
+    return;
+  }
+
+
+  /*
+    CANAL 1:
+    CAMBIOS VISUALES DE BOLETOS
+  */
+
+  canalRealtimeBoletos =
+    supabaseClient
+
+      .channel(
+        `realtime_boletos_${rifaRealtimeId}`
+      )
+
+      .on(
+        "postgres_changes",
+
+        {
+          event: "*",
+          schema: "public",
+          table: "boletos",
+
+          filter:
+            `rifa_id=eq.${rifaRealtimeId}`
+        },
+
+        async (payload) => {
+
+          console.log(
+            "🔥 Cambio realtime boletos:",
+            payload
+          );
+
+
+          const boletoCambiado =
+
+            payload?.new?.rifa_id
+
+              ? payload.new
+
+              : payload?.old;
+
+
+          if (
+            !boletoCambiado ||
+
+            String(
+              boletoCambiado.rifa_id
+            ) !== String(RIFA_ID)
+          ) {
+            return;
+          }
+
+
+          /*
+            Este canal ya no publica
+            Actividad en vivo.
+
+            Tampoco consulta MASS ID.
+          */
+
+          if (
+            window
+              .MASS_BLOQUEAR_REALTIME_BOLETOS ===
+            true
+          ) {
+
+            console.log(
+              "Realtime de boletos omitido durante operación local."
+            );
+
+            return;
+          }
+
+
+          /*
+            Actualizar únicamente
+            la dinámica abierta.
+          */
+
+          await cargarBoletos();
+
+
+          /*
+            Mis Boletos solamente se recarga
+            cuando su modal está abierto.
+          */
+
+          const modalMisBoletosRealtime =
+            document.getElementById(
+              "modalMisBoletos"
+            );
+
+
+          if (
+            modalMisBoletosRealtime &&
+
+            window.getComputedStyle(
+              modalMisBoletosRealtime
+            ).display !== "none"
+          ) {
+
+            await cargarMisBoletos();
+          }
+        }
+      )
+
+      .subscribe(
+        status => {
+
+          console.log(
+            "📡 Realtime boletos:",
+            status
+          );
+        }
+      );
+
+
+  /*
+    CANAL 2:
+    ACTIVIDAD PÚBLICA SEGURA
+  */
+
+  canalRealtimeActividadSorteo =
+    supabaseClient
+
+      .channel(
+        `realtime_actividad_${rifaRealtimeId}`
+      )
+
+      .on(
+        "postgres_changes",
+
+        {
+          event: "INSERT",
+          schema: "public",
+
+          table:
+            "actividad_sorteo_publica",
+
+          filter:
+            `rifa_id=eq.${rifaRealtimeId}`
+        },
+
+        payload => {
+
+          console.log(
+            "🔥 Actividad pública segura:",
+            payload
+          );
+
+
+          procesarActividadPublicaSegura(
+            payload?.new
+          );
+        }
+      )
+
+      .subscribe(
+        status => {
+
+          console.log(
+            "📡 Realtime actividad pública:",
+            status
+          );
+        }
+      );
 }	
 
 // Realtime
