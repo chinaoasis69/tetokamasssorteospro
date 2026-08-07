@@ -27306,27 +27306,99 @@ async function girarLuckySpinConBoleto(
 }	
 	
 async function cargarMisBoletos(){
-const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();	
 
-const { data, error } = await supabaseClient
-  .from("boletos")
-  .select("*")
-  .eq("telefono", tel)
-  .in("estado", ["vendido", "apartado"])
-  .order("fecha", { ascending:false });
+  const contadorMisBoletos =
+    document.getElementById(
+      "contadorMisBoletos"
+    );
 
-  if(error){
-  console.error("ERROR MIS BOLETOS:", error);
-  document.getElementById("misBoletos").innerText =
-    "Error cargando boletos: " + error.message;
-  return;
-}
+  const contenedorMisBoletos =
+    document.getElementById(
+      "misBoletos"
+    );
 
-	if(!data || data.length === 0){
-  document.getElementById("misBoletos").innerHTML =
-    "No tienes boletos en esta rifa todavía";
-  return;
-}
+  const contenedorModalMisBoletos =
+    document.getElementById(
+      "misBoletosDentroModal"
+    );
+
+
+  /*
+    CONSULTA SEGURA DE BOLETOS DEL USUARIO
+
+    El navegador ya no envía el teléfono
+    ni consulta directamente la tabla boletos.
+
+    Supabase identifica al usuario mediante
+    auth.uid() y devuelve solamente sus boletos.
+  */
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "listar_mis_boletos_seguro",
+    {
+      p_solo_giros_disponibles:
+        false
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR MIS BOLETOS SEGUROS:",
+      error
+    );
+
+    if (contadorMisBoletos) {
+      contadorMisBoletos.innerText =
+        "0";
+    }
+
+    const mensajeError =
+      "No fue posible cargar tus boletos.";
+
+    if (contenedorMisBoletos) {
+      contenedorMisBoletos.innerText =
+        mensajeError;
+    }
+
+    if (contenedorModalMisBoletos) {
+      contenedorModalMisBoletos.innerText =
+        mensajeError;
+    }
+
+    return;
+  }
+
+
+  if (
+    !Array.isArray(data) ||
+    data.length === 0
+  ) {
+
+    if (contadorMisBoletos) {
+      contadorMisBoletos.innerText =
+        "0";
+    }
+
+    const mensajeVacio =
+      "No tienes boletos comprados o reservados.";
+
+    if (contenedorMisBoletos) {
+      contenedorMisBoletos.innerText =
+        mensajeVacio;
+    }
+
+    if (contenedorModalMisBoletos) {
+      contenedorModalMisBoletos.innerText =
+        mensajeVacio;
+    }
+
+    return;
+  }
 
 	const { data: sorteos } = await supabaseClient
   .from("rifas")
