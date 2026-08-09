@@ -29992,42 +29992,34 @@ async function cargarActividadPublicaRifa(
   }
 
 
+  /*
+    Consultar exclusivamente la actividad
+    que todavía se encuentra vigente.
+
+    Supabase aplica en el servidor:
+
+    • compras y reservaciones recientes;
+    • premios reales de MASS Lucky Spin;
+    • tiempo máximo de exposición;
+    • separación por dinámica.
+  */
+
   const {
     data,
     error
-  } =
-    await supabaseClient
-      .from(
-        "actividad_sorteo_publica"
-      )
-      .select(`
-        id,
-        origen_actividad_id,
-        origen_giro_id,
-        rifa_id,
-        numero,
-        accion,
-        mass_id,
-        premio_nombre,
-        created_at
-      `)
-      .eq(
-        "rifa_id",
+  } = await supabaseClient.rpc(
+    "listar_actividad_sorteo_publica_vigente",
+    {
+      p_rifa_id:
         rifaConsultadaId
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
-        }
-      )
-      .limit(100);
+    }
+  );
 
 
   if (error) {
 
     console.error(
-      "ERROR CARGANDO ACTIVIDAD PÚBLICA:",
+      "ERROR CARGANDO ACTIVIDAD PÚBLICA VIGENTE:",
       error
     );
 
@@ -30036,8 +30028,9 @@ async function cargarActividadPublicaRifa(
 
 
   /*
-    Ignorar la respuesta si el usuario
-    abrió otra dinámica mientras se consultaba.
+    Ignorar la respuesta cuando el usuario
+    abrió otra dinámica mientras Supabase
+    estaba procesando la consulta.
   */
 
   if (
@@ -30048,19 +30041,58 @@ async function cargarActividadPublicaRifa(
   }
 
 
+  /*
+    Limpiar la actividad anterior antes
+    de procesar la respuesta nueva.
+  */
+
   actividadRealtime = [];
 
 
+  const box =
+    document.getElementById(
+      "actividadLive"
+    );
+
+
+  if (box) {
+
+    box.innerHTML =
+      "Esperando movimientos...";
+  }
+
+
   /*
-    Procesar de más antiguo a más reciente
-    para conservar el orden correcto
-    y reemplazar una reserva por su compra.
+    Ordenar de la actividad más antigua
+    a la más reciente.
+
+    Esto permite que una compra posterior
+    sustituya correctamente una reservación
+    anterior del mismo paquete.
   */
 
   const registros =
     Array.isArray(data)
 
-      ? [...data].reverse()
+      ? [...data].sort(
+          (
+            registroA,
+            registroB
+          ) => {
+
+            const fechaA =
+              new Date(
+                registroA?.created_at || 0
+              ).getTime();
+
+            const fechaB =
+              new Date(
+                registroB?.created_at || 0
+              ).getTime();
+
+            return fechaA - fechaB;
+          }
+        )
 
       : [];
 
@@ -30070,21 +30102,19 @@ async function cargarActividadPublicaRifa(
   );
 
 
+  /*
+    También cubre el caso en que Supabase
+    devolviera algún registro no reconocido
+    por el procesador público.
+  */
+
   if (
-    registros.length === 0
+    actividadRealtime.length === 0 &&
+    box
   ) {
 
-    const box =
-      document.getElementById(
-        "actividadLive"
-      );
-
-
-    if (box) {
-
-      box.innerHTML =
-        "Esperando movimientos...";
-    }
+    box.innerHTML =
+      "Esperando movimientos...";
   }
 }
 
