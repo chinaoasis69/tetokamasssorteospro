@@ -27902,28 +27902,49 @@ async function cargarBoletosDisponiblesLuckySpin() {
     }
 
 
-    const telefonoUsuario =
-        (
-            localStorage.getItem(
-                "mass_telefono"
-            ) ||
-            userActual ||
-            ""
-        ).trim();
+       /*
+      Verificar la sesión real de Supabase.
+
+      Lucky Spin ya no confía en el teléfono
+      guardado dentro de localStorage.
+    */
+
+    const {
+        data: {
+            session
+        },
+        error: errorSesionLuckySpin
+    } =
+        await supabaseClient.auth.getSession();
 
 
-    if (!telefonoUsuario) {
+    if (
+        errorSesionLuckySpin ||
+        !session?.user
+    ) {
+
+        if (errorSesionLuckySpin) {
+
+            console.error(
+                "ERROR VERIFICANDO SESIÓN PARA LUCKY SPIN:",
+                errorSesionLuckySpin
+            );
+        }
+
 
         estado.textContent =
             "🔐 Inicia sesión para consultar tus giros.";
 
-        contenedor.innerHTML = "";
+        contenedor.innerHTML =
+            "";
+
 
         if (resumen) {
 
             resumen.textContent =
                 "Necesitas una sesión activa para participar.";
         }
+
 
         return;
     }
@@ -27932,48 +27953,36 @@ async function cargarBoletosDisponiblesLuckySpin() {
     estado.textContent =
         "🎟️ Buscando tus boletos disponibles...";
 
-    contenedor.innerHTML = "";
+    contenedor.innerHTML =
+        "";
 
-	contenedor.style.opacity =
-    "1";
+    contenedor.style.opacity =
+        "1";
 
-contenedor.style.pointerEvents =
-    "auto";
+    contenedor.style.pointerEvents =
+        "auto";
 
 
     try {
 
         // =====================================================
-        // 1. OBTENER BOLETOS VENDIDOS Y SIN GIRO UTILIZADO
+        // 1. OBTENER SOLO LOS BOLETOS DEL USUARIO AUTENTICADO
+        //
+        // Supabase identifica al usuario con auth.uid().
+        // El navegador ya no envía ni filtra por teléfono.
         // =====================================================
 
         const {
             data: boletosUsuario,
             error: errorBoletos
         } =
-            await supabaseClient
-                .from("boletos")
-                .select(
-                    "id, rifa_id, numero, estado, giro_usado, fecha"
-                )
-                .eq(
-                    "telefono",
-                    telefonoUsuario
-                )
-                .eq(
-                    "estado",
-                    "vendido"
-                )
-                .eq(
-                    "giro_usado",
-                    false
-                )
-                .order(
-                    "fecha",
-                    {
-                        ascending: false
-                    }
-                );
+            await supabaseClient.rpc(
+                "listar_mis_boletos_seguro",
+                {
+                    p_solo_giros_disponibles:
+                        true
+                }
+            ); 
 
 
         if (errorBoletos) {
