@@ -29222,48 +29222,6 @@ document
             `;
         }).join("");   
 }	
-	
-async function usarGiro(numero, rifaId){
-
-  const { data, error } = await supabaseClient
-    .from("boletos")
-.select("*")
-.eq("numero", numero)
-.eq("telefono", userActual)
-.eq("rifa_id", rifaId)
-.order("id", { ascending: false })
-.limit(1)
-.single();
-
-  if(error || !data){
-    alert("No se encontró el boleto ❌");
-    return;
-  }
-
-	const { data: rifa, error: errorRifa } = await supabaseClient
-  .from("rifas")
-  .select("*")
-  .eq("id", rifaId)
-  .single();
-
-const rifaActiva = rifa
-    ? (
-	   rifa.activo === true ||
-       rifa.estado === "activa" ||
-       rifa.estado === "activo" ||
-	   rifa.estado === "programada"
-	   )
-    : false;
-
-if(errorRifa || !rifa || !rifaActiva){
-    alert("⏰ Esta rifa ya no está activa. Este giro ya expiró.");
-    return;
-}
-
-  boletoSeleccionado = data;
-  girarLuckySpin(true);
-
-}
 
 	function abrirModalPremios(){
 
