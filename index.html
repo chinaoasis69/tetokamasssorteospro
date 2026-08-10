@@ -28534,22 +28534,64 @@ conservarPosicionLuckySpin();
 */
 
 const {
-    data: boletoVerificado,
+    data: boletosVerificados,
     error: errorVerificacion
 } =
-    await supabaseClient
-        .from("boletos")
-        .select("giro_usado")
-        .eq(
-            "rifa_id",
-            seleccion.rifaId
+    await supabaseClient.rpc(
+        "listar_mis_boletos_seguro",
+        {
+            p_solo_giros_disponibles:
+                false
+        }
+    );
+
+
+/*
+  Localizar dentro de la respuesta segura
+  el boleto que acaba de utilizar su giro.
+
+  Supabase devuelve únicamente boletos
+  pertenecientes al usuario autenticado.
+*/
+
+const boletoVerificado =
+    Array.isArray(
+        boletosVerificados
+    )
+
+        ? boletosVerificados.find(
+            boleto => {
+
+                const mismaRifa =
+                    String(
+                        boleto?.rifa_id ||
+                        ""
+                    ) ===
+                    String(
+                        seleccion.rifaId ||
+                        ""
+                    );
+
+
+                const mismoNumero =
+                    String(
+                        boleto?.numero ??
+                        ""
+                    ).trim() ===
+                    String(
+                        seleccion.numero ??
+                        ""
+                    ).trim();
+
+
+                return (
+                    mismaRifa &&
+                    mismoNumero
+                );
+            }
         )
-        .eq(
-            "numero",
-            seleccion.numero
-        )
-        .limit(1)
-        .maybeSingle();
+
+        : null;
 
 
 if (
