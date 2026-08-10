@@ -27243,30 +27243,59 @@ async function girarLuckySpinConBoleto(
 
 
   const {
-    data: boleto,
-    error
-  } =
-    await supabaseClient
-      .from("boletos")
-      .select(
-        `
-          id,
-          rifa_id,
-          numero,
-          estado,
-          giro_usado
-        `
+  data: boletosUsuario,
+  error
+} =
+await supabaseClient.rpc(
+  "listar_mis_boletos_seguro",
+  {
+    p_solo_giros_disponibles:
+      true
+  }
+);
+
+
+/*
+  Localizar el boleto únicamente dentro
+  de los giros disponibles pertenecientes
+  al usuario autenticado.
+
+  El navegador ya no consulta directamente
+  la tabla public.boletos.
+*/
+
+const boleto =
+  Array.isArray(
+    boletosUsuario
+  )
+
+    ? boletosUsuario.find(
+        boletoUsuario => {
+
+          const mismaRifa =
+            String(
+              boletoUsuario?.rifa_id ||
+              ""
+            ).trim() ===
+            rifaTexto;
+
+
+          const mismoNumero =
+            String(
+              boletoUsuario?.numero ??
+              ""
+            ).trim() ===
+            numeroTexto;
+
+
+          return (
+            mismaRifa &&
+            mismoNumero
+          );
+        }
       )
-      .eq(
-        "rifa_id",
-        rifaTexto
-      )
-      .eq(
-        "numero",
-        numeroTexto
-      )
-      .limit(1)
-      .maybeSingle();
+
+    : null;
 
 
   if (error) {
