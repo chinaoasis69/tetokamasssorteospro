@@ -1625,16 +1625,6 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 </div>
     <br>
 
-<!--
-<button class="btn-main" onclick="apartarBoleto()">
-  Apartar por WhatsApp
-</button>
-
-<button class="btn-dark" onclick="registrarPago()">
-  Registrar pago pendiente
-</button>
--->
-
 <button class="btn-dark" onclick="apartarBoletosInterno()">
   🟡 Reservar boletos
 </button>	  	  
@@ -24698,49 +24688,6 @@ function actualizarResumenCompra(){
   if(totalEl) totalEl.textContent = total + " MASS " + unidadMassActual;
 }	
 
-// 🔥 WHATSAPP
-async function apartarWhats(){
-  if(!boletoSeleccionado){
-    alert("Selecciona un número primero");
-    return;
-  }
-
-  const nombre = document.getElementById("nombre").value;
-  const telefono = document.getElementById("telefono").value;
-
-  if(!nombre || !telefono){
-    alert("Escribe tu nombre y teléfono");
-    return;
-  }
-
-  // 🔥 ACTUALIZA EN SUPABASE
-  await supabaseClient
-    .from("boletos")
-    .update({ 
-      estado: "apartado",
-      nombre: nombre,
-      telefono: telefono,
-	  fecha: new Date().toISOString(),
-	  rifa_id: RIFA_ID
-    })
-    .eq("id", boletoSeleccionado.id);
-
-  // 🔥 MENSAJE WHATSAPP
-  const mensaje = `Hola, quiero apartar el número ${boletoSeleccionado.numero}
-Nombre: ${nombre}
-Teléfono: ${telefono}`;
-
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje)}`, "_blank");
-
-  // 🔄 REFRESCAR
-  boletoSeleccionado = null;
-  cargarBoletos();
-}
-
-function apartarBoleto(){
-  apartarWhats();
-}
-
 // =====================================================
 // BÚSQUEDA DIRECTA DE NÚMEROS EN SUPABASE
 // =====================================================
@@ -26380,44 +26327,6 @@ function abrirVideoRifa(){
     window.open(btn.dataset.video, "_blank");
   }
 }	
-
-async function registrarPago(){
-  if(!boletoSeleccionado){
-    alert("Selecciona un número primero");
-    return;
-  }
-
-  const nombre = document.getElementById("nombre").value.trim();
-  const telefono = document.getElementById("telefono").value.trim();
-
-  if(!nombre || !telefono){
-    alert("Escribe tu nombre y teléfono");
-    return;
-  }
-
-  await supabaseClient
-    .from("boletos")
-    .update({
-  estado: "apartado",
-  nombre: nombre,
-  telefono: telefono,
-  fecha: new Date().toISOString(),
-  rifa_id: RIFA_ID
-})
-    .eq("id", boletoSeleccionado.id);
-
-	await supabaseClient
-.from("notificaciones")
-.insert({
-  titulo: "📄 Pago pendiente",
-  mensaje: "Hay un pago pendiente por revisar del boleto " + boletoSeleccionado.numero,
-  tipo: "general"
-});	
-
-  alert("Pago pendiente de validación por el administrador");
-boletoSeleccionado.estado = "apartado";
-cargarBoletos();
-}
 
 async function girarLuckySpin(
   pinYaValidado = false,
