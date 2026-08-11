@@ -11120,7 +11120,36 @@ organizador_id: clienteActual.id
         return;
     }
 
-	await generarBoletosParaRifa(nuevaRifa.id, Number(total));
+const generacionBoletosCompleta =
+  await generarBoletosParaRifa(
+    nuevaRifa.id,
+    Number(total)
+  );
+
+if (!generacionBoletosCompleta) {
+
+  console.error(
+    "La dinámica fue creada, pero no se completó la generación segura de boletos:",
+    {
+      rifaId:
+        nuevaRifa.id,
+
+      totalEsperado:
+        Number(total)
+    }
+  );
+
+  alert(
+    "⚠️ La dinámica fue creada, pero sus boletos " +
+    "no quedaron completos.\n\n" +
+    "Permanecerá programada y no debe activarse " +
+    "hasta reanudar la generación."
+  );
+
+  mostrarSorteosAdmin();
+
+  return;
+}	
 
 const { error: premioError } = await supabaseClient
   .from("premios_rifa")
@@ -11146,25 +11175,51 @@ async function generarBoletosParaRifa(
   total
 ) {
 
-  const cantidadTotal = Number(total);
+  const cantidadTotal =
+    Number(total);
 
+  /*
+    La RPC acepta dinámicas de hasta 1,000,000
+    de boletos y genera la serie por lotes.
+
+    El tamaño de 10,000 coincide con el valor
+    predeterminado configurado en Supabase.
+  */
+
+  const TAMANO_LOTE_RPC =
+    10000;
+
+  const LIMITE_MAXIMO =
+    1000000;
+
+
+  // =====================================================
+  // 1. VALIDAR LOS DATOS RECIBIDOS DEL FRONTEND
+  // =====================================================
 
   if (
     !rifaId ||
-    !Number.isInteger(cantidadTotal) ||
-    cantidadTotal <= 0
+    !Number.isInteger(
+      cantidadTotal
+    ) ||
+    cantidadTotal <= 0 ||
+    cantidadTotal > LIMITE_MAXIMO
   ) {
 
     console.error(
       "Datos inválidos para generar boletos:",
       {
         rifaId,
-        total
+        total,
+        cantidadTotal,
+        limiteMaximo:
+          LIMITE_MAXIMO
       }
     );
 
     alert(
-      "❌ No se pudieron generar los boletos porque la información de la rifa no es válida."
+      "❌ No se pudieron generar los boletos porque " +
+      "la información de la dinámica no es válida."
     );
 
     return false;
@@ -11172,220 +11227,472 @@ async function generarBoletosParaRifa(
 
 
   /*
-    Revisar si la rifa ya tiene boletos
-    para evitar números duplicados.
+    Máximo de llamadas esperado:
+
+    100 boletos:
+    1 llamada aproximadamente.
+
+    1,000,000 de boletos:
+    100 llamadas de 10,000.
+
+    Se permiten dos intentos adicionales solamente
+    como margen de control para una serie parcial.
   */
 
-  const {
-    count: cantidadExistente,
-    error: errorCheck
-  } = await supabaseClient
-    .from("boletos")
-    .select(
-      "id",
-      {
-        count: "exact",
-        head: true
-      }
-    )
-    .eq(
-      "rifa_id",
-      rifaId
-    );
+  const maxIntentos =
+    Math.ceil(
+      cantidadTotal /
+      TAMANO_LOTE_RPC
+    ) + 2;
 
 
-  if (errorCheck) {
-
-    console.error(
-      "Error revisando boletos existentes:",
-      errorCheck
-    );
-
-    alert(
-      "❌ No se pudo revisar si la rifa ya tiene boletos."
-    );
-
-    return false;
-  }
-
-const boletosExistentes =
-  Number(cantidadExistente || 0);
-
-/*
-  Si la generación ya está completa,
-  no volvemos a insertar boletos.
-*/
-if (boletosExistentes === cantidadTotal) {
-  console.log(
-    "La rifa ya tiene todos sus boletos:",
-    boletosExistentes
-  );
-
-  return true;
-}
-
-/*
-  Si existen más boletos de los esperados,
-  detenemos el proceso por seguridad.
-*/
-if (boletosExistentes > cantidadTotal) {
-  console.error(
-    "La rifa tiene más boletos de los esperados:",
-    {
-      esperados: cantidadTotal,
-      existentes: boletosExistentes
-    }
-  );
-
-  alert(
-    `❌ La rifa tiene más boletos de los esperados.\n\n` +
-    `Boletos esperados: ${cantidadTotal}\n` +
-    `Boletos existentes: ${boletosExistentes}`
-  );
-
-  return false;
-}
-
-/*
-  Si la generación quedó incompleta,
-  continuamos desde el siguiente número.
-*/
-const inicioGeneracion = boletosExistentes;
-
-if (inicioGeneracion > 0) {
-  console.log(
-    `🔄 Reanudando generación desde ${inicioGeneracion} ` +
-    `hasta ${cantidadTotal - 1}.`
-  );
-}
-
-  /*
-    Generar por lotes para evitar enviar
-    miles de registros en una sola petición.
-  */
-
-  const TAMANO_LOTE = 1000;
-
-  const digitos =
-    String(
-      cantidadTotal - 1
-    ).length;
+  let ultimoTotalConfirmado =
+    -1;
 
 
-  for (
-    let inicio = inicioGeneracion;
-    inicio < cantidadTotal;
-    inicio += TAMANO_LOTE
-  ) {
+  try {
 
-    const final =
-      Math.min(
-        inicio + TAMANO_LOTE,
-        cantidadTotal
-      );
-
-
-    const lote = [];
-
+    // ===================================================
+    // 2. GENERAR O REANUDAR HASTA COMPLETAR LA SERIE
+    // ===================================================
 
     for (
-      let numeroActual = inicio;
-      numeroActual < final;
-      numeroActual++
+      let intento = 1;
+      intento <= maxIntentos;
+      intento++
     ) {
 
-      lote.push({
-        rifa_id: rifaId,
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.rpc(
+          "generar_boletos_rifa_segura",
+          {
+            p_rifa_id:
+              rifaId,
 
-        numero:
-          String(numeroActual)
-            .padStart(
-              digitos,
-              "0"
-            ),
-
-        estado:
-          "disponible"
-      });
-
-    }
-
-
-    const {
-      error: errorLote
-    } = await supabaseClient
-      .from("boletos")
-      .insert(lote);
+            p_tamano_lote:
+              TAMANO_LOTE_RPC
+          }
+        );
 
 
-    if (errorLote) {
+      // =================================================
+      // 3. DETENERSE ANTE UN ERROR DE SUPABASE
+      // =================================================
 
-      console.error(
-        `Error generando boletos del ${inicio} al ${final - 1}:`,
-        errorLote
+      if (error) {
+
+        console.error(
+          "Error en generar_boletos_rifa_segura:",
+          {
+            intento,
+            rifaId,
+            cantidadTotal,
+            error
+          }
+        );
+
+        alert(
+          "❌ No fue posible generar los boletos " +
+          "de la dinámica.\n\n" +
+          (
+            error.message ||
+            "Supabase rechazó la operación."
+          )
+        );
+
+        return false;
+      }
+
+
+      console.log(
+        `MASS — GENERACIÓN SEGURA — LLAMADA ${intento}:`,
+        data
       );
+
+
+      // =================================================
+      // 4. VALIDAR LA AUTORIZACIÓN Y RESPUESTA GENERAL
+      // =================================================
+
+      if (
+        !data ||
+        data.ok !== true ||
+        data.puede_generar !== true
+      ) {
+
+        console.error(
+          "La generación segura no fue aprobada:",
+          {
+            intento,
+            rifaId,
+            data
+          }
+        );
+
+        alert(
+          data?.mensaje ||
+          "❌ La generación segura de boletos " +
+          "no fue autorizada."
+        );
+
+        return false;
+      }
+
+
+      const codigo =
+        String(
+          data.codigo || ""
+        );
+
+
+      const totalEsperadoRpc =
+        Number(
+          data.total_esperado
+        );
+
+
+      const totalAntes =
+        Number(
+          data.total_antes
+        );
+
+
+      const insertados =
+        Number(
+          data.insertados || 0
+        );
+
+
+      const totalDespues =
+        Number(
+          data.total_despues
+        );
+
+
+      const faltantes =
+        Number(
+          data.faltantes
+        );
+
+
+      const progresoPorcentaje =
+        Number(
+          data.progreso_porcentaje
+        );
+
+
+      // =================================================
+      // 5. AUDITAR LA RESPUESTA NUMÉRICA DE LA RPC
+      // =================================================
+
+      const respuestaNumericaValida =
+
+        Number.isInteger(
+          totalEsperadoRpc
+        ) &&
+
+        Number.isInteger(
+          totalAntes
+        ) &&
+
+        Number.isInteger(
+          insertados
+        ) &&
+
+        Number.isInteger(
+          totalDespues
+        ) &&
+
+        Number.isInteger(
+          faltantes
+        ) &&
+
+        Number.isFinite(
+          progresoPorcentaje
+        ) &&
+
+        totalEsperadoRpc > 0 &&
+
+        totalAntes >= 0 &&
+
+        insertados >= 0 &&
+
+        totalDespues >= 0 &&
+
+        faltantes >= 0 &&
+
+        totalAntes <=
+          totalEsperadoRpc &&
+
+        totalDespues <=
+          totalEsperadoRpc &&
+
+        progresoPorcentaje >= 0 &&
+
+        progresoPorcentaje <= 100;
+
+
+      if (!respuestaNumericaValida) {
+
+        console.error(
+          "Respuesta numérica inválida de la RPC:",
+          {
+            intento,
+            data
+          }
+        );
+
+        alert(
+          "❌ Supabase devolvió una respuesta de " +
+          "generación que no pasó la validación de integridad."
+        );
+
+        return false;
+      }
+
+
+      // =================================================
+      // 6. CONFIRMAR QUE EL TOTAL OFICIAL NO CAMBIÓ
+      // =================================================
+
+      if (
+        totalEsperadoRpc !==
+        cantidadTotal
+      ) {
+
+        console.error(
+          "El total del formulario no coincide con el total oficial:",
+          {
+            totalFormulario:
+              cantidadTotal,
+
+            totalOficial:
+              totalEsperadoRpc,
+
+            rifaId,
+            data
+          }
+        );
+
+        alert(
+          "❌ El total de boletos no coincide con " +
+          "la configuración oficial guardada en Supabase.\n\n" +
+          `Formulario: ${cantidadTotal}\n` +
+          `Supabase: ${totalEsperadoRpc}`
+        );
+
+        return false;
+      }
 
 
       /*
-        Limpiar los lotes que alcanzaron
-        a guardarse para no dejar una
-        generación incompleta.
+        En una serie íntegra debe cumplirse:
+
+        total_despues + faltantes = total_esperado
       */
 
-    const numeroInicioLimpieza =
-    String(inicioGeneracion).padStart(
-        digitos,
-        "0"
-    );
-
-const {
-    error: errorLimpieza
-} = await supabaseClient
-    .from("boletos")
-    .delete()
-    .eq(
-        "rifa_id",
-        rifaId
-    )
-    .gte(
-        "numero",
-        numeroInicioLimpieza
-    );  
-
-
-      if (errorLimpieza) {
+      if (
+        totalDespues +
+        faltantes !==
+        totalEsperadoRpc
+      ) {
 
         console.error(
-          "No se pudieron limpiar los boletos incompletos:",
-          errorLimpieza
+          "La respuesta de la RPC no conserva el total oficial:",
+          {
+            totalDespues,
+            faltantes,
+            totalEsperadoRpc,
+            data
+          }
         );
 
+        alert(
+          "❌ La generación fue detenida porque los " +
+          "totales devueltos por Supabase no son consistentes."
+        );
+
+        return false;
       }
 
 
-      alert(
-        "❌ Ocurrió un error generando los boletos.\n\n" +
-        "La rifa no debe activarse hasta corregir la generación."
+      // =================================================
+      // 7. RECONOCER UNA SERIE COMPLETA
+      // =================================================
+
+      const declaraSerieCompleta =
+
+        data.completa === true ||
+
+        codigo ===
+          "SERIE_COMPLETADA" ||
+
+        codigo ===
+          "SERIE_YA_COMPLETA";
+
+
+      if (declaraSerieCompleta) {
+
+        const cierreValido =
+
+          totalDespues ===
+            cantidadTotal &&
+
+          faltantes === 0;
+
+
+        if (!cierreValido) {
+
+          console.error(
+            "La RPC declaró la serie completa, pero los totales no coinciden:",
+            {
+              codigo,
+              totalDespues,
+              faltantes,
+              cantidadTotal,
+              data
+            }
+          );
+
+          alert(
+            "❌ Supabase indicó que la serie estaba completa, " +
+            "pero la validación final no coincidió."
+          );
+
+          return false;
+        }
+
+
+        console.log(
+          "✅ Serie oficial completa e íntegra:",
+          {
+            codigo,
+            rifaId,
+            total:
+              totalDespues,
+
+            insertadosEnUltimaLlamada:
+              insertados,
+
+            progresoPorcentaje
+          }
+        );
+
+        return true;
+      }
+
+
+      // =================================================
+      // 8. VALIDAR UN LOTE PARCIAL ANTES DE CONTINUAR
+      // =================================================
+
+      const loteParcialValido =
+
+        codigo ===
+          "LOTE_GENERADO" &&
+
+        data.generada ===
+          true &&
+
+        data.completa ===
+          false &&
+
+        insertados > 0 &&
+
+        totalDespues ===
+          totalAntes +
+          insertados &&
+
+        totalDespues >
+          ultimoTotalConfirmado &&
+
+        faltantes > 0;
+
+
+      if (!loteParcialValido) {
+
+        console.error(
+          "La RPC no completó la serie ni produjo un lote parcial válido:",
+          {
+            intento,
+            ultimoTotalConfirmado,
+            data
+          }
+        );
+
+        alert(
+          data?.mensaje ||
+          "❌ La generación se detuvo porque no hubo " +
+          "un avance válido en la serie."
+        );
+
+        return false;
+      }
+
+
+      ultimoTotalConfirmado =
+        totalDespues;
+
+
+      console.log(
+        "🔄 Lote seguro completado:",
+        {
+          intento,
+          insertados,
+          totalDespues,
+          totalEsperado:
+            totalEsperadoRpc,
+
+          faltantes,
+          progresoPorcentaje
+        }
       );
 
-      return false;
     }
 
 
-    console.log(
-      `Boletos generados: ${final} de ${cantidadTotal}`
+    // ===================================================
+    // 9. PROTECCIÓN CONTRA UN CICLO INESPERADO
+    // ===================================================
+
+    console.error(
+      "Se alcanzó el máximo de llamadas sin completar la serie:",
+      {
+        rifaId,
+        cantidadTotal,
+        maxIntentos,
+        ultimoTotalConfirmado
+      }
     );
 
+    alert(
+      "❌ La generación se detuvo por seguridad porque " +
+      "alcanzó el máximo de intentos permitidos."
+    );
+
+    return false;
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "Error inesperado generando boletos:",
+      {
+        rifaId,
+        cantidadTotal,
+        error:
+          errorInesperado
+      }
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado generando los boletos."
+    );
+
+    return false;
   }
-
-
-  console.log(
-    "✅ Generación automática terminada:",
-    cantidadTotal
-  );
-
-
-  return true;
 }
 
 async function activarRifaAdmin(id) {
