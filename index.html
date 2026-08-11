@@ -10820,19 +10820,23 @@ if (
   }
 }	
 
-const totalNumeros = Number(total);
+const totalNumeros =
+  Number(total);
 
 if (
-  !Number.isInteger(totalNumeros) ||
+  !Number.isInteger(
+    totalNumeros
+  ) ||
   totalNumeros < 100 ||
-  totalNumeros > 100000 ||
+  totalNumeros > 1000000 ||
   totalNumeros % 100 !== 0
 ) {
+
   alert(
-    "❌ Usa una cantidad entre 100 y 100000, " +
+    "❌ Usa una cantidad entre 100 y 1,000,000, " +
     "en múltiplos de 100.\n\n" +
-    "Ejemplos: 500, 1000, 5000, 50000, " +
-    "60000 o 100000."
+    "Ejemplos: 500, 1,000, 5,000, 50,000, " +
+    "100,000 o 1,000,000."
   );
 
   return;
@@ -10986,13 +10990,24 @@ async function crearRifaAdmin(){
     const total = prompt("Cantidad de números");
     if(!total) return;
 
-const totalNumeros = Number(total);
+const totalNumeros =
+  Number(total);
 
 if (
-  !Number.isInteger(totalNumeros) ||
-  ![100, 1000, 10000, 100000].includes(totalNumeros)
+  !Number.isInteger(
+    totalNumeros
+  ) ||
+  totalNumeros < 100 ||
+  totalNumeros > 1000000 ||
+  totalNumeros % 100 !== 0
 ) {
-  alert("❌ Cantidad no válida. Usa 100, 1000, 10000 o 100000.");
+
+  alert(
+    "❌ Cantidad no válida.\n\n" +
+    "Usa una cantidad entre 100 y 1,000,000, " +
+    "en múltiplos de 100."
+  );
+
   return;
 }
 
