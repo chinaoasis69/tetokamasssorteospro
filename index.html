@@ -10009,74 +10009,214 @@ async function pausarRifa(id){
 await mostrarSorteosAdmin();
 }
 
-async function eliminarRifa(id){
+async function eliminarRifa(id) {
 
-	const {
-    data: rifaEliminar,
-    error: errorBuscarRifa
-  } = await supabaseClient
-    .from("rifas")
-    .select("titulo")
-    .eq("id", id)
-    .single();
+  const rifaId = String(id || "").trim();
 
-  if (errorBuscarRifa || !rifaEliminar) {
+  if (!rifaId) {
+    alert("❌ No se recibió el identificador de la dinámica.");
+    return;
+  }
+
+  if (window.MASS_ELIMINANDO_RIFA_SEGURA === true) {
+    return;
+  }
+
+  window.MASS_ELIMINANDO_RIFA_SEGURA = true;
+
+  const convertirBloqueosEnTexto = (bloqueos) => {
+    const lista = Array.isArray(bloqueos)
+      ? bloqueos
+          .map(item => String(item || "").trim())
+          .filter(Boolean)
+      : [];
+
+    return lista.length
+      ? lista.map(item => "• " + item).join("\n")
+      : "• La dinámica conserva historial protegido.";
+  };
+
+  try {
+
+    // =====================================================
+    // 1. PREVISUALIZACIÓN SEGURA — NO ELIMINA NADA
+    // =====================================================
+
+    const {
+      data: previsualizacion,
+      error: errorPrevisualizacion
+    } = await supabaseClient.rpc(
+      "eliminar_rifa_segura",
+      {
+        p_rifa_id: rifaId,
+        p_confirmar: false
+      }
+    );
+
+    if (errorPrevisualizacion) {
+      console.error(
+        "ERROR PREVISUALIZANDO ELIMINACIÓN SEGURA:",
+        errorPrevisualizacion
+      );
+
+      alert(
+        "❌ No fue posible revisar la dinámica.\n\n" +
+        (
+          errorPrevisualizacion.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+    if (
+      !previsualizacion ||
+      previsualizacion.ok !== true
+    ) {
+      console.error(
+        "RESPUESTA INVÁLIDA DE ELIMINAR_RIFA_SEGURA:",
+        previsualizacion
+      );
+
+      alert(
+        "❌ Supabase no devolvió una revisión válida."
+      );
+
+      return;
+    }
+
+    const titulo = String(
+      previsualizacion.titulo ||
+      "Sin título"
+    );
+
+    if (
+      previsualizacion.puede_eliminar !==
+      true
+    ) {
+      alert(
+        "🔒 DINÁMICA PROTEGIDA\n\n" +
+        "Título: " + titulo + "\n\n" +
+        convertirBloqueosEnTexto(
+          previsualizacion.bloqueos
+        ) +
+        "\n\nNo se eliminó ningún dato."
+      );
+
+      return;
+    }
+
+    const totalBoletos = Number(
+      previsualizacion
+        .detalles
+        ?.total_boletos || 0
+    );
+
+    const continuar = confirm(
+      "⚠️ ELIMINACIÓN SEGURA DE DINÁMICA\n\n" +
+      "Título: " + titulo + "\n" +
+      "ID: " + rifaId + "\n" +
+      "Boletos relacionados: " +
+        totalBoletos + "\n\n" +
+      "Supabase confirmó que no existe historial " +
+      "protegido ni compromisos.\n\n" +
+      "¿Deseas continuar?"
+    );
+
+    if (!continuar) {
+      return;
+    }
+
+    const palabra = prompt(
+      "ÚLTIMA CONFIRMACIÓN\n\n" +
+      "Escribe exactamente ELIMINAR para borrar " +
+      "la dinámica:\n\n" +
+      titulo
+    );
+
+    if (
+      String(palabra || "")
+        .trim()
+        .toUpperCase() !==
+      "ELIMINAR"
+    ) {
+      alert(
+        "✅ Eliminación cancelada. " +
+        "No se modificó ningún dato."
+      );
+
+      return;
+    }
+
+    // =====================================================
+    // 2. CONFIRMACIÓN FINAL — LA RPC VUELVE A AUDITAR TODO
+    // =====================================================
+
+    const {
+      data: resultadoFinal,
+      error: errorFinal
+    } = await supabaseClient.rpc(
+      "eliminar_rifa_segura",
+      {
+        p_rifa_id: rifaId,
+        p_confirmar: true
+      }
+    );
+
+    if (errorFinal) {
+      console.error(
+        "ERROR EJECUTANDO ELIMINACIÓN SEGURA:",
+        errorFinal
+      );
+
+      alert(
+        "❌ No fue posible eliminar la dinámica.\n\n" +
+        (
+          errorFinal.message ||
+          "Error desconocido."
+        )
+      );
+
+      return;
+    }
+
+    if (
+      !resultadoFinal ||
+      resultadoFinal.eliminada !== true
+    ) {
+      alert(
+        "🔒 La dinámica no fue eliminada.\n\n" +
+        convertirBloqueosEnTexto(
+          resultadoFinal?.bloqueos
+        ) +
+        "\n\nNo se modificó ningún dato."
+      );
+
+      return;
+    }
+
+    alert(
+      "🗑️ Dinámica eliminada correctamente " +
+      "mediante la operación segura."
+    );
+
+    await mostrarSorteosAdmin();
+
+  } catch (errorInesperado) {
     console.error(
-      "ERROR BUSCANDO RIFA PARA ELIMINAR:",
-      errorBuscarRifa
+      "ERROR INESPERADO EN ELIMINAR RIFA SEGURA:",
+      errorInesperado
     );
 
     alert(
-      "❌ No fue posible identificar la dinámica."
+      "❌ Ocurrió un error inesperado " +
+      "al revisar la dinámica."
     );
 
-    return;
+  } finally {
+    window.MASS_ELIMINANDO_RIFA_SEGURA = false;
   }
-
-  const titulo =
-    rifaEliminar.titulo ||
-    "Sin título";
-
-  if (
-  !confirm(
-    "⚠️ ELIMINAR DINÁMICA\n\n" +
-    "Título: " + titulo + "\n" +
-    "ID: " + id + "\n\n" +
-    "Se eliminarán la dinámica y todos sus boletos.\n\n" +
-    "¿Deseas continuar?"
-  )
-) {
-  return;
-}
-
-  const { error: errorBoletos } = await supabaseClient
-    .from("boletos")
-    .delete()
-    .eq("rifa_id", id);
-
-  if(errorBoletos){
-    alert("Error borrando boletos: " + errorBoletos.message);
-    return;
-  }
-
-  const { data, error } = await supabaseClient
-    .from("rifas")
-    .delete()
-    .eq("id", id)
-    .select();
-
-  if(error){
-    alert("Error borrando rifa: " + error.message);
-    return;
-  }
-
-  if(!data || data.length === 0){
-    alert("No se borró. Posible RLS o ID: " + id);
-    return;
-  }
-
-  alert("🗑️ Rifa eliminada");
-  mostrarSorteosAdmin();
 }
 
 function actualizarCampoCifrasRifa() {
