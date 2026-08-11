@@ -27417,6 +27417,76 @@ async function cargarMisBoletos(){
       "misBoletosDentroModal"
     );
 
+  // =====================================================
+  // MASS — ESPERAR SESIÓN AUTH ANTES DE CONSULTAR BOLETOS
+  // Evita que la RPC salga temporalmente como anon.
+  // =====================================================
+
+  const {
+    data: datosSesionMisBoletos,
+    error: errorSesionMisBoletos
+  } = await supabaseClient.auth.getSession();
+
+
+  const sesionMisBoletos =
+    datosSesionMisBoletos?.session ||
+    null;
+
+
+  if (
+    errorSesionMisBoletos ||
+    !sesionMisBoletos?.user?.id
+  ) {
+
+    /*
+      Si Supabase todavía no ha restaurado
+      la sesión, no llamamos la RPC privada.
+
+      Esto evita el 401 y el mensaje:
+      permission denied for function.
+    */
+
+    if (errorSesionMisBoletos) {
+
+      console.warn(
+        "SESIÓN TODAVÍA NO DISPONIBLE PARA MIS BOLETOS:",
+        errorSesionMisBoletos
+      );
+
+    }
+
+
+    if (contadorMisBoletos) {
+
+      contadorMisBoletos.innerText =
+        "0";
+
+    }
+
+
+    const mensajeSinSesion =
+      "Inicia sesión para consultar tus boletos.";
+
+
+    if (contenedorMisBoletos) {
+
+      contenedorMisBoletos.innerText =
+        mensajeSinSesion;
+
+    }
+
+
+    if (contenedorModalMisBoletos) {
+
+      contenedorModalMisBoletos.innerText =
+        mensajeSinSesion;
+
+    }
+
+
+    return;
+  }	
+
 
   /*
     CONSULTA SEGURA DE BOLETOS DEL USUARIO
@@ -30414,8 +30484,42 @@ Promise.resolve().then(async () => {
 	
 	await cargarOrganizadoresConResultados();
 	
-    cargarMisBoletos();
-    cargarHistorialPremios();
+    // =====================================================
+    // MASS — CARGA PRIVADA ÚNICAMENTE CON SESIÓN AUTH
+    // Evita llamar RPC privadas durante el modo anon.
+    // =====================================================
+
+    const {
+      data: datosSesionCargaPrivada,
+      error: errorSesionCargaPrivada
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    const sesionCargaPrivada =
+      datosSesionCargaPrivada?.session ||
+      null;
+
+
+    if (errorSesionCargaPrivada) {
+
+      console.warn(
+        "ERROR VERIFICANDO SESIÓN PARA CARGA PRIVADA:",
+        errorSesionCargaPrivada
+      );
+
+    }
+
+
+    if (
+      sesionCargaPrivada?.user?.id
+    ) {
+
+      await cargarMisBoletos();
+
+      await cargarHistorialPremios();
+
+    }    
 	
 	iniciarRealtime();
 
