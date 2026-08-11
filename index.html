@@ -30525,38 +30525,6 @@ Promise.resolve().then(async () => {
 
 });
 
-async function generarBoletosRifaAdmin(rifaId, totalNumeros){
-
-  if(!confirm(`Generar ${totalNumeros} boletos para esta rifa?`)){
-    return;
-  }
-
-  const cantidadTotal = Number(totalNumeros);
-const digitos = String(cantidadTotal - 1).length;
-const boletos = [];
-
-for (let i = 0; i < cantidadTotal; i++) {
-  boletos.push({
-    rifa_id: rifaId,
-    numero: String(i).padStart(digitos, "0"),
-    estado: "disponible"
-  });
-}
-
-  const { error } = await supabaseClient
-    .from("boletos")
-    .insert(boletos);
-
-  if(error){
-    console.error(error);
-    alert("Error generando boletos");
-    return;
-  }
-
-  alert("✅ Boletos generados correctamente");
-
-}
-
 async function subirImagenOrganizador(tipo){
 
   const input =
