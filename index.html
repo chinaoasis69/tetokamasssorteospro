@@ -30512,6 +30512,13 @@ function iniciarRealtime() {
           schema: "public",
           table: "boletos",
 
+	          select: [
+            "id",
+            "rifa_id",
+            "numero",
+            "estado"
+          ],
+
           filter:
             `rifa_id=eq.${rifaRealtimeId}`
         },
