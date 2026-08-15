@@ -2160,6 +2160,10 @@ Cargando historial...
   ⚙️ Configuración
 </button>
 
+<button id="btnDivisasAdmin" type="button" onclick="mostrarDivisasAdmin()" style="display:none;">
+  💱 Administrar Divisas
+</button>	
+
 <button onclick="cerrarPanelAdmin()">
   ❌ Cerrar panel
 </button> 
@@ -2975,7 +2979,15 @@ async function volverPanelSuperAdmin(){
 <script>
 window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
+	const btnDivisas = document.getElementById("btnDivisasAdmin");
     const rol = localStorage.getItem("admin_rol");
+
+	if (btnDivisas) {
+  const puedeAdministrarDivisas =
+    rol === "super_admin" || rol === "organizador";
+
+  btnDivisas.style.display = puedeAdministrarDivisas ? "" : "none";
+}
 
     if(!btn) return;
 
@@ -12372,6 +12384,694 @@ document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
 document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";	
 
 }
+
+async function mostrarDivisasAdmin() {
+
+  const contenedor = document.getElementById("adminContenido");
+
+  if (!contenedor) {
+    alert("❌ No se encontró el contenedor administrativo.");
+    return;
+  }
+
+  contenedor.innerHTML = `
+    <div style="padding:18px;text-align:center;">
+      ⏳ Validando autorización y cargando divisas...
+    </div>
+  `;
+
+  const escaparHtml = valor => String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const convertirBooleano = valor => {
+    if (valor === true || valor === 1) return true;
+
+    return [
+      "true",
+      "t",
+      "1",
+      "si",
+      "sí",
+      "activa",
+      "activo",
+      "principal"
+    ].includes(
+      String(valor ?? "")
+        .trim()
+        .toLowerCase()
+    );
+  };
+
+  const codigoDivisa = fila => String(
+    fila?.moneda_codigo ??
+    fila?.codigo ??
+    fila?.divisa_codigo ??
+    fila?.moneda ??
+    ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const estaActiva = fila => convertirBooleano(
+    fila?.activa ??
+    fila?.activo ??
+    fila?.esta_activa ??
+    fila?.estado
+  );
+
+  const esPrincipal = fila => convertirBooleano(
+    fila?.es_principal ??
+    fila?.principal ??
+    fila?.esta_principal
+  );
+
+  const versionDivisa = fila => {
+
+    const numero = Number(
+      fila?.version ??
+      fila?.version_actual ??
+      fila?.version_control ??
+      fila?.fila_version ??
+      null
+    );
+
+    return Number.isInteger(numero) && numero >= 1
+      ? numero
+      : null;
+  };
+
+  try {
+
+    const adminActual = await obtenerAdminActual();
+
+    if (
+      !adminActual ||
+      !["super_admin", "organizador"].includes(adminActual.rol)
+    ) {
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #ff4d4f;
+            border-radius:12px;
+            color:#ff8a8a;
+          "
+        >
+          ❌ No existe una sesión administrativa autorizada.
+        </div>
+      `;
+
+      return;
+    }
+
+    let organizadorId = null;
+
+    if (adminActual.rol === "organizador") {
+
+      organizadorId =
+        adminActual.organizador_id ||
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id");
+
+    } else {
+
+      organizadorId =
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id") ||
+        (
+          clienteActual && clienteActual.id
+            ? clienteActual.id
+            : null
+        ) ||
+        adminActual.organizador_id;
+    }
+
+    if (!organizadorId) {
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #facc15;
+            border-radius:12px;
+            color:#facc15;
+          "
+        >
+          ⚠️ Primero selecciona el organizador cuyas divisas deseas administrar.
+        </div>
+      `;
+
+      return;
+    }
+
+    const { data, error } = await supabaseClient.rpc(
+      "listar_divisas_organizador_segura",
+      {
+        p_organizador_id: organizadorId
+      }
+    );
+
+    if (error) {
+
+      console.error(
+        "ERROR LISTANDO DIVISAS:",
+        error
+      );
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #ff4d4f;
+            border-radius:12px;
+            color:#ff8a8a;
+          "
+        >
+          <strong>
+            ❌ No se pudieron cargar las divisas.
+          </strong>
+
+          <br><br>
+
+          Código:
+          ${escaparHtml(error.code || "SIN_CODIGO")}
+
+          <br>
+
+          Mensaje:
+          ${escaparHtml(error.message || "Error desconocido")}
+        </div>
+      `;
+
+      return;
+    }
+
+    const extraerFilas = valorOriginal => {
+
+      let valor = valorOriginal;
+
+      if (typeof valor === "string") {
+
+        try {
+          valor = JSON.parse(valor);
+        } catch (_) {
+          return [];
+        }
+      }
+
+      if (Array.isArray(valor)) {
+
+        if (
+          valor.length === 1 &&
+          valor[0] &&
+          typeof valor[0] === "object" &&
+          !codigoDivisa(valor[0])
+        ) {
+
+          const internas = extraerFilas(
+            valor[0]
+          );
+
+          if (internas.length) {
+            return internas;
+          }
+        }
+
+        return valor.filter(
+          fila =>
+            fila &&
+            typeof fila === "object"
+        );
+      }
+
+      if (
+        !valor ||
+        typeof valor !== "object"
+      ) {
+        return [];
+      }
+
+      if (codigoDivisa(valor)) {
+        return [valor];
+      }
+
+      for (const llave of [
+        "divisas",
+        "monedas",
+        "filas",
+        "items",
+        "data",
+        "resultado",
+        "resultados"
+      ]) {
+
+        if (
+          Object.prototype.hasOwnProperty.call(
+            valor,
+            llave
+          )
+        ) {
+
+          const internas = extraerFilas(
+            valor[llave]
+          );
+
+          if (internas.length) {
+            return internas;
+          }
+        }
+      }
+
+      return [];
+    };
+
+    let filas = extraerFilas(data);
+
+    filas = filas
+      .filter(
+        fila =>
+          fila &&
+          typeof fila === "object"
+      )
+      .sort((a, b) => {
+
+        if (
+          esPrincipal(a) !==
+          esPrincipal(b)
+        ) {
+
+          return (
+            Number(esPrincipal(b)) -
+            Number(esPrincipal(a))
+          );
+        }
+
+        if (
+          estaActiva(a) !==
+          estaActiva(b)
+        ) {
+
+          return (
+            Number(estaActiva(b)) -
+            Number(estaActiva(a))
+          );
+        }
+
+        return codigoDivisa(a)
+          .localeCompare(
+            codigoDivisa(b)
+          );
+      });
+
+    const totalActivas =
+      filas.filter(
+        estaActiva
+      ).length;
+
+    const totalPrincipales =
+      filas.filter(
+        esPrincipal
+      ).length;
+
+    const nombreOrganizador =
+      clienteActual &&
+      String(clienteActual.id || "") ===
+      String(organizadorId)
+
+        ? (
+            clienteActual.nombre_publico ||
+            clienteActual.nombre ||
+            organizadorId
+          )
+
+        : organizadorId;
+
+    const filasHtml = filas.length
+
+      ? filas.map(fila => {
+
+          const codigo =
+            codigoDivisa(fila) ||
+            "SIN CÓDIGO";
+
+          const activa =
+            estaActiva(fila);
+
+          const principal =
+            esPrincipal(fila);
+
+          const version =
+            versionDivisa(fila);
+
+          return `
+            <tr
+              style="
+                border-bottom:
+                1px solid #2f2f2f;
+              "
+            >
+              <td
+                style="
+                  padding:10px;
+                  font-weight:800;
+                "
+              >
+                ${escaparHtml(codigo)}
+              </td>
+
+              <td
+                style="
+                  padding:10px;
+                  color:
+                    ${
+                      activa
+                        ? "#39ff14"
+                        : "#ff8a8a"
+                    };
+                  font-weight:700;
+                "
+              >
+                ${
+                  activa
+                    ? "ACTIVA"
+                    : "INACTIVA"
+                }
+              </td>
+
+              <td style="padding:10px;">
+                ${
+                  principal
+                    ? "⭐ SÍ"
+                    : "NO"
+                }
+              </td>
+
+              <td style="padding:10px;">
+                ${
+                  version ??
+                  "—"
+                }
+              </td>
+            </tr>
+          `;
+
+        }).join("")
+
+      : `
+          <tr>
+            <td
+              colspan="4"
+              style="
+                padding:18px;
+                text-align:center;
+                color:#aaa;
+              "
+            >
+              Este organizador todavía no tiene divisas configuradas.
+            </td>
+          </tr>
+        `;
+
+    contenedor.innerHTML = `
+      <div
+        style="
+          width:100%;
+          max-width:900px;
+          margin:0 auto;
+          padding:18px;
+          border:2px solid #39ff14;
+          border-radius:16px;
+          background:#0b0b0b;
+          box-shadow:
+            0 0 18px
+            rgba(57,255,20,0.28);
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            justify-content:
+              space-between;
+            align-items:
+              flex-start;
+            gap:12px;
+            flex-wrap:wrap;
+            margin-bottom:16px;
+          "
+        >
+
+          <div>
+
+            <h3
+              style="
+                margin:0;
+                color:#39ff14;
+              "
+            >
+              🌐 Administrar Divisas
+            </h3>
+
+            <div
+              style="
+                margin-top:6px;
+                color:#ddd;
+              "
+            >
+              Organizador:
+
+              <strong>
+                ${escaparHtml(nombreOrganizador)}
+              </strong>
+            </div>
+
+            <div
+              style="
+                margin-top:4px;
+                color:#888;
+                font-size:12px;
+                word-break:break-all;
+              "
+            >
+              ID:
+              ${escaparHtml(organizadorId)}
+            </div>
+
+          </div>
+
+          <button
+            type="button"
+            onclick="mostrarDivisasAdmin()"
+          >
+            🔄 Actualizar
+          </button>
+
+        </div>
+
+        <div
+          style="
+            display:grid;
+            grid-template-columns:
+              repeat(
+                3,
+                minmax(0,1fr)
+              );
+            gap:10px;
+            margin-bottom:14px;
+          "
+        >
+
+          <div
+            style="
+              padding:10px;
+              border:1px solid #333;
+              border-radius:10px;
+            "
+          >
+            <small style="color:#aaa;">
+              TOTAL
+            </small>
+
+            <br>
+
+            <strong>
+              ${filas.length}
+            </strong>
+          </div>
+
+          <div
+            style="
+              padding:10px;
+              border:1px solid #333;
+              border-radius:10px;
+            "
+          >
+            <small style="color:#aaa;">
+              ACTIVAS
+            </small>
+
+            <br>
+
+            <strong>
+              ${totalActivas}
+            </strong>
+          </div>
+
+          <div
+            style="
+              padding:10px;
+              border:1px solid #333;
+              border-radius:10px;
+            "
+          >
+            <small style="color:#aaa;">
+              PRINCIPALES
+            </small>
+
+            <br>
+
+            <strong>
+              ${totalPrincipales}
+            </strong>
+          </div>
+
+        </div>
+
+        <div
+          style="
+            padding:10px;
+            margin-bottom:14px;
+            border:
+              1px solid
+              ${
+                totalPrincipales === 1
+                  ? "#39ff14"
+                  : "#facc15"
+              };
+            border-radius:10px;
+            color:
+              ${
+                totalPrincipales === 1
+                  ? "#39ff14"
+                  : "#facc15"
+              };
+          "
+        >
+
+          ${
+            totalPrincipales === 1
+
+              ? `
+                  ✅ Integridad correcta:
+                  existe exactamente una
+                  divisa principal.
+                `
+
+              : `
+                  ⚠️ Se detectaron
+                  ${totalPrincipales}
+                  divisas principales.
+                  No realices cambios todavía.
+                `
+          }
+
+        </div>
+
+        <div style="overflow-x:auto;">
+
+          <table
+            style="
+              width:100%;
+              min-width:620px;
+              border-collapse:collapse;
+              text-align:left;
+            "
+          >
+
+            <thead>
+
+              <tr
+                style="
+                  border-bottom:
+                    1px solid #39ff14;
+                "
+              >
+                <th style="padding:10px;">
+                  Divisa
+                </th>
+
+                <th style="padding:10px;">
+                  Estado
+                </th>
+
+                <th style="padding:10px;">
+                  Principal
+                </th>
+
+                <th style="padding:10px;">
+                  Versión
+                </th>
+              </tr>
+
+            </thead>
+
+            <tbody>
+              ${filasHtml}
+            </tbody>
+
+          </table>
+
+        </div>
+
+        <div
+          style="
+            margin-top:14px;
+            color:#888;
+            font-size:12px;
+            text-align:left;
+          "
+        >
+          🔐 Consulta realizada mediante
+          la RPC segura de Supabase.
+          Este bloque todavía no modifica datos.
+        </div>
+
+      </div>
+    `;
+
+  } catch (error) {
+
+    console.error(
+      "ERROR ABRIENDO ADMINISTRACIÓN DE DIVISAS:",
+      error
+    );
+
+    contenedor.innerHTML = `
+      <div
+        style="
+          padding:16px;
+          border:1px solid #ff4d4f;
+          border-radius:12px;
+          color:#ff8a8a;
+        "
+      >
+        ❌ No se pudo abrir el módulo de divisas.
+
+        <br><br>
+
+        ${escaparHtml(
+          error?.message ||
+          error
+        )}
+      </div>
+    `;
+  }
+}	
 
 async function guardarConfigCliente(){
 
