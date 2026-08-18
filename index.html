@@ -12747,6 +12747,35 @@ const versionPrincipalActual =
           const version =
             versionDivisa(fila);
 
+	const puedeDesactivar =
+  activa &&
+  !principal &&
+  Number.isInteger(version) &&
+  version >= 1;
+
+const botonDesactivar =
+  puedeDesactivar
+    ? `
+      <button
+        type="button"
+        onclick="deshabilitarDivisaOrganizadorAdmin(
+          '${escaparHtml(organizadorId)}',
+          '${escaparHtml(codigo)}',
+          ${version},
+          ${principal}
+        )"
+        style="
+          margin-top:6px;
+          padding:6px 9px;
+          cursor:pointer;
+          font-size:12px;
+        "
+      >
+        ⛔ Desactivar
+      </button>
+    `
+    : "";
+
 		  const puedeSerPrincipal =
   !principal &&
   activa &&
@@ -12810,11 +12839,15 @@ const botonPrincipal =
                   font-weight:700;
                 "
               >
-                ${
-                  activa
-                    ? "ACTIVA"
-                    : "INACTIVA"
-                }
+                <div>
+  ${
+    activa
+      ? "ACTIVA"
+      : "INACTIVA"
+  }
+</div>
+
+${botonDesactivar}
               </td>
 
               <td style="padding:10px;">
@@ -13488,6 +13521,208 @@ async function establecerDivisaPrincipalAdmin(
 
     console.error(
       "ERROR INESPERADO CAMBIANDO DIVISA PRINCIPAL:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        errorInesperado?.message ||
+        "No se confirmó ningún cambio."
+      )
+    );
+
+    await mostrarDivisasAdmin();
+  }
+}
+
+async function deshabilitarDivisaOrganizadorAdmin(
+  organizadorId,
+  monedaCodigo,
+  versionEsperada,
+  esPrincipalActual
+) {
+
+  const orgId =
+    String(
+      organizadorId || ""
+    ).trim();
+
+  const codigo =
+    String(
+      monedaCodigo || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const versionNumero =
+    Number(
+      versionEsperada
+    );
+
+  const principalActual =
+    esPrincipalActual === true ||
+    esPrincipalActual === 1 ||
+    [
+      "true",
+      "1",
+      "si",
+      "sí"
+    ].includes(
+      String(
+        esPrincipalActual ?? ""
+      )
+        .trim()
+        .toLowerCase()
+    );
+
+
+  if (!orgId) {
+
+    alert(
+      "❌ No se encontró el organizador."
+    );
+
+    return;
+  }
+
+
+  if (!/^[A-Z]{3}$/.test(codigo)) {
+
+    alert(
+      "❌ La divisa no es válida."
+    );
+
+    return;
+  }
+
+
+  if (
+    !Number.isInteger(
+      versionNumero
+    ) ||
+    versionNumero < 1
+  ) {
+
+    alert(
+      "❌ No se encontró una versión válida " +
+      "para esta divisa.\n\n" +
+      "Presiona Actualizar e intenta nuevamente."
+    );
+
+    return;
+  }
+
+
+  if (principalActual) {
+
+    alert(
+      "❌ No puedes desactivar la divisa principal.\n\n" +
+      "Primero establece otra divisa como principal."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    confirm(
+      "⛔ DESACTIVAR DIVISA\n\n" +
+      "Divisa: " +
+      codigo +
+      "\n\n" +
+      "La divisa dejará de estar activa " +
+      "para este organizador.\n\n" +
+      "¿Deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "deshabilitar_divisa_organizador_segura",
+      {
+        p_organizador_id:
+          orgId,
+
+        p_moneda_codigo:
+          codigo,
+
+        p_version_esperada:
+          versionNumero
+      }
+    );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR DESACTIVANDO DIVISA:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible desactivar la divisa.\n\n" +
+        (
+          error.message ||
+          "Supabase rechazó la operación."
+        )
+      );
+
+      await mostrarDivisasAdmin();
+
+      return;
+    }
+
+
+    if (
+      data &&
+      typeof data === "object" &&
+      data.ok === false
+    ) {
+
+      console.error(
+        "RESPUESTA DE DESACTIVACIÓN NO APROBADA:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó la desactivación.\n\n" +
+        (
+          data.mensaje ||
+          data.message ||
+          "La divisa no fue desactivada."
+        )
+      );
+
+      await mostrarDivisasAdmin();
+
+      return;
+    }
+
+
+    alert(
+      "✅ Divisa " +
+      codigo +
+      " desactivada correctamente."
+    );
+
+
+    await mostrarDivisasAdmin();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO DESACTIVANDO DIVISA:",
       errorInesperado
     );
 
