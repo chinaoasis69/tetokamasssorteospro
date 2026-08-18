@@ -11073,6 +11073,17 @@ async function guardarRifaFormulario() {
   const titulo = document.getElementById("formTitulo").value.trim();
   const premio = document.getElementById("formPremio").value.trim();
   const precio = document.getElementById("formPrecio").value;
+
+const divisaPrincipal =
+  String(
+    document.getElementById("formDivisaPrincipal")?.value || ""
+  )
+  .trim()
+  .toUpperCase();
+
+const contenedorDivisasAdicionales =
+  document.getElementById("formDivisasAdicionales");
+	
   const total = document.getElementById("formTotal").value;
   const hora = document.getElementById("formHora").value;
   const zonaHoraria = document.getElementById("formZonaHoraria").value;
@@ -11151,6 +11162,7 @@ if (
   !titulo ||
   !premio ||
   !precio ||
+  !divisaPrincipal ||	
   !total ||
   !fecha ||
   !hora ||
@@ -11233,12 +11245,108 @@ if (
 ) {
   alert("❌ La modalidad seleccionada no es válida para esa cantidad.");
   return;
+}
+
+const precioPrincipalNumero =
+  Number(precio);
+
+if (
+  !Number.isFinite(precioPrincipalNumero) ||
+  precioPrincipalNumero <= 0
+) {
+  alert(
+    "❌ El precio de la divisa principal debe ser mayor que cero."
+  );
+  return;
+}
+
+
+const divisasAceptadas = [
+  divisaPrincipal
+];
+
+const preciosDivisas = {
+  [divisaPrincipal]:
+    precioPrincipalNumero
+};
+
+
+if (contenedorDivisasAdicionales) {
+
+  const adicionalesMarcadas =
+    contenedorDivisasAdicionales
+      .querySelectorAll(
+        '[data-divisa-extra]:checked'
+      );
+
+  for (const check of adicionalesMarcadas) {
+
+    const codigo =
+      String(
+        check.dataset.divisaExtra || ""
+      )
+      .trim()
+      .toUpperCase();
+
+    if (
+      !codigo ||
+      codigo === divisaPrincipal
+    ) {
+      continue;
+    }
+
+    const inputPrecio =
+      contenedorDivisasAdicionales
+        .querySelector(
+          `[data-precio-divisa-extra="${codigo}"]`
+        );
+
+    const precioExtra =
+      Number(
+        inputPrecio?.value || ""
+      );
+
+    if (
+      !Number.isFinite(precioExtra) ||
+      precioExtra <= 0
+    ) {
+      alert(
+        `❌ Escribe un precio válido para ${codigo}.`
+      );
+      return;
+    }
+
+    if (
+      !divisasAceptadas.includes(codigo)
+    ) {
+      divisasAceptadas.push(codigo);
+    }
+
+    preciosDivisas[codigo] =
+      precioExtra;
+  }
 }	
 
   const payload = {
     titulo,
     premio,
-    precio_boleto: Number(precio),
+    precio_boleto:
+  precioPrincipalNumero,
+
+divisas_aceptadas:
+  divisasAceptadas,
+
+precios_divisas:
+  preciosDivisas,
+
+mass_unidades_aceptadas:
+  [divisaPrincipal],
+
+precios_mass_unidad:
+  {
+    [divisaPrincipal]:
+      precioPrincipalNumero
+  },
     total_numeros: Number(total),
 	modalidad: modalidad,  
     fecha_sorteo: fecha,
