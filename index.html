@@ -10621,6 +10621,357 @@ async function abrirModalRifaPorId(id) {
   abrirModalRifa(
     rifaEncontrada
   );
+}
+
+async function cargarDivisasFormularioRifa(datos = null) {
+
+  const selectPrincipal =
+    document.getElementById("formDivisaPrincipal");
+
+  const contenedorAdicionales =
+    document.getElementById("formDivisasAdicionales");
+
+  if (!selectPrincipal || !contenedorAdicionales) {
+    return;
+  }
+
+  selectPrincipal.innerHTML = `
+    <option value="">Cargando divisas...</option>
+  `;
+
+  contenedorAdicionales.innerHTML = "";
+
+  try {
+
+    const adminActual = await obtenerAdminActual();
+
+    if (!adminActual) {
+      selectPrincipal.innerHTML = `
+        <option value="">Sin sesión administrativa</option>
+      `;
+      return;
+    }
+
+    let organizadorId = null;
+
+    if (adminActual.rol === "organizador") {
+
+      organizadorId =
+        adminActual.organizador_id ||
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id");
+
+    } else {
+
+      organizadorId =
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id") ||
+        clienteActual?.id ||
+        adminActual.organizador_id;
+    }
+
+    if (!organizadorId) {
+      selectPrincipal.innerHTML = `
+        <option value="">Selecciona un organizador</option>
+      `;
+      return;
+    }
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "listar_divisas_organizador_segura",
+      {
+        p_organizador_id: organizadorId
+      }
+    );
+
+    if (error) {
+      console.error(
+        "ERROR CARGANDO DIVISAS DEL SORTEO:",
+        error
+      );
+
+      selectPrincipal.innerHTML = `
+        <option value="">No fue posible cargar divisas</option>
+      `;
+
+      return;
+    }
+
+    const divisas =
+      Array.isArray(data?.divisas)
+        ? data.divisas.filter(
+            d => d?.activa === true
+          )
+        : [];
+
+    if (!divisas.length) {
+
+      selectPrincipal.innerHTML = `
+        <option value="">No hay divisas activas</option>
+      `;
+
+      return;
+    }
+
+    selectPrincipal.innerHTML =
+      divisas
+        .map(divisa => {
+
+          const codigo =
+            String(
+              divisa.moneda_codigo || ""
+            )
+            .trim()
+            .toUpperCase();
+
+          return `
+            <option value="${codigo}">
+              ${codigo}
+            </option>
+          `;
+        })
+        .join("");
+
+    /*
+      Si estamos editando una dinámica,
+      conservar su divisa principal actual.
+    */
+    const principalGuardada =
+      Array.isArray(datos?.mass_unidades_aceptadas) &&
+      datos.mass_unidades_aceptadas.length
+        ? String(
+            datos.mass_unidades_aceptadas[0]
+          ).toUpperCase()
+        : Array.isArray(datos?.divisas_aceptadas) &&
+          datos.divisas_aceptadas.length
+            ? String(
+                datos.divisas_aceptadas[0]
+              ).toUpperCase()
+            : "";
+
+    /*
+      Para dinámica nueva:
+      usar inicialmente la divisa principal
+      configurada por el organizador.
+    */
+    const principalOrganizador =
+      divisas.find(
+        d => d?.es_principal === true
+      )?.moneda_codigo;
+
+    const principalInicial =
+      principalGuardada ||
+      principalOrganizador ||
+      divisas[0]?.moneda_codigo ||
+      "";
+
+    if (principalInicial) {
+      selectPrincipal.value =
+        String(principalInicial)
+          .toUpperCase();
+    }
+
+	  const renderizarDivisasAdicionales = () => {
+
+  const principal =
+    String(selectPrincipal.value || "")
+      .trim()
+      .toUpperCase();
+
+  const divisasGuardadas =
+    Array.isArray(datos?.divisas_aceptadas)
+      ? datos.divisas_aceptadas.map(
+          codigo =>
+            String(codigo || "")
+              .trim()
+              .toUpperCase()
+        )
+      : [];
+
+  const preciosGuardados =
+    datos?.precios_divisas &&
+    typeof datos.precios_divisas === "object"
+      ? datos.precios_divisas
+      : {};
+
+  const adicionales =
+    divisas.filter(divisa => {
+
+      const codigo =
+        String(
+          divisa?.moneda_codigo || ""
+        )
+        .trim()
+        .toUpperCase();
+
+      return (
+        codigo &&
+        codigo !== principal
+      );
+    });
+
+  if (!adicionales.length) {
+
+    contenedorAdicionales.innerHTML = `
+      <div
+        style="
+          margin-top:10px;
+          color:#aaa;
+          font-size:13px;
+        "
+      >
+        Este organizador no tiene otras
+        divisas activas disponibles.
+      </div>
+    `;
+
+    return;
+  }
+
+  contenedorAdicionales.innerHTML = `
+    <div
+      style="
+        margin-top:14px;
+        padding-top:14px;
+        border-top:1px solid rgba(255,255,255,.15);
+      "
+    >
+      <div
+        style="
+          font-weight:bold;
+          margin-bottom:10px;
+        "
+      >
+        Divisas adicionales opcionales
+      </div>
+
+      ${adicionales.map(divisa => {
+
+        const codigo =
+          String(
+            divisa?.moneda_codigo || ""
+          )
+          .trim()
+          .toUpperCase();
+
+        const seleccionada =
+          divisasGuardadas.includes(codigo);
+
+        const precioGuardado =
+          preciosGuardados[codigo] ?? "";
+
+        return `
+          <div
+            style="
+              margin:10px 0;
+              padding:10px;
+              border:1px solid rgba(255,255,255,.12);
+              border-radius:10px;
+            "
+          >
+            <label
+              style="
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                gap:8px;
+                font-weight:bold;
+              "
+            >
+              <input
+                type="checkbox"
+                data-divisa-extra="${codigo}"
+                ${seleccionada ? "checked" : ""}
+              >
+
+              ${codigo}
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              data-precio-divisa-extra="${codigo}"
+              value="${precioGuardado}"
+              placeholder="Precio informativo en ${codigo}"
+              style="
+                margin-top:8px;
+                ${seleccionada ? "" : "display:none;"}
+              "
+              ${seleccionada ? "" : "disabled"}
+            >
+          </div>
+        `;
+      }).join("")}
+
+      <div
+        style="
+          margin-top:8px;
+          color:#aaa;
+          font-size:12px;
+        "
+      >
+        Estas divisas solo muestran otras
+        formas de pago aceptadas.
+      </div>
+    </div>
+  `;
+
+  contenedorAdicionales
+    .querySelectorAll(
+      "[data-divisa-extra]"
+    )
+    .forEach(check => {
+
+      const codigo =
+        check.dataset.divisaExtra;
+
+      const input =
+        contenedorAdicionales.querySelector(
+          `[data-precio-divisa-extra="${codigo}"]`
+        );
+
+      if (!input) {
+        return;
+      }
+
+      check.onchange = () => {
+
+        input.disabled =
+          !check.checked;
+
+        input.style.display =
+          check.checked
+            ? ""
+            : "none";
+
+        if (!check.checked) {
+          input.value = "";
+        }
+      };
+    });
+};
+
+selectPrincipal.onchange = () => {
+  renderizarDivisasAdicionales();
+};
+
+renderizarDivisasAdicionales();
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CARGANDO DIVISAS DEL SORTEO:",
+      errorInesperado
+    );
+
+    selectPrincipal.innerHTML = `
+      <option value="">Error cargando divisas</option>
+    `;
+  }
 }	
 
 function abrirModalRifa(datos = null) {
@@ -10634,6 +10985,7 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formTitulo").value = datos?.titulo || "";
     document.getElementById("formPremio").value = datos?.premio || "";
     document.getElementById("formPrecio").value = datos?.precio_boleto || "";
+	cargarDivisasFormularioRifa(datos);
     document.getElementById("formTotal").value = datos?.total_numeros || "";
     document.getElementById("formFecha").value = datos?.fecha_sorteo || "";
 	document.getElementById("formHora").value = datos?.hora_sorteo || "";
@@ -36792,7 +37144,80 @@ font-family:Arial, sans-serif;">
   </div>
 
 </div>
-    <input id="formPrecio" type="number" placeholder="Precio por boleto">
+    <div
+  id="bloqueDivisasSorteo"
+  style="
+    margin:14px auto;
+    padding:16px;
+    max-width:520px;
+    border:1px solid rgba(57,255,20,.55);
+    border-radius:14px;
+    background:#111;
+  "
+>
+  <div
+    style="
+      color:#39ff14;
+      font-weight:900;
+      font-size:18px;
+      margin-bottom:12px;
+    "
+  >
+    🌎 Divisas del sorteo
+  </div>
+
+  <label
+    for="formDivisaPrincipal"
+    style="display:block;margin-bottom:6px;font-weight:bold;"
+  >
+    Divisa principal
+  </label>
+
+  <select
+    id="formDivisaPrincipal"
+    style="
+      width:250px;
+      max-width:90%;
+      padding:12px;
+      border-radius:10px;
+      margin:6px;
+      text-align:center;
+    "
+  >
+    <option value="">
+      Cargando divisas...
+    </option>
+  </select>
+
+  <br>
+
+  <input
+    id="formPrecio"
+    type="number"
+    min="0"
+    step="0.01"
+    placeholder="Precio en divisa principal"
+  >
+
+  <div
+    id="formDivisasAdicionales"
+    style="
+      margin-top:14px;
+    "
+  ></div>
+
+  <div
+    style="
+      margin-top:10px;
+      color:#aaa;
+      font-size:12px;
+      line-height:1.4;
+    "
+  >
+    La divisa principal controla el precio y la Wallet MASS.
+    Las divisas adicionales son únicamente informativas.
+  </div>
+</div>
     <input id="formTotal" type="number" placeholder="Cantidad de números">
 
 <select id="formModalidad">
