@@ -1783,6 +1783,7 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 id="tarjetaConvertidorMass"
 onclick="abrirConvertidorMass()"
 style="
+display:none;		
 background:linear-gradient(135deg,#142014,#111);
 border:2px solid #39ff14;
 border-radius:14px;
@@ -12247,6 +12248,33 @@ if (boxGrande) boxGrande.style.visibility = "hidden";
 
 }
 
+function aplicarVisibilidadConvertidorMass() {
+
+    const tarjeta =
+        document.getElementById(
+            "tarjetaConvertidorMass"
+        );
+
+    const activo =
+        clienteActual?.convertidor_mass_activo === true;
+
+    if (tarjeta) {
+        tarjeta.style.display =
+            activo ? "block" : "none";
+    }
+
+    if (!activo) {
+        const modal =
+            document.getElementById(
+                "modalConvertidorMass"
+            );
+
+        if (modal) {
+            modal.style.display = "none";
+        }
+    }
+}	
+
 async function abrirConvertidorMass() {
     const modal = document.getElementById("modalConvertidorMass");
     if (modal) modal.style.display = "block";
@@ -12290,7 +12318,7 @@ if (mensajeSaldo) {
 }	
     boxGrande.style.visibility = "visible";
 }
-    if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
+    aplicarVisibilidadConvertidorMass();
 
     if (btnUsarCantidad) {
         btnUsarCantidad.disabled = false;
@@ -17221,6 +17249,8 @@ if(!data){
 
   clienteActual = data;
 console.log("CLIENTE:", data);
+
+aplicarVisibilidadConvertidorMass();	
 	
 WHATSAPP = data.whatsapp || "19563724890";
 const logoNuevo = document.getElementById("logoCliente");
