@@ -12864,6 +12864,13 @@ async function mostrarDivisasAdmin() {
 
           </div>
 
+		 <button
+  type="button"
+  onclick="agregarDivisaOrganizadorAdmin('${escaparHtml(organizadorId)}')"
+>
+  ➕ Agregar divisa
+</button> 
+
           <button
             type="button"
             onclick="mostrarDivisasAdmin()"
@@ -13070,6 +13077,144 @@ async function mostrarDivisasAdmin() {
         )}
       </div>
     `;
+  }
+}
+
+async function agregarDivisaOrganizadorAdmin(
+  organizadorId
+) {
+
+  const orgId =
+    String(
+      organizadorId || ""
+    ).trim();
+
+  if (!orgId) {
+    alert(
+      "❌ No se encontró el organizador."
+    );
+    return;
+  }
+
+  const codigo =
+    String(
+      prompt(
+        "🌐 Código de la divisa\n\n" +
+        "Ejemplos:\n" +
+        "USD\n" +
+        "MXN\n" +
+        "EUR"
+      ) || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  if (!codigo) {
+    return;
+  }
+
+  if (!/^[A-Z]{3}$/.test(codigo)) {
+    alert(
+      "❌ Escribe un código de divisa válido de 3 letras.\n\n" +
+      "Ejemplo: USD, MXN o EUR."
+    );
+    return;
+  }
+
+  const confirmar =
+    confirm(
+      "🌐 AGREGAR DIVISA\n\n" +
+      "Divisa: " + codigo + "\n\n" +
+      "La divisa quedará activa para este organizador.\n\n" +
+      "¿Deseas continuar?"
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "habilitar_divisa_organizador_segura",
+      {
+        p_organizador_id:
+          orgId,
+
+        p_moneda_codigo:
+          codigo,
+
+        p_version_esperada:
+          null
+      }
+    );
+
+    if (error) {
+
+      console.error(
+        "ERROR AGREGANDO DIVISA:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible agregar la divisa.\n\n" +
+        (
+          error.message ||
+          "Supabase rechazó la operación."
+        )
+      );
+
+      return;
+    }
+
+    if (
+      data &&
+      typeof data === "object" &&
+      data.ok === false
+    ) {
+
+      console.error(
+        "RESPUESTA DE DIVISA NO APROBADA:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó la operación.\n\n" +
+        (
+          data.mensaje ||
+          data.message ||
+          "La divisa no fue agregada."
+        )
+      );
+
+      return;
+    }
+
+    alert(
+      "✅ Divisa " +
+      codigo +
+      " agregada correctamente."
+    );
+
+    await mostrarDivisasAdmin();
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO AGREGANDO DIVISA:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        errorInesperado?.message ||
+        "No se realizó ningún cambio."
+      )
+    );
   }
 }	
 
