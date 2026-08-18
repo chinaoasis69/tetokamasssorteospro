@@ -5956,7 +5956,34 @@ border:1px solid #39ff14;
 
                 <b>🎯 Título:</b> ${r.titulo || "Sin título"}<br>
 <b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
-<b>💵 Precio:</b> ${r.precio_boleto || 0} MASS<br>
+<b>💵 Precio MASS:</b> ${
+  r.precio_boleto || 0
+} MASS ${
+  Array.isArray(r.mass_unidades_aceptadas) &&
+  r.mass_unidades_aceptadas.length
+    ? r.mass_unidades_aceptadas[0]
+    : ""
+}<br>
+
+<b>🌎 Divisas aceptadas:</b> ${
+  Array.isArray(r.divisas_aceptadas) &&
+  r.divisas_aceptadas.length
+    ? r.divisas_aceptadas
+        .map(codigo => {
+
+          const precioDivisa =
+            r.precios_divisas &&
+            typeof r.precios_divisas === "object"
+              ? r.precios_divisas[codigo]
+              : null;
+
+          return precioDivisa != null
+            ? `${precioDivisa} ${codigo}`
+            : codigo;
+        })
+        .join(" o ")
+    : "Sin configurar"
+}<br>
 <b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
 <b>📅 Fecha:</b> ${
 r.fecha_sorteo
