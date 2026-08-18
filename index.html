@@ -12711,6 +12711,25 @@ async function mostrarDivisasAdmin() {
 
         : organizadorId;
 
+	const filaPrincipalActual =
+  filas.find(fila =>
+    esPrincipal(fila)
+  );
+
+const codigoPrincipalActual =
+  filaPrincipalActual
+    ? codigoDivisa(
+        filaPrincipalActual
+      )
+    : "";
+
+const versionPrincipalActual =
+  filaPrincipalActual
+    ? versionDivisa(
+        filaPrincipalActual
+      )
+    : null;
+
     const filasHtml = filas.length
 
       ? filas.map(fila => {
@@ -12727,6 +12746,41 @@ async function mostrarDivisasAdmin() {
 
           const version =
             versionDivisa(fila);
+
+		  const puedeSerPrincipal =
+  !principal &&
+  activa &&
+  Number.isInteger(version) &&
+  version >= 1 &&
+  codigoPrincipalActual &&
+  Number.isInteger(
+    versionPrincipalActual
+  ) &&
+  versionPrincipalActual >= 1;
+
+const botonPrincipal =
+  puedeSerPrincipal
+    ? `
+      <button
+        type="button"
+        onclick="establecerDivisaPrincipalAdmin(
+          '${escaparHtml(organizadorId)}',
+          '${escaparHtml(codigo)}',
+          ${version},
+          '${escaparHtml(codigoPrincipalActual)}',
+          ${versionPrincipalActual}
+        )"
+        style="
+          margin-top:6px;
+          padding:6px 9px;
+          cursor:pointer;
+          font-size:12px;
+        "
+      >
+        ⭐ Hacer principal
+      </button>
+    `
+    : "";
 
           return `
             <tr
@@ -12764,12 +12818,18 @@ async function mostrarDivisasAdmin() {
               </td>
 
               <td style="padding:10px;">
-                ${
-                  principal
-                    ? "⭐ SÍ"
-                    : "NO"
-                }
-              </td>
+  ${
+    principal
+      ? "⭐ SÍ"
+      : `
+          <div>
+            NO
+          </div>
+
+          ${botonPrincipal}
+        `
+  }
+</td>
 
               <td style="padding:10px;">
                 ${
@@ -13215,6 +13275,231 @@ async function agregarDivisaOrganizadorAdmin(
         "No se realizó ningún cambio."
       )
     );
+  }
+}
+
+async function establecerDivisaPrincipalAdmin(
+  organizadorId,
+  monedaCodigo,
+  versionObjetivo,
+  monedaPrincipalActual,
+  versionPrincipalActual
+) {
+
+  const orgId =
+    String(
+      organizadorId || ""
+    ).trim();
+
+  const codigo =
+    String(
+      monedaCodigo || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const principalActual =
+    String(
+      monedaPrincipalActual || ""
+    )
+      .trim()
+      .toUpperCase();
+
+  const versionObjetivoNumero =
+    Number(
+      versionObjetivo
+    );
+
+  const versionPrincipalNumero =
+    Number(
+      versionPrincipalActual
+    );
+
+
+  if (!orgId) {
+    alert(
+      "❌ No se encontró el organizador."
+    );
+    return;
+  }
+
+
+  if (!/^[A-Z]{3}$/.test(codigo)) {
+    alert(
+      "❌ La divisa objetivo no es válida."
+    );
+    return;
+  }
+
+
+  if (
+    !Number.isInteger(
+      versionObjetivoNumero
+    ) ||
+    versionObjetivoNumero < 1
+  ) {
+
+    alert(
+      "❌ No se encontró una versión válida " +
+      "para la divisa objetivo.\n\n" +
+      "Presiona Actualizar e intenta nuevamente."
+    );
+
+    return;
+  }
+
+
+  if (
+    !Number.isInteger(
+      versionPrincipalNumero
+    ) ||
+    versionPrincipalNumero < 1
+  ) {
+
+    alert(
+      "❌ No se encontró una versión válida " +
+      "para la divisa principal actual.\n\n" +
+      "Presiona Actualizar e intenta nuevamente."
+    );
+
+    return;
+  }
+
+
+  if (
+    principalActual &&
+    codigo === principalActual
+  ) {
+
+    alert(
+      "ℹ️ " +
+      codigo +
+      " ya es la divisa principal."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    confirm(
+      "⭐ CAMBIAR DIVISA PRINCIPAL\n\n" +
+      "Principal actual: " +
+      (
+        principalActual ||
+        "NO IDENTIFICADA"
+      ) +
+      "\n" +
+      "Nueva principal: " +
+      codigo +
+      "\n\n" +
+      "La divisa anterior dejará de ser principal.\n" +
+      "La nueva divisa permanecerá activa.\n\n" +
+      "¿Deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "establecer_divisa_principal_organizador_segura",
+      {
+        p_organizador_id:
+          orgId,
+
+        p_moneda_codigo:
+          codigo,
+
+        p_version_objetivo:
+          versionObjetivoNumero,
+
+        p_version_principal_actual:
+          versionPrincipalNumero
+      }
+    );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CAMBIANDO DIVISA PRINCIPAL:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible cambiar la divisa principal.\n\n" +
+        (
+          error.message ||
+          "Supabase rechazó la operación."
+        )
+      );
+
+      await mostrarDivisasAdmin();
+
+      return;
+    }
+
+
+    if (
+      data &&
+      typeof data === "object" &&
+      data.ok === false
+    ) {
+
+      console.error(
+        "RESPUESTA DE PRINCIPAL NO APROBADA:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó el cambio.\n\n" +
+        (
+          data.mensaje ||
+          data.message ||
+          "La divisa principal no fue modificada."
+        )
+      );
+
+      await mostrarDivisasAdmin();
+
+      return;
+    }
+
+
+    alert(
+      "✅ " +
+      codigo +
+      " establecida como divisa principal."
+    );
+
+
+    await mostrarDivisasAdmin();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CAMBIANDO DIVISA PRINCIPAL:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        errorInesperado?.message ||
+        "No se confirmó ningún cambio."
+      )
+    );
+
+    await mostrarDivisasAdmin();
   }
 }	
 
