@@ -2163,6 +2163,15 @@ Cargando historial...
 
 <button id="btnDivisasAdmin" type="button" onclick="mostrarDivisasAdmin()" style="display:none;">
   💱 Administrar Divisas
+</button>
+
+<button
+  id="btnConvertidorMassAdmin"
+  type="button"
+  onclick="mostrarConvertidorMassAdmin()"
+  style="display:none;"
+>
+  🌐 Convertidor MASS
 </button>	
 
 <button onclick="cerrarPanelAdmin()">
@@ -2981,6 +2990,8 @@ async function volverPanelSuperAdmin(){
 window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
 	const btnDivisas = document.getElementById("btnDivisasAdmin");
+	const btnConvertidor =
+    document.getElementById("btnConvertidorMassAdmin");
     const rol = localStorage.getItem("admin_rol");
 
 	if (btnDivisas) {
@@ -2989,6 +3000,14 @@ window.addEventListener("load", () => {
 
   btnDivisas.style.display = puedeAdministrarDivisas ? "" : "none";
 }
+
+if (btnConvertidor) {
+  const puedeAdministrarConvertidor =
+    rol === "super_admin" || rol === "organizador";
+
+  btnConvertidor.style.display =
+    puedeAdministrarConvertidor ? "" : "none";
+}	
 
     if(!btn) return;
 
@@ -12412,6 +12431,384 @@ document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
 document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";	
 
 }
+
+async function mostrarConvertidorMassAdmin() {
+
+  const contenedor =
+    document.getElementById("adminContenido");
+
+  if (!contenedor) {
+    alert(
+      "❌ No se encontró el contenedor administrativo."
+    );
+    return;
+  }
+
+  contenedor.innerHTML = `
+    <div style="padding:18px;text-align:center;">
+      ⏳ Cargando configuración del Convertidor MASS...
+    </div>
+  `;
+
+  const escaparHtml = valor =>
+    String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  try {
+
+    const adminActual =
+      await obtenerAdminActual();
+
+    if (
+      !adminActual ||
+      ![
+        "super_admin",
+        "organizador"
+      ].includes(adminActual.rol)
+    ) {
+
+      contenedor.innerHTML = `
+        <div style="
+          padding:16px;
+          border:1px solid #ff4d4f;
+          border-radius:12px;
+          color:#ff8a8a;
+        ">
+          ❌ No existe una sesión administrativa autorizada.
+        </div>
+      `;
+
+      return;
+    }
+
+    let organizadorId = null;
+
+    if (
+      adminActual.rol === "organizador"
+    ) {
+
+      organizadorId =
+        adminActual.organizador_id ||
+        localStorage.getItem(
+          "admin_organizador_id"
+        ) ||
+        localStorage.getItem(
+          "organizador_admin_id"
+        );
+
+    } else {
+
+      organizadorId =
+        localStorage.getItem(
+          "admin_organizador_id"
+        ) ||
+        localStorage.getItem(
+          "organizador_admin_id"
+        ) ||
+        (
+          clienteActual?.id
+            ? clienteActual.id
+            : null
+        ) ||
+        adminActual.organizador_id;
+    }
+
+    if (!organizadorId) {
+
+      contenedor.innerHTML = `
+        <div style="
+          padding:16px;
+          border:1px solid #facc15;
+          border-radius:12px;
+          color:#facc15;
+        ">
+          ⚠️ Primero selecciona un organizador.
+        </div>
+      `;
+
+      return;
+    }
+
+    const {
+      data: organizador,
+      error
+    } = await supabaseClient
+      .from("organizadores")
+      .select(`
+        id,
+        nombre,
+        convertidor_mass_activo
+      `)
+      .eq(
+        "id",
+        organizadorId
+      )
+      .maybeSingle();
+
+    if (
+      error ||
+      !organizador
+    ) {
+
+      console.error(
+        "ERROR CARGANDO CONVERTIDOR MASS:",
+        error
+      );
+
+      contenedor.innerHTML = `
+        <div style="
+          padding:16px;
+          border:1px solid #ff4d4f;
+          border-radius:12px;
+          color:#ff8a8a;
+        ">
+          ❌ No fue posible cargar
+          la configuración del Convertidor MASS.
+        </div>
+      `;
+
+      return;
+    }
+
+    const activo =
+      organizador.convertidor_mass_activo
+        === true;
+
+    const estadoTexto =
+      activo
+        ? "🟢 ACTIVADO"
+        : "🔴 DESACTIVADO";
+
+    const nuevoEstado =
+      activo
+        ? false
+        : true;
+
+    const textoBoton =
+      activo
+        ? "🔴 Desactivar Convertidor"
+        : "🟢 Activar Convertidor";
+
+    contenedor.innerHTML = `
+      <div
+        class="card"
+        style="
+          max-width:560px;
+          margin:20px auto;
+          padding:22px;
+          text-align:center;
+          border:2px solid #39ff14;
+          border-radius:16px;
+        "
+      >
+
+        <h2
+          style="
+            margin-top:0;
+            color:#39ff14;
+          "
+        >
+          🌐 Convertidor MASS
+        </h2>
+
+        <p>
+          <b>Organizador:</b><br>
+          ${escaparHtml(
+            organizador.nombre ||
+            "Organizador"
+          )}
+        </p>
+
+        <div
+          style="
+            margin:18px auto;
+            padding:15px;
+            border:1px solid #39ff14;
+            border-radius:12px;
+            font-size:20px;
+            font-weight:bold;
+          "
+        >
+          Estado:<br><br>
+          ${estadoTexto}
+        </div>
+
+        <p
+          style="
+            color:#ccc;
+            line-height:1.5;
+          "
+        >
+          ${
+            activo
+              ? "Tus usuarios pueden ver y utilizar actualmente el Convertidor MASS."
+              : "El Convertidor MASS está oculto para tus usuarios."
+          }
+        </p>
+
+        <button
+          type="button"
+          onclick="
+            cambiarEstadoConvertidorMassAdmin(
+              '${organizador.id}',
+              ${nuevoEstado}
+            )
+          "
+          style="
+            margin-top:12px;
+            padding:13px 18px;
+            font-weight:bold;
+          "
+        >
+          ${textoBoton}
+        </button>
+
+      </div>
+    `;
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO ABRIENDO CONVERTIDOR MASS:",
+      errorInesperado
+    );
+
+    contenedor.innerHTML = `
+      <div style="
+        padding:16px;
+        border:1px solid #ff4d4f;
+        border-radius:12px;
+        color:#ff8a8a;
+      ">
+        ❌ Ocurrió un error inesperado.
+      </div>
+    `;
+  }
+}
+
+
+async function cambiarEstadoConvertidorMassAdmin(
+  organizadorId,
+  nuevoEstado
+) {
+
+  const activar =
+    nuevoEstado === true;
+
+  const confirmar =
+    confirm(
+      activar
+        ? "🌐 ACTIVAR CONVERTIDOR MASS\n\n" +
+          "El Convertidor MASS será visible " +
+          "para los usuarios de este organizador.\n\n" +
+          "¿Deseas continuar?"
+        : "🌐 DESACTIVAR CONVERTIDOR MASS\n\n" +
+          "El Convertidor MASS dejará de mostrarse " +
+          "a los usuarios de este organizador.\n\n" +
+          "¿Deseas continuar?"
+    );
+
+  if (!confirmar) {
+    return;
+  }
+
+  try {
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "configurar_convertidor_mass_organizador_segura",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_activo:
+          activar
+      }
+    );
+
+    if (error) {
+
+      console.error(
+        "ERROR CONFIGURANDO CONVERTIDOR MASS:",
+        error
+      );
+
+      alert(
+        "❌ No fue posible cambiar " +
+        "el estado del Convertidor MASS.\n\n" +
+        (
+          error.message ||
+          "Supabase rechazó la operación."
+        )
+      );
+
+      return;
+    }
+
+    if (
+      !data ||
+      data.ok !== true
+    ) {
+
+      console.error(
+        "RESPUESTA NO CONFIRMADA:",
+        data
+      );
+
+      alert(
+        "❌ Supabase no confirmó el cambio."
+      );
+
+      return;
+    }
+
+    /*
+      Actualizar también el objeto local
+      cuando corresponde al organizador
+      actualmente cargado.
+    */
+    if (
+      clienteActual &&
+      String(clienteActual.id) ===
+        String(organizadorId)
+    ) {
+
+      clienteActual.convertidor_mass_activo =
+        data.convertidor_mass_activo === true;
+
+      aplicarVisibilidadConvertidorMass();
+    }
+
+    alert(
+      data.convertidor_mass_activo === true
+        ? "✅ Convertidor MASS activado."
+        : "✅ Convertidor MASS desactivado."
+    );
+
+    await mostrarConvertidorMassAdmin();
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CONFIGURANDO CONVERTIDOR MASS:",
+      errorInesperado
+    );
+
+    alert(
+      "❌ Ocurrió un error inesperado.\n\n" +
+      (
+        errorInesperado?.message ||
+        "No se confirmó ningún cambio."
+      )
+    );
+  }
+}	
 
 async function mostrarDivisasAdmin() {
 
