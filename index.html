@@ -18106,21 +18106,32 @@ async function iniciarRealtimeWallet(organizadorId) {
 
 async function cargarSaldo() {
   let organizadorId = null;
+let unidadMassSaldo = "";
 
 if (RIFA_ID) {
+
     const { data: rifaActual } = await supabaseClient
         .from("rifas")
-        .select("organizador_id")
+        .select(
+            "organizador_id, mass_unidades_aceptadas"
+        )
         .eq("id", RIFA_ID)
         .single();
 
-    organizadorId = rifaActual?.organizador_id || null;
-}
+    organizadorId =
+        rifaActual?.organizador_id || null;
 
-if (!organizadorId) {
-  organizadorId =
-    localStorage.getItem("organizador_actual_id") ||
-    null;
+    unidadMassSaldo =
+        Array.isArray(
+            rifaActual?.mass_unidades_aceptadas
+        ) &&
+        rifaActual.mass_unidades_aceptadas.length
+            ? String(
+                rifaActual.mass_unidades_aceptadas[0] || ""
+              )
+              .trim()
+              .toUpperCase()
+            : "";
 }
 
 console.log("USUARIO ACTUAL:", userActual);
@@ -18150,14 +18161,37 @@ console.log("ORGANIZADOR BUSCADO:", organizadorId);
     .eq("organizador_id", organizadorId)
     .maybeSingle();
 
-  if (!data) {
-    document.getElementById("saldoBox").innerText =
-      "💰 Saldo disponible con este organizador: 0 MASS " + (window.unidadMassActual || "MX");
-    return;
-  }
+  const unidadMassMostrar =
+  unidadMassSaldo ||
+  (
+    window.unidadMassActual
+      ? String(window.unidadMassActual)
+          .trim()
+          .toUpperCase()
+      : ""
+  );
 
+if (!data) {
   document.getElementById("saldoBox").innerText =
-    "💰 Saldo disponible con este organizador: " + data.saldo + " MASS " + (window.unidadMassActual || "MX");
+    "💰 Saldo disponible con este organizador: 0 MASS" +
+    (
+      unidadMassMostrar
+        ? ` ${unidadMassMostrar}`
+        : ""
+    );
+
+  return;
+}
+
+document.getElementById("saldoBox").innerText =
+  "💰 Saldo disponible con este organizador: " +
+  data.saldo +
+  " MASS" +
+  (
+    unidadMassMostrar
+      ? ` ${unidadMassMostrar}`
+      : ""
+  );
 }
 
 function limpiarMetodosPago() {
