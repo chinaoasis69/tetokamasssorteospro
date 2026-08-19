@@ -26413,15 +26413,80 @@ if (logoOrg) {
 </div>
 `;
 
-        const unidadMass = Array.isArray(rifa.mass_unidades_aceptadas)
-    ? rifa.mass_unidades_aceptadas[0]
-    : "MX";
+        const unidadMass =
+  Array.isArray(rifa.mass_unidades_aceptadas) &&
+  rifa.mass_unidades_aceptadas.length
+    ? String(
+        rifa.mass_unidades_aceptadas[0] || ""
+      )
+      .trim()
+      .toUpperCase()
+    : (
+        Array.isArray(rifa.divisas_aceptadas) &&
+        rifa.divisas_aceptadas.length
+          ? String(
+              rifa.divisas_aceptadas[0] || ""
+            )
+            .trim()
+            .toUpperCase()
+          : ""
+      );
 
-const preciosMass = rifa.precios_mass_unidad || {};
-const precioMass = preciosMass[unidadMass] || rifa.precio_boleto || 0;
+const preciosMass =
+  rifa.precios_mass_unidad || {};
 
-document.getElementById("precioRifa").innerText =
-`💰 ${precioMass} MASS ${unidadMass} por número`;
+const precioMass =
+  preciosMass[unidadMass] ??
+  rifa.precio_boleto ??
+  0;
+
+const divisasAceptadasPublicas =
+  Array.isArray(rifa.divisas_aceptadas)
+    ? rifa.divisas_aceptadas
+        .map(codigo =>
+          String(codigo || "")
+            .trim()
+            .toUpperCase()
+        )
+        .filter(Boolean)
+    : [];
+
+const preciosDivisasPublicos =
+  rifa.precios_divisas &&
+  typeof rifa.precios_divisas === "object"
+    ? rifa.precios_divisas
+    : {};
+
+const textoPreciosPublicos =
+  divisasAceptadasPublicas.length
+    ? divisasAceptadasPublicas
+        .map(codigo => {
+
+          const precioDivisa =
+            preciosDivisasPublicos[codigo];
+
+          return precioDivisa != null
+            ? `${precioDivisa} MASS ${codigo}`
+            : `MASS ${codigo}`;
+        })
+        .join(" o ")
+    : (
+        unidadMass
+          ? `${precioMass} MASS ${unidadMass}`
+          : `${precioMass} MASS`
+      );
+
+const textoDivisasPublicas =
+  divisasAceptadasPublicas.length
+    ? divisasAceptadasPublicas.join(" y ")
+    : (
+        unidadMass ||
+        "Sin configurar"
+      );
+
+document.getElementById("precioRifa").innerHTML =
+  `💰 Precio por boleto: ${textoPreciosPublicos}<br>` +
+  `🌎 Divisas aceptadas: ${textoDivisasPublicas}`;
 
 		window.precioBoletoActual = Number(precioMass);
 
@@ -26445,8 +26510,56 @@ iniciarRealtime();
 
 actualizarResumenCompra();
 
-        document.getElementById("fechaRifa").innerText =
-            `📅 Sorteo: ${formatearFechaCorta(rifa.fecha_sorteo || rifa.fecha || "")}`;
+        const horaSorteoPublica =
+  rifa.hora_sorteo
+    ? (() => {
+
+        const [horaTexto, minutoTexto] =
+          String(rifa.hora_sorteo)
+            .slice(0, 5)
+            .split(":");
+
+        const horaNumero =
+          Number(horaTexto);
+
+        const hora12 =
+          ((horaNumero + 11) % 12) + 1;
+
+        return `${hora12}:${minutoTexto} ${
+          horaNumero >= 12 ? "PM" : "AM"
+        }`;
+
+      })()
+    : "";
+
+const zonaHorariaPublica =
+  Array.from(
+    document.getElementById("formZonaHoraria")?.options || []
+  ).find(
+    opcion =>
+      opcion.value === rifa.zona_horaria
+  )?.textContent ||
+  rifa.zona_horaria ||
+  "";
+
+document.getElementById("fechaRifa").innerHTML =
+  `📅 Sorteo: ${
+    formatearFechaCorta(
+      rifa.fecha_sorteo ||
+      rifa.fecha ||
+      ""
+    )
+  }` +
+  (
+    horaSorteoPublica
+      ? `<br>🕗 Hora: ${horaSorteoPublica}`
+      : ""
+  ) +
+  (
+    zonaHorariaPublica
+      ? `<br>🌎 Zona horaria: ${zonaHorariaPublica}`
+      : ""
+  );
 
         document.getElementById("premioActual").innerText = "";
 
