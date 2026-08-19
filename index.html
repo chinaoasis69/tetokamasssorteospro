@@ -10428,6 +10428,49 @@ function actualizarCampoCifrasRifa() {
     grupoCifras.style.display = "block";
     inputCifras.required = true;
 
+	if (metodo === "pick 3 texas") {
+
+  inputCifras.min = "2";
+  inputCifras.max = "3";
+  inputCifras.placeholder =
+    "Últimas cifras: 2 o 3";
+
+  if (
+    inputCifras.value &&
+    ![2, 3].includes(
+      Number(inputCifras.value)
+    )
+  ) {
+    inputCifras.value = "";
+  }
+
+} else if (
+  metodo === "lotería nacional" ||
+  metodo === "loteria nacional"
+) {
+
+  inputCifras.min = "2";
+  inputCifras.max = "5";
+  inputCifras.placeholder =
+    "Últimas cifras: 2, 3, 4 o 5";
+
+  if (
+    inputCifras.value &&
+    ![2, 3, 4, 5].includes(
+      Number(inputCifras.value)
+    )
+  ) {
+    inputCifras.value = "";
+  }
+
+} else {
+
+  inputCifras.min = "2";
+  inputCifras.max = "6";
+  inputCifras.placeholder =
+    "Últimas cifras: 2, 3, 4, 5 o 6";
+}
+
     /*
       Ocultar cantidad de premios
       automáticos y conservar 1.
@@ -11240,17 +11283,54 @@ if (!esAleatorio) {
 
   cifrasSorteo = Number(cifras);
 
-  if (
-  !Number.isInteger(cifrasSorteo) ||
-  ![2, 3, 4, 5, 6].includes(cifrasSorteo)
-) {
-  alert(
-    "❌ Para este método selecciona 2, 3, 4, 5 o 6 cifras."
-  );
-  return;
-}
+  let cifrasPermitidas =
+    [2, 3, 4, 5, 6];
 
-}	
+  let textoCifrasPermitidas =
+    "2, 3, 4, 5 o 6";
+
+  if (
+    metodoNormalizado ===
+    "pick 3 texas"
+  ) {
+
+    cifrasPermitidas =
+      [2, 3];
+
+    textoCifrasPermitidas =
+      "2 o 3";
+
+  } else if (
+    metodoNormalizado ===
+      "lotería nacional" ||
+    metodoNormalizado ===
+      "loteria nacional"
+  ) {
+
+    cifrasPermitidas =
+      [2, 3, 4, 5];
+
+    textoCifrasPermitidas =
+      "2, 3, 4 o 5";
+  }
+
+  if (
+    !Number.isInteger(cifrasSorteo) ||
+    !cifrasPermitidas.includes(
+      cifrasSorteo
+    )
+  ) {
+
+    alert(
+      "❌ Para este método selecciona " +
+      textoCifrasPermitidas +
+      " cifras."
+    );
+
+    return;
+  }
+}
+	
   const imagen = document.getElementById("formImagen").value.trim();
   const aviso = document.getElementById("formAviso").value.trim();
   const porcentaje = document.getElementById("formPorcentaje").value || 80;
@@ -11676,25 +11756,58 @@ let cifrasSorteo = null;
 
 if (metodo !== "aleatorio automático") {
 
-  const cifrasIngresadas = prompt(
-    "Últimas cuántas cifras se utilizarán (2, 3, 4, 5 o 6)"
+  let cifrasPermitidas =
+  [2, 3, 4, 5, 6];
+
+let textoCifrasPermitidas =
+  "2, 3, 4, 5 o 6";
+
+if (metodo === "pick 3 texas") {
+
+  cifrasPermitidas =
+    [2, 3];
+
+  textoCifrasPermitidas =
+    "2 o 3";
+
+} else if (
+  metodo === "lotería nacional" ||
+  metodo === "loteria nacional"
+) {
+
+  cifrasPermitidas =
+    [2, 3, 4, 5];
+
+  textoCifrasPermitidas =
+    "2, 3, 4 o 5";
+}
+
+const cifrasIngresadas = prompt(
+  "Últimas cuántas cifras se utilizarán (" +
+  textoCifrasPermitidas +
+  ")"
+);
+
+if (!cifrasIngresadas) return;
+
+cifrasSorteo =
+  Number(cifrasIngresadas);
+
+if (
+  !Number.isInteger(cifrasSorteo) ||
+  !cifrasPermitidas.includes(
+    cifrasSorteo
+  )
+) {
+
+  alert(
+    "❌ Cantidad de cifras no válida. Usa " +
+    textoCifrasPermitidas +
+    "."
   );
 
-  if (!cifrasIngresadas) return;
-
-  cifrasSorteo =
-    Number(cifrasIngresadas);
-
-  if (
-    !Number.isInteger(cifrasSorteo) ||
-    ![2, 3, 4, 5, 6].includes(cifrasSorteo)
-  ) {
-    alert(
-      "❌ Cantidad de cifras no válida. Usa 2, 3, 4, 5 o 6."
-    );
-
-    return;
-  }
+  return;
+}
 }
 
 const imagen = prompt(
