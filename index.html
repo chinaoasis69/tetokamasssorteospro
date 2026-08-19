@@ -14298,6 +14298,305 @@ ${botonReactivar}
   }
 }
 
+function seleccionarDivisaCatalogoAdmin(
+  divisasDisponibles
+) {
+
+  return new Promise(resolve => {
+
+    const modalAnterior =
+      document.getElementById(
+        "modalSeleccionDivisaAdmin"
+      );
+
+    if (modalAnterior) {
+      modalAnterior.remove();
+    }
+
+    const modal =
+      document.createElement("div");
+
+    modal.id =
+      "modalSeleccionDivisaAdmin";
+
+    modal.style.cssText = `
+      position:fixed;
+      inset:0;
+      z-index:10050;
+      background:rgba(0,0,0,.88);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      box-sizing:border-box;
+    `;
+
+    const tarjeta =
+      document.createElement("div");
+
+    tarjeta.style.cssText = `
+      width:100%;
+      max-width:580px;
+      max-height:88vh;
+      overflow-y:auto;
+      background:#111;
+      border:2px solid #39ff14;
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 0 28px rgba(57,255,20,.35);
+      color:white;
+      text-align:center;
+      box-sizing:border-box;
+    `;
+
+    const titulo =
+      document.createElement("div");
+
+    titulo.textContent =
+      "🌐 Agregar divisa";
+
+    titulo.style.cssText = `
+      color:#39ff14;
+      font-size:26px;
+      font-weight:900;
+      margin-bottom:8px;
+    `;
+
+    const subtitulo =
+      document.createElement("div");
+
+    subtitulo.textContent =
+      "Selecciona una divisa disponible para este organizador.";
+
+    subtitulo.style.cssText = `
+      color:#ccc;
+      font-size:14px;
+      line-height:1.4;
+      margin-bottom:18px;
+    `;
+
+    const select =
+      document.createElement("select");
+
+    select.style.cssText = `
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid #39ff14;
+      background:white;
+      color:#111;
+      font-size:16px;
+      margin-bottom:20px;
+      box-sizing:border-box;
+    `;
+
+    const opcionInicial =
+      document.createElement("option");
+
+    opcionInicial.value = "";
+    opcionInicial.textContent =
+      "Selecciona una divisa";
+
+    select.appendChild(
+      opcionInicial
+    );
+
+    divisasDisponibles.forEach(
+      divisa => {
+
+        const opcion =
+          document.createElement("option");
+
+        const codigo =
+          String(
+            divisa?.codigo || ""
+          )
+            .trim()
+            .toUpperCase();
+
+        const nombre =
+          String(
+            divisa?.nombre || codigo
+          ).trim();
+
+        const region =
+          String(
+            divisa?.pais_region || ""
+          ).trim();
+
+        opcion.value =
+          codigo;
+
+        opcion.textContent =
+          codigo +
+          " — " +
+          nombre +
+          (
+            region
+              ? " — " + region
+              : ""
+          );
+
+        select.appendChild(
+          opcion
+        );
+      }
+    );
+
+    const botones =
+      document.createElement("div");
+
+    botones.style.cssText = `
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    `;
+
+    const btnAgregar =
+      document.createElement("button");
+
+    btnAgregar.type = "button";
+    btnAgregar.textContent =
+      "✅ Agregar divisa";
+
+    btnAgregar.style.cssText = `
+      background:#39ff14;
+      color:#111;
+      padding:13px 18px;
+      border-radius:10px;
+      font-weight:900;
+      cursor:pointer;
+    `;
+
+    const btnCancelar =
+      document.createElement("button");
+
+    btnCancelar.type = "button";
+    btnCancelar.textContent =
+      "❌ Cancelar";
+
+    btnCancelar.style.cssText = `
+      background:#222;
+      color:white;
+      border:1px solid #39ff14;
+      padding:13px 18px;
+      border-radius:10px;
+      font-weight:900;
+      cursor:pointer;
+    `;
+
+    const cerrarModal =
+      valor => {
+
+        document.removeEventListener(
+          "keydown",
+          manejarEscape
+        );
+
+        modal.remove();
+
+        resolve(valor);
+      };
+
+    const manejarEscape =
+      evento => {
+
+        if (
+          evento.key === "Escape"
+        ) {
+          cerrarModal(null);
+        }
+      };
+
+    btnCancelar.onclick =
+      () => {
+        cerrarModal(null);
+      };
+
+    btnAgregar.onclick =
+      () => {
+
+        const codigoSeleccionado =
+          String(
+            select.value || ""
+          )
+            .trim()
+            .toUpperCase();
+
+        if (!codigoSeleccionado) {
+
+          alert(
+            "❌ Selecciona una divisa."
+          );
+
+          return;
+        }
+
+        const divisaSeleccionada =
+          divisasDisponibles.find(
+            divisa =>
+              String(
+                divisa?.codigo || ""
+              )
+                .trim()
+                .toUpperCase() ===
+              codigoSeleccionado
+          ) || null;
+
+        if (!divisaSeleccionada) {
+
+          alert(
+            "❌ La divisa seleccionada no está disponible."
+          );
+
+          return;
+        }
+
+        cerrarModal(
+          divisaSeleccionada
+        );
+      };
+
+    document.addEventListener(
+      "keydown",
+      manejarEscape
+    );
+
+    botones.appendChild(
+      btnAgregar
+    );
+
+    botones.appendChild(
+      btnCancelar
+    );
+
+    tarjeta.appendChild(
+      titulo
+    );
+
+    tarjeta.appendChild(
+      subtitulo
+    );
+
+    tarjeta.appendChild(
+      select
+    );
+
+    tarjeta.appendChild(
+      botones
+    );
+
+    modal.appendChild(
+      tarjeta
+    );
+
+    document.body.appendChild(
+      modal
+    );
+  });
+}	
+
 async function agregarDivisaOrganizadorAdmin(
   organizadorId
 ) {
@@ -14414,70 +14713,12 @@ if (!divisasDisponibles.length) {
   return;
 }
 
-const listaDivisas =
-  divisasDisponibles
-    .map(
-      (divisa, indice) =>
-        `${indice + 1}. ` +
-        `${divisa.codigo} — ` +
-        `${divisa.nombre}` +
-        (
-          divisa.pais_region
-            ? ` — ${divisa.pais_region}`
-            : ""
-        )
-    )
-    .join("\n");
-
-const seleccionIngresada =
-  String(
-    prompt(
-      "🌐 AGREGAR DIVISA\n\n" +
-      "Divisas disponibles:\n\n" +
-      listaDivisas +
-      "\n\n" +
-      "Escribe el NÚMERO o el CÓDIGO " +
-      "de la divisa que deseas agregar."
-    ) || ""
-  )
-    .trim()
-    .toUpperCase();
-
-if (!seleccionIngresada) {
-  return;
-}
-
-let divisaSeleccionada = null;
-
-if (/^\d+$/.test(seleccionIngresada)) {
-
-  const indice =
-    Number(seleccionIngresada) - 1;
-
-  divisaSeleccionada =
-    divisasDisponibles[indice] || null;
-
-} else {
-
-  divisaSeleccionada =
-    divisasDisponibles.find(
-      divisa =>
-        String(
-          divisa?.codigo || ""
-        )
-          .trim()
-          .toUpperCase() ===
-        seleccionIngresada
-    ) || null;
-}
-
-if (!divisaSeleccionada) {
-
-  alert(
-    "❌ Selecciona una divisa válida " +
-    "de la lista."
+const divisaSeleccionada =
+  await seleccionarDivisaCatalogoAdmin(
+    divisasDisponibles
   );
 
+if (!divisaSeleccionada) {
   return;
 }
 
