@@ -13089,7 +13089,10 @@ ${localStorage.getItem("admin_rol")==="super_admin" ? `
 ` : ""}
 `;
 
-document.getElementById("cfgNombre").value = cfg.nombre_publico || "";
+document.getElementById("cfgNombre").value =
+  cfg.nombre_publico ||
+  cfg.nombre ||
+  "";
 document.getElementById("cfgSlogan").value = cfg.slogan || "";
 document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
 document.getElementById("cfgZelle").value = cfg.zelle || "";
@@ -15487,7 +15490,7 @@ clienteActual = data;
   const { data: organizadorActualizado, error } = await supabaseClient
     .from("organizadores")
     .update({
-      nombre_publico: document.getElementById("cfgNombre").value.trim(),
+      nombre: document.getElementById("cfgNombre").value.trim(),
       slogan: document.getElementById("cfgSlogan").value.trim(),
       whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
       zelle: document.getElementById("cfgZelle").value.trim(),
