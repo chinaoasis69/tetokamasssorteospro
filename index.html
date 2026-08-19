@@ -15487,7 +15487,7 @@ clienteActual = data;
   const { data: organizadorActualizado, error } = await supabaseClient
     .from("organizadores")
     .update({
-      nombre: document.getElementById("cfgNombre").value.trim(),
+      nombre_publico: document.getElementById("cfgNombre").value.trim(),
       slogan: document.getElementById("cfgSlogan").value.trim(),
       whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
       zelle: document.getElementById("cfgZelle").value.trim(),
