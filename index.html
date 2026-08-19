@@ -11241,14 +11241,14 @@ if (!esAleatorio) {
   cifrasSorteo = Number(cifras);
 
   if (
-    !Number.isInteger(cifrasSorteo) ||
-    ![2, 3, 4].includes(cifrasSorteo)
-  ) {
-    alert(
-      "❌ Para este método selecciona 2, 3 o 4 cifras."
-    );
-    return;
-  }
+  !Number.isInteger(cifrasSorteo) ||
+  ![2, 3, 4, 5, 6].includes(cifrasSorteo)
+) {
+  alert(
+    "❌ Para este método selecciona 2, 3, 4, 5 o 6 cifras."
+  );
+  return;
+}
 
 }	
   const imagen = document.getElementById("formImagen").value.trim();
@@ -11674,24 +11674,25 @@ if(!metodo){
 
 let cifrasSorteo = null;
 
-if(metodo !== "aleatorio automático"){
+if (metodo !== "aleatorio automático") {
 
   const cifrasIngresadas = prompt(
-    "Últimas cuántas cifras se utilizarán (2, 3 o 4)"
+    "Últimas cuántas cifras se utilizarán (2, 3, 4, 5 o 6)"
   );
 
-  if(!cifrasIngresadas) return;
+  if (!cifrasIngresadas) return;
 
   cifrasSorteo =
     Number(cifrasIngresadas);
 
-  if(
+  if (
     !Number.isInteger(cifrasSorteo) ||
-    ![2, 3, 4].includes(cifrasSorteo)
-  ){
+    ![2, 3, 4, 5, 6].includes(cifrasSorteo)
+  ) {
     alert(
-      "❌ Cantidad de cifras no válida. Usa 2, 3 o 4."
+      "❌ Cantidad de cifras no válida. Usa 2, 3, 4, 5 o 6."
     );
+
     return;
   }
 }
@@ -37704,13 +37705,13 @@ font-family:Arial, sans-serif;">
 </div>	  
 
 <div id="grupoFormCifras">
-  <input
-    id="formCifras"
-    type="number"
-    min="2"
-    max="4"
-    placeholder="Últimas cifras: 2, 3 o 4"
-  >
+ <input
+  id="formCifras"
+  type="number"
+  min="2"
+  max="6"
+  placeholder="Últimas cifras: 2, 3, 4, 5 o 6"
+> 
 </div>
     <input id="formImagen" placeholder="URL imagen premio">
     <textarea id="formAviso" placeholder="Aviso del sorteo"></textarea>
