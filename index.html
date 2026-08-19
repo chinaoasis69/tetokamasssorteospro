@@ -14314,42 +14314,201 @@ async function agregarDivisaOrganizadorAdmin(
     return;
   }
 
-  const codigo =
-    String(
-      prompt(
-        "🌐 Código de la divisa\n\n" +
-        "Ejemplos:\n" +
-        "USD\n" +
-        "MXN\n" +
-        "EUR"
-      ) || ""
+  let codigo = "";
+let nombreDivisa = "";
+
+const {
+  data: catalogoDivisas,
+  error: errorCatalogo
+} = await supabaseClient
+  .from("divisas_mass")
+  .select(
+    "codigo,nombre,simbolo,pais_region,orden"
+  )
+  .eq("activa", true)
+  .order("orden", {
+    ascending: true
+  });
+
+if (errorCatalogo) {
+
+  console.error(
+    "ERROR CARGANDO CATÁLOGO DE DIVISAS:",
+    errorCatalogo
+  );
+
+  alert(
+    "❌ No fue posible cargar el catálogo de divisas."
+  );
+
+  return;
+}
+
+const {
+  data: configuracionActual,
+  error: errorConfiguracion
+} = await supabaseClient.rpc(
+  "listar_divisas_organizador_segura",
+  {
+    p_organizador_id:
+      orgId
+  }
+);
+
+if (errorConfiguracion) {
+
+  console.error(
+    "ERROR CONSULTANDO DIVISAS DEL ORGANIZADOR:",
+    errorConfiguracion
+  );
+
+  alert(
+    "❌ No fue posible consultar las divisas actuales."
+  );
+
+  return;
+}
+
+const codigosConfigurados =
+  new Set(
+    (
+      Array.isArray(
+        configuracionActual?.divisas
+      )
+        ? configuracionActual.divisas
+        : []
     )
-      .trim()
-      .toUpperCase();
+      .map(divisa =>
+        String(
+          divisa?.moneda_codigo || ""
+        )
+          .trim()
+          .toUpperCase()
+      )
+      .filter(Boolean)
+  );
 
-  if (!codigo) {
-    return;
-  }
-
-  if (!/^[A-Z]{3}$/.test(codigo)) {
-    alert(
-      "❌ Escribe un código de divisa válido de 3 letras.\n\n" +
-      "Ejemplo: USD, MXN o EUR."
+const divisasDisponibles =
+  (
+    Array.isArray(catalogoDivisas)
+      ? catalogoDivisas
+      : []
+  )
+    .filter(divisa =>
+      !codigosConfigurados.has(
+        String(
+          divisa?.codigo || ""
+        )
+          .trim()
+          .toUpperCase()
+      )
     );
-    return;
-  }
 
-  const confirmar =
-    confirm(
+if (!divisasDisponibles.length) {
+
+  alert(
+    "✅ Este organizador ya tiene configuradas " +
+    "todas las divisas activas disponibles."
+  );
+
+  return;
+}
+
+const listaDivisas =
+  divisasDisponibles
+    .map(
+      (divisa, indice) =>
+        `${indice + 1}. ` +
+        `${divisa.codigo} — ` +
+        `${divisa.nombre}` +
+        (
+          divisa.pais_region
+            ? ` — ${divisa.pais_region}`
+            : ""
+        )
+    )
+    .join("\n");
+
+const seleccionIngresada =
+  String(
+    prompt(
       "🌐 AGREGAR DIVISA\n\n" +
-      "Divisa: " + codigo + "\n\n" +
-      "La divisa quedará activa para este organizador.\n\n" +
-      "¿Deseas continuar?"
-    );
+      "Divisas disponibles:\n\n" +
+      listaDivisas +
+      "\n\n" +
+      "Escribe el NÚMERO o el CÓDIGO " +
+      "de la divisa que deseas agregar."
+    ) || ""
+  )
+    .trim()
+    .toUpperCase();
 
-  if (!confirmar) {
-    return;
-  }
+if (!seleccionIngresada) {
+  return;
+}
+
+let divisaSeleccionada = null;
+
+if (/^\d+$/.test(seleccionIngresada)) {
+
+  const indice =
+    Number(seleccionIngresada) - 1;
+
+  divisaSeleccionada =
+    divisasDisponibles[indice] || null;
+
+} else {
+
+  divisaSeleccionada =
+    divisasDisponibles.find(
+      divisa =>
+        String(
+          divisa?.codigo || ""
+        )
+          .trim()
+          .toUpperCase() ===
+        seleccionIngresada
+    ) || null;
+}
+
+if (!divisaSeleccionada) {
+
+  alert(
+    "❌ Selecciona una divisa válida " +
+    "de la lista."
+  );
+
+  return;
+}
+
+codigo =
+  String(
+    divisaSeleccionada.codigo
+  )
+    .trim()
+    .toUpperCase();
+
+nombreDivisa =
+  String(
+    divisaSeleccionada.nombre ||
+    codigo
+  ).trim();
+
+const confirmar =
+  confirm(
+    "🌐 AGREGAR DIVISA\n\n" +
+    "Divisa: " +
+    codigo +
+    " — " +
+    nombreDivisa +
+    "\n\n" +
+    "La divisa quedará activa para este organizador.\n\n" +
+    "¿Deseas continuar?"
+  );
+
+if (!confirmar) {
+  return;
+}
 
   try {
 
