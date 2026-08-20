@@ -3720,11 +3720,80 @@ async function mostrarMetodosPagoAdmin() {
                       ${configurado}
                     </div>
 
+					<div
+  style="
+    margin-top:12px;
+    text-align:center;
+  "
+>
+  ${
+    metodo?.ya_configurado === true
+      ? ""
+      : `
+        <button
+          type="button"
+          class="btnConfigurarMetodoPagoAdmin"
+          data-metodo-pago-pais-id="${escaparHtml(
+            metodo?.metodo_pago_pais_id || ""
+          )}"
+          data-metodo-codigo="${escaparHtml(
+            metodo?.codigo || ""
+          )}"
+          data-metodo-nombre="${escaparHtml(
+            metodo?.nombre || metodo?.codigo || ""
+          )}"
+          data-permite-pago-directo="${
+            metodo?.permite_pago_directo === true
+              ? "true"
+              : "false"
+          }"
+          data-permite-recarga-wallet="${
+            metodo?.permite_recarga_wallet === true
+              ? "true"
+              : "false"
+          }"
+        >
+          ⚙️ Configurar
+        </button>
+      `
+  }
+</div>
+
                   </div>
                 `;
 
               })
               .join("");
+
+		document
+  .querySelectorAll(".btnConfigurarMetodoPagoAdmin")
+  .forEach(boton => {
+
+    boton.addEventListener("click", () => {
+
+      console.log(
+        "MÉTODO SELECCIONADO PARA CONFIGURAR:",
+        {
+          metodo_pago_pais_id:
+            boton.dataset.metodoPagoPaisId,
+
+          codigo:
+            boton.dataset.metodoCodigo,
+
+          nombre:
+            boton.dataset.metodoNombre,
+
+          permite_pago_directo:
+            boton.dataset.permitePagoDirecto,
+
+          permite_recarga_wallet:
+            boton.dataset.permiteRecargaWallet
+        }
+      );
+
+    });
+
+  });	
 
         }
       );
