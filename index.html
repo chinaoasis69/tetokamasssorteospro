@@ -3205,6 +3205,79 @@ async function mostrarMetodosPagoAdmin() {
       return;
     }
 
+	    // =====================================================
+    // 5. CARGAR PAÍSES DISPONIBLES
+    // =====================================================
+
+    const {
+      data: dataPaises,
+      error: errorPaises
+    } = await supabaseClient.rpc(
+      "listar_paises_metodos_pago_segura",
+      {
+        p_organizador_id: organizadorId
+      }
+    );
+
+
+    if (errorPaises) {
+
+      console.error(
+        "ERROR LISTANDO PAÍSES DE MÉTODOS DE PAGO:",
+        errorPaises
+      );
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #ff4d4f;
+            border-radius:12px;
+            color:#ff8a8a;
+          "
+        >
+          ❌ No fue posible cargar los países disponibles.
+          <br><br>
+          ${escaparHtml(
+            errorPaises.message ||
+            "Error desconocido."
+          )}
+        </div>
+      `;
+
+      return;
+    }
+
+
+    const paises =
+      Array.isArray(dataPaises?.paises)
+        ? dataPaises.paises
+        : [];
+
+
+    const opcionesPaises =
+      paises
+        .map(pais => `
+
+          <option
+            value="${escaparHtml(
+              pais.codigo_iso2 || ""
+            )}"
+          >
+            ${escaparHtml(
+              pais.nombre || pais.codigo_iso2 || ""
+            )}
+            — ${Number(
+              pais.metodos_disponibles || 0
+            )} métodos
+            — ${Number(
+              pais.metodos_configurados || 0
+            )} configurados
+          </option>
+
+        `)
+        .join("");
+
 
     // =====================================================
     // 5. NORMALIZAR RESPUESTA
@@ -3386,7 +3459,59 @@ async function mostrarMetodosPagoAdmin() {
           Organizador:
           <b>${escaparHtml(organizadorId)}</b>
         </div>
+		
+ <div
+          style="
+            margin-bottom:20px;
+            padding:16px;
+            border:1px solid rgba(57,255,20,.45);
+            border-radius:14px;
+            text-align:left;
+          "
+        >
 
+          <label
+            for="selectPaisMetodoPagoAdmin"
+            style="
+              display:block;
+              margin-bottom:8px;
+              font-weight:bold;
+              color:#39ff14;
+            "
+          >
+            🌎 País
+          </label>
+		            <select
+            id="selectPaisMetodoPagoAdmin"
+            style="
+              width:100%;
+              padding:12px;
+              border-radius:10px;
+              box-sizing:border-box;
+            "
+          >
+
+            <option value="">
+              Selecciona un país
+            </option>
+
+            ${opcionesPaises}
+
+          </select>
+
+		 <div
+          id="metodosDisponiblesPaisAdmin"
+          style="
+            margin-bottom:20px;
+            padding:16px;
+            border:1px solid rgba(57,255,20,.25);
+            border-radius:14px;
+            color:#ccc;
+            text-align:left;
+          "
+        >
+          Selecciona un país para ver sus métodos de pago disponibles.
+        </div> 
 
         <div
           style="
@@ -3421,6 +3546,190 @@ async function mostrarMetodosPagoAdmin() {
 
       </div>
     `;
+
+    // =====================================================
+    // CARGAR MÉTODOS CUANDO CAMBIA EL PAÍS
+    // =====================================================
+
+    const selectPaisMetodoPagoAdmin =
+      document.getElementById(
+        "selectPaisMetodoPagoAdmin"
+      );
+
+    const metodosDisponiblesPaisAdmin =
+      document.getElementById(
+        "metodosDisponiblesPaisAdmin"
+      );
+
+
+    if (
+      selectPaisMetodoPagoAdmin &&
+      metodosDisponiblesPaisAdmin
+    ) {
+
+      selectPaisMetodoPagoAdmin.addEventListener(
+        "change",
+        async () => {
+
+          const paisCodigo =
+            String(
+              selectPaisMetodoPagoAdmin.value || ""
+            )
+              .trim()
+              .toUpperCase();
+
+
+          if (!paisCodigo) {
+
+            metodosDisponiblesPaisAdmin.innerHTML =
+              "Selecciona un país para ver sus métodos de pago disponibles.";
+
+            return;
+          }
+
+
+          metodosDisponiblesPaisAdmin.innerHTML = `
+            <div style="text-align:center;">
+              ⏳ Cargando métodos disponibles...
+            </div>
+          `;
+
+
+          const {
+            data: dataDisponibles,
+            error: errorDisponibles
+          } = await supabaseClient.rpc(
+            "listar_metodos_pago_disponibles_pais_segura",
+            {
+              p_organizador_id: organizadorId,
+              p_pais_codigo: paisCodigo
+            }
+          );
+
+
+          if (errorDisponibles) {
+
+            console.error(
+              "ERROR CARGANDO MÉTODOS DISPONIBLES:",
+              errorDisponibles
+            );
+
+            metodosDisponiblesPaisAdmin.innerHTML = `
+              <div style="color:#ff8a8a;">
+                ❌ No fue posible cargar los métodos
+                disponibles para este país.
+                <br><br>
+                ${escaparHtml(
+                  errorDisponibles.message ||
+                  "Error desconocido."
+                )}
+              </div>
+            `;
+
+            return;
+          }
+
+
+          const metodosDisponibles =
+            Array.isArray(dataDisponibles?.metodos)
+              ? dataDisponibles.metodos
+              : [];
+
+
+          if (metodosDisponibles.length === 0) {
+
+            metodosDisponiblesPaisAdmin.innerHTML = `
+              <div>
+                No existen métodos de pago disponibles
+                para el país seleccionado.
+              </div>
+            `;
+
+            return;
+          }
+
+
+          metodosDisponiblesPaisAdmin.innerHTML =
+            metodosDisponibles
+              .map(metodo => {
+
+                const pagoDirecto =
+                  metodo?.permite_pago_directo === true
+                    ? "✅"
+                    : "❌";
+
+                const recargaWallet =
+                  metodo?.permite_recarga_wallet === true
+                    ? "✅"
+                    : "❌";
+
+                const configurado =
+                  metodo?.ya_configurado === true
+                    ? (
+                        metodo?.configuracion_activa === true
+                          ? "🟢 Configurado y activo"
+                          : "🔴 Configurado y deshabilitado"
+                      )
+                    : "⚪ Sin configurar";
+
+
+                return `
+                  <div
+                    style="
+                      margin:12px 0;
+                      padding:14px;
+                      border:1px solid rgba(57,255,20,.35);
+                      border-radius:12px;
+                      background:#111;
+                    "
+                  >
+
+                    <div
+                      style="
+                        font-weight:bold;
+                        color:#39ff14;
+                        margin-bottom:8px;
+                      "
+                    >
+                      ${escaparHtml(
+                        metodo?.nombre ||
+                        metodo?.codigo ||
+                        "Método de pago"
+                      )}
+                    </div>
+
+                    <div>
+                      <b>Categoría:</b>
+                      ${escaparHtml(
+                        metodo?.categoria || "--"
+                      )}
+                    </div>
+
+                    <div>
+                      <b>Pago directo:</b>
+                      ${pagoDirecto}
+                    </div>
+
+                    <div>
+                      <b>Recarga Wallet MASS:</b>
+                      ${recargaWallet}
+                    </div>
+
+                    <div>
+                      <b>Estado:</b>
+                      ${configurado}
+                    </div>
+
+                  </div>
+                `;
+
+              })
+              .join("");
+
+        }
+      );
+
+    }	  
 
 
   } catch (error) {
