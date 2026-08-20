@@ -3836,6 +3836,533 @@ async function mostrarMetodosPagoAdmin() {
         dataPlantilla
     );
 
+// =====================================================
+// PAGOS-UI-PLANTILLA-2
+// CONSTRUIR FORMULARIO DESDE PLANTILLA SEGURA
+// TODAVÍA NO GUARDA DATOS
+// =====================================================
+
+if (
+    !dataPlantilla ||
+    dataPlantilla.ok !== true ||
+    dataPlantilla.plantilla_configurada !== true ||
+    !dataPlantilla.plantilla
+) {
+
+    contenedor.innerHTML = `
+        <div
+            style="
+                padding:16px;
+                border:1px solid #ff4d4f;
+                border-radius:12px;
+                color:#ff8a8a;
+                text-align:left;
+            "
+        >
+            ❌ Este método de pago todavía no tiene
+            una plantilla administrativa disponible.
+        </div>
+    `;
+
+    return;
+}
+
+
+const plantilla =
+    dataPlantilla.plantilla;
+
+const metodoInfo =
+    dataPlantilla.metodo || {};
+
+const paisInfo =
+    dataPlantilla.pais || {};
+
+const camposAdicionales =
+    Array.isArray(
+        plantilla.campos_adicionales
+    )
+        ? plantilla.campos_adicionales
+        : [];
+
+
+const permitePagoDirecto =
+    boton.dataset.permitePagoDirecto === "true";
+
+const permiteRecargaWallet =
+    boton.dataset.permiteRecargaWallet === "true";
+
+
+// =====================================================
+// CAMPO DESTINO
+// =====================================================
+
+const destinoHtml = `
+
+    <div style="margin-bottom:18px;">
+
+        <label
+            for="metodoPagoDestinoValorAdmin"
+            style="
+                display:block;
+                margin-bottom:7px;
+                font-weight:bold;
+            "
+        >
+            ${escaparHtml(
+                plantilla.destino_etiqueta ||
+                "Destino"
+            )}
+            ${
+                plantilla.destino_valor_requerido === true
+                    ? " *"
+                    : ""
+            }
+        </label>
+
+        <input
+            id="metodoPagoDestinoValorAdmin"
+            type="text"
+            value=""
+            placeholder="${escaparHtml(
+                plantilla.destino_placeholder || ""
+            )}"
+            ${
+                plantilla.destino_valor_requerido === true
+                    ? "required"
+                    : ""
+            }
+            ${
+                plantilla.destino_regex
+                    ? `pattern="${escaparHtml(
+                        plantilla.destino_regex
+                    )}"`
+                    : ""
+            }
+            style="
+                width:100%;
+                padding:12px;
+                border-radius:10px;
+                border:1px solid #777;
+                box-sizing:border-box;
+            "
+        >
+
+        ${
+            plantilla.destino_ayuda
+                ? `
+                    <div
+                        style="
+                            margin-top:6px;
+                            font-size:13px;
+                            color:#bbb;
+                        "
+                    >
+                        ${escaparHtml(
+                            plantilla.destino_ayuda
+                        )}
+                    </div>
+                `
+                : ""
+        }
+
+    </div>
+`;
+
+
+// =====================================================
+// TITULAR
+// =====================================================
+
+const titularHtml =
+    plantilla.titular_visible === true
+        ? `
+            <div style="margin-bottom:18px;">
+
+                <label
+                    for="metodoPagoTitularAdmin"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:bold;
+                    "
+                >
+                    ${escaparHtml(
+                        plantilla.titular_etiqueta ||
+                        "Titular"
+                    )}
+                    ${
+                        plantilla.titular_requerido === true
+                            ? " *"
+                            : ""
+                    }
+                </label>
+
+                <input
+                    id="metodoPagoTitularAdmin"
+                    type="text"
+                    value=""
+                    ${
+                        plantilla.titular_requerido === true
+                            ? "required"
+                            : ""
+                    }
+                    style="
+                        width:100%;
+                        padding:12px;
+                        border-radius:10px;
+                        border:1px solid #777;
+                        box-sizing:border-box;
+                    "
+                >
+
+                ${
+                    plantilla.titular_ayuda
+                        ? `
+                            <div
+                                style="
+                                    margin-top:6px;
+                                    font-size:13px;
+                                    color:#bbb;
+                                "
+                            >
+                                ${escaparHtml(
+                                    plantilla.titular_ayuda
+                                )}
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+        `
+        : "";
+
+
+// =====================================================
+// INSTRUCCIONES
+// =====================================================
+
+const instruccionesHtml =
+    plantilla.instrucciones_visibles === true
+        ? `
+            <div style="margin-bottom:18px;">
+
+                <label
+                    for="metodoPagoInstruccionesAdmin"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:bold;
+                    "
+                >
+                    ${escaparHtml(
+                        plantilla.instrucciones_etiqueta ||
+                        "Instrucciones"
+                    )}
+                    ${
+                        plantilla.instrucciones_requeridas === true
+                            ? " *"
+                            : ""
+                    }
+                </label>
+
+                <textarea
+                    id="metodoPagoInstruccionesAdmin"
+                    rows="4"
+                    ${
+                        plantilla.instrucciones_requeridas === true
+                            ? "required"
+                            : ""
+                    }
+                    style="
+                        width:100%;
+                        padding:12px;
+                        border-radius:10px;
+                        border:1px solid #777;
+                        box-sizing:border-box;
+                        resize:vertical;
+                    "
+                ></textarea>
+
+                ${
+                    plantilla.instrucciones_ayuda
+                        ? `
+                            <div
+                                style="
+                                    margin-top:6px;
+                                    font-size:13px;
+                                    color:#bbb;
+                                "
+                            >
+                                ${escaparHtml(
+                                    plantilla.instrucciones_ayuda
+                                )}
+                            </div>
+                        `
+                        : ""
+                }
+
+            </div>
+        `
+        : "";
+
+
+// =====================================================
+// CAMPOS ADICIONALES
+// =====================================================
+
+const camposAdicionalesHtml =
+    camposAdicionales
+        .map(campo => {
+
+            const clave =
+                String(
+                    campo?.clave || ""
+                ).trim();
+
+            const etiqueta =
+                campo?.etiqueta ||
+                clave ||
+                "Campo adicional";
+
+            const tipoPermitido =
+                [
+                    "text",
+                    "email",
+                    "tel",
+                    "number",
+                    "url"
+                ].includes(
+                    String(
+                        campo?.tipo_input || ""
+                    ).toLowerCase()
+                )
+                    ? String(
+                        campo.tipo_input
+                    ).toLowerCase()
+                    : "text";
+
+            return `
+
+                <div style="margin-bottom:18px;">
+
+                    <label
+                        style="
+                            display:block;
+                            margin-bottom:7px;
+                            font-weight:bold;
+                        "
+                    >
+                        ${escaparHtml(etiqueta)}
+                        ${
+                            campo?.requerido === true
+                                ? " *"
+                                : ""
+                        }
+                    </label>
+
+                    <input
+                        type="${tipoPermitido}"
+                        class="campoAdicionalMetodoPagoAdmin"
+                        data-clave="${escaparHtml(clave)}"
+                        value=""
+                        placeholder="${escaparHtml(
+                            campo?.placeholder || ""
+                        )}"
+                        ${
+                            campo?.requerido === true
+                                ? "required"
+                                : ""
+                        }
+                        ${
+                            campo?.regex
+                                ? `pattern="${escaparHtml(
+                                    campo.regex
+                                )}"`
+                                : ""
+                        }
+                        style="
+                            width:100%;
+                            padding:12px;
+                            border-radius:10px;
+                            border:1px solid #777;
+                            box-sizing:border-box;
+                        "
+                    >
+
+                    ${
+                        campo?.ayuda
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:6px;
+                                        font-size:13px;
+                                        color:#bbb;
+                                    "
+                                >
+                                    ${escaparHtml(
+                                        campo.ayuda
+                                    )}
+                                </div>
+                            `
+                            : ""
+                    }
+
+                </div>
+            `;
+
+        })
+        .join("");
+
+
+// =====================================================
+// RENDERIZAR FORMULARIO
+// =====================================================
+
+contenedor.innerHTML = `
+
+    <div
+        style="
+            max-width:700px;
+            margin:0 auto;
+            padding:18px;
+            text-align:left;
+        "
+    >
+
+        <h2
+            style="
+                text-align:center;
+                color:#39ff14;
+                margin-bottom:8px;
+            "
+        >
+            💳 Configurar método de pago
+        </h2>
+
+        <div
+            style="
+                text-align:center;
+                margin-bottom:22px;
+                color:#ddd;
+            "
+        >
+            <b>${escaparHtml(
+                metodoInfo.nombre ||
+                metodoInfo.codigo ||
+                boton.dataset.metodoNombre ||
+                "Método de pago"
+            )}</b>
+
+            <br>
+
+            ${escaparHtml(
+                paisInfo.nombre ||
+                paisInfo.codigo_iso2 ||
+                ""
+            )}
+        </div>
+
+
+        <div
+            style="
+                margin-bottom:20px;
+                padding:12px;
+                border:1px solid rgba(57,255,20,.35);
+                border-radius:12px;
+            "
+        >
+
+            <div>
+                Pago directo:
+                <b>
+                    ${permitePagoDirecto ? "✅ Disponible" : "❌ No disponible"}
+                </b>
+            </div>
+
+            <div style="margin-top:6px;">
+                Recarga Wallet MASS:
+                <b>
+                    ${permiteRecargaWallet ? "✅ Disponible" : "❌ No disponible"}
+                </b>
+            </div>
+
+        </div>
+
+
+        <form
+            id="formConfigurarMetodoPagoAdmin"
+            autocomplete="off"
+        >
+
+            ${destinoHtml}
+
+            ${titularHtml}
+
+            ${instruccionesHtml}
+
+            ${camposAdicionalesHtml}
+
+
+            <div
+                style="
+                    margin-top:24px;
+                    text-align:center;
+                "
+            >
+
+                <button
+                    id="btnVolverMetodosPagoAdmin"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                        margin:6px;
+                    "
+                >
+                    ← Volver
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <div
+            style="
+                margin-top:14px;
+                text-align:center;
+                font-size:13px;
+                color:#aaa;
+            "
+        >
+            Vista de configuración.
+            Todavía no se guardará ningún dato.
+        </div>
+
+    </div>
+`;
+
+
+// =====================================================
+// VOLVER AL LISTADO
+// =====================================================
+
+const btnVolverMetodosPagoAdmin =
+    document.getElementById(
+        "btnVolverMetodosPagoAdmin"
+    );
+
+if (btnVolverMetodosPagoAdmin) {
+
+    btnVolverMetodosPagoAdmin
+        .addEventListener(
+            "click",
+            () => {
+                mostrarMetodosPagoAdmin();
+            }
+        );
+}	   
+
 }); 
 
   });	
