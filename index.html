@@ -2166,6 +2166,15 @@ Cargando historial...
 </button>
 
 <button
+  id="btnMetodosPagoAdmin"
+  type="button"
+  onclick="mostrarMetodosPagoAdmin()"
+  style="display:none;"
+>
+  💳 Administrar Métodos de Pago
+</button>	
+
+<button
   id="btnConvertidorMassAdmin"
   type="button"
   onclick="mostrarConvertidorMassAdmin()"
@@ -2990,6 +2999,7 @@ async function volverPanelSuperAdmin(){
 window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
 	const btnDivisas = document.getElementById("btnDivisasAdmin");
+	const btnMetodosPago = document.getElementById("btnMetodosPagoAdmin");
 	const btnConvertidor =
     document.getElementById("btnConvertidorMassAdmin");
     const rol = localStorage.getItem("admin_rol");
@@ -3000,6 +3010,14 @@ window.addEventListener("load", () => {
 
   btnDivisas.style.display = puedeAdministrarDivisas ? "" : "none";
 }
+
+if (btnMetodosPago) {
+  const puedeAdministrarMetodosPago =
+    rol === "super_admin" || rol === "organizador";
+
+  btnMetodosPago.style.display =
+    puedeAdministrarMetodosPago ? "" : "none";
+}	
 
 if (btnConvertidor) {
   const puedeAdministrarConvertidor =
@@ -3024,6 +3042,412 @@ if (btnConvertidor) {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
+
+// =========================================================
+// MASS — ADMINISTRAR MÉTODOS DE PAGO
+// CARGA SEGURA DE CONFIGURACIONES DEL ORGANIZADOR
+// =========================================================
+
+async function mostrarMetodosPagoAdmin() {
+
+  const contenedor =
+    document.getElementById("adminContenido");
+
+  if (!contenedor) {
+    alert("❌ No se encontró el contenedor administrativo.");
+    return;
+  }
+
+
+  contenedor.innerHTML = `
+    <div style="padding:18px;text-align:center;">
+      ⏳ Validando autorización y cargando métodos de pago...
+    </div>
+  `;
+
+
+  const escaparHtml = valor =>
+    String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+
+  try {
+
+    // =====================================================
+    // 1. VALIDAR SESIÓN ADMINISTRATIVA
+    // =====================================================
+
+    const adminActual =
+      await obtenerAdminActual();
+
+
+    if (
+      !adminActual ||
+      ![
+        "super_admin",
+        "organizador"
+      ].includes(adminActual.rol)
+    ) {
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #ff4d4f;
+            border-radius:12px;
+            color:#ff8a8a;
+          "
+        >
+          ❌ No existe una sesión administrativa autorizada.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    // =====================================================
+    // 2. RESOLVER ORGANIZADOR
+    // MISMO PATRÓN SEGURO DE ADMINISTRAR DIVISAS
+    // =====================================================
+
+    let organizadorId = null;
+
+
+    if (adminActual.rol === "organizador") {
+
+      organizadorId =
+        adminActual.organizador_id ||
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id");
+
+    } else {
+
+      organizadorId =
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id") ||
+        (
+          clienteActual && clienteActual.id
+            ? clienteActual.id
+            : null
+        ) ||
+        adminActual.organizador_id;
+
+    }
+
+
+    // =====================================================
+    // 3. SUPER ADMIN SIN ORGANIZADOR SELECCIONADO
+    // =====================================================
+
+    if (!organizadorId) {
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #facc15;
+            border-radius:12px;
+            color:#facc15;
+          "
+        >
+          ⚠️ Primero selecciona el organizador cuyos
+          métodos de pago deseas administrar.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    // =====================================================
+    // 4. RPC PRIVADA SEGURA
+    // =====================================================
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "listar_metodos_pago_organizador_segura",
+        {
+          p_organizador_id: organizadorId
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR LISTANDO MÉTODOS DE PAGO:",
+        error
+      );
+
+      contenedor.innerHTML = `
+        <div
+          style="
+            padding:16px;
+            border:1px solid #ff4d4f;
+            border-radius:12px;
+            color:#ff8a8a;
+          "
+        >
+          ❌ No fue posible cargar los métodos de pago.
+          <br><br>
+          ${escaparHtml(
+            error.message ||
+            "Error desconocido."
+          )}
+        </div>
+      `;
+
+      return;
+    }
+
+
+    // =====================================================
+    // 5. NORMALIZAR RESPUESTA
+    // =====================================================
+
+    const metodos =
+      Array.isArray(data?.metodos)
+        ? data.metodos
+        : [];
+
+
+    const total =
+      Number.isInteger(data?.total)
+        ? data.total
+        : metodos.length;
+
+
+    // =====================================================
+    // 6. CONSTRUIR TARJETAS
+    // =====================================================
+
+    const tarjetas = metodos
+      .map(item => {
+
+        const pais =
+          item?.pais || {};
+
+        const metodo =
+          item?.metodo || {};
+
+
+        const pagoDirecto =
+          item?.acepta_pago_directo === true
+            ? "✅ Sí"
+            : "❌ No";
+
+
+        const recargaWallet =
+          item?.acepta_recarga_wallet === true
+            ? "✅ Sí"
+            : "❌ No";
+
+
+        const estado =
+          item?.activo === true
+            ? "🟢 Activo"
+            : "🔴 Deshabilitado";
+
+
+        return `
+          <div
+            style="
+              margin:14px 0;
+              padding:16px;
+              border:1px solid rgba(57,255,20,.45);
+              border-radius:14px;
+              background:#111;
+              text-align:left;
+            "
+          >
+
+            <div
+              style="
+                font-size:19px;
+                font-weight:bold;
+                color:#39ff14;
+                margin-bottom:10px;
+              "
+            >
+              ${escaparHtml(
+                metodo.nombre ||
+                metodo.codigo ||
+                "Método de pago"
+              )}
+            </div>
+
+
+            <div>
+              <b>País:</b>
+              ${escaparHtml(
+                pais.nombre || "--"
+              )}
+              ${pais.codigo_iso2
+                ? `(${escaparHtml(pais.codigo_iso2)})`
+                : ""
+              }
+            </div>
+
+
+            <div>
+              <b>Categoría:</b>
+              ${escaparHtml(
+                metodo.categoria || "--"
+              )}
+            </div>
+
+
+            <div>
+              <b>Estado:</b>
+              ${estado}
+            </div>
+
+
+            <div>
+              <b>Pago directo:</b>
+              ${pagoDirecto}
+            </div>
+
+
+            <div>
+              <b>Recarga Wallet MASS:</b>
+              ${recargaWallet}
+            </div>
+
+
+            <div>
+              <b>Destino:</b>
+              ${escaparHtml(
+                item?.destino_valor || "--"
+              )}
+            </div>
+
+
+            <div>
+              <b>Tipo de destino:</b>
+              ${escaparHtml(
+                item?.destino_tipo || "--"
+              )}
+            </div>
+
+
+            <div>
+              <b>Titular:</b>
+              ${escaparHtml(
+                item?.titular || "--"
+              )}
+            </div>
+
+
+            <div>
+              <b>Versión:</b>
+              ${escaparHtml(
+                item?.version ?? "--"
+              )}
+            </div>
+
+          </div>
+        `;
+
+      })
+      .join("");
+
+
+    // =====================================================
+    // 7. PINTAR MÓDULO
+    // =====================================================
+
+    contenedor.innerHTML = `
+
+      <div
+        style="
+          max-width:760px;
+          margin:0 auto;
+          padding:18px;
+        "
+      >
+
+        <h2 style="color:#39ff14;">
+          💳 Administrar Métodos de Pago
+        </h2>
+
+
+        <div
+          style="
+            margin-bottom:16px;
+            color:#ccc;
+          "
+        >
+          Organizador:
+          <b>${escaparHtml(organizadorId)}</b>
+        </div>
+
+
+        <div
+          style="
+            margin-bottom:20px;
+            padding:12px;
+            border:1px solid rgba(57,255,20,.35);
+            border-radius:12px;
+          "
+        >
+          Métodos configurados:
+          <b>${total}</b>
+        </div>
+
+
+        ${
+          total === 0
+            ? `
+              <div
+                style="
+                  padding:20px;
+                  border:1px solid #39ff14;
+                  border-radius:14px;
+                  color:#ccc;
+                "
+              >
+                Todavía no existen métodos de pago
+                configurados para este organizador.
+              </div>
+            `
+            : tarjetas
+        }
+
+      </div>
+    `;
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR MOSTRANDO MÉTODOS DE PAGO:",
+      error
+    );
+
+
+    contenedor.innerHTML = `
+      <div
+        style="
+          padding:16px;
+          border:1px solid #ff4d4f;
+          border-radius:12px;
+          color:#ff8a8a;
+        "
+      >
+        ❌ Ocurrió un error inesperado al abrir
+        Administrar Métodos de Pago.
+      </div>
+    `;
+
+  }
+
+}	
 
 function abrirModalGanadores() {
     document.getElementById("modalGanadores").style.display = "block";
