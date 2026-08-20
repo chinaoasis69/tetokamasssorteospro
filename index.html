@@ -3727,9 +3727,7 @@ async function mostrarMetodosPagoAdmin() {
   "
 >
   ${
-    metodo?.ya_configurado === true
-      ? ""
-      : `
+     `
         <button
           type="button"
           class="btnConfigurarMetodoPagoAdmin"
@@ -3782,7 +3780,11 @@ data-configuracion-activa="${
 }"
 
         >
-          ⚙️ Configurar
+          ${
+    metodo?.ya_configurado === true
+        ? "✏️ Editar"
+        : "⚙️ Configurar"
+}
         </button>
       `
   }
@@ -3897,7 +3899,7 @@ const configuracionActiva =
 // =====================================================
 // PAGOS-UI-PLANTILLA-2
 // CONSTRUIR FORMULARIO DESDE PLANTILLA SEGURA
-// TODAVÍA NO GUARDA DATOS
+// SOPORTA CREACION Y EDICION SEGURA
 // =====================================================
 
 if (
@@ -3948,7 +3950,221 @@ const permitePagoDirecto =
 
 const permiteRecargaWallet =
     boton.dataset.permiteRecargaWallet === "true";
+	   
+// =====================================================
+// PAGOS-EDICION-2A
+// CARGAR CONFIGURACIÓN EXISTENTE DE FORMA SEGURA
+// NO IMPRIME DATOS BANCARIOS EN CONSOLE
+// =====================================================
 
+let configuracionActual = null;
+
+
+if (yaConfigurado === true) {
+
+    const {
+        data: dataConfigurados,
+        error: errorConfigurados
+    } =
+        await supabaseClient.rpc(
+            "listar_metodos_pago_organizador_segura",
+            {
+                p_organizador_id:
+                    organizadorId
+            }
+        );
+
+
+    if (errorConfigurados) {
+
+        console.error(
+            "ERROR CARGANDO CONFIGURACIÓN ACTUAL " +
+            "DEL MÉTODO:",
+            errorConfigurados
+        );
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:16px;
+                    border:1px solid #ff4d4f;
+                    border-radius:12px;
+                    color:#ff8a8a;
+                "
+            >
+                ❌ No fue posible cargar la
+                configuración actual del método de pago.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    configuracionActual =
+        Array.isArray(
+            dataConfigurados?.metodos
+        )
+            ? dataConfigurados.metodos.find(
+                item =>
+                    String(
+                        item?.metodo_pago_pais_id || ""
+                    ) === metodoPagoPaisId
+            )
+            : null;
+
+
+    if (!configuracionActual) {
+
+        console.error(
+            "CONFIGURACIÓN ACTUAL NO ENCONTRADA.",
+            {
+                metodo_pago_pais_id:
+                    metodoPagoPaisId
+            }
+        );
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:16px;
+                    border:1px solid #ff4d4f;
+                    border-radius:12px;
+                    color:#ff8a8a;
+                "
+            >
+                ❌ El método aparece configurado,
+                pero no fue posible localizar su
+                configuración actual.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // =============================================
+    // CONTROL DE IDENTIDAD Y VERSIÓN
+    // =============================================
+
+    if (
+        configuracionId &&
+        String(
+            configuracionActual?.id || ""
+        ) !== configuracionId
+    ) {
+
+        console.error(
+            "CONFIGURACIÓN ACTUAL NO COINCIDE " +
+            "CON EL ID ESPERADO."
+        );
+
+        return;
+    }
+
+
+    if (
+        Number.isInteger(
+            versionConfiguracion
+        ) &&
+        Number(
+            configuracionActual?.version
+        ) !== versionConfiguracion
+    ) {
+
+        console.error(
+            "VERSIÓN DE CONFIGURACIÓN DESACTUALIZADA."
+        );
+
+        alert(
+            "La configuración cambió desde que " +
+            "se cargó la lista. Vuelve a abrir " +
+            "Administrar Métodos de Pago."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "CONFIGURACIÓN ACTUAL LOCALIZADA:",
+        {
+            encontrada: true,
+            configuracion_id:
+                configuracionActual.id,
+            version:
+                configuracionActual.version,
+            activa:
+                configuracionActual.activo
+        }
+    );
+}
+
+// =====================================================
+// PAGOS-EDICION-2B
+// NORMALIZAR VALORES ACTUALES PARA PRECARGA
+// NO IMPRIME DATOS SENSIBLES
+// =====================================================
+
+const destinoValorActual =
+    configuracionActual
+        ? String(
+            configuracionActual.destino_valor || ""
+        )
+        : "";
+
+const titularActual =
+    configuracionActual
+        ? String(
+            configuracionActual.titular || ""
+        )
+        : "";
+
+const instruccionesActuales =
+    configuracionActual
+        ? String(
+            configuracionActual.instrucciones || ""
+        )
+        : "";
+
+const datosAdicionalesActuales =
+    (
+        configuracionActual &&
+        configuracionActual.datos_adicionales &&
+        typeof configuracionActual.datos_adicionales === "object" &&
+        !Array.isArray(
+            configuracionActual.datos_adicionales
+        )
+    )
+        ? configuracionActual.datos_adicionales
+        : {};
+
+const aceptaPagoDirectoActual =
+    configuracionActual
+        ? configuracionActual.acepta_pago_directo === true
+        : permitePagoDirecto;
+
+const aceptaRecargaWalletActual =
+    configuracionActual
+        ? configuracionActual.acepta_recarga_wallet === true
+        : permiteRecargaWallet;
+
+const ordenActual =
+    (
+        configuracionActual &&
+        Number.isInteger(
+            Number(
+                configuracionActual.orden
+            )
+        ) &&
+        Number(
+            configuracionActual.orden
+        ) >= 1
+    )
+        ? Number(
+            configuracionActual.orden
+        )
+        : 100;	
 
 // =====================================================
 // CAMPO DESTINO
@@ -3980,7 +4196,9 @@ const destinoHtml = `
         <input
             id="metodoPagoDestinoValorAdmin"
             type="text"
-            value=""
+            value="${escaparHtml(
+                destinoValorActual
+            )}"
             placeholder="${escaparHtml(
                 plantilla.destino_placeholder || ""
             )}"
@@ -4058,7 +4276,9 @@ const titularHtml =
                 <input
                     id="metodoPagoTitularAdmin"
                     type="text"
-                    value=""
+                   value="${escaparHtml(
+                     titularActual
+                    )}" 
                     ${
                         plantilla.titular_requerido === true
                             ? "required"
@@ -4140,7 +4360,9 @@ const instruccionesHtml =
                         box-sizing:border-box;
                         resize:vertical;
                     "
-                ></textarea>
+                >${escaparHtml(
+                   instruccionesActuales
+                      )}</textarea>
 
                 ${
                     plantilla.instrucciones_ayuda
@@ -4223,7 +4445,11 @@ const camposAdicionalesHtml =
                         type="${tipoPermitido}"
                         class="campoAdicionalMetodoPagoAdmin"
                         data-clave="${escaparHtml(clave)}"
-                        value=""
+                        value="${escaparHtml(
+                            String(
+                                datosAdicionalesActuales?.[clave] ?? ""
+                            )
+                        )}"
                         placeholder="${escaparHtml(
                             campo?.placeholder || ""
                         )}"
@@ -4383,7 +4609,7 @@ contenedor.innerHTML = `
                     <input
                         id="metodoPagoAceptaPagoDirectoAdmin"
                         type="checkbox"
-                        checked
+                        ${aceptaPagoDirectoActual ? "checked" : ""}
                     >
                     Pago directo
                 </label>
@@ -4402,7 +4628,7 @@ contenedor.innerHTML = `
                     <input
                         id="metodoPagoAceptaRecargaWalletAdmin"
                         type="checkbox"
-                        checked
+                        ${aceptaRecargaWalletActual ? "checked" : ""}
                     >
                     Recarga Wallet MASS
                 </label>
@@ -4473,12 +4699,15 @@ contenedor.innerHTML = `
 	   
 // =====================================================
 // PAGOS-UI-GUARDADO-2
-// GUARDAR CONFIGURACIÓN NUEVA
+// CREAR O ACTUALIZAR CONFIGURACIÓN
 // MEDIANTE RPC SEGURA
 //
-// IMPORTANTE:
-// EN ESTA FASE NO SE PERMITE EDITAR UNA CONFIGURACIÓN
-// YA EXISTENTE HASTA CARGAR SUS VALORES ACTUALES.
+// CREACIÓN:
+// p_version_esperada = null
+//
+// EDICIÓN:
+// p_version_esperada = versión actual
+// CONTROL DE CONCURRENCIA ACTIVO
 // =====================================================
 
 const btnGuardarMetodoPagoAdmin =
@@ -4502,30 +4731,30 @@ if (
             "click",
             async () => {
 
-                // =========================================
-                // 1. PROTEGER CONFIGURACIONES EXISTENTES
-                // =========================================
+// =========================================
+// 1. VALIDAR VERSION PARA EDICION
+// =========================================
 
-                if (yaConfigurado === true) {
+if (
+    yaConfigurado === true &&
+    !Number.isInteger(
+        versionConfiguracion
+    )
+) {
 
-                    console.warn(
-                        "GUARDADO BLOQUEADO: " +
-                        "el método ya está configurado.",
-                        {
-                            configuracionId,
-                            versionConfiguracion,
-                            configuracionActiva
-                        }
-                    );
+    console.error(
+        "EDICIÓN BLOQUEADA: " +
+        "versión de configuración inválida."
+    );
 
-                    alert(
-                        "Este método ya está configurado. " +
-                        "La edición segura se habilitará " +
-                        "después de cargar sus valores actuales."
-                    );
+    alert(
+        "No fue posible determinar la versión " +
+        "actual de esta configuración. " +
+        "Vuelve a abrir Administrar Métodos de Pago."
+    );
 
-                    return;
-                }
+    return;
+}
 
 
                 // =========================================
@@ -4731,10 +4960,12 @@ if (
                                     datosAdicionales,
 
                                 p_orden:
-                                    100,
+                                    ordenActual,
 
                                 p_version_esperada:
-                                    null
+                                    yaConfigurado === true
+                                    ? versionConfiguracion
+                              : null
                             }
                         );
 
@@ -4756,16 +4987,31 @@ if (
                     }
 
 
-                    console.log(
-                        "MÉTODO DE PAGO GUARDADO:",
-                        dataGuardar
-                    );
+ const fueEdicion =
+    yaConfigurado === true;
 
 
-                    alert(
-                        "✅ Método de pago configurado " +
-                        "correctamente."
-                    );
+console.log(
+    fueEdicion
+        ? "MÉTODO DE PAGO ACTUALIZADO:"
+        : "MÉTODO DE PAGO CONFIGURADO:",
+    {
+        ok: true,
+        metodo_pago_pais_id:
+            metodoPagoPaisId,
+        operacion:
+            fueEdicion
+                ? "ACTUALIZACION"
+                : "CREACION"
+    }
+);
+
+
+alert(
+    fueEdicion
+        ? "✅ Método de pago actualizado correctamente."
+        : "✅ Método de pago configurado correctamente."
+);                   
 
 
    // =====================================
