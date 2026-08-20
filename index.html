@@ -4357,8 +4357,32 @@ if (btnVolverMetodosPagoAdmin) {
     btnVolverMetodosPagoAdmin
         .addEventListener(
             "click",
-            () => {
-                mostrarMetodosPagoAdmin();
+            async () => {
+
+                await mostrarMetodosPagoAdmin();
+
+                const selectPaisRestaurado =
+                    document.getElementById(
+                        "selectPaisMetodoPagoAdmin"
+                    );
+
+                if (
+                    selectPaisRestaurado &&
+                    paisCodigo
+                ) {
+
+                    selectPaisRestaurado.value =
+                        paisCodigo;
+
+                    selectPaisRestaurado.dispatchEvent(
+                        new Event(
+                            "change",
+                            {
+                                bubbles: true
+                            }
+                        )
+                    );
+                }
             }
         );
 }	   
