@@ -3752,6 +3752,35 @@ async function mostrarMetodosPagoAdmin() {
               ? "true"
               : "false"
           }"
+
+	data-ya-configurado="${
+    metodo?.ya_configurado === true
+        ? "true"
+        : "false"
+}"
+
+data-configuracion-id="${escaparHtml(
+    metodo?.configuracion_id || ""
+)}"
+
+data-version-configuracion="${
+    Number.isInteger(
+        metodo?.version_configuracion
+    )
+        ? metodo.version_configuracion
+        : ""
+}"
+
+data-configuracion-activa="${
+    metodo?.configuracion_activa === true
+        ? "true"
+        : (
+            metodo?.configuracion_activa === false
+                ? "false"
+                : ""
+        )
+}"
+
         >
           ⚙️ Configurar
         </button>
@@ -3775,6 +3804,35 @@ async function mostrarMetodosPagoAdmin() {
         String(
             boton.dataset.metodoPagoPaisId || ""
         ).trim();
+
+	const yaConfigurado =
+    boton.dataset.yaConfigurado === "true";
+
+const configuracionId =
+    String(
+        boton.dataset.configuracionId || ""
+    ).trim() || null;
+
+const versionConfiguracionTexto =
+    String(
+        boton.dataset.versionConfiguracion || ""
+    ).trim();
+
+const versionConfiguracion =
+    /^[1-9][0-9]*$/.test(
+        versionConfiguracionTexto
+    )
+        ? Number(versionConfiguracionTexto)
+        : null;
+
+const configuracionActiva =
+    boton.dataset.configuracionActiva === "true"
+        ? true
+        : (
+            boton.dataset.configuracionActiva === "false"
+                ? false
+                : null
+        );
 
     if (!metodoPagoPaisId) {
 
@@ -4295,6 +4353,65 @@ contenedor.innerHTML = `
             autocomplete="off"
         >
 
+	<div
+    style="
+        margin-bottom:20px;
+        padding:14px;
+        border:1px solid rgba(57,255,20,.35);
+        border-radius:12px;
+    "
+>
+
+    <div
+        style="
+            font-weight:bold;
+            margin-bottom:10px;
+        "
+    >
+        Usar este método para:
+    </div>
+
+    ${
+        permitePagoDirecto
+            ? `
+                <label
+                    style="
+                        display:block;
+                        margin-bottom:10px;
+                    "
+                >
+                    <input
+                        id="metodoPagoAceptaPagoDirectoAdmin"
+                        type="checkbox"
+                        checked
+                    >
+                    Pago directo
+                </label>
+            `
+            : ""
+    }
+
+    ${
+        permiteRecargaWallet
+            ? `
+                <label
+                    style="
+                        display:block;
+                    "
+                >
+                    <input
+                        id="metodoPagoAceptaRecargaWalletAdmin"
+                        type="checkbox"
+                        checked
+                    >
+                    Recarga Wallet MASS
+                </label>
+            `
+            : ""
+    }
+
+</div>
+
             ${destinoHtml}
 
             ${titularHtml}
@@ -4310,6 +4427,18 @@ contenedor.innerHTML = `
                     text-align:center;
                 "
             >
+
+			<button
+    id="btnGuardarMetodoPagoAdmin"
+    type="button"
+    style="
+        padding:12px 18px;
+        margin:6px;
+        font-weight:bold;
+    "
+>
+    💾 Guardar configuración
+</button>
 
                 <button
                     id="btnVolverMetodosPagoAdmin"
@@ -4336,12 +4465,386 @@ contenedor.innerHTML = `
             "
         >
             Vista de configuración.
-            Todavía no se guardará ningún dato.
+            Completa los datos y presiona Guardar configuración.
         </div>
 
     </div>
 `;
+	   
+// =====================================================
+// PAGOS-UI-GUARDADO-2
+// GUARDAR CONFIGURACIÓN NUEVA
+// MEDIANTE RPC SEGURA
+//
+// IMPORTANTE:
+// EN ESTA FASE NO SE PERMITE EDITAR UNA CONFIGURACIÓN
+// YA EXISTENTE HASTA CARGAR SUS VALORES ACTUALES.
+// =====================================================
 
+const btnGuardarMetodoPagoAdmin =
+    document.getElementById(
+        "btnGuardarMetodoPagoAdmin"
+    );
+
+const formConfigurarMetodoPagoAdmin =
+    document.getElementById(
+        "formConfigurarMetodoPagoAdmin"
+    );
+
+
+if (
+    btnGuardarMetodoPagoAdmin &&
+    formConfigurarMetodoPagoAdmin
+) {
+
+    btnGuardarMetodoPagoAdmin
+        .addEventListener(
+            "click",
+            async () => {
+
+                // =========================================
+                // 1. PROTEGER CONFIGURACIONES EXISTENTES
+                // =========================================
+
+                if (yaConfigurado === true) {
+
+                    console.warn(
+                        "GUARDADO BLOQUEADO: " +
+                        "el método ya está configurado.",
+                        {
+                            configuracionId,
+                            versionConfiguracion,
+                            configuracionActiva
+                        }
+                    );
+
+                    alert(
+                        "Este método ya está configurado. " +
+                        "La edición segura se habilitará " +
+                        "después de cargar sus valores actuales."
+                    );
+
+                    return;
+                }
+
+
+                // =========================================
+                // 2. VALIDACIÓN HTML DEL FORMULARIO
+                // =========================================
+
+                if (
+                    !formConfigurarMetodoPagoAdmin
+                        .reportValidity()
+                ) {
+                    return;
+                }
+
+
+                // =========================================
+                // 3. CAPACIDADES SELECCIONADAS
+                // =========================================
+
+                const checkPagoDirecto =
+                    document.getElementById(
+                        "metodoPagoAceptaPagoDirectoAdmin"
+                    );
+
+                const checkRecargaWallet =
+                    document.getElementById(
+                        "metodoPagoAceptaRecargaWalletAdmin"
+                    );
+
+
+                const aceptaPagoDirecto =
+                    permitePagoDirecto === true &&
+                    checkPagoDirecto?.checked === true;
+
+
+                const aceptaRecargaWallet =
+                    permiteRecargaWallet === true &&
+                    checkRecargaWallet?.checked === true;
+
+
+                if (
+                    aceptaPagoDirecto !== true &&
+                    aceptaRecargaWallet !== true
+                ) {
+
+                    alert(
+                        "Selecciona al menos una opción: " +
+                        "Pago directo o Recarga Wallet MASS."
+                    );
+
+                    return;
+                }
+
+
+                // =========================================
+                // 4. DESTINO
+                // =========================================
+
+                const inputDestino =
+                    document.getElementById(
+                        "metodoPagoDestinoValorAdmin"
+                    );
+
+                const destinoValor =
+                    String(
+                        inputDestino?.value || ""
+                    ).trim();
+
+
+                const destinoTipo =
+                    String(
+                        plantilla?.destino_tipo || ""
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                if (!destinoTipo) {
+
+                    console.error(
+                        "GUARDADO BLOQUEADO: " +
+                        "destino_tipo faltante."
+                    );
+
+                    return;
+                }
+
+
+                // =========================================
+                // 5. TITULAR
+                // =========================================
+
+                const inputTitular =
+                    document.getElementById(
+                        "metodoPagoTitularAdmin"
+                    );
+
+                const titular =
+                    inputTitular
+                        ? String(
+                            inputTitular.value || ""
+                        ).trim()
+                        : "";
+
+
+                // =========================================
+                // 6. INSTRUCCIONES
+                // =========================================
+
+                const inputInstrucciones =
+                    document.getElementById(
+                        "metodoPagoInstruccionesAdmin"
+                    );
+
+                const instrucciones =
+                    inputInstrucciones
+                        ? String(
+                            inputInstrucciones.value || ""
+                        ).trim()
+                        : "";
+
+
+                // =========================================
+                // 7. DATOS ADICIONALES
+                // =========================================
+
+                const datosAdicionales = {};
+
+
+                document
+                    .querySelectorAll(
+                        ".campoAdicionalMetodoPagoAdmin"
+                    )
+                    .forEach(inputCampo => {
+
+                        const clave =
+                            String(
+                                inputCampo.dataset.clave || ""
+                            ).trim();
+
+                        if (!clave) {
+                            return;
+                        }
+
+                        datosAdicionales[clave] =
+                            String(
+                                inputCampo.value || ""
+                            ).trim();
+                    });
+
+
+                // =========================================
+                // 8. BLOQUEAR DOBLE CLIC
+                // =========================================
+
+                const textoOriginal =
+                    btnGuardarMetodoPagoAdmin.textContent;
+
+                btnGuardarMetodoPagoAdmin.disabled =
+                    true;
+
+                btnGuardarMetodoPagoAdmin.textContent =
+                    "Guardando...";
+
+
+                try {
+
+                    // =====================================
+                    // 9. RPC SEGURA
+                    // =====================================
+
+                    const {
+                        data: dataGuardar,
+                        error: errorGuardar
+                    } =
+                        await supabaseClient.rpc(
+                            "configurar_metodo_pago_organizador_segura",
+                            {
+                                p_organizador_id:
+                                    organizadorId,
+
+                                p_metodo_pago_pais_id:
+                                    metodoPagoPaisId,
+
+                                p_acepta_pago_directo:
+                                    aceptaPagoDirecto,
+
+                                p_acepta_recarga_wallet:
+                                    aceptaRecargaWallet,
+
+                                p_destino_tipo:
+                                    destinoTipo,
+
+                                p_destino_valor:
+                                    destinoValor || null,
+
+                                p_titular:
+                                    titular || null,
+
+                                p_instrucciones:
+                                    instrucciones || null,
+
+                                p_datos_adicionales:
+                                    datosAdicionales,
+
+                                p_orden:
+                                    100,
+
+                                p_version_esperada:
+                                    null
+                            }
+                        );
+
+
+                    if (errorGuardar) {
+
+                        throw errorGuardar;
+                    }
+
+
+                    if (
+                        !dataGuardar ||
+                        dataGuardar.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "RESPUESTA_GUARDADO_INVALIDA"
+                        );
+                    }
+
+
+                    console.log(
+                        "MÉTODO DE PAGO GUARDADO:",
+                        dataGuardar
+                    );
+
+
+                    alert(
+                        "✅ Método de pago configurado " +
+                        "correctamente."
+                    );
+
+
+   // =====================================
+// 10. REGRESAR AL MISMO PAÍS
+//
+// IMPORTANTE:
+// EL GUARDADO YA FUE CONFIRMADO.
+// UNA FALLA VISUAL NO DEBE REPORTARSE
+// COMO FALLA DEL GUARDADO.
+// =====================================
+
+try {
+
+    await mostrarMetodosPagoAdmin();
+
+    const selectPaisRestaurado =
+        document.getElementById(
+            "selectPaisMetodoPagoAdmin"
+        );
+
+    if (
+        selectPaisRestaurado &&
+        paisCodigo
+    ) {
+
+        selectPaisRestaurado.value =
+            paisCodigo;
+
+        selectPaisRestaurado.dispatchEvent(
+            new Event(
+                "change",
+                {
+                    bubbles: true
+                }
+            )
+        );
+    }
+
+} catch (errorRecargaInterfaz) {
+
+    console.error(
+        "MÉTODO GUARDADO, PERO FALLÓ " +
+        "LA RECARGA DE LA INTERFAZ:",
+        errorRecargaInterfaz
+    );
+
+    alert(
+        "✅ El método de pago sí quedó guardado. " +
+        "No fue posible actualizar automáticamente " +
+        "la vista. Vuelve a abrir Administrar " +
+        "Métodos de Pago."
+    );
+}                 
+
+
+                } catch (errorGuardarFinal) {
+
+                    console.error(
+                        "ERROR GUARDANDO MÉTODO DE PAGO:",
+                        errorGuardarFinal
+                    );
+
+                    alert(
+                        "❌ No fue posible guardar " +
+                        "la configuración del método de pago."
+                    );
+
+
+                } finally {
+
+                    btnGuardarMetodoPagoAdmin.disabled =
+                        false;
+
+                    btnGuardarMetodoPagoAdmin.textContent =
+                        textoOriginal;
+                }
+            }
+        );
+}
 
 // =====================================================
 // VOLVER AL LISTADO
