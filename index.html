@@ -3769,29 +3769,74 @@ async function mostrarMetodosPagoAdmin() {
   .querySelectorAll(".btnConfigurarMetodoPagoAdmin")
   .forEach(boton => {
 
-    boton.addEventListener("click", () => {
+   boton.addEventListener("click", async () => {
 
-      console.log(
-        "MÉTODO SELECCIONADO PARA CONFIGURAR:",
+    const metodoPagoPaisId =
+        String(
+            boton.dataset.metodoPagoPaisId || ""
+        ).trim();
+
+    if (!metodoPagoPaisId) {
+
+        console.error(
+            "CONFIGURAR MÉTODO: metodo_pago_pais_id faltante."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "CONFIGURAR MÉTODO — CARGANDO PLANTILLA:",
         {
-          metodo_pago_pais_id:
-            boton.dataset.metodoPagoPaisId,
+            organizador_id:
+                organizadorId,
 
-          codigo:
-            boton.dataset.metodoCodigo,
+            metodo_pago_pais_id:
+                metodoPagoPaisId,
 
-          nombre:
-            boton.dataset.metodoNombre,
+            codigo:
+                boton.dataset.metodoCodigo,
 
-          permite_pago_directo:
-            boton.dataset.permitePagoDirecto,
-
-          permite_recarga_wallet:
-            boton.dataset.permiteRecargaWallet
+            nombre:
+                boton.dataset.metodoNombre
         }
-      );
+    );
 
-    });
+
+    const {
+        data: dataPlantilla,
+        error: errorPlantilla
+    } =
+        await supabaseClient.rpc(
+            "obtener_plantilla_metodo_pago_admin_segura",
+            {
+                p_organizador_id:
+                    organizadorId,
+
+                p_metodo_pago_pais_id:
+                    metodoPagoPaisId
+            }
+        );
+
+
+    if (errorPlantilla) {
+
+        console.error(
+            "ERROR CARGANDO PLANTILLA DEL MÉTODO:",
+            errorPlantilla
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "PLANTILLA DEL MÉTODO CARGADA:",
+        dataPlantilla
+    );
+
+}); 
 
   });	
 
