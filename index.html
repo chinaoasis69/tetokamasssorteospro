@@ -5067,17 +5067,38 @@ try {
 }                 
 
 
-                } catch (errorGuardarFinal) {
+               } catch (errorGuardarFinal) {
 
-                    console.error(
-                        "ERROR GUARDANDO MÉTODO DE PAGO:",
-                        errorGuardarFinal
-                    );
+    console.error(
+        "ERROR GUARDANDO MÉTODO DE PAGO:",
+        errorGuardarFinal
+    );
 
-                    alert(
-                        "❌ No fue posible guardar " +
-                        "la configuración del método de pago."
-                    );
+    const esConflictoVersion =
+        errorGuardarFinal?.code === "PT409" ||
+        String(
+            errorGuardarFinal?.message || ""
+        ).includes(
+            "CONFLICTO_VERSION_CONFIGURACION_METODO_PAGO"
+        );
+
+    if (esConflictoVersion) {
+
+        alert(
+            "⚠️ Esta configuración fue modificada en otra sesión. " +
+            "Vuelve a abrir Editar para cargar la versión más reciente."
+        );
+
+    } else {
+
+        alert(
+            "❌ No fue posible guardar " +
+            "la configuración del método de pago."
+        );
+
+    }
+
+} 
 
 
                 } finally {
