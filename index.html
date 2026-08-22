@@ -3424,6 +3424,46 @@ async function mostrarMetodosPagoAdmin() {
               )}
             </div>
 
+			            ${
+              item?.id &&
+              Number.isInteger(item?.version)
+                ? `
+                    <div
+                      style="
+                        margin-top:16px;
+                        text-align:center;
+                      "
+                    >
+                      <button
+                        type="button"
+                        class="btnEstadoMetodoPagoAdmin"
+                        data-configuracion-id="${escaparHtml(
+                          item.id
+                        )}"
+                        data-version="${item.version}"
+                        data-activo="${
+                          item?.activo === true
+                            ? "true"
+                            : "false"
+                        }"
+                        style="
+                          padding:11px 18px;
+                          border-radius:10px;
+                          font-weight:bold;
+                          cursor:pointer;
+                        "
+                      >
+                        ${
+                          item?.activo === true
+                            ? "🔴 Deshabilitar"
+                            : "🟢 Habilitar"
+                        }
+                      </button>
+                    </div>
+                  `
+                : ""
+            }
+
           </div>
         `;
 
@@ -3546,6 +3586,271 @@ async function mostrarMetodosPagoAdmin() {
 
       </div>
     `;
+
+	// =====================================================
+// PAGOS-ESTADO-1
+// HABILITAR / DESHABILITAR MÉTODO DE PAGO
+// MEDIANTE RPC SEGURA + CONTROL DE VERSIÓN
+// =====================================================
+
+document
+    .querySelectorAll(".btnEstadoMetodoPagoAdmin")
+    .forEach(botonEstado => {
+
+        botonEstado.addEventListener(
+            "click",
+            async () => {
+
+                const configuracionId =
+                    String(
+                        botonEstado.dataset.configuracionId || ""
+                    ).trim();
+
+                const versionTexto =
+                    String(
+                        botonEstado.dataset.version || ""
+                    ).trim();
+
+                const versionEsperada =
+                    /^[1-9][0-9]*$/.test(versionTexto)
+                        ? Number(versionTexto)
+                        : null;
+
+                const activoTexto =
+                    String(
+                        botonEstado.dataset.activo || ""
+                    ).trim();
+
+                const activoActual =
+                    activoTexto === "true"
+                        ? true
+                        : (
+                            activoTexto === "false"
+                                ? false
+                                : null
+                        );
+
+
+                // =========================================
+                // 1. VALIDAR IDENTIDAD / VERSIÓN / ESTADO
+                // =========================================
+
+                if (
+                    !configuracionId ||
+                    !Number.isInteger(versionEsperada) ||
+                    activoActual === null
+                ) {
+
+                    console.error(
+                        "CAMBIO DE ESTADO BLOQUEADO: " +
+                        "datos de configuración inválidos."
+                    );
+
+                    alert(
+                        "❌ No fue posible determinar el estado " +
+                        "o la versión actual del método de pago. " +
+                        "Vuelve a abrir Administrar Métodos de Pago."
+                    );
+
+                    return;
+                }
+
+
+                // =========================================
+                // 2. ELEGIR RPC SEGURA
+                // =========================================
+
+                const rpcEstado =
+                    activoActual === true
+                        ? "deshabilitar_metodo_pago_organizador_segura"
+                        : "habilitar_metodo_pago_organizador_segura";
+
+                const accionTexto =
+                    activoActual === true
+                        ? "deshabilitar"
+                        : "habilitar";
+
+
+                // =========================================
+                // 3. CONFIRMACIÓN
+                // =========================================
+
+                const confirmado = confirm(
+                    activoActual === true
+                        ? "¿Deshabilitar este método de pago?"
+                        : "¿Habilitar este método de pago?"
+                );
+
+                if (!confirmado) {
+                    return;
+                }
+
+
+                // =========================================
+                // 4. CONSERVAR PAÍS SELECCIONADO
+                // =========================================
+
+                const paisSeleccionadoAntes =
+                    String(
+                        document.getElementById(
+                            "selectPaisMetodoPagoAdmin"
+                        )?.value || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                // =========================================
+                // 5. BLOQUEAR DOBLE CLIC
+                // =========================================
+
+                const textoOriginal =
+                    botonEstado.textContent;
+
+                botonEstado.disabled = true;
+
+                botonEstado.textContent =
+                    activoActual === true
+                        ? "Deshabilitando..."
+                        : "Habilitando...";
+
+
+                try {
+
+                    // =====================================
+                    // 6. RPC SEGURA
+                    // =====================================
+
+                    const {
+                        data: dataEstado,
+                        error: errorEstado
+                    } = await supabaseClient.rpc(
+                        rpcEstado,
+                        {
+                            p_organizador_id:
+                                organizadorId,
+
+                            p_configuracion_id:
+                                configuracionId,
+
+                            p_version_esperada:
+                                versionEsperada
+                        }
+                    );
+
+
+                    if (errorEstado) {
+                        throw errorEstado;
+                    }
+
+
+                    if (
+                        !dataEstado ||
+                        dataEstado.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "RESPUESTA_ESTADO_METODO_INVALIDA"
+                        );
+                    }
+
+
+                    // =====================================
+                    // 7. CONFIRMACIÓN
+                    // =====================================
+
+                    alert(
+                        activoActual === true
+                            ? "✅ Método de pago deshabilitado correctamente."
+                            : "✅ Método de pago habilitado correctamente."
+                    );
+
+
+                    // =====================================
+                    // 8. RECARGAR INTERFAZ
+                    // =====================================
+
+                    await mostrarMetodosPagoAdmin();
+
+
+                    const selectPaisRestaurado =
+                        document.getElementById(
+                            "selectPaisMetodoPagoAdmin"
+                        );
+
+
+                    if (
+                        selectPaisRestaurado &&
+                        paisSeleccionadoAntes
+                    ) {
+
+                        selectPaisRestaurado.value =
+                            paisSeleccionadoAntes;
+
+                        selectPaisRestaurado.dispatchEvent(
+                            new Event(
+                                "change",
+                                {
+                                    bubbles: true
+                                }
+                            )
+                        );
+                    }
+
+
+                } catch (errorEstadoFinal) {
+
+                    console.error(
+                        "ERROR CAMBIANDO ESTADO DEL MÉTODO DE PAGO:",
+                        errorEstadoFinal
+                    );
+
+
+                    const esConflictoVersion =
+                        errorEstadoFinal?.code === "PT409" ||
+                        String(
+                            errorEstadoFinal?.message || ""
+                        ).includes(
+                            "CONFLICTO_VERSION_CONFIGURACION_METODO_PAGO"
+                        );
+
+
+                    if (esConflictoVersion) {
+
+                        alert(
+                            "⚠️ Esta configuración fue modificada " +
+                            "en otra sesión. Vuelve a abrir " +
+                            "Administrar Métodos de Pago para cargar " +
+                            "la versión más reciente."
+                        );
+
+                    } else {
+
+                        alert(
+                            "❌ No fue posible " +
+                            accionTexto +
+                            " el método de pago."
+                        );
+                    }
+
+
+                } finally {
+
+                    if (
+                        document.body.contains(
+                            botonEstado
+                        )
+                    ) {
+
+                        botonEstado.disabled = false;
+
+                        botonEstado.textContent =
+                            textoOriginal;
+                    }
+                }
+            }
+        );
+    });  
 
     // =====================================================
     // CARGAR MÉTODOS CUANDO CAMBIA EL PAÍS
