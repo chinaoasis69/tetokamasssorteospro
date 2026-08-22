@@ -19748,65 +19748,108 @@ async function consultarPaquetesSeleccionadosDesdeSupabase(
 }	
 
 async function asegurarWallet() {
-  const telefono =
-    (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
-  const organizadorId =
-    RIFA_ID
-      ? null
-      : localStorage.getItem("organizador_actual_id");
+    const organizadorId =
+        RIFA_ID
+            ? null
+            : localStorage.getItem("organizador_actual_id");
 
-  let orgId = organizadorId;
+    let orgId = organizadorId;
 
-  if (RIFA_ID) {
-    const { data: rifaActual, error: rifaError } = await supabaseClient
-      .from("rifas")
-      .select("organizador_id")
-      .eq("id", RIFA_ID)
-      .maybeSingle();
 
-    if (rifaError) {
-      console.error("Error obteniendo organizador de la rifa:", rifaError);
-      return;
+    /*
+    ============================================================
+    1. RESOLVER ORGANIZADOR CUANDO HAY SORTEO SELECCIONADO
+    ============================================================
+    */
+
+    if (RIFA_ID) {
+
+        const {
+            data: rifaActual,
+            error: rifaError
+        } = await supabaseClient
+            .from("rifas")
+            .select("organizador_id")
+            .eq("id", RIFA_ID)
+            .maybeSingle();
+
+        if (rifaError) {
+
+            console.error(
+                "Error obteniendo organizador de la rifa:",
+                rifaError
+            );
+
+            return null;
+        }
+
+        orgId =
+            rifaActual?.organizador_id ||
+            null;
     }
 
-    orgId = rifaActual?.organizador_id || null;
-  }
 
-  if (!telefono || !orgId) {
-    console.warn(
-      "No se puede asegurar wallet: falta teléfono u organizador."
+    /*
+    ============================================================
+    2. VALIDAR ORGANIZADOR
+    ============================================================
+    */
+
+    if (!orgId) {
+
+        console.warn(
+            "No se puede asegurar Wallet MASS: falta organizador."
+        );
+
+        return null;
+    }
+
+
+    /*
+    ============================================================
+    3. ASEGURAR WALLET MEDIANTE RPC SEGURA
+
+       El navegador:
+       - NO crea directamente la wallet.
+       - NO envía teléfono.
+       - NO envía usuario_mass_id.
+       - NO decide quién será propietario.
+
+       La RPC obtiene el MASS ID desde auth.uid().
+    ============================================================
+    */
+
+    const {
+        data: resultadoWallet,
+        error: errorWallet
+    } = await supabaseClient.rpc(
+        "asegurar_wallet_mass_organizador_segura",
+        {
+            p_organizador_id: orgId
+        }
     );
-    return;
-  }
 
-  const { data: wallet, error: walletError } = await supabaseClient
-    .from("wallets")
-    .select("id, saldo")
-    .eq("user_id", telefono)
-    .eq("organizador_id", orgId)
-    .maybeSingle();
 
-  if (walletError) {
-    console.error("Error buscando wallet:", walletError);
-    return;
-  }
+    if (errorWallet) {
 
-  if (!wallet) {
-    const { error: insertError } = await supabaseClient
-      .from("wallets")
-      .insert({
-        user_id: telefono,
-        organizador_id: orgId,
-        saldo: 0
-      });
+        console.error(
+            "Error asegurando Wallet MASS:",
+            errorWallet
+        );
 
-    if (insertError) {
-      console.error("Error creando wallet:", insertError);
+        return null;
     }
-  }
-}
 
+
+    /*
+    ============================================================
+    4. RESPUESTA
+    ============================================================
+    */
+
+    return resultadoWallet;
+}
 async function guardarActividadSorteo(accion, listaBoletos) {
   const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
   const ult4 = tel.slice(-4);
