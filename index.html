@@ -22353,28 +22353,40 @@ async function cargarPatrocinadoresPlataforma() {
   const {
     data: principal,
     error: errorPrincipal
-  } = await supabaseClient
+} = await supabaseClient
     .from("organizadores")
     .select("id")
     .eq("es_principal", true)
-    .single();
+    .maybeSingle();
 
 
-  if (errorPrincipal || !principal) {
+if (errorPrincipal) {
 
     console.error(
-      "Error buscando organizador principal:",
-      errorPrincipal
+        "Error buscando organizador principal:",
+        errorPrincipal
     );
 
     box.innerHTML = `
-      <div class="mass-sponsor-empty">
-        Próximamente...
-      </div>
+        <div class="mass-sponsor-empty">
+            No se pudieron cargar los patrocinadores.
+        </div>
     `;
 
     return;
-  }
+}
+
+
+if (!principal) {
+
+    box.innerHTML = `
+        <div class="mass-sponsor-empty">
+            Próximamente...
+        </div>
+    `;
+
+    return;
+}
 
 
   const {
