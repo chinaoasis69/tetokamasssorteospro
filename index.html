@@ -20835,11 +20835,14 @@ if (nombreComprobanteBox && comprobante) {
 if (RIFA_ID) {
     const { data: rifaActual } = await supabaseClient
         .from("rifas")
-        .select("organizador_id")
+        .select("organizador_id, cliente_id")
         .eq("id", RIFA_ID)
         .single();
 
-    organizadorId = rifaActual?.organizador_id || null;
+    organizadorId =
+    rifaActual?.organizador_id ||
+    rifaActual?.cliente_id ||
+    null;
 }
 
 if (!organizadorId) {
@@ -20870,52 +20873,41 @@ if (conversion && conversion.mass_calculado) {
     cantidad = Number(cantidad);
 }
 	
- organizadorId = null;
 let nombreOrganizador = "Organizador";
 
-if (RIFA_ID) {
-    const { data: rifaActual } = await supabaseClient
-        .from("rifas")
-        .select("organizador_id, cliente_id")
-        .eq("id", RIFA_ID)
-        .single();
+if (organizadorId) {
 
-    console.log("RIFA_ID:", RIFA_ID);
-    console.log("RIFA ACTUAL:", rifaActual);
+    const {
+        data: org,
+        error: errorOrganizadorRecarga
+    } = await supabaseClient
+        .from("organizadores")
+        .select(
+            "nombre, nombre_publico, nombre_empresa"
+        )
+        .eq(
+            "id",
+            organizadorId
+        )
+        .maybeSingle();
 
-    const orgId =
-        rifaActual?.organizador_id ||
-        rifaActual?.cliente_id ||
-        null;
-	organizadorId = orgId;
 
-    console.log("ID ORGANIZADOR:", organizadorId);
+    if (errorOrganizadorRecarga) {
 
-    if (organizadorId) {
-        const { data: org } = await supabaseClient
-            .from("organizadores")
-            .select("nombre, nombre_publico, nombre_empresa")
-            .eq("id", orgId)
-            .maybeSingle();
-
-        console.log("ORGANIZADOR:", organizadorId);
-
-        nombreOrganizador =
-    org?.nombre_publico ||
-    org?.nombre ||
-    org?.nombre_empresa ||
-    mapaOrganizadores?.[orgId]?.nombre ||
-    mapaOrganizadores?.[orgId]?.nombre_publico ||
-    mapaOrganizadores?.[orgId]?.nombre_empresa ||
-    "Organizador";
+        console.error(
+            "ERROR OBTENIENDO ORGANIZADOR PARA RECARGA:",
+            errorOrganizadorRecarga
+        );
     }
-}
 
-if (nombreOrganizador === "Organizador" && mapaOrganizadores?.[orgId]) {
+
     nombreOrganizador =
-        mapaOrganizadores[orgId].nombre ||
-        mapaOrganizadores[orgId].nombre_publico ||
-        mapaOrganizadores[orgId].nombre_empresa ||
+        org?.nombre_publico ||
+        org?.nombre ||
+        org?.nombre_empresa ||
+        mapaOrganizadores?.[organizadorId]?.nombre ||
+        mapaOrganizadores?.[organizadorId]?.nombre_publico ||
+        mapaOrganizadores?.[organizadorId]?.nombre_empresa ||
         "Organizador";
 }	
 	
