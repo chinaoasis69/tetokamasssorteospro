@@ -21258,10 +21258,30 @@ document.getElementById("saldoBox").innerText =
 }
 
 function limpiarMetodosPago() {
-  document.getElementById("pagoZelle").textContent = "--";
-  document.getElementById("pagoCashapp").textContent = "--";
-  document.getElementById("pagoApplePay").textContent = "--";
-  document.getElementById("pagoPaypal").textContent = "--";
+
+    const lista =
+        document.getElementById(
+            "listaMetodosPagoUsuarioMass"
+        );
+
+    const detalle =
+        document.getElementById(
+            "detalleMetodoPagoUsuarioMass"
+        );
+
+
+    if (lista) {
+
+        lista.textContent =
+            "Selecciona un organizador o sorteo para ver los métodos de pago disponibles.";
+    }
+
+
+    if (detalle) {
+
+        detalle.style.display = "none";
+        detalle.innerHTML = "";
+    }
 }	
 
 async function cargarClienteActual(){
