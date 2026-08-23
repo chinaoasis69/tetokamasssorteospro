@@ -1696,20 +1696,60 @@ Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el o
 </p>
 
 <p style="color:#39ff14;font-size:16px;font-weight:bold;margin:18px 0;">
-👆 Toca cualquier método de pago para copiarlo automáticamente.
+💳 Selecciona un método de pago disponible para ver los datos necesarios para realizar tu pago.
 </p>	  
 
-<br>
+<!-- =====================================================
+     MÉTODOS DE PAGO DINÁMICOS — USUARIO
+     El listado público NO contiene datos bancarios.
+     Los detalles se obtendrán después mediante RPC
+     autenticada.
+===================================================== -->
 
-<p class="metodoPago"><b>💜 Zelle:</b> <span id="pagoZelle" onclick="copiarPago('pagoZelle', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+<div
+  id="metodosPagoUsuarioMass"
+  style="
+    margin:18px 0;
+    padding:16px;
+    border:1px solid rgba(57,255,20,.45);
+    border-radius:14px;
+    background:#111;
+    color:white;
+  "
+>
+  <div
+    style="
+      color:#39ff14;
+      font-size:18px;
+      font-weight:bold;
+      margin-bottom:8px;
+    "
+  >
+    💳 Métodos de pago disponibles
+  </div>
 
-<p class="metodoPago"><b>🟢 Cash App:</b> <span id="pagoCashapp" onclick="copiarPago('pagoCashapp', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
+  <div
+    id="listaMetodosPagoUsuarioMass"
+    style="
+      color:#ccc;
+      line-height:1.5;
+    "
+  >
+    Selecciona un organizador o sorteo para ver los métodos de pago disponibles.
+  </div>
 
-<p class="metodoPago"><b>🍎 Apple Pay:</b> <span id="pagoApplePay" onclick="copiarPago('pagoApplePay', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<p class="metodoPago"><b>🔵 PayPal:</b> <span id="pagoPaypal" onclick="copiarPago('pagoPaypal', event)" style="cursor:pointer;text-decoration:underline;">--</span> </p>
-
-<br>
+  <div
+    id="detalleMetodoPagoUsuarioMass"
+    style="
+      display:none;
+      margin-top:14px;
+      padding:14px;
+      border:1px solid #39ff14;
+      border-radius:12px;
+      background:#0b0b0b;
+    "
+  ></div>
+</div>
 
 <div id="tarjetaRecargaPreparada" style="display:none; background:#111; border:2px solid #39ff14; border-radius:14px; padding:8px; margin:8px 0; color:white; box-shadow:0 0 18px #39ff14; text-align:center;">
 
@@ -37435,6 +37475,570 @@ setTimeout(() => {
 }, 3000); 
 }
 
+// =====================================================
+// MÉTODOS DE PAGO DINÁMICOS — USUARIO
+//
+// 1. Resuelve el organizador actual.
+// 2. Consulta únicamente el listado público.
+// 3. NO obtiene CLABE/titular/instrucciones aquí.
+// 4. El detalle se obtiene después mediante RPC
+//    exclusiva para authenticated.
+// =====================================================
+
+async function cargarMetodosPagoUsuarioMass() {
+
+    const lista =
+        document.getElementById(
+            "listaMetodosPagoUsuarioMass"
+        );
+
+    const detalle =
+        document.getElementById(
+            "detalleMetodoPagoUsuarioMass"
+        );
+
+	const escaparHtml = valor =>
+    String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+    if (!lista) {
+        return;
+    }
+
+
+    lista.innerHTML =
+        "⏳ Cargando métodos de pago...";
+
+
+    if (detalle) {
+
+        detalle.style.display = "none";
+        detalle.innerHTML = "";
+    }
+
+
+    // =================================================
+    // 1. RESOLVER ORGANIZADOR
+    // =================================================
+
+    let organizadorIdPago = null;
+
+
+    if (RIFA_ID) {
+
+        const {
+            data: rifaPago,
+            error: errorRifaPago
+        } = await supabaseClient
+            .from("rifas")
+            .select(
+                "organizador_id, cliente_id"
+            )
+            .eq(
+                "id",
+                RIFA_ID
+            )
+            .maybeSingle();
+
+
+        if (errorRifaPago) {
+
+            console.error(
+                "ERROR RESOLVIENDO ORGANIZADOR PARA MÉTODOS DE PAGO:",
+                errorRifaPago
+            );
+
+            lista.innerHTML =
+                "❌ No fue posible identificar el organizador.";
+
+            return;
+        }
+
+
+        organizadorIdPago =
+            rifaPago?.organizador_id ||
+            rifaPago?.cliente_id ||
+            null;
+
+    } else {
+
+        organizadorIdPago =
+            localStorage.getItem(
+                "organizador_actual_id"
+            ) ||
+            (
+                clienteActual?.id
+                    ? clienteActual.id
+                    : null
+            );
+    }
+
+
+    if (!organizadorIdPago) {
+
+        lista.innerHTML =
+            "Selecciona un organizador o sorteo para ver los métodos de pago disponibles.";
+
+        return;
+    }
+
+
+    // =================================================
+    // 2. RPC PÚBLICA
+    //
+    // Esta RPC NO devuelve:
+    // - destino_valor
+    // - destino_tipo
+    // - titular
+    // - instrucciones
+    // =================================================
+
+    const {
+        data: respuestaPublica,
+        error: errorPublico
+    } = await supabaseClient.rpc(
+        "listar_metodos_pago_publicos_organizador_segura",
+        {
+            p_organizador_id:
+                organizadorIdPago
+        }
+    );
+
+
+    if (errorPublico) {
+
+        console.error(
+            "ERROR LISTANDO MÉTODOS DE PAGO PÚBLICOS:",
+            errorPublico
+        );
+
+        lista.innerHTML =
+            "❌ No fue posible cargar los métodos de pago.";
+
+        return;
+    }
+
+
+    const resultadoPublico =
+        Array.isArray(respuestaPublica)
+            ? respuestaPublica[0]
+            : respuestaPublica;
+
+
+    const metodosPublicos =
+    Array.isArray(
+        resultadoPublico?.metodos
+    )
+        ? resultadoPublico.metodos
+        : [];
+
+
+/*
+=================================================
+EN WALLET MASS SOLO MOSTRAR MÉTODOS
+QUE REALMENTE ACEPTEN RECARGA WALLET.
+=================================================
+*/
+
+const metodos =
+    metodosPublicos.filter(
+        item =>
+            item?.acepta_recarga_wallet === true
+    );
+
+
+    if (metodos.length === 0) {
+
+        lista.innerHTML =
+            "No hay métodos disponibles para recargar Wallet MASS con este organizador.";
+
+        return;
+    }
+
+
+    // =================================================
+    // 3. CONSTRUIR BOTONES
+    // =================================================
+
+    lista.innerHTML = "";
+
+
+    metodos.forEach((item) => {
+
+        const configuracionId =
+            String(
+                item?.configuracion_id ||
+                ""
+            ).trim();
+
+
+        if (!configuracionId) {
+            return;
+        }
+
+
+        const nombreMetodo =
+            item?.metodo?.nombre ||
+            item?.metodo?.codigo ||
+            "Método de pago";
+
+
+        const nombrePais =
+            item?.pais?.nombre ||
+            "";
+
+
+        const capacidades = [];
+
+
+        if (
+            item?.acepta_pago_directo ===
+            true
+        ) {
+
+            capacidades.push(
+                "Pago directo"
+            );
+        }
+
+
+        if (
+            item?.acepta_recarga_wallet ===
+            true
+        ) {
+
+            capacidades.push(
+                "Recarga Wallet MASS"
+            );
+        }
+
+
+        const boton =
+            document.createElement(
+                "button"
+            );
+
+
+        boton.type = "button";
+
+
+        boton.style.cssText = `
+            width:100%;
+            margin:8px 0;
+            padding:14px;
+            border:1px solid #39ff14;
+            border-radius:12px;
+            background:#0b0b0b;
+            color:white;
+            text-align:left;
+            cursor:pointer;
+        `;
+
+
+        boton.innerHTML = `
+            <div
+                style="
+                    color:#39ff14;
+                    font-size:17px;
+                    font-weight:bold;
+                "
+            >
+                ${escaparHtml(
+                    nombreMetodo
+                )}
+            </div>
+
+            ${
+                nombrePais
+                    ? `
+                        <div
+                            style="
+                                margin-top:4px;
+                                color:#ddd;
+                            "
+                        >
+                            🌎 ${escaparHtml(
+                                nombrePais
+                            )}
+                        </div>
+                    `
+                    : ""
+            }
+
+            <div
+                style="
+                    margin-top:5px;
+                    color:#aaa;
+                    font-size:13px;
+                "
+            >
+                ${escaparHtml(
+                    capacidades.join(" · ")
+                )}
+            </div>
+        `;
+
+
+        boton.addEventListener(
+            "click",
+            () => {
+
+                mostrarDetalleMetodoPagoUsuarioMass(
+                    organizadorIdPago,
+                    configuracionId
+                );
+            }
+        );
+
+
+        lista.appendChild(
+            boton
+        );
+    });
+}
+
+
+// =====================================================
+// DETALLE PROTEGIDO DEL MÉTODO DE PAGO
+//
+// Esta función SÍ requiere sesión authenticated.
+// =====================================================
+
+async function mostrarDetalleMetodoPagoUsuarioMass(
+    organizadorId,
+    configuracionId
+) {
+
+    const detalle =
+        document.getElementById(
+            "detalleMetodoPagoUsuarioMass"
+        );
+
+	const escaparHtml = valor =>
+    String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+    if (!detalle) {
+        return;
+    }
+
+
+    if (
+        !organizadorId ||
+        !configuracionId
+    ) {
+
+        return;
+    }
+
+
+    detalle.style.display = "block";
+
+    detalle.innerHTML =
+        "⏳ Cargando datos para realizar el pago...";
+
+
+    // =================================================
+    // 1. CONFIRMAR SESIÓN AUTH
+    // =================================================
+
+    const {
+        data: {
+            user: usuarioPago
+        },
+        error: errorAuthPago
+    } =
+        await supabaseClient.auth.getUser();
+
+
+    if (
+        errorAuthPago ||
+        !usuarioPago?.id
+    ) {
+
+        detalle.innerHTML = `
+            <div
+                style="
+                    color:#ffcc00;
+                    font-weight:bold;
+                "
+            >
+                🔒 Inicia sesión para ver los datos necesarios para realizar el pago.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    // =================================================
+    // 2. RPC AUTENTICADA
+    // =================================================
+
+    const {
+        data: respuestaDetalle,
+        error: errorDetalle
+    } = await supabaseClient.rpc(
+        "obtener_detalle_metodo_pago_usuario_segura",
+        {
+            p_organizador_id:
+                organizadorId,
+
+            p_configuracion_id:
+                configuracionId
+        }
+    );
+
+
+    if (errorDetalle) {
+
+        console.error(
+            "ERROR OBTENIENDO DETALLE DEL MÉTODO DE PAGO:",
+            errorDetalle
+        );
+
+        detalle.innerHTML = `
+            <div
+                style="
+                    color:#ff7777;
+                    font-weight:bold;
+                "
+            >
+                ❌ No fue posible cargar los datos de este método de pago.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const resultado =
+        Array.isArray(respuestaDetalle)
+            ? respuestaDetalle[0]
+            : respuestaDetalle;
+
+
+    if (
+        !resultado ||
+        resultado.ok !== true
+    ) {
+
+        detalle.innerHTML =
+            "❌ El método de pago no está disponible.";
+
+        return;
+    }
+
+
+    // =================================================
+    // 3. MOSTRAR DATOS PROTEGIDOS
+    // =================================================
+
+    const nombreMetodo =
+        resultado?.metodo?.nombre ||
+        resultado?.metodo?.codigo ||
+        "Método de pago";
+
+
+    const tipoDestino =
+        resultado?.destino_tipo ||
+        "--";
+
+
+    const valorDestino =
+        resultado?.destino_valor ||
+        "--";
+
+
+    const titular =
+        resultado?.titular ||
+        "--";
+
+
+    const instrucciones =
+        resultado?.instrucciones ||
+        "Sin instrucciones adicionales.";
+
+
+    detalle.innerHTML = `
+        <div
+            style="
+                color:#39ff14;
+                font-size:18px;
+                font-weight:bold;
+                margin-bottom:10px;
+            "
+        >
+            💳 ${escaparHtml(
+                nombreMetodo
+            )}
+        </div>
+
+        <div
+            style="
+                line-height:1.7;
+                color:white;
+            "
+        >
+            <b>Tipo de destino:</b>
+            ${escaparHtml(
+                tipoDestino
+            )}
+            <br>
+
+            <b>Destino:</b>
+            ${escaparHtml(
+                valorDestino
+            )}
+            <br>
+
+            <b>Titular:</b>
+            ${escaparHtml(
+                titular
+            )}
+            <br>
+
+            <b>Instrucciones:</b>
+            ${escaparHtml(
+                instrucciones
+            )}
+        </div>
+    `;
+
+
+    // El detalle aumenta la altura del Wallet.
+    const contenido =
+        document.getElementById(
+            "walletContenido"
+        );
+
+
+    if (
+        contenido &&
+        contenido.style.opacity === "1"
+    ) {
+
+        requestAnimationFrame(
+            () => {
+
+                contenido.style.maxHeight =
+                    contenido.scrollHeight +
+                    "px";
+            }
+        );
+    }
+}	
+
 function toggleWallet() {
 
     const contenido = document.getElementById("walletContenido");
@@ -37458,6 +38062,32 @@ function toggleWallet() {
         if (header) {
             header.classList.remove("wallet-header");
         }
+
+// =====================================================
+// MÉTODOS DE PAGO DINÁMICOS — USUARIO
+// Se cargan únicamente al abrir Wallet MASS.
+// =====================================================
+
+cargarMetodosPagoUsuarioMass()
+    .then(() => {
+
+        // El listado puede aumentar la altura del Wallet.
+        // Recalculamos solamente si continúa abierto.
+        if (contenido.style.opacity === "1") {
+
+            contenido.style.maxHeight =
+                contenido.scrollHeight + "px";
+        }
+
+    })
+    .catch((errorMetodosPagoUsuario) => {
+
+        console.error(
+            "ERROR CARGANDO MÉTODOS DE PAGO DEL USUARIO:",
+            errorMetodosPagoUsuario
+        );
+
+    });		
 
         setTimeout(() => {
             const destino = contenido.offsetTop + contenido.scrollHeight - 800;
@@ -37509,6 +38139,32 @@ function abrirRecargaWalletDesdeRifa() {
     }
 
     if (flecha) flecha.textContent = "▲";
+
+	// =====================================================
+// CARGAR MÉTODOS DE PAGO AL ABRIR DESDE UNA RIFA
+// =====================================================
+
+cargarMetodosPagoUsuarioMass()
+    .then(() => {
+
+        if (
+            contenido &&
+            contenido.style.opacity === "1"
+        ) {
+
+            contenido.style.maxHeight =
+                contenido.scrollHeight + "px";
+        }
+
+    })
+    .catch((errorMetodosPagoUsuario) => {
+
+        console.error(
+            "ERROR CARGANDO MÉTODOS DE PAGO DESDE RIFA:",
+            errorMetodosPagoUsuario
+        );
+
+    });
 
     setTimeout(() => {
         if (header) {
