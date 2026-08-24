@@ -1642,6 +1642,7 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 
 <div class="card">
     <div
+	id="walletHeader"	
     class="wallet-header"
     onclick="toggleWallet()"
     style="
@@ -38230,7 +38231,7 @@ function toggleWallet() {
 
     const contenido = document.getElementById("walletContenido");
     const flecha = document.getElementById("walletArrow");
-    const header = document.querySelector(".wallet-header");
+    const header = document.getElementById("walletHeader");
 
     if (!contenido) return;
 
@@ -38318,7 +38319,7 @@ cargarMetodosPagoUsuarioMass()
 function abrirRecargaWalletDesdeRifa() {
     const contenido = document.getElementById("walletContenido");
     const flecha = document.getElementById("walletArrow");
-    const header = document.querySelector(".wallet-header");
+    const header = document.getElementById("walletHeader");
 
     if (contenido) {
         contenido.style.maxHeight = contenido.scrollHeight + "px";
