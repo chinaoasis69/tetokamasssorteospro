@@ -20779,6 +20779,13 @@ async function comprarConSaldo() {
       por la base de datos.
     */
 
+	const unidadMassCompra =
+  String(
+    window.unidadMassActual || ""
+  )
+    .trim()
+    .toUpperCase();
+
     mostrarNotificacion(
       "success",
       "🎉 Compra exitosa",
@@ -20788,16 +20795,16 @@ async function comprarConSaldo() {
       }<br>` +
 
       `💰 Total pagado: ${
-        resultado.total_pagado
-      } MASS<br>` +
+  resultado.total_pagado
+} MASS ${unidadMassCompra}<br>` +
 
-      `💳 Saldo anterior: ${
-        resultado.saldo_anterior
-      } MASS<br>` +
+`💳 Saldo anterior: ${
+  resultado.saldo_anterior
+} MASS ${unidadMassCompra}<br>` +
 
-      `💵 Saldo nuevo: ${
-        resultado.saldo_nuevo
-      } MASS<br>` +
+`💵 Saldo nuevo: ${
+  resultado.saldo_nuevo
+} MASS ${unidadMassCompra}<br>` +
 
       "🎡 Tu giro quedó desbloqueado. Ve a MASS LUCKY SPIN.",
 
@@ -34070,6 +34077,12 @@ async function pagarReservadoConMass(numero, rifaId) {
       ? resultado.numeros_recibidos
       : [];
 
+	const unidadMassCompra =
+  String(
+    window.unidadMassActual || ""
+  )
+    .trim()
+    .toUpperCase();
 
   mostrarNotificacion(
     "success",
@@ -34080,16 +34093,16 @@ async function pagarReservadoConMass(numero, rifaId) {
     }<br>` +
 
     `💰 Total pagado: ${
-      resultado.total_pagado
-    } MASS<br>` +
+  resultado.total_pagado
+} MASS ${unidadMassCompra}<br>` +
 
-    `💳 Saldo anterior: ${
-      resultado.saldo_anterior
-    } MASS<br>` +
+`💳 Saldo anterior: ${
+  resultado.saldo_anterior
+} MASS ${unidadMassCompra}<br>` +
 
-    `💵 Saldo nuevo: ${
-      resultado.saldo_nuevo
-    } MASS<br>` +
+`💵 Saldo nuevo: ${
+  resultado.saldo_nuevo
+} MASS ${unidadMassCompra}<br>` +
 
     "🎡 Tu giro Lucky Spin quedó desbloqueado.",
 
