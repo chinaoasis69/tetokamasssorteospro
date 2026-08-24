@@ -37245,10 +37245,11 @@ async function mostrarRecargasMassAdmin() {
 
           <button
             onclick="aprobarRecarga(
-              '${r.id}',
-              '',
-              ${Number(r.monto)}
-            )"
+  '${r.id}',
+  '',
+  ${Number(r.monto)},
+  '${unidadMassRecargas}'
+)"
           >
             ✅ Aprobar
           </button>
@@ -37427,9 +37428,9 @@ const nombreOrganizador =
     .innerHTML = html;
 }	
 
-async function aprobarRecarga(id, userId, monto) {
+async function aprobarRecarga(id, userId, monto, unidadMass) {
 
-  if (!confirm(`¿Aprobar ${monto} MASS para este usuario?`)) {
+  if (!confirm(`¿Aprobar ${monto} MASS ${unidadMass} para este usuario?`)) {
     return;
   }
 
@@ -37473,11 +37474,11 @@ async function aprobarRecarga(id, userId, monto) {
   }
 
   alert(
-    "✅ Recarga aprobada de forma segura\n\n" +
-    `Crédito agregado: ${resultado.credito_mass} MASS\n` +
-    `Saldo anterior: ${resultado.saldo_anterior} MASS\n` +
-    `Saldo nuevo: ${resultado.saldo_nuevo} MASS`
-  );
+  "✅ Recarga aprobada de forma segura\n\n" +
+  `Crédito agregado: ${resultado.credito_mass} MASS ${unidadMass}\n` +
+  `Saldo anterior: ${resultado.saldo_anterior} MASS ${unidadMass}\n` +
+  `Saldo nuevo: ${resultado.saldo_nuevo} MASS ${unidadMass}`
+);
 
   await mostrarRecargasMassAdmin();
 }
