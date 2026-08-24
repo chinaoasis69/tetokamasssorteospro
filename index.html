@@ -20890,6 +20890,49 @@ if (!organizadorId) {
     return;
 }
 
+/*
+=====================================================
+MÉTODO DE PAGO SELECCIONADO PARA LA RECARGA
+
+Debe haber sido validado previamente mediante la
+RPC autenticada de detalle.
+=====================================================
+*/
+
+const configuracionMetodoPagoId =
+    String(
+        metodoPagoRecargaSeleccionado?.configuracion_id ||
+        ""
+    ).trim();
+
+const organizadorMetodoPagoId =
+    String(
+        metodoPagoRecargaSeleccionado?.organizador_id ||
+        ""
+    ).trim();
+
+if (!configuracionMetodoPagoId) {
+
+    alert(
+        "⚠️ Primero selecciona el método de pago que utilizarás para recargar Wallet MASS."
+    );
+
+    return;
+}
+
+if (
+    !organizadorMetodoPagoId ||
+    organizadorMetodoPagoId !==
+        String(organizadorId || "").trim()
+) {
+
+    alert(
+        "⚠️ El método de pago seleccionado no corresponde al organizador actual. Vuelve a seleccionar el método de pago."
+    );
+
+    return;
+}	  
+
 let cantidad = null;
 
 const conversionGuardada = sessionStorage.getItem("conversion_mass_temporal");
@@ -21008,31 +21051,117 @@ console.log("RIFA_ID:", RIFA_ID);
 console.log("clienteActual:", clienteActual);
 console.log("organizadorId:", organizadorId);	
 
-  const { error } = await supabaseClient
-    .from("recargas_mass")
-    .insert({
-    user_id: telefono,
-    telefono: telefono,
+ /*
+=====================================================
+REGISTRAR RECARGA MEDIANTE RPC SEGURA
 
-monto: Number(cantidad),
-comprobante_url: urlData.publicUrl,
-estado: "pendiente",
-organizador_id: organizadorId,
+El navegador ya NO decide:
+- identidad MASS
+- teléfono
+- estado
+- validez del organizador
+- validez del método de pago
 
-moneda_origen: conversion ? conversion.moneda_origen : null,
-cantidad_origen: conversion ? conversion.cantidad_origen : null,
-tipo_cambio_usado: conversion ? conversion.tipo_cambio_usado : null,
-ajuste_organizador: conversion ? conversion.ajuste_organizador : null,
-mass_calculado: conversion ? conversion.mass_calculado : null,
-conversion_creada_en: conversion ? new Date(conversion.creada_en).toISOString() : null,
-conversion_expira_en: conversion ? new Date(conversion.expira_en).toISOString() : null
-		
-});
+El servidor vuelve a validar todo.
+=====================================================
+*/
 
-  if (error) {
-    alert("Error al registrar recarga ❌");
+const {
+    data: resultadoRecargaSegura,
+    error: errorRecargaSegura
+} = await supabaseClient.rpc(
+    "solicitar_recarga_mass_segura",
+    {
+        p_organizador_id:
+            organizadorId,
+
+        p_metodo_pago_configuracion_id:
+            configuracionMetodoPagoId,
+
+        p_monto:
+            Number(cantidad),
+
+        p_comprobante_url:
+            urlData.publicUrl,
+
+        p_moneda_origen:
+            conversion
+                ? conversion.moneda_origen
+                : null,
+
+        p_cantidad_origen:
+            conversion
+                ? conversion.cantidad_origen
+                : null,
+
+        p_tipo_cambio_usado:
+            conversion
+                ? conversion.tipo_cambio_usado
+                : null,
+
+        p_ajuste_organizador:
+            conversion
+                ? conversion.ajuste_organizador
+                : null,
+
+        p_mass_calculado:
+            conversion
+                ? conversion.mass_calculado
+                : null,
+
+        p_conversion_creada_en:
+            conversion
+                ? new Date(
+                    conversion.creada_en
+                  ).toISOString()
+                : null,
+
+        p_conversion_expira_en:
+            conversion
+                ? new Date(
+                    conversion.expira_en
+                  ).toISOString()
+                : null
+    }
+);
+
+
+if (errorRecargaSegura) {
+
+    console.error(
+        "ERROR REGISTRANDO RECARGA MASS SEGURA:",
+        errorRecargaSegura
+    );
+
+    alert(
+        "Error al registrar recarga ❌\n\n" +
+        (
+            errorRecargaSegura.message ||
+            "No fue posible registrar la recarga."
+        )
+    );
+
     return;
-  }
+}
+
+
+if (
+    !resultadoRecargaSegura ||
+    resultadoRecargaSegura.ok !== true
+) {
+
+    console.error(
+        "RESPUESTA INVÁLIDA DE RECARGA MASS SEGURA:",
+        resultadoRecargaSegura
+    );
+
+    alert(
+        "Error al registrar recarga ❌\n\n" +
+        "El servidor no confirmó la solicitud."
+    );
+
+    return;
+}
 
 sessionStorage.removeItem("conversion_mass_temporal");
 
@@ -37505,7 +37634,11 @@ setTimeout(() => {
 //    exclusiva para authenticated.
 // =====================================================
 
+let metodoPagoRecargaSeleccionado = null;	
+
 async function cargarMetodosPagoUsuarioMass() {
+
+	metodoPagoRecargaSeleccionado = null;
 
     const lista =
         document.getElementById(
@@ -37963,6 +38096,14 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
     // =================================================
     // 3. MOSTRAR DATOS PROTEGIDOS
     // =================================================
+
+	metodoPagoRecargaSeleccionado = {
+    organizador_id:
+        String(organizadorId || "").trim(),
+
+    configuracion_id:
+        String(configuracionId || "").trim()
+};
 
     const nombreMetodo =
         resultado?.metodo?.nombre ||
