@@ -37289,9 +37289,10 @@ async function mostrarHistorialRecargasMassAdmin() {
   }
 
   const [
-    resultadoRecargas,
-    resultadoOrganizador
-  ] = await Promise.all([
+  resultadoRecargas,
+  resultadoOrganizador,
+  resultadoDivisasHistorial
+] = await Promise.all([
 
     supabaseClient.rpc(
       "listar_recargas_mass_admin",
@@ -37306,6 +37307,15 @@ async function mostrarHistorialRecargasMassAdmin() {
   .select("id, nombre")
   .eq("id", orgId)
   .maybeSingle()
+
+,
+
+supabaseClient.rpc(
+  "listar_divisas_organizador_segura",
+  {
+    p_organizador_id: orgId
+  }
+)	  
   ]);
 
   const {
@@ -37341,6 +37351,55 @@ const organizador =
 const nombreOrganizador =
   organizador?.nombre ||
   "Organizador";
+
+  /*
+  ============================================================
+  DIVISA PRINCIPAL PARA HISTORIAL DE RECARGAS
+  ============================================================
+  */
+
+  if (resultadoDivisasHistorial.error) {
+
+    console.error(
+      "ERROR OBTENIENDO DIVISA PARA HISTORIAL:",
+      resultadoDivisasHistorial.error
+    );
+
+    alert(
+      "❌ No fue posible identificar la divisa principal del organizador."
+    );
+
+    return;
+  }
+
+  const divisasHistorial =
+    Array.isArray(
+      resultadoDivisasHistorial.data?.divisas
+    )
+      ? resultadoDivisasHistorial.data.divisas
+      : [];
+
+  const divisaPrincipalHistorial =
+    divisasHistorial.find(
+      divisa =>
+        divisa?.activa === true &&
+        divisa?.es_principal === true
+    );
+
+  const unidadMassHistorial =
+    String(
+      divisaPrincipalHistorial?.moneda_codigo ||
+      ""
+    ).trim();
+
+  if (!unidadMassHistorial) {
+
+    alert(
+      "❌ El organizador no tiene una divisa principal activa válida."
+    );
+
+    return;
+  }	
 
   let html = `
     <h2>📜 Historial de recargas</h2>
@@ -37393,7 +37452,7 @@ const nombreOrganizador =
 
           <p>
             <b>Monto:</b>
-            ${r.monto} MASS
+            ${r.monto} MASS ${unidadMassHistorial}
           </p>
 
           <p>
