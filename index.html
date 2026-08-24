@@ -37138,6 +37138,66 @@ async function mostrarRecargasMassAdmin() {
     return;
   }
 
+  /*
+  ============================================================
+  DIVISA PRINCIPAL DEL ORGANIZADOR
+
+  La unidad MASS se obtiene desde la RPC segura de divisas.
+  No se hardcodea MXN/USD/etc.
+  ============================================================
+  */
+
+  const {
+    data: datosDivisasRecargas,
+    error: errorDivisasRecargas
+  } = await supabaseClient.rpc(
+    "listar_divisas_organizador_segura",
+    {
+      p_organizador_id: orgId
+    }
+  );
+
+  if (errorDivisasRecargas) {
+
+    console.error(
+      "ERROR OBTENIENDO DIVISA PRINCIPAL PARA RECARGAS:",
+      errorDivisasRecargas
+    );
+
+    alert(
+      "❌ No fue posible identificar la divisa principal del organizador."
+    );
+
+    return;
+  }
+
+  const divisasRecargas =
+    Array.isArray(datosDivisasRecargas?.divisas)
+      ? datosDivisasRecargas.divisas
+      : [];
+
+  const divisaPrincipalRecargas =
+    divisasRecargas.find(
+      divisa =>
+        divisa?.activa === true &&
+        divisa?.es_principal === true
+    );
+
+  const unidadMassRecargas =
+    String(
+      divisaPrincipalRecargas?.moneda_codigo ||
+      ""
+    ).trim();
+
+  if (!unidadMassRecargas) {
+
+    alert(
+      "❌ El organizador no tiene una divisa principal activa válida."
+    );
+
+    return;
+  }	
+
   let html = `
     <h2>💰 Recargas pendientes</h2>
   `;
@@ -37170,7 +37230,7 @@ async function mostrarRecargasMassAdmin() {
 
           <p>
             <b>Monto:</b>
-            ${r.monto} MASS
+           ${r.monto} MASS ${unidadMassRecargas} 
           </p>
 
           <a
