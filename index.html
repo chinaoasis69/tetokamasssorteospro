@@ -20873,16 +20873,42 @@ if (nombreComprobanteBox && comprobante) {
   let organizadorId = null;
 
 if (RIFA_ID) {
-    const { data: rifaActual } = await supabaseClient
+
+    const {
+        data: rifaActual,
+        error: errorRifaRecarga
+    } = await supabaseClient
         .from("rifas")
         .select("organizador_id, cliente_id")
         .eq("id", RIFA_ID)
-        .single();
+        .maybeSingle();
+
+    if (errorRifaRecarga) {
+
+        console.error(
+            "ERROR RESOLVIENDO ORGANIZADOR PARA RECARGA:",
+            errorRifaRecarga
+        );
+
+        return;
+    }
 
     organizadorId =
-    rifaActual?.organizador_id ||
-    rifaActual?.cliente_id ||
-    null;
+        rifaActual?.organizador_id ||
+        rifaActual?.cliente_id ||
+        null;
+
+} else {
+
+    organizadorId =
+        localStorage.getItem(
+            "organizador_actual_id"
+        ) ||
+        (
+            clienteActual?.id
+                ? clienteActual.id
+                : null
+        );
 }
 
 if (!organizadorId) {
