@@ -37187,30 +37187,110 @@ async function editarOrganizadorAdmin(id) {
   }
 }
 
-async function eliminarOrganizador(id){
-  if(!confirm("⚠️ ¿Seguro que quieres eliminar este organizador?")) return;
+async function eliminarOrganizador(id) {
 
-  await supabaseClient
-    .from("admin_organizadores")
-    .delete()
-    .eq("organizador_id", id);
+  const confirmarPrimero = confirm(
+    "⚠️ ¿Seguro que quieres eliminar este organizador?\n\n" +
+    "La operación solo continuará si Supabase confirma que no existe " +
+    "historial protegido ni compromisos relacionados."
+  );
 
-  const { data, error } = await supabaseClient
-    .from("organizadores")
-    .delete()
-    .eq("id", id)
-    .select();
-
-  console.log("BORRADO:", data);
-  console.log("ERROR BORRADO:", error);
-
-  if(error){
-    alert("❌ Error eliminando: " + error.message);
+  if (!confirmarPrimero) {
     return;
   }
 
-  alert("✅ Organizador eliminado");
+
+  const confirmacion = prompt(
+    "🔐 ELIMINACIÓN SEGURA DE ORGANIZADOR\n\n" +
+    "Escribe exactamente ELIMINAR para continuar:"
+  );
+
+
+  if (confirmacion === null) {
+    return;
+  }
+
+
+  if (confirmacion.trim().toUpperCase() !== "ELIMINAR") {
+
+    alert(
+      "❌ Confirmación incorrecta.\n\n" +
+      "Debes escribir exactamente ELIMINAR."
+    );
+
+    return;
+  }
+
+
+  const { data, error } = await supabaseClient.rpc(
+    "eliminar_organizador_seguro",
+    {
+      p_organizador_id: id,
+      p_confirmacion: confirmacion
+    }
+  );
+
+
+  console.log(
+    "RESULTADO ELIMINACIÓN SEGURA:",
+    data
+  );
+
+  console.log(
+    "ERROR ELIMINACIÓN SEGURA:",
+    error
+  );
+
+
+  if (error) {
+
+    let mensaje =
+      "❌ No fue posible eliminar el organizador.\n\n" +
+      (error.message || "La operación fue bloqueada de forma segura.");
+
+
+    if (error.details) {
+
+      mensaje +=
+        "\n\nDetalle:\n" +
+        error.details;
+
+    }
+
+
+    if (error.hint) {
+
+      mensaje +=
+        "\n\nInformación adicional:\n" +
+        error.hint;
+
+    }
+
+
+    alert(mensaje);
+
+    return;
+  }
+
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  alert(
+    "✅ Organizador eliminado de forma segura.\n\n" +
+    "Organizador: " +
+    (resultado?.nombre || "Organizador") +
+    "\n" +
+    "Divisas eliminadas: " +
+    (resultado?.divisas_eliminadas ?? 0)
+  );
+
+
   await mostrarOrganizadoresAdmin();
+
 }
 
 async function mostrarRecargasMassAdmin() {
