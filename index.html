@@ -22170,6 +22170,7 @@ function filtrarOrganizadoresActivos(){
 async function verSorteosDeOrganizador(orgId){
 
     localStorage.setItem("organizador_publico_id", orgId);
+	localStorage.setItem("organizador_actual_id", orgId);
 
     const box = document.getElementById("sorteosActivosBox");
     if(!box) return;
