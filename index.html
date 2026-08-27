@@ -35574,6 +35574,28 @@ if (!session?.user?.id) {
         .order("fecha", { ascending:false });
 
 	const {
+    data: premiosSorteosPrincipales,
+    error: errorPremiosSorteosPrincipales
+} = await supabaseClient.rpc(
+    "listar_mis_premios_sorteos_principales_segura"
+);
+
+console.log(
+    "PREMIOS SORTEOS PRINCIPALES:",
+    premiosSorteosPrincipales
+);
+
+console.log(
+    "ERROR PREMIOS SORTEOS PRINCIPALES:",
+    errorPremiosSorteosPrincipales
+);
+
+const premiosSorteosPrincipalesSeguros =
+    errorPremiosSorteosPrincipales
+        ? []
+        : (premiosSorteosPrincipales || []);
+
+	const {
     data: premiosPreSorteos,
     error: errorPremiosPreSorteos
 } = await supabaseClient.rpc(
@@ -35604,8 +35626,10 @@ const premiosPreSorteosSeguros =
 
 if (
     premiosActuales.length === 0 &&
+    premiosSorteosPrincipalesSeguros.length === 0 &&
     premiosPreSorteosSeguros.length === 0
 ) {
+	
     const contador =
         document.getElementById("contadorPremios");
 
@@ -35626,6 +35650,7 @@ if (
 if (contador) {
     contador.innerText =
         premiosActuales.length +
+        premiosSorteosPrincipalesSeguros.length +
         premiosPreSorteosSeguros.length;
 }
 
@@ -35636,8 +35661,14 @@ if (contador) {
         datos: p
     })),
 
+	    ...premiosSorteosPrincipalesSeguros.map(p => ({
+        tipo: "sorteo_principal",
+        fechaOrden: p.creado_en || null,
+        datos: p
+    })),
+
     ...premiosPreSorteosSeguros.map(p => ({
-        tipo: "pre_sorteo",
+		tipo: "pre_sorteo",
         fechaOrden:
             p.ejecutado_en ||
             p.seleccionado_en ||
@@ -35655,6 +35686,77 @@ document
     .innerHTML =
         premiosCombinados.map(item => {
             const p = item.datos;
+
+			if (item.tipo === "sorteo_principal") {
+
+    return `
+        <div style="
+            border:1px solid #39ff14;
+            padding:14px;
+            margin:10px 0;
+            border-radius:12px;
+            box-shadow:0 0 12px rgba(57,255,20,.25);
+        ">
+
+            <b>🏆 Premio de sorteo</b>
+            <br><br>
+
+            🎁 Sorteo:
+            <b>${p.rifa_titulo || "Sorteo"}</b>
+            <br>
+
+            🏢 Organizador:
+            <b>${p.organizador_nombre || "Organizador"}</b>
+            <br>
+
+            🥇 ${p.lugar_premio || "Premio"}
+            <br>
+
+            🎟️ Número ganador:
+            <b>${p.numero_ganador || "-"}</b>
+            <br>
+
+            🪪 MASS ID:
+            <b>${p.mass_id || "-"}</b>
+            <br>
+
+            🎁 Premio:
+            <b>${p.premio || "Premio"}</b>
+            <br>
+
+            📦 Estado de entrega:
+            <b>${p.estado_entrega || "pendiente"}</b>
+            <br>
+
+            📅 ${
+                p.creado_en
+                    ? new Date(
+                        p.creado_en
+                    ).toLocaleString()
+                    : "Sin fecha"
+            }
+
+            ${
+                p.imagen_url
+                    ? `
+                        <br>
+                        <img
+                            src="${p.imagen_url}"
+                            style="
+                                max-width:200px;
+                                width:100%;
+                                border-radius:12px;
+                                margin:12px auto 0;
+                                display:block;
+                            "
+                        >
+                    `
+                    : ""
+            }
+
+        </div>
+    `;
+}
 
             if (item.tipo === "pre_sorteo") {
                 return `
