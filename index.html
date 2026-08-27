@@ -21399,12 +21399,19 @@ if (RIFA_ID) {
 
     } else {
 
-        const divisaPrincipal =
-            (divisasOrganizador || []).find(
-                divisa =>
-                    divisa?.activa === true &&
-                    divisa?.es_principal === true
-            );
+        const divisasLista =
+    Array.isArray(
+        divisasOrganizador?.divisas
+    )
+        ? divisasOrganizador.divisas
+        : [];
+
+const divisaPrincipal =
+    divisasLista.find(
+        divisa =>
+            divisa?.activa === true &&
+            divisa?.es_principal === true
+    );
 
         unidadMassSaldo =
             String(
