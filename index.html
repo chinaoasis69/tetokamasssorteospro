@@ -21360,6 +21360,62 @@ if (RIFA_ID) {
             : "";
 }
 
+	if (!organizadorId) {
+
+    const organizadorPublicoId =
+        localStorage.getItem("organizador_publico_id");
+
+    const organizadorPublico =
+        organizadorPublicoId
+            ? mapaOrganizadores?.[organizadorPublicoId]
+            : null;
+
+    if (
+    organizadorPublicoId &&
+    organizadorPublico &&
+    organizadorPublico.activo === true
+) {
+
+    organizadorId =
+        organizadorPublicoId;
+
+    const {
+        data: divisasOrganizador,
+        error: errorDivisasOrganizador
+    } = await supabaseClient.rpc(
+        "listar_divisas_organizador_segura",
+        {
+            p_organizador_id:
+                organizadorPublicoId
+        }
+    );
+
+    if (errorDivisasOrganizador) {
+
+        console.error(
+            "ERROR CARGANDO DIVISA PRINCIPAL DEL ORGANIZADOR:",
+            errorDivisasOrganizador
+        );
+
+    } else {
+
+        const divisaPrincipal =
+            (divisasOrganizador || []).find(
+                divisa =>
+                    divisa?.activa === true &&
+                    divisa?.es_principal === true
+            );
+
+        unidadMassSaldo =
+            String(
+                divisaPrincipal?.moneda_codigo || ""
+            )
+            .trim()
+            .toUpperCase();
+    }
+  }
+}
+
 console.log("USUARIO ACTUAL:", userActual);
 console.log("ORGANIZADOR BUSCADO:", organizadorId);
 
@@ -21928,13 +21984,13 @@ if (listaOrg) {
     const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
 
     organizadoresActivosCache = Object.values(mapaOrganizadores)
-        .filter(org => {
-            const total = rifas.filter(r =>
-                String(r.organizador_id) === String(org.id)
-            ).length;
+    .filter(org => {
 
-            return modoOrganizadores === "todos" ? true : total > 0;
-        });
+        return modoOrganizadores === "todos"
+            ? true
+            : org.activo === true;
+
+    });
 
     paginaOrganizadores = 1;
     renderOrganizadoresPaginados();
@@ -22020,7 +22076,13 @@ function renderOrganizadoresPaginados(){
                 <h3>👥 ${nombre}</h3>
                 <p>${total} sorteo(s) activo(s)</p>
                 <button onclick="verSorteosDeOrganizador('${org.id}')">
-                  ${total === 1 ? "🎯 Ver sorteo" : "🎯 Ver sorteos"}
+                  ${
+  total === 0
+    ? "👥 Entrar al organizador"
+    : total === 1
+      ? "🎯 Ver sorteo"
+      : "🎯 Ver sorteos"
+}
                 </button>
             </div>
         `;
@@ -22076,18 +22138,23 @@ function filtrarOrganizadoresActivos(){
     const modoOrganizadores = localStorage.getItem("modo_organizadores") || "activos";
 
     organizadoresActivosCache = Object.values(mapaOrganizadores)
-        .filter(org => {
-            const total = rifas.filter(r =>
-                String(r.organizador_id) === String(org.id)
-            ).length;
+    .filter(org => {
 
-            const nombre = (org.nombre_publico || org.nombre || "Organizador").toLowerCase();
+        const nombre =
+            (org.nombre_publico || org.nombre || "Organizador")
+            .toLowerCase();
 
-            const coincideNombre = nombre.includes(texto);
-            const coincideModo = modoOrganizadores === "todos" ? true : total > 0;
+        const coincideNombre =
+            nombre.includes(texto);
 
-            return coincideNombre && coincideModo;
-        });
+        const coincideModo =
+            modoOrganizadores === "todos"
+                ? true
+                : org.activo === true;
+
+        return coincideNombre && coincideModo;
+
+    });
 
     paginaOrganizadores = 1;
     renderOrganizadoresPaginados();
@@ -22108,6 +22175,16 @@ async function verSorteosDeOrganizador(orgId){
 	const rifasOrg = (rifas || []).filter(r =>
   String(r.organizador_id) === String(orgId)
 );
+
+	if (rifasOrg.length === 0) {
+
+    RIFA_ID = null;
+
+    window.rifaSeleccionada = null;
+    window.unidadMassActual = "";
+
+    await cargarSaldo();
+}	
 
 for (const r of rifasOrg) {
   const { count, error } = await supabaseClient
