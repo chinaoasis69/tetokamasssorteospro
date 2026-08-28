@@ -1625,11 +1625,18 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 </div>
     <br>
 
-<button class="btn-dark" onclick="apartarBoletosInterno()">
+<button
+  id="btnReservarBoletos"
+  class="btn-dark"
+  onclick="apartarBoletosInterno()"
+>
   🟡 Reservar boletos
 </button>	  	  
 
-<button onclick="comprarConSaldo()" style="
+<button
+  id="btnComprarMass"
+  onclick="comprarConSaldo()"
+  style="
   background:#00ff88;
   color:black;
   border:none;
@@ -21328,7 +21335,39 @@ async function iniciarRealtimeWallet(organizadorId) {
           status
         );
       });
-}	
+}
+
+function actualizarBotonesCompraSorteo() {
+
+    const haySorteoSeleccionado =
+        Boolean(RIFA_ID);
+
+    const btnReservar =
+        document.getElementById(
+            "btnReservarBoletos"
+        );
+
+    const btnComprar =
+        document.getElementById(
+            "btnComprarMass"
+        );
+
+    if (btnReservar) {
+        btnReservar.style.display =
+            haySorteoSeleccionado
+                ? ""
+                : "none";
+    }
+
+    if (btnComprar) {
+        btnComprar.style.display =
+            haySorteoSeleccionado
+                ? ""
+                : "none";
+    }
+}
+
+actualizarBotonesCompraSorteo();
 
 async function cargarSaldo() {
   let organizadorId = null;
@@ -22187,6 +22226,8 @@ async function verSorteosDeOrganizador(orgId){
 	if (rifasOrg.length === 0) {
 
     RIFA_ID = null;
+
+	actualizarBotonesCompraSorteo();
 
     window.rifaSeleccionada = null;
     window.unidadMassActual = "";
@@ -29542,6 +29583,8 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
 
 async function abrirRifa(rifaId){
     RIFA_ID = rifaId;
+
+	actualizarBotonesCompraSorteo();
 
 await cargarResultadosPreSorteosPublicos(rifaId);	
 
