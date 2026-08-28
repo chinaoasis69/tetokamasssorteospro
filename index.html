@@ -4546,35 +4546,43 @@ const destinoHtml = `
             }
         </label>
 
-        <input
-            id="metodoPagoDestinoValorAdmin"
-            type="text"
-            value="${escaparHtml(
-                destinoValorActual
-            )}"
-            placeholder="${escaparHtml(
-                plantilla.destino_placeholder || ""
-            )}"
-            ${
-                plantilla.destino_valor_requerido === true
-                    ? "required"
-                    : ""
-            }
-            ${
-                plantilla.destino_regex
-                    ? `pattern="${escaparHtml(
-                        plantilla.destino_regex
-                    )}"`
-                    : ""
-            }
-            style="
-                width:100%;
-                padding:12px;
-                border-radius:10px;
-                border:1px solid #777;
-                box-sizing:border-box;
-            "
-        >
+        ${
+    plantilla.destino_valor_requerido === true
+        ? `
+            <input
+                id="metodoPagoDestinoValorAdmin"
+                type="text"
+                value="${escaparHtml(
+                    destinoValorActual
+                )}"
+                placeholder="${escaparHtml(
+                    plantilla.destino_placeholder || ""
+                )}"
+                required
+                ${
+                    plantilla.destino_regex
+                        ? `pattern="${escaparHtml(
+                            plantilla.destino_regex
+                        )}"`
+                        : ""
+                }
+                style="
+                    width:100%;
+                    padding:12px;
+                    border-radius:10px;
+                    border:1px solid #777;
+                    box-sizing:border-box;
+                "
+            >
+        `
+        : `
+            <input
+                id="metodoPagoDestinoValorAdmin"
+                type="hidden"
+                value=""
+            >
+        `
+}
 
         ${
             plantilla.destino_ayuda
