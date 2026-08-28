@@ -2220,6 +2220,15 @@ Cargando historial...
   style="display:none;"
 >
   💳 Administrar Métodos de Pago
+</button>
+
+<button
+    id="btnPuntosMassAdmin"
+    type="button"
+    onclick="mostrarPuntosMassAdmin()"
+    style="display:none;"
+>
+    🏪 MASS Punto Autorizado
 </button>	
 
 <button
@@ -3048,6 +3057,7 @@ window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
 	const btnDivisas = document.getElementById("btnDivisasAdmin");
 	const btnMetodosPago = document.getElementById("btnMetodosPagoAdmin");
+	const btnPuntosMass = document.getElementById("btnPuntosMassAdmin");
 	const btnConvertidor =
     document.getElementById("btnConvertidorMassAdmin");
     const rol = localStorage.getItem("admin_rol");
@@ -3065,6 +3075,14 @@ if (btnMetodosPago) {
 
   btnMetodosPago.style.display =
     puedeAdministrarMetodosPago ? "" : "none";
+}
+
+if (btnPuntosMass) {
+    const puedeAdministrarPuntosMass =
+        rol === "super_admin";
+
+    btnPuntosMass.style.display =
+        puedeAdministrarPuntosMass ? "" : "none";
 }	
 
 if (btnConvertidor) {
@@ -5579,6 +5597,187 @@ if (btnVolverMetodosPagoAdmin) {
 
   }
 
+}
+
+// =====================================================
+// MASS PUNTO AUTORIZADO
+// PANEL GLOBAL EXCLUSIVO SÚPER ADMIN
+// =====================================================
+
+async function mostrarPuntosMassAdmin() {
+
+    const contenedor =
+        document.getElementById("adminContenido");
+
+
+    if (!contenedor) {
+
+        alert(
+            "❌ No se encontró el contenedor administrativo."
+        );
+
+        return;
+    }
+
+
+    // =================================================
+    // 1. ESTADO DE CARGA
+    // =================================================
+
+    contenedor.innerHTML = `
+        <div
+            style="
+                padding:18px;
+                text-align:center;
+            "
+        >
+            ⏳ Validando acceso a MASS Punto Autorizado...
+        </div>
+    `;
+
+
+    try {
+
+        // =============================================
+        // 2. VALIDAR SESIÓN ADMINISTRATIVA REAL
+        // =============================================
+
+        const adminActual =
+            await obtenerAdminActual();
+
+
+        if (
+            !adminActual ||
+            adminActual.rol !== "super_admin"
+        ) {
+
+            contenedor.innerHTML = `
+                <div
+                    style="
+                        padding:16px;
+                        border:1px solid #ff4d4f;
+                        border-radius:12px;
+                        color:#ff8a8a;
+                        text-align:left;
+                    "
+                >
+                    ❌ MASS Punto Autorizado es un módulo
+                    exclusivo del Súper Admin.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // =============================================
+        // 3. PINTAR MÓDULO BASE
+        // =============================================
+
+        contenedor.innerHTML = `
+
+            <div
+                style="
+                    max-width:760px;
+                    margin:0 auto;
+                    padding:18px;
+                "
+            >
+
+                <h2
+                    style="
+                        color:#39ff14;
+                        text-align:center;
+                        margin-bottom:10px;
+                    "
+                >
+                    🏪 MASS Punto Autorizado
+                </h2>
+
+
+                <div
+                    style="
+                        margin-bottom:20px;
+                        color:#ccc;
+                        text-align:center;
+                    "
+                >
+                    Administración global de
+                    Puntos MASS autorizados.
+                </div>
+
+
+                <div
+                    style="
+                        padding:16px;
+                        border:1px solid rgba(57,255,20,.45);
+                        border-radius:14px;
+                        background:#111;
+                        color:#ddd;
+                        text-align:left;
+                        margin-bottom:20px;
+                    "
+                >
+                    ✅ Acceso Súper Admin confirmado.
+                    <br><br>
+
+                    Desde este módulo se administrarán:
+                    <br>
+                    • Puntos MASS
+                    <br>
+                    • Organizadores autorizados
+                    <br>
+                    • Operadores
+                    <br>
+                    • Estado de cada punto
+                    <br>
+                    • Operaciones de efectivo
+                </div>
+
+
+                <div
+                    style="
+                        text-align:center;
+                    "
+                >
+                    <button
+                        type="button"
+                        onclick="volverPanelSuperAdmin()"
+                        style="
+                            padding:12px 18px;
+                            margin:6px;
+                        "
+                    >
+                        ← Volver al Súper Admin
+                    </button>
+                </div>
+
+            </div>
+        `;
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR ABRIENDO MASS PUNTO AUTORIZADO:",
+            error
+        );
+
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:16px;
+                    border:1px solid #ff4d4f;
+                    border-radius:12px;
+                    color:#ff8a8a;
+                "
+            >
+                ❌ No fue posible abrir
+                MASS Punto Autorizado.
+            </div>
+        `;
+    }
 }	
 
 function abrirModalGanadores() {
