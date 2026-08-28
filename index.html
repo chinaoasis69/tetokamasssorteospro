@@ -5077,7 +5077,11 @@ ${
             "
         >
             Vista de configuración.
-            Completa los datos y presiona Guardar configuración.
+${
+    plantilla.destino_valor_requerido === true
+        ? "Completa los datos y presiona Guardar configuración."
+        : "Selecciona los usos permitidos y presiona Guardar configuración."
+}
         </div>
 
     </div>
