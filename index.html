@@ -38552,6 +38552,12 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
         resultado?.titular ||
         "--";
 
+	const banco =
+    String(
+        resultado?.datos_adicionales?.banco || ""
+    )
+    .trim();
+
 
     const instrucciones =
         resultado?.instrucciones ||
@@ -38578,6 +38584,15 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
                 color:white;
             "
         >
+
+		${banco ? `
+    <b>Banco:</b>
+    ${escaparHtml(
+        banco
+    )}
+    <br>
+` : ""}
+
             <b>Tipo de destino:</b>
             ${escaparHtml(
                 tipoDestino
