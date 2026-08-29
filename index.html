@@ -25646,7 +25646,7 @@ async function seleccionarPuntoMassParaRecarga(
 
             boton.addEventListener(
                 "click",
-                () => {
+                async () => {
 
                     const indice =
                         Number(
@@ -25669,10 +25669,57 @@ async function seleccionarPuntoMassParaRecarga(
                     }
 
 
-                    alert(
-                        "Punto MASS seleccionado correctamente.\n\n" +
-                        "En el siguiente paso generaremos la Ficha MASS."
-                    );
+         const puntoMassOrganizadorId =
+    String(
+        puntoSeleccionado?.punto_mass_organizador_id ||
+        ""
+    ).trim();
+
+if (!puntoMassOrganizadorId) {
+
+    alert(
+        "❌ No fue posible identificar la relación del Punto MASS con el organizador."
+    );
+
+    return;
+}
+
+const {
+    data: respuestaFichaMass,
+    error: errorFichaMass
+} = await supabaseClient.rpc(
+    "generar_ficha_recarga_efectivo_mass_segura",
+    {
+        p_punto_mass_organizador_id:
+            puntoMassOrganizadorId,
+
+        p_monto:
+            Number(monto)
+    }
+);
+
+if (errorFichaMass) {
+
+    console.error(
+        "ERROR GENERANDO FICHA MASS:",
+        errorFichaMass
+    );
+
+    alert(
+        "❌ No fue posible generar la Ficha MASS."
+    );
+
+    return;
+}
+
+console.log(
+    "FICHA MASS GENERADA:",
+    respuestaFichaMass
+);
+
+alert(
+    "✅ Ficha MASS generada correctamente."
+);           
 
                 }
             );
