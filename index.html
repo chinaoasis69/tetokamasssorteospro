@@ -1614,6 +1614,7 @@ Selecciona una rifa
         id="btnMassPuntoOperador"
         class="btn-main"
         type="button"
+		onclick="abrirMassPuntoOperador()"
         style="
             background:#39ff14;
             border-color:#39ff14;
@@ -22428,6 +22429,527 @@ async function sincronizarUsuarioOneSignal(
         );
     }
 }
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// PANEL PRINCIPAL DEL OPERADOR / SUPERVISOR
+// ============================================================
+
+async function abrirMassPuntoOperador() {
+
+    // ========================================================
+    // 1. CREAR / RECUPERAR PANEL
+    // ========================================================
+
+    let panel =
+        document.getElementById(
+            "panelMassPuntoOperador"
+        );
+
+
+    if (!panel) {
+
+        panel =
+            document.createElement("div");
+
+        panel.id =
+            "panelMassPuntoOperador";
+
+        panel.setAttribute(
+            "role",
+            "dialog"
+        );
+
+        panel.setAttribute(
+            "aria-modal",
+            "true"
+        );
+
+
+        panel.style.cssText = `
+            position:fixed;
+            inset:0;
+            z-index:99999;
+            background:rgba(0,0,0,.96);
+            overflow-y:auto;
+            padding:24px 14px;
+            box-sizing:border-box;
+        `;
+
+
+        document.body.appendChild(
+            panel
+        );
+
+    }
+
+
+    panel.style.display =
+        "block";
+
+
+    // ========================================================
+    // 2. HELPER LOCAL SEGURO
+    // ========================================================
+
+    const escaparHtmlPuntoOperador =
+        valor =>
+
+            String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+
+    // ========================================================
+    // 3. ESTADO DE CARGA
+    // ========================================================
+
+    panel.innerHTML = `
+
+        <div
+            style="
+                max-width:760px;
+                margin:0 auto;
+                padding:22px;
+                text-align:center;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    margin-bottom:18px;
+                "
+            >
+                🏪 MASS Punto Autorizado
+            </h2>
+
+            <div>
+                ⏳ Cargando tus Puntos MASS...
+            </div>
+
+        </div>
+    `;
+
+
+    try {
+
+        // ====================================================
+        // 4. CONSULTAR ÚNICAMENTE PUNTOS DEL USUARIO ACTUAL
+        // ====================================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_mis_puntos_mass_operador_seguro"
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            throw new Error(
+                "No se recibió una respuesta válida."
+            );
+
+        }
+
+
+        const puntos =
+            Array.isArray(
+                data.puntos
+            )
+                ? data.puntos
+                : [];
+
+
+        // ====================================================
+        // 5. CONSTRUIR TARJETAS
+        // ====================================================
+
+        const tarjetasPuntos =
+
+            puntos.length === 0
+
+                ? `
+                    <div
+                        style="
+                            padding:18px;
+                            border:1px solid #ff4d4f;
+                            border-radius:14px;
+                            color:#ff8a8a;
+                            text-align:center;
+                        "
+                    >
+                        No tienes Puntos MASS activos
+                        asignados actualmente.
+                    </div>
+                `
+
+                : puntos
+                    .map(
+                        (punto, indice) => {
+
+                            const rol =
+                                String(
+                                    punto?.rol || ""
+                                )
+                                .trim()
+                                .toLowerCase() ===
+                                "supervisor"
+
+                                    ? "Supervisor"
+                                    : "Operador";
+
+
+                            const direccion = [
+
+                                punto?.direccion_linea1,
+                                punto?.direccion_linea2,
+                                punto?.ciudad,
+                                punto?.estado_region,
+                                punto?.codigo_postal
+
+                            ]
+                            .filter(
+                                valor =>
+                                    String(
+                                        valor || ""
+                                    ).trim()
+                            )
+                            .join(", ");
+
+
+                            return `
+
+                                <div
+                                    style="
+                                        margin:16px 0;
+                                        padding:18px;
+                                        border:1px solid rgba(57,255,20,.50);
+                                        border-radius:14px;
+                                        background:#111;
+                                        text-align:left;
+                                    "
+                                >
+
+                                    <div
+                                        style="
+                                            color:#39ff14;
+                                            font-size:20px;
+                                            font-weight:bold;
+                                            margin-bottom:10px;
+                                        "
+                                    >
+                                        ${escaparHtmlPuntoOperador(
+                                            punto?.punto_nombre ||
+                                            "Punto MASS"
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Código:</b>
+                                        ${escaparHtmlPuntoOperador(
+                                            punto?.punto_codigo ||
+                                            "—"
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Organizador:</b>
+                                        ${escaparHtmlPuntoOperador(
+                                            punto?.organizador_nombre ||
+                                            "—"
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Rol:</b>
+                                        ${escaparHtmlPuntoOperador(
+                                            rol
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Dirección:</b>
+                                        ${escaparHtmlPuntoOperador(
+                                            direccion || "—"
+                                        )}
+                                    </div>
+
+
+                                    <div
+                                        style="
+                                            margin-top:14px;
+                                            text-align:center;
+                                        "
+                                    >
+
+                                        <button
+                                            type="button"
+                                            class="btnEntrarPuntoMassOperador"
+                                            data-indice="${indice}"
+                                            style="
+                                                padding:11px 18px;
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            🏪 Entrar al Punto MASS
+                                        </button>
+
+                                    </div>
+
+                                </div>
+                            `;
+                        }
+                    )
+                    .join("");
+
+
+        // ====================================================
+        // 6. PINTAR PANEL
+        // ====================================================
+
+        panel.innerHTML = `
+
+            <div
+                style="
+                    max-width:760px;
+                    margin:0 auto;
+                    padding:22px;
+                "
+            >
+
+                <h2
+                    style="
+                        color:#39ff14;
+                        text-align:center;
+                        margin-bottom:8px;
+                    "
+                >
+                    🏪 MASS Punto Autorizado
+                </h2>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        margin-bottom:20px;
+                        color:#ddd;
+                    "
+                >
+                    Selecciona el Punto MASS donde vas a operar.
+                </div>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        margin-bottom:14px;
+                    "
+                >
+                    Puntos disponibles:
+                    <b>${puntos.length}</b>
+                </div>
+
+
+                ${tarjetasPuntos}
+
+
+                <div
+                    style="
+                        margin-top:22px;
+                        text-align:center;
+                    "
+                >
+
+                    <button
+                        id="btnCerrarPanelMassPuntoOperador"
+                        type="button"
+                        style="
+                            padding:12px 20px;
+                        "
+                    >
+                        ✖ Cerrar
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+
+        // ====================================================
+        // 7. CERRAR PANEL
+        // ====================================================
+
+        const btnCerrar =
+            document.getElementById(
+                "btnCerrarPanelMassPuntoOperador"
+            );
+
+
+        if (btnCerrar) {
+
+            btnCerrar.addEventListener(
+                "click",
+                () => {
+
+                    panel.style.display =
+                        "none";
+
+                }
+            );
+
+        }
+
+
+        // ====================================================
+        // 8. ENTRAR A UN PUNTO MASS
+        //
+        // La operación real se conectará en el siguiente paso.
+        // ====================================================
+
+        const botonesEntrar =
+            panel.querySelectorAll(
+                ".btnEntrarPuntoMassOperador"
+            );
+
+
+        botonesEntrar.forEach(
+            boton => {
+
+                boton.addEventListener(
+                    "click",
+                    () => {
+
+                        const indice =
+                            Number(
+                                boton.dataset.indice
+                            );
+
+
+                        const puntoSeleccionado =
+                            puntos[indice];
+
+
+                        if (!puntoSeleccionado) {
+
+                            alert(
+                                "❌ No fue posible identificar el Punto MASS."
+                            );
+
+                            return;
+                        }
+
+
+                        alert(
+                            "Punto MASS seleccionado correctamente.\n\n" +
+                            "En el siguiente paso conectaremos la operación de fichas."
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR ABRIENDO MASS PUNTO AUTORIZADO:",
+            error
+        );
+
+
+        panel.innerHTML = `
+
+            <div
+                style="
+                    max-width:680px;
+                    margin:0 auto;
+                    padding:22px;
+                    text-align:center;
+                "
+            >
+
+                <h2
+                    style="
+                        color:#ff4d4f;
+                    "
+                >
+                    ❌ MASS Punto Autorizado
+                </h2>
+
+
+                <div
+                    style="
+                        margin-top:16px;
+                        color:#ff8a8a;
+                    "
+                >
+                    No fue posible cargar tus Puntos MASS.
+                </div>
+
+
+                <div
+                    style="
+                        margin-top:20px;
+                    "
+                >
+
+                    <button
+                        id="btnCerrarPanelMassPuntoOperadorError"
+                        type="button"
+                    >
+                        ✖ Cerrar
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+
+        const btnCerrarError =
+            document.getElementById(
+                "btnCerrarPanelMassPuntoOperadorError"
+            );
+
+
+        if (btnCerrarError) {
+
+            btnCerrarError.addEventListener(
+                "click",
+                () => {
+
+                    panel.style.display =
+                        "none";
+
+                }
+            );
+
+        }
+
+    }
+
+}	
 
 // ============================================================
 // MASS PUNTO AUTORIZADO
