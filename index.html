@@ -26012,6 +26012,63 @@ if (btnCerrarFichaMass) {
         }
     );
 
+}
+
+async function obtenerMiFichaEfectivoMassActual() {
+
+    const fichaId =
+        String(
+            localStorage.getItem(
+                "mass_ficha_efectivo_actual_id"
+            ) || ""
+        ).trim();
+
+    if (!fichaId) {
+
+        console.log(
+            "No hay una referencia local de Ficha MASS."
+        );
+
+        return null;
+    }
+
+    const {
+        data: respuestaFicha,
+        error: errorFicha
+    } = await supabaseClient.rpc(
+        "obtener_mi_ficha_efectivo_mass_segura",
+        {
+            p_ficha_id:
+                fichaId
+        }
+    );
+
+    if (errorFicha) {
+
+        console.error(
+            "ERROR RECUPERANDO MI FICHA MASS:",
+            errorFicha
+        );
+
+        return null;
+    }
+
+    const fichaMass =
+        Array.isArray(respuestaFicha)
+            ? respuestaFicha[0]
+            : respuestaFicha;
+
+    if (!fichaMass?.ok) {
+
+        console.error(
+            "RESPUESTA INVÁLIDA AL RECUPERAR FICHA MASS:",
+            respuestaFicha
+        );
+
+        return null;
+    }
+
+    return fichaMass;
 }	
 
 async function recargarSaldo() {
