@@ -6256,12 +6256,7 @@ async function mostrarMisPuntosMassAdmin() {
                     .join("");
 
 
-            const zonaHorariaDetectada =
-                String(
-                    Intl.DateTimeFormat()
-                        .resolvedOptions()
-                        .timeZone || ""
-                ).trim();
+            const zonaHorariaDetectada = "";
 
 
             // =============================================
@@ -6553,9 +6548,8 @@ async function mostrarMisPuntosMassAdmin() {
                                     color:#bbb;
                                 "
                             >
-                                Usa una zona horaria IANA,
-                                por ejemplo America/Monterrey
-                                o America/Chicago.
+                                Ingresa la zona horaria del Punto MASS, no la de tu dispositivo.
+                                 Ej. America/Monterrey.
                             </div>
 
                         </div>
@@ -6694,9 +6688,271 @@ async function mostrarMisPuntosMassAdmin() {
             }
 
 
-            // =============================================
-            // GUARDAR SE CONECTARÁ EN EL SIGUIENTE PASO
-            // =============================================
+     // =============================================
+     // 4. REGISTRAR PUNTO MASS
+     // =============================================
+
+const btnGuardarNuevoPuntoMass =
+    document.getElementById(
+        "btnGuardarNuevoPuntoMass"
+    );
+
+
+const formRegistrarPuntoMass =
+    document.getElementById(
+        "formRegistrarPuntoMass"
+    );
+
+
+if (
+    btnGuardarNuevoPuntoMass &&
+    formRegistrarPuntoMass
+) {
+
+    btnGuardarNuevoPuntoMass
+        .addEventListener(
+            "click",
+            async () => {
+
+                // -----------------------------------------
+                // 4.1 VALIDACIÓN HTML
+                // -----------------------------------------
+
+                if (
+                    !formRegistrarPuntoMass
+                        .reportValidity()
+                ) {
+                    return;
+                }
+
+
+                // -----------------------------------------
+                // 4.2 LEER CAMPOS
+                // -----------------------------------------
+
+                const paisCodigo =
+                    document
+                        .getElementById(
+                            "puntoMassPais"
+                        )
+                        ?.value
+                        ?.trim()
+                        ?.toUpperCase() || "";
+
+
+                const nombre =
+                    document
+                        .getElementById(
+                            "puntoMassNombre"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const direccion1 =
+                    document
+                        .getElementById(
+                            "puntoMassDireccion1"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const direccion2 =
+                    document
+                        .getElementById(
+                            "puntoMassDireccion2"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const ciudad =
+                    document
+                        .getElementById(
+                            "puntoMassCiudad"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const estadoRegion =
+                    document
+                        .getElementById(
+                            "puntoMassEstado"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const codigoPostal =
+                    document
+                        .getElementById(
+                            "puntoMassCodigoPostal"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const zonaHoraria =
+                    document
+                        .getElementById(
+                            "puntoMassZonaHoraria"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const telefono =
+                    document
+                        .getElementById(
+                            "puntoMassTelefono"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                const email =
+                    document
+                        .getElementById(
+                            "puntoMassEmail"
+                        )
+                        ?.value
+                        ?.trim() || "";
+
+
+                // -----------------------------------------
+                // 4.3 BLOQUEAR DOBLE ENVÍO
+                // -----------------------------------------
+
+                btnGuardarNuevoPuntoMass.disabled =
+                    true;
+
+                const textoOriginal =
+                    btnGuardarNuevoPuntoMass
+                        .textContent;
+
+                btnGuardarNuevoPuntoMass.textContent =
+                    "⏳ Registrando...";
+
+
+                try {
+
+                    // -------------------------------------
+                    // 4.4 RPC SEGURA
+                    // -------------------------------------
+
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient.rpc(
+                        "registrar_punto_mass_organizador_seguro",
+                        {
+                            p_organizador_id:
+                                organizadorId,
+
+                            p_pais_codigo_iso2:
+                                paisCodigo,
+
+                            p_nombre:
+                                nombre,
+
+                            p_direccion_linea1:
+                                direccion1,
+
+                            p_ciudad:
+                                ciudad,
+
+                            p_zona_horaria:
+                                zonaHoraria,
+
+                            p_direccion_linea2:
+                                direccion2 || null,
+
+                            p_estado_region:
+                                estadoRegion || null,
+
+                            p_codigo_postal:
+                                codigoPostal || null,
+
+                            p_latitud:
+                                null,
+
+                            p_longitud:
+                                null,
+
+                            p_telefono:
+                                telefono || null,
+
+                            p_email:
+                                email || null
+                        }
+                    );
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    if (
+                        !data ||
+                        data.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "No se recibió una confirmación válida."
+                        );
+                    }
+
+
+                    // -------------------------------------
+                    // 4.5 CONFIRMACIÓN
+                    // -------------------------------------
+
+                    alert(
+                        "✅ Punto MASS registrado correctamente.\n\n" +
+                        "Código: " +
+                        String(
+                            data.codigo || ""
+                        )
+                    );
+
+
+                    // -------------------------------------
+                    // 4.6 RECARGAR MIS PUNTOS
+                    // -------------------------------------
+
+                    await mostrarMisPuntosMassAdmin();
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ERROR REGISTRANDO PUNTO MASS:",
+                        error
+                    );
+
+
+                    alert(
+                        "❌ No fue posible registrar el Punto MASS.\n\n" +
+                        (
+                            error?.message ||
+                            "Intenta nuevamente."
+                        )
+                    );
+
+
+                    btnGuardarNuevoPuntoMass.disabled =
+                        false;
+
+                    btnGuardarNuevoPuntoMass.textContent =
+                        textoOriginal;
+                }
+
+            }
+        );
+}       
 
         }
     );    
