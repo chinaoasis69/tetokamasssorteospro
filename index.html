@@ -25749,6 +25749,14 @@ boton.innerHTML = textoBotonSeleccionar;
     return;
 }
 
+if (fichaMass?.ficha_id) {
+
+    localStorage.setItem(
+        "mass_ficha_efectivo_actual_id",
+        String(fichaMass.ficha_id)
+    );
+}	
+
 const escaparHtmlFicha = (valor) =>
     String(valor ?? "")
         .replace(/&/g, "&amp;")
