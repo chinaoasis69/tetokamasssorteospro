@@ -22858,10 +22858,10 @@ async function abrirMassPuntoOperador() {
                         }
 
 
-                        alert(
-                            "Punto MASS seleccionado correctamente.\n\n" +
-                            "En el siguiente paso conectaremos la operación de fichas."
-                        );
+                        mostrarOperacionPuntoMassOperador(
+    panel,
+    puntoSeleccionado
+);
 
                     }
                 );
@@ -22946,6 +22946,323 @@ async function abrirMassPuntoOperador() {
             );
 
         }
+
+    }
+
+}
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// OPERACIÓN DEL PUNTO MASS SELECCIONADO
+// ============================================================
+
+function mostrarOperacionPuntoMassOperador(
+    panel,
+    puntoSeleccionado
+) {
+
+    if (
+        !panel ||
+        !puntoSeleccionado
+    ) {
+
+        alert(
+            "❌ No fue posible abrir la operación del Punto MASS."
+        );
+
+        return;
+    }
+
+
+    const escaparHtmlOperacion = valor =>
+        String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+
+    const nombrePunto =
+        String(
+            puntoSeleccionado?.punto_nombre ||
+            "Punto MASS"
+        ).trim();
+
+
+    const codigoPunto =
+        String(
+            puntoSeleccionado?.punto_codigo ||
+            ""
+        ).trim();
+
+
+    const organizador =
+        String(
+            puntoSeleccionado?.organizador_nombre ||
+            ""
+        ).trim();
+
+
+    const rol =
+        String(
+            puntoSeleccionado?.rol ||
+            "operador"
+        )
+        .trim()
+        .toLowerCase() === "supervisor"
+
+            ? "Supervisor"
+            : "Operador";
+
+
+    panel.innerHTML = `
+
+        <div
+            style="
+                max-width:700px;
+                margin:0 auto;
+                padding:22px;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                    margin-bottom:8px;
+                "
+            >
+                🏪 ${escaparHtmlOperacion(
+                    nombrePunto
+                )}
+            </h2>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:22px;
+                "
+            >
+
+                <div>
+                    <b>Código:</b>
+                    ${escaparHtmlOperacion(
+                        codigoPunto || "—"
+                    )}
+                </div>
+
+                <div>
+                    <b>Organizador:</b>
+                    ${escaparHtmlOperacion(
+                        organizador || "—"
+                    )}
+                </div>
+
+                <div>
+                    <b>Rol:</b>
+                    ${escaparHtmlOperacion(
+                        rol
+                    )}
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    padding:18px;
+                    border:1px solid rgba(57,255,20,.50);
+                    border-radius:14px;
+                    background:#111;
+                "
+            >
+
+                <h3
+                    style="
+                        text-align:center;
+                        margin-top:0;
+                    "
+                >
+                    🔢 Consultar Ficha MASS
+                </h3>
+
+
+                <div
+                    style="
+                        margin-bottom:16px;
+                    "
+                >
+
+                    <label
+                        for="codigoFichaMassOperador"
+                        style="
+                            display:block;
+                            margin-bottom:7px;
+                            font-weight:bold;
+                        "
+                    >
+                        Código de Ficha MASS *
+                    </label>
+
+
+                    <input
+                        id="codigoFichaMassOperador"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="Ingresa el código de la ficha"
+                        style="
+                            width:100%;
+                            padding:12px;
+                            border-radius:10px;
+                            border:1px solid #777;
+                            box-sizing:border-box;
+                            text-transform:uppercase;
+                        "
+                    >
+
+                </div>
+
+
+                <div
+                    style="
+                        text-align:center;
+                    "
+                >
+
+                    <button
+                        id="btnConsultarFichaMassOperador"
+                        type="button"
+                        style="
+                            padding:12px 18px;
+                        "
+                    >
+                        🔎 Consultar ficha
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="resultadoFichaMassOperador"
+                    style="
+                        margin-top:18px;
+                    "
+                ></div>
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:22px;
+                    text-align:center;
+                "
+            >
+
+                <button
+                    id="btnVolverPuntosMassOperador"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                        margin:6px;
+                    "
+                >
+                    ← Volver a mis Puntos MASS
+                </button>
+
+
+                <button
+                    id="btnCerrarOperacionPuntoMass"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                        margin:6px;
+                    "
+                >
+                    ✖ Cerrar
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    // ========================================================
+    // VOLVER AL LISTADO DE PUNTOS
+    // ========================================================
+
+    const btnVolver =
+        document.getElementById(
+            "btnVolverPuntosMassOperador"
+        );
+
+
+    if (btnVolver) {
+
+        btnVolver.addEventListener(
+            "click",
+            async () => {
+
+                await abrirMassPuntoOperador();
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // CERRAR PANEL
+    // ========================================================
+
+    const btnCerrar =
+        document.getElementById(
+            "btnCerrarOperacionPuntoMass"
+        );
+
+
+    if (btnCerrar) {
+
+        btnCerrar.addEventListener(
+            "click",
+            () => {
+
+                panel.style.display =
+                    "none";
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // CONSULTAR FICHA
+    //
+    // Se conectará a Supabase en el siguiente paso.
+    // ========================================================
+
+    const btnConsultar =
+        document.getElementById(
+            "btnConsultarFichaMassOperador"
+        );
+
+
+    if (btnConsultar) {
+
+        btnConsultar.addEventListener(
+            "click",
+            () => {
+
+                alert(
+                    "Consulta segura de Ficha MASS en preparación."
+                );
+
+            }
+        );
 
     }
 
