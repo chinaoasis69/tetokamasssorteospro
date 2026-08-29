@@ -25684,6 +25684,18 @@ if (!puntoMassOrganizadorId) {
     return;
 }
 
+if (boton.disabled) {
+    return;
+}
+
+const textoBotonSeleccionar =
+    boton.innerHTML;
+
+boton.disabled = true;
+
+boton.innerHTML =
+    "⏳ Generando Ficha MASS...";	
+
 const {
     data: respuestaFichaMass,
     error: errorFichaMass
@@ -25699,6 +25711,9 @@ const {
 );
 
 if (errorFichaMass) {
+
+	boton.disabled = false;
+boton.innerHTML = textoBotonSeleccionar;
 
     console.error(
         "ERROR GENERANDO FICHA MASS:",
@@ -25717,9 +25732,271 @@ console.log(
     respuestaFichaMass
 );
 
-alert(
-    "✅ Ficha MASS generada correctamente."
-);           
+const fichaMass =
+    Array.isArray(respuestaFichaMass)
+        ? respuestaFichaMass[0]
+        : respuestaFichaMass;
+
+if (!fichaMass?.ok) {
+
+	boton.disabled = false;
+boton.innerHTML = textoBotonSeleccionar;
+
+    alert(
+        "❌ La Ficha MASS no devolvió una respuesta válida."
+    );
+
+    return;
+}
+
+const escaparHtmlFicha = (valor) =>
+    String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+let vencimientoFicha =
+    String(fichaMass.expira_en || "").trim();
+
+if (vencimientoFicha) {
+
+    try {
+
+        const opcionesFecha = {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        };
+
+        const zonaHorariaPunto =
+            String(
+                puntoSeleccionado?.zona_horaria ||
+                ""
+            ).trim();
+
+        if (zonaHorariaPunto) {
+            opcionesFecha.timeZone =
+                zonaHorariaPunto;
+        }
+
+        vencimientoFicha =
+            new Intl.DateTimeFormat(
+                "es-MX",
+                opcionesFecha
+            ).format(
+                new Date(fichaMass.expira_en)
+            );
+
+    } catch (errorFechaFicha) {
+
+        console.warn(
+            "No fue posible formatear el vencimiento de la Ficha MASS:",
+            errorFechaFicha
+        );
+    }
+}
+
+const codigoFicha =
+    escaparHtmlFicha(
+        fichaMass.codigo_corto
+    );
+
+const folioFicha =
+    escaparHtmlFicha(
+        fichaMass.folio
+    );
+
+const montoFicha =
+    escaparHtmlFicha(
+        fichaMass.cantidad_efectivo
+    );
+
+const creditoFicha =
+    escaparHtmlFicha(
+        fichaMass.credito_mass
+    );
+
+const monedaFicha =
+    escaparHtmlFicha(
+        fichaMass.moneda_codigo
+    );
+
+const puntoNombreFicha =
+    escaparHtmlFicha(
+        fichaMass.punto_nombre
+    );
+
+const puntoCodigoFicha =
+    escaparHtmlFicha(
+        fichaMass.punto_codigo
+    );
+
+const organizadorNombreFicha =
+    escaparHtmlFicha(
+        fichaMass.organizador_nombre
+    );
+
+panel.innerHTML = `
+    <div
+        style="
+            max-width:650px;
+            margin:0 auto;
+            padding:24px;
+            text-align:center;
+        "
+    >
+
+        <h2
+            style="
+                color:#39ff14;
+                margin-bottom:8px;
+            "
+        >
+            🎫 FICHA MASS
+        </h2>
+
+        <div
+            style="
+                display:inline-block;
+                padding:7px 16px;
+                margin-bottom:20px;
+                border:2px solid #ffcc00;
+                border-radius:20px;
+                color:#ffcc00;
+                font-weight:bold;
+            "
+        >
+            ⏳ PENDIENTE
+        </div>
+
+        <p
+            style="
+                font-weight:bold;
+                margin-bottom:8px;
+            "
+        >
+            Código de Ficha MASS
+        </p>
+
+        <div
+            style="
+                padding:16px;
+                margin:0 auto 22px auto;
+                border:3px solid #39ff14;
+                border-radius:14px;
+                font-size:30px;
+                font-weight:bold;
+                letter-spacing:4px;
+                color:#39ff14;
+            "
+        >
+            ${codigoFicha}
+        </div>
+
+        <div
+            style="
+                text-align:left;
+                line-height:1.8;
+                border:2px solid #39ff14;
+                border-radius:14px;
+                padding:18px;
+            "
+        >
+            <div>
+                <strong>Folio:</strong>
+                ${folioFicha}
+            </div>
+
+            <div>
+                <strong>Entregar:</strong>
+                ${montoFicha} ${monedaFicha}
+            </div>
+
+            <div>
+                <strong>Recibirás:</strong>
+                ${creditoFicha} MASS ${monedaFicha}
+            </div>
+
+            <div>
+                <strong>Punto MASS:</strong>
+                ${puntoNombreFicha}
+            </div>
+
+            <div>
+                <strong>Código del Punto:</strong>
+                ${puntoCodigoFicha}
+            </div>
+
+            <div>
+                <strong>Organizador:</strong>
+                ${organizadorNombreFicha}
+            </div>
+
+            <div>
+                <strong>Vence:</strong>
+                ${escaparHtmlFicha(vencimientoFicha)}
+            </div>
+        </div>
+
+        <p
+            style="
+                margin-top:18px;
+                font-weight:bold;
+            "
+        >
+            Presenta el código
+            <span style="color:#39ff14;">
+                ${codigoFicha}
+            </span>
+            al Operador del Punto MASS.
+        </p>
+
+        <p
+            style="
+                margin-top:10px;
+                font-size:14px;
+            "
+        >
+            Tu Wallet MASS se acreditará únicamente
+            después de que el Operador confirme la
+            recepción del efectivo.
+        </p>
+
+        <button
+            id="btnCerrarFichaMass"
+            type="button"
+            style="
+                margin-top:20px;
+                padding:12px 24px;
+                border-radius:10px;
+                cursor:pointer;
+                font-weight:bold;
+            "
+        >
+            ✖ Cerrar
+        </button>
+
+    </div>
+`;
+
+const btnCerrarFichaMass =
+    panel.querySelector(
+        "#btnCerrarFichaMass"
+    );
+
+if (btnCerrarFichaMass) {
+
+    btnCerrarFichaMass.addEventListener(
+        "click",
+        () => {
+            panel.remove();
+        }
+    );
+}           
 
                 }
             );
