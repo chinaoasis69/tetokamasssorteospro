@@ -7411,15 +7411,15 @@ async function mostrarOperadoresPuntoMassAdmin(
         if (btnAgregar) {
 
             btnAgregar.addEventListener(
-                "click",
-                () => {
+    "click",
+    async () => {
 
-                    alert(
-                        "Formulario para agregar operador por MASS ID en preparación."
-                    );
+        await mostrarFormularioAgregarOperadorPuntoMassAdmin(
+            relacionId
+        );
 
-                }
-            );
+    }
+);
 
         }
 
@@ -7479,6 +7479,675 @@ async function mostrarOperadoresPuntoMassAdmin(
             );
 
         }
+
+    }
+
+}
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// FORMULARIO PARA AGREGAR / ACTUALIZAR OPERADOR POR MASS ID
+// ============================================================
+
+async function mostrarFormularioAgregarOperadorPuntoMassAdmin(
+    puntoMassOrganizadorId
+) {
+
+    const contenedor =
+        document.getElementById(
+            "adminContenido"
+        );
+
+
+    if (!contenedor) {
+
+        alert(
+            "❌ No se encontró el contenedor administrativo."
+        );
+
+        return;
+    }
+
+
+    const relacionId =
+        String(
+            puntoMassOrganizadorId || ""
+        ).trim();
+
+
+    if (!relacionId) {
+
+        alert(
+            "❌ No se pudo identificar la relación Punto MASS + Organizador."
+        );
+
+        return;
+    }
+
+
+    const escaparHtmlFormularioOperador = valor =>
+        String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+
+    // ========================================================
+    // 1. PINTAR FORMULARIO
+    // ========================================================
+
+    contenedor.innerHTML = `
+
+        <div
+            style="
+                max-width:680px;
+                margin:0 auto;
+                padding:18px;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                    margin-bottom:8px;
+                "
+            >
+                ➕ Agregar operador
+            </h2>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:22px;
+                "
+            >
+                Busca a la persona mediante su MASS ID.
+                El sistema no mostrará identificadores internos.
+            </div>
+
+
+            <div
+                style="
+                    margin-bottom:16px;
+                "
+            >
+
+                <label
+                    for="operadorMassIdAdmin"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:bold;
+                    "
+                >
+                    MASS ID *
+                </label>
+
+
+                <input
+                    id="operadorMassIdAdmin"
+                    type="text"
+                    autocomplete="off"
+                    placeholder="Ingresa el MASS ID"
+                    style="
+                        width:100%;
+                        padding:12px;
+                        border-radius:10px;
+                        border:1px solid #777;
+                        box-sizing:border-box;
+                    "
+                >
+
+            </div>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:18px;
+                "
+            >
+
+                <button
+                    id="btnBuscarOperadorMassIdAdmin"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                    "
+                >
+                    🔎 Buscar usuario
+                </button>
+
+            </div>
+
+
+            <div
+                id="resultadoBusquedaOperadorAdmin"
+                style="
+                    margin-bottom:18px;
+                "
+            ></div>
+
+
+            <div
+                id="configuracionOperadorAdmin"
+                style="
+                    display:none;
+                "
+            >
+
+                <div
+                    style="
+                        margin-bottom:16px;
+                    "
+                >
+
+                    <label
+                        for="operadorRolAdmin"
+                        style="
+                            display:block;
+                            margin-bottom:7px;
+                            font-weight:bold;
+                        "
+                    >
+                        Rol *
+                    </label>
+
+
+                    <select
+                        id="operadorRolAdmin"
+                        style="
+                            width:100%;
+                            padding:12px;
+                            border-radius:10px;
+                            box-sizing:border-box;
+                        "
+                    >
+                        <option value="operador">
+                            Operador
+                        </option>
+
+                        <option value="supervisor">
+                            Supervisor
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        margin-bottom:18px;
+                    "
+                >
+
+                    <button
+                        id="btnAutorizarOperadorAdmin"
+                        type="button"
+                        style="
+                            padding:12px 18px;
+                        "
+                    >
+                        ✅ Autorizar operador
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-top:20px;
+                "
+            >
+
+                <button
+                    id="btnVolverOperadoresPuntoMass"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                    "
+                >
+                    ← Volver a Operadores
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    const inputMassId =
+        document.getElementById(
+            "operadorMassIdAdmin"
+        );
+
+    const btnBuscar =
+        document.getElementById(
+            "btnBuscarOperadorMassIdAdmin"
+        );
+
+    const resultado =
+        document.getElementById(
+            "resultadoBusquedaOperadorAdmin"
+        );
+
+    const configuracion =
+        document.getElementById(
+            "configuracionOperadorAdmin"
+        );
+
+    const selectRol =
+        document.getElementById(
+            "operadorRolAdmin"
+        );
+
+    const btnAutorizar =
+        document.getElementById(
+            "btnAutorizarOperadorAdmin"
+        );
+
+    const btnVolver =
+        document.getElementById(
+            "btnVolverOperadoresPuntoMass"
+        );
+
+
+    let massIdEncontrado = "";
+
+
+    // ========================================================
+    // 2. BUSCAR USUARIO POR MASS ID
+    // ========================================================
+
+    if (
+        btnBuscar &&
+        inputMassId &&
+        resultado &&
+        configuracion
+    ) {
+
+        btnBuscar.addEventListener(
+            "click",
+            async () => {
+
+                const massId =
+                    String(
+                        inputMassId.value || ""
+                    ).trim();
+
+
+                if (!massId) {
+
+                    alert(
+                        "❌ Ingresa un MASS ID."
+                    );
+
+                    return;
+                }
+
+
+                btnBuscar.disabled = true;
+                btnBuscar.textContent =
+                    "⏳ Buscando...";
+
+
+                resultado.innerHTML = `
+                    <div
+                        style="
+                            text-align:center;
+                        "
+                    >
+                        Buscando usuario MASS...
+                    </div>
+                `;
+
+
+                configuracion.style.display =
+                    "none";
+
+                massIdEncontrado = "";
+
+
+                try {
+
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient.rpc(
+                        "buscar_operador_por_mass_id_seguro",
+                        {
+                            p_punto_mass_organizador_id:
+                                relacionId,
+
+                            p_mass_id:
+                                massId
+                        }
+                    );
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    if (
+                        !data ||
+                        data.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "No se recibió una respuesta válida."
+                        );
+
+                    }
+
+
+                    massIdEncontrado =
+                        String(
+                            data.mass_id || ""
+                        ).trim();
+
+
+                    const yaAsignado =
+                        data.ya_asignado === true;
+
+                    const operadorActivo =
+                        data.operador_activo === true;
+
+
+                    resultado.innerHTML = `
+
+                        <div
+                            style="
+                                padding:16px;
+                                border:1px solid rgba(57,255,20,.45);
+                                border-radius:14px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    font-size:18px;
+                                    font-weight:bold;
+                                    color:#39ff14;
+                                    margin-bottom:8px;
+                                "
+                            >
+                                ✅ Usuario encontrado
+                            </div>
+
+
+                            <div>
+                                <b>Nombre:</b>
+                                ${escaparHtmlFormularioOperador(
+                                    data.nombre ||
+                                    "Usuario MASS"
+                                )}
+                            </div>
+
+
+                            <div>
+                                <b>MASS ID:</b>
+                                ${escaparHtmlFormularioOperador(
+                                    data.mass_id ||
+                                    "—"
+                                )}
+                            </div>
+
+
+                            ${
+                                yaAsignado
+
+                                    ? `
+                                        <div
+                                            style="
+                                                margin-top:8px;
+                                            "
+                                        >
+                                            <b>Asignación actual:</b>
+                                            ${
+                                                operadorActivo
+                                                    ? "🟢 Activo"
+                                                    : "🔴 Inactivo"
+                                            }
+                                        </div>
+                                    `
+
+                                    : `
+                                        <div
+                                            style="
+                                                margin-top:8px;
+                                            "
+                                        >
+                                            Aún no está asignado a este Punto MASS.
+                                        </div>
+                                    `
+                            }
+
+                        </div>
+                    `;
+
+
+                    if (
+                        selectRol &&
+                        (
+                            data.rol_actual ===
+                                "operador"
+                            ||
+                            data.rol_actual ===
+                                "supervisor"
+                        )
+                    ) {
+
+                        selectRol.value =
+                            data.rol_actual;
+
+                    }
+
+
+                    configuracion.style.display =
+                        "block";
+
+
+                    if (btnAutorizar) {
+
+                        btnAutorizar.textContent =
+                            yaAsignado
+                                ? "✅ Guardar operador"
+                                : "✅ Autorizar operador";
+
+                    }
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ERROR BUSCANDO OPERADOR POR MASS ID:",
+                        error
+                    );
+
+
+                    resultado.innerHTML = `
+                        <div
+                            style="
+                                padding:14px;
+                                border:1px solid #ff4d4f;
+                                border-radius:12px;
+                                color:#ff8a8a;
+                                text-align:center;
+                            "
+                        >
+                            ❌ No fue posible localizar un usuario MASS
+                            activo con ese MASS ID.
+                        </div>
+                    `;
+
+                } finally {
+
+                    btnBuscar.disabled = false;
+                    btnBuscar.textContent =
+                        "🔎 Buscar usuario";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // 3. AUTORIZAR / REACTIVAR / ACTUALIZAR OPERADOR
+    // ========================================================
+
+    if (
+        btnAutorizar &&
+        selectRol
+    ) {
+
+        btnAutorizar.addEventListener(
+            "click",
+            async () => {
+
+                if (!massIdEncontrado) {
+
+                    alert(
+                        "❌ Primero busca y confirma el MASS ID."
+                    );
+
+                    return;
+                }
+
+
+                const rol =
+                    String(
+                        selectRol.value || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                if (
+                    rol !== "operador" &&
+                    rol !== "supervisor"
+                ) {
+
+                    alert(
+                        "❌ Selecciona un rol válido."
+                    );
+
+                    return;
+                }
+
+
+                btnAutorizar.disabled = true;
+                btnAutorizar.textContent =
+                    "⏳ Guardando...";
+
+
+                try {
+
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient.rpc(
+                        "autorizar_operador_por_mass_id_seguro",
+                        {
+                            p_punto_mass_organizador_id:
+                                relacionId,
+
+                            p_mass_id:
+                                massIdEncontrado,
+
+                            p_rol:
+                                rol,
+
+                            p_activo:
+                                true
+                        }
+                    );
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    if (
+                        !data ||
+                        data.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "No se recibió una respuesta válida al autorizar al operador."
+                        );
+
+                    }
+
+
+                    alert(
+                        "✅ Operador guardado correctamente."
+                    );
+
+
+                    await mostrarOperadoresPuntoMassAdmin(
+                        relacionId
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ERROR AUTORIZANDO OPERADOR POR MASS ID:",
+                        error
+                    );
+
+
+                    alert(
+                        "❌ No fue posible guardar al operador.\n\n" +
+                        (
+                            error?.message ||
+                            "Intenta nuevamente."
+                        )
+                    );
+
+
+                    btnAutorizar.disabled = false;
+                    btnAutorizar.textContent =
+                        "✅ Autorizar operador";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // 4. VOLVER AL LISTADO
+    // ========================================================
+
+    if (btnVolver) {
+
+        btnVolver.addEventListener(
+            "click",
+            async () => {
+
+                await mostrarOperadoresPuntoMassAdmin(
+                    relacionId
+                );
+
+            }
+        );
 
     }
 
