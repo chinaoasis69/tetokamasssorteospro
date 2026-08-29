@@ -6218,18 +6218,488 @@ async function mostrarMisPuntosMassAdmin() {
 
         if (btnRegistrarNuevoPuntoMass) {
 
-            btnRegistrarNuevoPuntoMass
-                .addEventListener(
-                    "click",
-                    () => {
+        btnRegistrarNuevoPuntoMass
+    .addEventListener(
+        "click",
+        () => {
 
-                        alert(
-                            "Formulario de registro de Punto MASS " +
-                            "en preparación."
-                        );
+            // =============================================
+            // 1. CONSTRUIR PAÍSES HABILITADOS
+            // =============================================
 
-                    }
+            const opcionesPaises =
+                paises
+                    .map(pais => {
+
+                        const codigo =
+                            String(
+                                pais?.codigo_iso2 || ""
+                            )
+                                .trim()
+                                .toUpperCase();
+
+                        const nombre =
+                            String(
+                                pais?.nombre || codigo
+                            ).trim();
+
+                        return `
+                            <option
+                                value="${escaparHtml(codigo)}"
+                            >
+                                ${escaparHtml(nombre)}
+                                (${escaparHtml(codigo)})
+                            </option>
+                        `;
+
+                    })
+                    .join("");
+
+
+            const zonaHorariaDetectada =
+                String(
+                    Intl.DateTimeFormat()
+                        .resolvedOptions()
+                        .timeZone || ""
+                ).trim();
+
+
+            // =============================================
+            // 2. PINTAR FORMULARIO
+            // =============================================
+
+            contenedor.innerHTML = `
+
+                <div
+                    style="
+                        max-width:720px;
+                        margin:0 auto;
+                        padding:18px;
+                        text-align:left;
+                    "
+                >
+
+                    <h2
+                        style="
+                            color:#39ff14;
+                            text-align:center;
+                            margin-bottom:8px;
+                        "
+                    >
+                        🏪 Registrar Punto MASS
+                    </h2>
+
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#ccc;
+                            margin-bottom:22px;
+                        "
+                    >
+                        Este Punto MASS quedará vinculado
+                        únicamente a tu organización.
+                    </div>
+
+
+                    <form
+                        id="formRegistrarPuntoMass"
+                        autocomplete="off"
+                    >
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassPais"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                País *
+                            </label>
+
+                            <select
+                                id="puntoMassPais"
+                                required
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    box-sizing:border-box;
+                                "
+                            >
+                                <option value="">
+                                    Selecciona un país
+                                </option>
+
+                                ${opcionesPaises}
+
+                            </select>
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassNombre"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Nombre del Punto MASS *
+                            </label>
+
+                            <input
+                                id="puntoMassNombre"
+                                type="text"
+                                required
+                                placeholder="Ej. Olgas Power Tools"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassDireccion1"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Dirección *
+                            </label>
+
+                            <input
+                                id="puntoMassDireccion1"
+                                type="text"
+                                required
+                                placeholder="Calle y número"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassDireccion2"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Dirección adicional
+                            </label>
+
+                            <input
+                                id="puntoMassDireccion2"
+                                type="text"
+                                placeholder="Local, suite, colonia, referencia, etc."
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassCiudad"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Ciudad *
+                            </label>
+
+                            <input
+                                id="puntoMassCiudad"
+                                type="text"
+                                required
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassEstado"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Estado / Región
+                            </label>
+
+                            <input
+                                id="puntoMassEstado"
+                                type="text"
+                                placeholder="Ej. Nuevo León"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassCodigoPostal"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Código postal
+                            </label>
+
+                            <input
+                                id="puntoMassCodigoPostal"
+                                type="text"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassZonaHoraria"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Zona horaria *
+                            </label>
+
+                            <input
+                                id="puntoMassZonaHoraria"
+                                type="text"
+                                required
+                                value="${escaparHtml(
+                                    zonaHorariaDetectada
+                                )}"
+                                placeholder="Ej. America/Monterrey"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                            <div
+                                style="
+                                    margin-top:6px;
+                                    font-size:13px;
+                                    color:#bbb;
+                                "
+                            >
+                                Usa una zona horaria IANA,
+                                por ejemplo America/Monterrey
+                                o America/Chicago.
+                            </div>
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassTelefono"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Teléfono
+                            </label>
+
+                            <input
+                                id="puntoMassTelefono"
+                                type="tel"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div style="margin-bottom:16px;">
+
+                            <label
+                                for="puntoMassEmail"
+                                style="
+                                    display:block;
+                                    margin-bottom:7px;
+                                    font-weight:bold;
+                                "
+                            >
+                                Correo electrónico
+                            </label>
+
+                            <input
+                                id="puntoMassEmail"
+                                type="email"
+                                style="
+                                    width:100%;
+                                    padding:12px;
+                                    border-radius:10px;
+                                    border:1px solid #777;
+                                    box-sizing:border-box;
+                                "
+                            >
+
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:24px;
+                                text-align:center;
+                            "
+                        >
+
+                            <button
+                                id="btnGuardarNuevoPuntoMass"
+                                type="button"
+                                style="
+                                    padding:12px 18px;
+                                    margin:6px;
+                                    font-weight:bold;
+                                "
+                            >
+                                💾 Registrar Punto MASS
+                            </button>
+
+
+                            <button
+                                id="btnVolverMisPuntosMass"
+                                type="button"
+                                style="
+                                    padding:12px 18px;
+                                    margin:6px;
+                                "
+                            >
+                                ← Volver
+                            </button>
+
+                        </div>
+
+                    </form>
+
+
+                    <div
+                        style="
+                            margin-top:14px;
+                            text-align:center;
+                            font-size:13px;
+                            color:#aaa;
+                        "
+                    >
+                        El Punto MASS será utilizado
+                        exclusivamente dentro de la
+                        organización que lo registra.
+                    </div>
+
+                </div>
+            `;
+
+
+            // =============================================
+            // 3. VOLVER A MIS PUNTOS
+            // =============================================
+
+            const btnVolverMisPuntosMass =
+                document.getElementById(
+                    "btnVolverMisPuntosMass"
                 );
+
+
+            if (btnVolverMisPuntosMass) {
+
+                btnVolverMisPuntosMass
+                    .addEventListener(
+                        "click",
+                        async () => {
+
+                            await mostrarMisPuntosMassAdmin();
+
+                        }
+                    );
+            }
+
+
+            // =============================================
+            // GUARDAR SE CONECTARÁ EN EL SIGUIENTE PASO
+            // =============================================
+
+        }
+    );    
         }
 
 
