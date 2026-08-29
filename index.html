@@ -23503,8 +23503,162 @@ if (
                             }
                         </div>
 
+	           ${
+    puedeConfirmar
+        ? `
+            <button
+                id="btnConfirmarEfectivoFichaMass"
+                type="button"
+                style="
+                    margin-top:16px;
+                    padding:12px 20px;
+                    font-weight:bold;
+                    cursor:pointer;
+                "
+            >
+                💵 Confirmar recepción de efectivo
+            </button>
+          `
+        : ""
+}
+
                     </div>
                 `;
+
+	if (puedeConfirmar) {
+
+    const btnConfirmarEfectivo =
+        resultadoFicha.querySelector(
+            "#btnConfirmarEfectivoFichaMass"
+        );
+
+    if (btnConfirmarEfectivo) {
+
+        btnConfirmarEfectivo.addEventListener(
+            "click",
+            async () => {
+
+                if (btnConfirmarEfectivo.disabled) {
+                    return;
+                }
+
+                const fichaIdConfirmar =
+                    String(
+                        data?.ficha_id || ""
+                    ).trim();
+
+                if (!fichaIdConfirmar) {
+
+                    alert(
+                        "❌ No fue posible identificar la Ficha MASS."
+                    );
+
+                    return;
+                }
+
+                const cantidadConfirmar =
+                    data?.cantidad_efectivo ?? "";
+
+                const monedaConfirmar =
+                    String(
+                        data?.moneda_codigo || ""
+                    ).trim();
+
+                const creditoConfirmar =
+                    data?.credito_mass ?? "";
+
+                const confirmarRecepcion =
+                    confirm(
+`⚠️ CONFIRMACIÓN DE EFECTIVO
+
+Confirma únicamente si YA recibiste físicamente:
+
+💵 ${cantidadConfirmar} ${monedaConfirmar}
+
+Al confirmar, se acreditarán:
+
+✅ ${creditoConfirmar} MASS ${monedaConfirmar}
+
+a la Wallet MASS del usuario para este organizador.
+
+Esta operación no debe realizarse hasta tener el efectivo en tus manos.
+
+¿Confirmas que recibiste el efectivo?`
+                    );
+
+                if (!confirmarRecepcion) {
+                    return;
+                }
+
+                const textoOriginal =
+                    btnConfirmarEfectivo.textContent;
+
+                btnConfirmarEfectivo.disabled = true;
+
+                btnConfirmarEfectivo.textContent =
+                    "⏳ Confirmando efectivo...";
+
+                const {
+                    data: respuestaConfirmacion,
+                    error: errorConfirmacion
+                } = await supabaseClient.rpc(
+                    "confirmar_efectivo_punto_mass_segura",
+                    {
+                        p_ficha_id:
+                            fichaIdConfirmar
+                    }
+                );
+
+                if (errorConfirmacion) {
+
+                    console.error(
+                        "ERROR CONFIRMANDO EFECTIVO PUNTO MASS:",
+                        errorConfirmacion
+                    );
+
+                    btnConfirmarEfectivo.disabled = false;
+
+                    btnConfirmarEfectivo.textContent =
+                        textoOriginal;
+
+                    alert(
+                        "❌ No fue posible confirmar la recepción del efectivo."
+                    );
+
+                    return;
+                }
+
+                const confirmacion =
+                    Array.isArray(respuestaConfirmacion)
+                        ? respuestaConfirmacion[0]
+                        : respuestaConfirmacion;
+
+                if (!confirmacion?.ok) {
+
+                    btnConfirmarEfectivo.disabled = false;
+
+                    btnConfirmarEfectivo.textContent =
+                        textoOriginal;
+
+                    alert(
+                        "❌ La confirmación no devolvió una respuesta válida."
+                    );
+
+                    return;
+                }
+
+                console.log(
+                    "EFECTIVO PUNTO MASS CONFIRMADO:",
+                    confirmacion
+                );
+
+                alert(
+                    "✅ Recepción de efectivo confirmada correctamente."
+                );
+            }
+        );
+    }
+}
 
 
             } catch (error) {
