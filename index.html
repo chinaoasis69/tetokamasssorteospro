@@ -43397,6 +43397,13 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
         .toUpperCase()
 };
 
+	if (
+    metodoPagoRecargaSeleccionado?.metodo_codigo ===
+    "EFECTIVO_PUNTO_MASS"
+) {
+    await recargarSaldo();
+}
+
     const nombreMetodo =
         resultado?.metodo?.nombre ||
         resultado?.metodo?.codigo ||
