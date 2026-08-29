@@ -1596,6 +1596,33 @@ Selecciona una rifa
     </div>
 
   </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- MASS PUNTO AUTORIZADO - ENTRADA DEL OPERADOR -->
+<!-- ===================================================== -->
+
+<div
+    id="entradaMassPuntoOperador"
+    style="
+        display:none;
+        text-align:center;
+        padding:10px;
+    "
+>
+    <button
+        id="btnMassPuntoOperador"
+        class="btn-main"
+        type="button"
+        style="
+            background:#39ff14;
+            border-color:#39ff14;
+            color:#111;
+            font-weight:bold;
+        "
+    >
+        🏪 MASS Punto Autorizado
+    </button>
 </div>	
 
   <div class="card">
@@ -22400,10 +22427,114 @@ async function sincronizarUsuarioOneSignal(
             error
         );
     }
+}
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// MOSTRAR ENTRADA SOLO A OPERADORES / SUPERVISORES ACTIVOS
+// ============================================================
+
+async function actualizarEntradaMassPuntoOperador() {
+
+    const entrada =
+        document.getElementById(
+            "entradaMassPuntoOperador"
+        );
+
+
+    if (!entrada) {
+        return;
+    }
+
+
+    // Siempre nace oculta.
+    // Solo una respuesta válida de Supabase puede mostrarla.
+    entrada.style.display = "none";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_mis_puntos_mass_operador_seguro"
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        const puntos =
+            Array.isArray(
+                data?.puntos
+            )
+                ? data.puntos
+                : [];
+
+
+        const tieneAcceso =
+            data?.ok === true &&
+            Number(data?.total || 0) > 0 &&
+            puntos.length > 0;
+
+
+        entrada.style.display =
+            tieneAcceso
+                ? "block"
+                : "none";
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR VALIDANDO ACCESO A MASS PUNTO AUTORIZADO:",
+            error
+        );
+
+
+        // Ante cualquier error permanece oculto.
+        entrada.style.display = "none";
+
+    }
+
 }	
 
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// VALIDAR ACCESO CUANDO EXISTA SESIÓN
+// ============================================================
+
+if (
+    session?.user?.id &&
+    event !== "SIGNED_OUT" &&
+    event !== "PASSWORD_RECOVERY"
+) {
+
+    setTimeout(
+        () => {
+            actualizarEntradaMassPuntoOperador();
+        },
+        0
+    );
+
+} else {
+
+    const entradaMassPuntoOperador =
+        document.getElementById(
+            "entradaMassPuntoOperador"
+        );
+
+    if (entradaMassPuntoOperador) {
+        entradaMassPuntoOperador.style.display = "none";
+    }
+
+}	
 
 	if (
     session?.user?.id &&
