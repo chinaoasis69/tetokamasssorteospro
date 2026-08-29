@@ -26341,6 +26341,9 @@ async function abrirMiFichaMassActual() {
         .trim()
         .toUpperCase();
 
+	const fichaPagada =
+    estado === "PAGADO";
+
     const direccion =
         [
             fichaMass?.punto_mass?.direccion_linea1,
@@ -26503,6 +26506,39 @@ async function abrirMiFichaMassActual() {
 
             </div>
 
+            ${
+    fichaPagada
+        ? `
+            <p
+                style="
+                    margin-top:18px;
+                    font-weight:bold;
+                    color:#39ff14;
+                "
+            >
+                ✅ Pago confirmado correctamente.
+            </p>
+
+            <p
+                style="
+                    margin-top:10px;
+                    font-size:14px;
+                "
+            >
+                Se acreditaron
+                <strong>
+                    ${escaparHtml(
+                        fichaMass.credito_mass
+                    )}
+                    MASS
+                    ${escaparHtml(
+                        fichaMass.moneda_codigo
+                    )}
+                </strong>
+                a tu Wallet MASS para este organizador.
+            </p>
+          `
+        : `
             <p
                 style="
                     margin-top:18px;
@@ -26528,6 +26564,8 @@ async function abrirMiFichaMassActual() {
                 después de que el Operador confirme la
                 recepción del efectivo.
             </p>
+          `
+}
 
             <button
                 id="btnCerrarMiFichaMassActual"
