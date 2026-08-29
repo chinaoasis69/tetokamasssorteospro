@@ -23246,25 +23246,291 @@ function mostrarOperacionPuntoMassOperador(
     // ========================================================
 
     const btnConsultar =
-        document.getElementById(
-            "btnConsultarFichaMassOperador"
-        );
+    document.getElementById(
+        "btnConsultarFichaMassOperador"
+    );
 
 
-    if (btnConsultar) {
+const inputCodigo =
+    document.getElementById(
+        "codigoFichaMassOperador"
+    );
 
-        btnConsultar.addEventListener(
-            "click",
-            () => {
+
+const resultadoFicha =
+    document.getElementById(
+        "resultadoFichaMassOperador"
+    );
+
+
+if (
+    btnConsultar &&
+    inputCodigo &&
+    resultadoFicha
+) {
+
+    btnConsultar.addEventListener(
+        "click",
+        async () => {
+
+            const codigoFicha =
+                String(
+                    inputCodigo.value || ""
+                )
+                .trim()
+                .toUpperCase();
+
+
+            if (!codigoFicha) {
 
                 alert(
-                    "Consulta segura de Ficha MASS en preparación."
+                    "❌ Ingresa el código de la Ficha MASS."
                 );
 
+                return;
             }
-        );
 
-    }
+
+            btnConsultar.disabled = true;
+
+            btnConsultar.textContent =
+                "⏳ Consultando...";
+
+
+            resultadoFicha.innerHTML = `
+                <div
+                    style="
+                        text-align:center;
+                    "
+                >
+                    Consultando Ficha MASS...
+                </div>
+            `;
+
+
+            try {
+
+                const {
+                    data,
+                    error
+                } = await supabaseClient.rpc(
+                    "consultar_ficha_efectivo_operador_segura",
+                    {
+                        p_token_verificacion:
+                            null,
+
+                        p_codigo_corto:
+                            codigoFicha
+                    }
+                );
+
+
+                if (error) {
+                    throw error;
+                }
+
+
+                if (
+                    !data ||
+                    data.ok !== true
+                ) {
+
+                    throw new Error(
+                        "No se recibió una respuesta válida."
+                    );
+
+                }
+
+
+                // ====================================================
+                // SEGUNDA BARRERA:
+                // LA FICHA DEBE PERTENECER EXACTAMENTE AL
+                // PUNTO MASS + ORGANIZADOR SELECCIONADOS
+                // ====================================================
+
+                const puntoCoincide =
+
+                    String(
+                        data?.punto_mass?.id || ""
+                    ) ===
+
+                    String(
+                        puntoSeleccionado?.punto_mass_id || ""
+                    );
+
+
+                const organizadorCoincide =
+
+                    String(
+                        data?.organizador?.id || ""
+                    ) ===
+
+                    String(
+                        puntoSeleccionado?.organizador_id || ""
+                    );
+
+
+                if (
+                    !puntoCoincide ||
+                    !organizadorCoincide
+                ) {
+
+                    throw new Error(
+                        "La Ficha MASS no pertenece al Punto MASS seleccionado."
+                    );
+
+                }
+
+
+                const puedeConfirmar =
+                    data.puede_confirmar === true;
+
+
+                const estado =
+                    String(
+                        data.estado || "—"
+                    );
+
+
+                resultadoFicha.innerHTML = `
+
+                    <div
+                        style="
+                            padding:16px;
+                            border:1px solid rgba(57,255,20,.50);
+                            border-radius:14px;
+                            text-align:left;
+                        "
+                    >
+
+                        <div
+                            style="
+                                color:#39ff14;
+                                font-size:19px;
+                                font-weight:bold;
+                                margin-bottom:10px;
+                            "
+                        >
+                            ✅ Ficha MASS encontrada
+                        </div>
+
+
+                        <div>
+                            <b>Folio:</b>
+                            ${escaparHtmlOperacion(
+                                data.folio || "—"
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Código:</b>
+                            ${escaparHtmlOperacion(
+                                data.codigo_corto || "—"
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Estado:</b>
+                            ${escaparHtmlOperacion(
+                                estado
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Efectivo:</b>
+                            ${escaparHtmlOperacion(
+                                data.cantidad_efectivo ?? "—"
+                            )}
+                            ${escaparHtmlOperacion(
+                                data.moneda_codigo || ""
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Crédito Wallet:</b>
+                            ${escaparHtmlOperacion(
+                                data.credito_mass ?? "—"
+                            )}
+                            MASS
+                            ${escaparHtmlOperacion(
+                                data.moneda_codigo || ""
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Punto MASS:</b>
+                            ${escaparHtmlOperacion(
+                                data?.punto_mass?.nombre || "—"
+                            )}
+                        </div>
+
+
+                        <div>
+                            <b>Organizador:</b>
+                            ${escaparHtmlOperacion(
+                                data?.organizador?.nombre || "—"
+                            )}
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:12px;
+                                font-weight:bold;
+                            "
+                        >
+                            ${
+                                puedeConfirmar
+                                    ? "🟢 Lista para confirmar"
+                                    : "🔴 No disponible para confirmar"
+                            }
+                        </div>
+
+                    </div>
+                `;
+
+
+            } catch (error) {
+
+                console.error(
+                    "ERROR CONSULTANDO FICHA MASS:",
+                    error
+                );
+
+
+                resultadoFicha.innerHTML = `
+
+                    <div
+                        style="
+                            padding:14px;
+                            border:1px solid #ff4d4f;
+                            border-radius:12px;
+                            color:#ff8a8a;
+                            text-align:center;
+                        "
+                    >
+                        ❌ No fue posible consultar esta Ficha MASS.
+                    </div>
+                `;
+
+            } finally {
+
+                btnConsultar.disabled = false;
+
+                btnConsultar.textContent =
+                    "🔎 Consultar ficha";
+
+            }
+
+        }
+    );
+
+}
 
 }	
 
