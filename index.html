@@ -25250,6 +25250,438 @@ async function comprarConSaldo() {
   }
 }
 
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// SELECCIONAR PUNTO MASS PARA RECARGA EN EFECTIVO
+// ============================================================
+
+async function seleccionarPuntoMassParaRecarga(
+    organizadorId,
+    monto
+) {
+
+    const organizadorSeguro =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const montoSeguro =
+        Number(
+            monto
+        );
+
+
+    if (!organizadorSeguro) {
+
+        alert(
+            "❌ No fue posible identificar el organizador."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !Number.isFinite(montoSeguro) ||
+        montoSeguro <= 0
+    ) {
+
+        alert(
+            "❌ Ingresa un monto válido para la recarga."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // 1. CONSULTAR PUNTOS DISPONIBLES
+    // ========================================================
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_puntos_mass_disponibles_seguro",
+        {
+            p_organizador_id:
+                organizadorSeguro,
+
+            p_tipo_uso:
+                "recarga_wallet"
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR LISTANDO PUNTOS MASS PARA RECARGA:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible consultar los Puntos MASS disponibles."
+        );
+
+        return;
+
+    }
+
+
+    const puntos =
+        Array.isArray(data)
+            ? data
+            : [];
+
+
+    if (puntos.length === 0) {
+
+        alert(
+            "⚠️ No hay Puntos MASS disponibles para esta recarga."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // 2. CREAR / RECUPERAR PANEL
+    // ========================================================
+
+    let panel =
+        document.getElementById(
+            "panelSeleccionPuntoMassRecarga"
+        );
+
+
+    if (!panel) {
+
+        panel =
+            document.createElement(
+                "div"
+            );
+
+        panel.id =
+            "panelSeleccionPuntoMassRecarga";
+
+
+        panel.style.cssText = `
+            position:fixed;
+            inset:0;
+            z-index:99999;
+            background:rgba(0,0,0,.96);
+            overflow-y:auto;
+            padding:24px 14px;
+            box-sizing:border-box;
+        `;
+
+
+        document.body.appendChild(
+            panel
+        );
+
+    }
+
+
+    panel.style.display =
+        "block";
+
+
+    // ========================================================
+    // 3. HELPER HTML SEGURO
+    // ========================================================
+
+    const escaparHtmlPuntoRecarga =
+        valor =>
+
+            String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+
+    // ========================================================
+    // 4. TARJETAS
+    // ========================================================
+
+    const tarjetas =
+        puntos
+            .map(
+                (punto, indice) => {
+
+                    const direccion = [
+
+                        punto?.direccion_linea1,
+                        punto?.direccion_linea2,
+                        punto?.ciudad,
+                        punto?.estado_region,
+                        punto?.codigo_postal
+
+                    ]
+                    .filter(
+                        valor =>
+                            String(
+                                valor || ""
+                            ).trim()
+                    )
+                    .join(", ");
+
+
+                    return `
+
+                        <div
+                            style="
+                                margin:16px 0;
+                                padding:18px;
+                                border:1px solid rgba(57,255,20,.50);
+                                border-radius:14px;
+                                background:#111;
+                                text-align:left;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    color:#39ff14;
+                                    font-size:20px;
+                                    font-weight:bold;
+                                    margin-bottom:10px;
+                                "
+                            >
+                                ${escaparHtmlPuntoRecarga(
+                                    punto?.punto_nombre ||
+                                    "Punto MASS"
+                                )}
+                            </div>
+
+
+                            <div>
+                                <b>Código:</b>
+                                ${escaparHtmlPuntoRecarga(
+                                    punto?.punto_codigo ||
+                                    "—"
+                                )}
+                            </div>
+
+
+                            <div>
+                                <b>País:</b>
+                                ${escaparHtmlPuntoRecarga(
+                                    punto?.pais_nombre ||
+                                    "—"
+                                )}
+                            </div>
+
+
+                            <div>
+                                <b>Dirección:</b>
+                                ${escaparHtmlPuntoRecarga(
+                                    direccion || "—"
+                                )}
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:14px;
+                                    text-align:center;
+                                "
+                            >
+
+                                <button
+                                    type="button"
+                                    class="btnSeleccionarPuntoMassRecarga"
+                                    data-indice="${indice}"
+                                    style="
+                                        padding:11px 18px;
+                                        font-weight:bold;
+                                    "
+                                >
+                                    🏪 Seleccionar este Punto MASS
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                }
+            )
+            .join("");
+
+
+    // ========================================================
+    // 5. PINTAR PANEL
+    // ========================================================
+
+    panel.innerHTML = `
+
+        <div
+            style="
+                max-width:760px;
+                margin:0 auto;
+                padding:22px;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                    margin-bottom:8px;
+                "
+            >
+                🏪 Pagar en Punto MASS
+            </h2>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:10px;
+                    color:#ddd;
+                "
+            >
+                Selecciona dónde realizarás
+                la entrega del efectivo.
+            </div>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:20px;
+                "
+            >
+                Monto de la recarga:
+                <b>${escaparHtmlPuntoRecarga(
+                    montoSeguro
+                )}</b>
+            </div>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:14px;
+                "
+            >
+                Puntos disponibles:
+                <b>${puntos.length}</b>
+            </div>
+
+
+            ${tarjetas}
+
+
+            <div
+                style="
+                    margin-top:22px;
+                    text-align:center;
+                "
+            >
+
+                <button
+                    id="btnCerrarSeleccionPuntoMassRecarga"
+                    type="button"
+                    style="
+                        padding:12px 20px;
+                    "
+                >
+                    ✖ Cerrar
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    // ========================================================
+    // 6. CERRAR
+    // ========================================================
+
+    const btnCerrar =
+        document.getElementById(
+            "btnCerrarSeleccionPuntoMassRecarga"
+        );
+
+
+    if (btnCerrar) {
+
+        btnCerrar.addEventListener(
+            "click",
+            () => {
+
+                panel.style.display =
+                    "none";
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // 7. SELECCIONAR PUNTO
+    //
+    // TODAVÍA NO GENERAMOS LA FICHA.
+    // ========================================================
+
+    const botonesSeleccionar =
+        panel.querySelectorAll(
+            ".btnSeleccionarPuntoMassRecarga"
+        );
+
+
+    botonesSeleccionar.forEach(
+        boton => {
+
+            boton.addEventListener(
+                "click",
+                () => {
+
+                    const indice =
+                        Number(
+                            boton.dataset.indice
+                        );
+
+
+                    const puntoSeleccionado =
+                        puntos[indice];
+
+
+                    if (!puntoSeleccionado) {
+
+                        alert(
+                            "❌ No fue posible identificar el Punto MASS."
+                        );
+
+                        return;
+
+                    }
+
+
+                    alert(
+                        "Punto MASS seleccionado correctamente.\n\n" +
+                        "En el siguiente paso generaremos la Ficha MASS."
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}	
+
 async function recargarSaldo() {
 const comprobante = document.getElementById("comprobante").files[0];	
 const nombreComprobanteBox = document.getElementById("nombreComprobante");
@@ -25419,7 +25851,18 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 ¿Deseas continuar?`
 )) {
     return;
-}		
+}
+
+  if (
+    metodoPagoRecargaSeleccionado?.metodo_codigo ===
+    "EFECTIVO_PUNTO_MASS"
+) {
+    await seleccionarPuntoMassParaRecarga(
+        organizadorId,
+        cantidad
+    );
+    return;
+}	
 
   if (!comprobante) {
     alert("Primero sube tu comprobante de pago");
@@ -42944,7 +43387,14 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
         String(organizadorId || "").trim(),
 
     configuracion_id:
-        String(configuracionId || "").trim()
+        String(configuracionId || "").trim(),
+
+    metodo_codigo:
+        String(
+            resultado?.metodo?.codigo || ""
+        )
+        .trim()
+        .toUpperCase()
 };
 
     const nombreMetodo =
