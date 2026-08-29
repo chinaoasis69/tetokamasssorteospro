@@ -26109,6 +26109,318 @@ async function obtenerMiFichaEfectivoMassActual() {
 
 actualizarBotonVerMiFichaMass();
 
+async function abrirMiFichaMassActual() {
+
+    const fichaMass =
+        await obtenerMiFichaEfectivoMassActual();
+
+    if (!fichaMass) {
+
+    alert(
+        "❌ No fue posible recuperar tu Ficha MASS en este momento. Intenta nuevamente."
+    );
+
+    return;
+}
+
+    const escaparHtml = (valor) =>
+        String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    let vencimiento =
+        String(
+            fichaMass.expira_en || ""
+        ).trim();
+
+    if (vencimiento) {
+
+        try {
+
+            const opcionesFecha = {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            };
+
+            const zonaHoraria =
+                String(
+                    fichaMass?.punto_mass?.zona_horaria ||
+                    ""
+                ).trim();
+
+            if (zonaHoraria) {
+                opcionesFecha.timeZone =
+                    zonaHoraria;
+            }
+
+            vencimiento =
+                new Intl.DateTimeFormat(
+                    "es-MX",
+                    opcionesFecha
+                ).format(
+                    new Date(
+                        fichaMass.expira_en
+                    )
+                );
+
+        } catch (errorFecha) {
+
+            console.warn(
+                "No fue posible formatear el vencimiento:",
+                errorFecha
+            );
+        }
+    }
+
+    const estado =
+        String(
+            fichaMass.estado || ""
+        )
+        .trim()
+        .toUpperCase();
+
+    const direccion =
+        [
+            fichaMass?.punto_mass?.direccion_linea1,
+            fichaMass?.punto_mass?.direccion_linea2,
+            fichaMass?.punto_mass?.ciudad,
+            fichaMass?.punto_mass?.estado_region,
+            fichaMass?.punto_mass?.codigo_postal
+        ]
+        .filter(Boolean)
+        .join(", ");
+
+    const panelAnterior =
+        document.getElementById(
+            "panelMiFichaMassActual"
+        );
+
+    if (panelAnterior) {
+        panelAnterior.remove();
+    }
+
+    const panel =
+        document.createElement("div");
+
+    panel.id =
+        "panelMiFichaMassActual";
+
+    panel.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:99999;
+        background:rgba(0,0,0,0.94);
+        overflow-y:auto;
+        padding:25px 14px;
+    `;
+
+    document.body.appendChild(panel);
+
+    panel.innerHTML = `
+        <div
+            style="
+                max-width:650px;
+                margin:0 auto;
+                padding:24px;
+                text-align:center;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    margin-bottom:8px;
+                "
+            >
+                🎫 FICHA MASS
+            </h2>
+
+            <div
+                style="
+                    display:inline-block;
+                    padding:7px 16px;
+                    margin-bottom:20px;
+                    border:2px solid #ffcc00;
+                    border-radius:20px;
+                    color:#ffcc00;
+                    font-weight:bold;
+                "
+            >
+                ${escaparHtml(estado)}
+            </div>
+
+            <p style="font-weight:bold;">
+                Código de Ficha MASS
+            </p>
+
+            <div
+                style="
+                    padding:16px;
+                    margin:0 auto 22px auto;
+                    border:3px solid #39ff14;
+                    border-radius:14px;
+                    font-size:30px;
+                    font-weight:bold;
+                    letter-spacing:4px;
+                    color:#39ff14;
+                "
+            >
+                ${escaparHtml(
+                    fichaMass.codigo_corto
+                )}
+            </div>
+
+            <div
+                style="
+                    text-align:left;
+                    line-height:1.8;
+                    border:2px solid #39ff14;
+                    border-radius:14px;
+                    padding:18px;
+                "
+            >
+
+                <div>
+                    <strong>Folio:</strong>
+                    ${escaparHtml(
+                        fichaMass.folio
+                    )}
+                </div>
+
+                <div>
+                    <strong>Entregar:</strong>
+                    ${escaparHtml(
+                        fichaMass.cantidad_efectivo
+                    )}
+                    ${escaparHtml(
+                        fichaMass.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Recibirás:</strong>
+                    ${escaparHtml(
+                        fichaMass.credito_mass
+                    )}
+                    MASS
+                    ${escaparHtml(
+                        fichaMass.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Punto MASS:</strong>
+                    ${escaparHtml(
+                        fichaMass?.punto_mass?.nombre
+                    )}
+                </div>
+
+                <div>
+                    <strong>Código del Punto:</strong>
+                    ${escaparHtml(
+                        fichaMass?.punto_mass?.codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Dirección:</strong>
+                    ${escaparHtml(direccion)}
+                </div>
+
+                <div>
+                    <strong>Organizador:</strong>
+                    ${escaparHtml(
+                        fichaMass?.organizador?.nombre
+                    )}
+                </div>
+
+                <div>
+                    <strong>Vence:</strong>
+                    ${escaparHtml(vencimiento)}
+                </div>
+
+            </div>
+
+            <p
+                style="
+                    margin-top:18px;
+                    font-weight:bold;
+                "
+            >
+                Presenta el código
+                <span style="color:#39ff14;">
+                    ${escaparHtml(
+                        fichaMass.codigo_corto
+                    )}
+                </span>
+                al Operador del Punto MASS.
+            </p>
+
+            <p
+                style="
+                    margin-top:10px;
+                    font-size:14px;
+                "
+            >
+                Tu Wallet MASS se acreditará únicamente
+                después de que el Operador confirme la
+                recepción del efectivo.
+            </p>
+
+            <button
+                id="btnCerrarMiFichaMassActual"
+                type="button"
+                style="
+                    margin-top:20px;
+                    padding:12px 24px;
+                    border-radius:10px;
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                ✖ Cerrar
+            </button>
+
+        </div>
+    `;
+
+    const botonCerrar =
+        panel.querySelector(
+            "#btnCerrarMiFichaMassActual"
+        );
+
+    if (botonCerrar) {
+
+        botonCerrar.addEventListener(
+            "click",
+            () => {
+                panel.remove();
+            }
+        );
+    }
+}
+
+const btnVerMiFichaMass =
+    document.getElementById(
+        "btnVerMiFichaMass"
+    );
+
+if (btnVerMiFichaMass) {
+
+    btnVerMiFichaMass.addEventListener(
+        "click",
+        async () => {
+            await abrirMiFichaMassActual();
+        }
+    );
+}	
+
 async function recargarSaldo() {
 const comprobante = document.getElementById("comprobante").files[0];	
 const nombreComprobanteBox = document.getElementById("nombreComprobante");
