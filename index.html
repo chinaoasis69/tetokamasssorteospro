@@ -1940,6 +1940,17 @@ font-size:15px;
 >
   🎫 Ver mi Ficha MASS
 </button>
+
+<button
+  id="btnMisComprobantesMass"
+  type="button"
+  style="
+    display:none;
+    margin-top:14px;
+  "
+>
+  🧾 Mis Comprobantes MASS
+</button>	
 	
   </div>	
 
@@ -26264,6 +26275,55 @@ async function obtenerMiFichaEfectivoMassActual() {
 }
 
 actualizarBotonVerMiFichaMass();
+
+async function actualizarBotonMisComprobantesMass() {
+
+    const boton =
+        document.getElementById(
+            "btnMisComprobantesMass"
+        );
+
+    if (!boton) {
+        return;
+    }
+
+    boton.style.display = "none";
+
+    const {
+        data: respuestaHistorial,
+        error: errorHistorial
+    } = await supabaseClient.rpc(
+        "listar_mis_comprobantes_efectivo_mass_seguro"
+    );
+
+    if (errorHistorial) {
+
+        console.error(
+            "ERROR CONSULTANDO HISTORIAL DE COMPROBANTES MASS:",
+            errorHistorial
+        );
+
+        return;
+    }
+
+    const historial =
+        Array.isArray(respuestaHistorial)
+            ? respuestaHistorial[0]
+            : respuestaHistorial;
+
+    const total =
+        Number(
+            historial?.total || 0
+        );
+
+    boton.style.display =
+        historial?.ok === true &&
+        total > 0
+            ? "inline-block"
+            : "none";
+}
+
+actualizarBotonMisComprobantesMass();	
 
 async function abrirMiFichaMassActual() {
 
