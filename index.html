@@ -7079,7 +7079,7 @@ async function mostrarOperadoresPuntoMassAdmin(
             puntoMassOrganizadorId || ""
         ).trim();
 
-	const escaparHtml1 = valor =>
+	const escaparHtml = valor =>
     String(valor ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
