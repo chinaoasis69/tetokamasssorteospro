@@ -7248,6 +7248,35 @@ async function mostrarOperadoresPuntoMassAdmin(
                                         }
                                     </div>
 
+	                <div
+    style="
+        margin-top:14px;
+        text-align:center;
+    "
+>
+    <button
+        type="button"
+        class="btnAdministrarOperadorPuntoMass"
+        data-mass-id="${escaparHtml(
+            operador?.mass_id || ""
+        )}"
+        data-rol="${escaparHtml(
+            operador?.rol || "operador"
+        )}"
+        data-activo="${
+            activo
+                ? "true"
+                : "false"
+        }"
+        style="
+            padding:10px 16px;
+            font-weight:bold;
+        "
+    >
+        ⚙️ Administrar
+    </button>
+</div>
+
                                 </div>
                             `;
                         }
@@ -7371,6 +7400,68 @@ async function mostrarOperadoresPuntoMassAdmin(
 
             </div>
         `;
+
+		// ========================================================
+// ADMINISTRAR OPERADORES
+// ========================================================
+
+const botonesAdministrarOperador =
+    contenedor.querySelectorAll(
+        ".btnAdministrarOperadorPuntoMass"
+    );
+
+
+botonesAdministrarOperador.forEach(
+    (boton) => {
+
+        boton.addEventListener(
+            "click",
+            async () => {
+
+                const massId =
+                    String(
+                        boton.dataset.massId || ""
+                    ).trim();
+
+
+                const rolActual =
+                    String(
+                        boton.dataset.rol || "operador"
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                const activoActual =
+                    String(
+                        boton.dataset.activo || "false"
+                    )
+                    .trim()
+                    .toLowerCase() === "true";
+
+
+                if (!massId) {
+
+                    alert(
+                        "❌ No se pudo identificar el MASS ID del operador."
+                    );
+
+                    return;
+                }
+
+
+                await mostrarAdministrarOperadorPuntoMassAdmin(
+                    relacionId,
+                    massId,
+                    rolActual,
+                    activoActual
+                );
+
+            }
+        );
+
+    }
+);
 
 
         // ====================================================
@@ -8134,6 +8225,442 @@ async function mostrarFormularioAgregarOperadorPuntoMassAdmin(
 
     // ========================================================
     // 4. VOLVER AL LISTADO
+    // ========================================================
+
+    if (btnVolver) {
+
+        btnVolver.addEventListener(
+            "click",
+            async () => {
+
+                await mostrarOperadoresPuntoMassAdmin(
+                    relacionId
+                );
+
+            }
+        );
+
+    }
+
+}
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// ADMINISTRAR OPERADOR EXISTENTE
+// ============================================================
+
+async function mostrarAdministrarOperadorPuntoMassAdmin(
+    puntoMassOrganizadorId,
+    massIdActual,
+    rolActual,
+    activoActual
+) {
+
+    const contenedor =
+        document.getElementById(
+            "adminContenido"
+        );
+
+
+    if (!contenedor) {
+
+        alert(
+            "❌ No se encontró el contenedor administrativo."
+        );
+
+        return;
+    }
+
+
+    const relacionId =
+        String(
+            puntoMassOrganizadorId || ""
+        ).trim();
+
+
+    const massId =
+        String(
+            massIdActual || ""
+        ).trim();
+
+
+    const rolInicial =
+        String(
+            rolActual || "operador"
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const activoInicial =
+        activoActual === true;
+
+	const escaparHtml = valor =>
+    String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+    if (
+        !relacionId ||
+        !massId
+    ) {
+
+        alert(
+            "❌ No fue posible identificar al operador."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // 1. PINTAR FORMULARIO
+    // ========================================================
+
+    contenedor.innerHTML = `
+
+        <div
+            style="
+                max-width:680px;
+                margin:0 auto;
+                padding:18px;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                    margin-bottom:8px;
+                "
+            >
+                ⚙️ Administrar operador
+            </h2>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-bottom:22px;
+                "
+            >
+                MASS ID:
+                <b>${escaparHtml(massId)}</b>
+            </div>
+
+
+            <div
+                style="
+                    margin-bottom:18px;
+                "
+            >
+
+                <label
+                    for="administrarOperadorRolAdmin"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:bold;
+                    "
+                >
+                    Rol *
+                </label>
+
+
+                <select
+                    id="administrarOperadorRolAdmin"
+                    style="
+                        width:100%;
+                        padding:12px;
+                        border-radius:10px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                    <option
+                        value="operador"
+                        ${
+                            rolInicial === "operador"
+                                ? "selected"
+                                : ""
+                        }
+                    >
+                        Operador
+                    </option>
+
+                    <option
+                        value="supervisor"
+                        ${
+                            rolInicial === "supervisor"
+                                ? "selected"
+                                : ""
+                        }
+                    >
+                        Supervisor
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                style="
+                    margin-bottom:20px;
+                "
+            >
+
+                <label
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:10px;
+                        font-weight:bold;
+                        cursor:pointer;
+                    "
+                >
+
+                    <input
+                        id="administrarOperadorActivoAdmin"
+                        type="checkbox"
+                        ${
+                            activoInicial
+                                ? "checked"
+                                : ""
+                        }
+                        style="
+                            width:auto;
+                            margin:0;
+                        "
+                    >
+
+                    <span>
+                        Operador activo
+                    </span>
+
+                </label>
+
+                <div
+                    style="
+                        margin-top:6px;
+                        font-size:13px;
+                        color:#bbb;
+                    "
+                >
+                    Si desactivas al operador, dejará de poder operar
+                    en este Punto MASS para este organizador.
+                </div>
+
+            </div>
+
+
+            <div
+                style="
+                    text-align:center;
+                    margin-top:22px;
+                "
+            >
+
+                <button
+                    id="btnGuardarAdministrarOperadorAdmin"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                        margin:6px;
+                    "
+                >
+                    💾 Guardar cambios
+                </button>
+
+
+                <button
+                    id="btnVolverAdministrarOperadorAdmin"
+                    type="button"
+                    style="
+                        padding:12px 18px;
+                        margin:6px;
+                    "
+                >
+                    ← Volver a Operadores
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    const selectRol =
+        document.getElementById(
+            "administrarOperadorRolAdmin"
+        );
+
+
+    const checkboxActivo =
+        document.getElementById(
+            "administrarOperadorActivoAdmin"
+        );
+
+
+    const btnGuardar =
+        document.getElementById(
+            "btnGuardarAdministrarOperadorAdmin"
+        );
+
+
+    const btnVolver =
+        document.getElementById(
+            "btnVolverAdministrarOperadorAdmin"
+        );
+
+
+    // ========================================================
+    // 2. GUARDAR CAMBIOS
+    // ========================================================
+
+    if (
+        btnGuardar &&
+        selectRol &&
+        checkboxActivo
+    ) {
+
+        btnGuardar.addEventListener(
+            "click",
+            async () => {
+
+                const nuevoRol =
+                    String(
+                        selectRol.value || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                const nuevoActivo =
+                    checkboxActivo.checked === true;
+
+
+                if (
+                    nuevoRol !== "operador" &&
+                    nuevoRol !== "supervisor"
+                ) {
+
+                    alert(
+                        "❌ Selecciona un rol válido."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    activoInicial === true &&
+                    nuevoActivo === false
+                ) {
+
+                    const confirmar =
+                        confirm(
+                            "¿Confirmas que deseas desactivar a este operador de este Punto MASS?"
+                        );
+
+
+                    if (!confirmar) {
+                        return;
+                    }
+
+                }
+
+
+                btnGuardar.disabled = true;
+                btnGuardar.textContent =
+                    "⏳ Guardando...";
+
+
+                try {
+
+                    const {
+                        data,
+                        error
+                    } = await supabaseClient.rpc(
+                        "autorizar_operador_por_mass_id_seguro",
+                        {
+                            p_punto_mass_organizador_id:
+                                relacionId,
+
+                            p_mass_id:
+                                massId,
+
+                            p_rol:
+                                nuevoRol,
+
+                            p_activo:
+                                nuevoActivo
+                        }
+                    );
+
+
+                    if (error) {
+                        throw error;
+                    }
+
+
+                    if (
+                        !data ||
+                        data.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "No se recibió una respuesta válida al actualizar al operador."
+                        );
+
+                    }
+
+
+                    alert(
+                        "✅ Operador actualizado correctamente."
+                    );
+
+
+                    await mostrarOperadoresPuntoMassAdmin(
+                        relacionId
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "ERROR ACTUALIZANDO OPERADOR DE PUNTO MASS:",
+                        error
+                    );
+
+
+                    alert(
+                        "❌ No fue posible actualizar al operador.\n\n" +
+                        (
+                            error?.message ||
+                            "Intenta nuevamente."
+                        )
+                    );
+
+
+                    btnGuardar.disabled = false;
+                    btnGuardar.textContent =
+                        "💾 Guardar cambios";
+
+                }
+
+            }
+        );
+
+    }
+
+
+    // ========================================================
+    // 3. VOLVER
     // ========================================================
 
     if (btnVolver) {
