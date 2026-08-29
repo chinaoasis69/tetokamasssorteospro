@@ -6094,6 +6094,27 @@ async function mostrarMisPuntosMassAdmin() {
                                     }
                                 </div>
 
+	<div
+    style="
+        margin-top:14px;
+        text-align:center;
+    "
+>
+    <button
+        type="button"
+        class="btnOperadoresPuntoMass"
+        data-punto-mass-organizador-id="${escaparHtml(
+            punto?.punto_mass_organizador_id || ""
+        )}"
+        style="
+            padding:10px 16px;
+            font-weight:bold;
+        "
+    >
+        👥 Operadores
+    </button>
+</div>
+
                             </div>
                         `;
 
@@ -6202,6 +6223,51 @@ async function mostrarMisPuntosMassAdmin() {
 
             </div>
         `;
+
+	// ============================================================
+// BOTONES DE OPERADORES DE CADA PUNTO MASS
+// ============================================================
+
+const botonesOperadoresPuntoMass =
+    contenedor.querySelectorAll(
+        ".btnOperadoresPuntoMass"
+    );
+
+
+botonesOperadoresPuntoMass.forEach(
+    (boton) => {
+
+        boton.addEventListener(
+            "click",
+            async () => {
+
+                const puntoMassOrganizadorId =
+                    String(
+                        boton.dataset
+                            .puntoMassOrganizadorId ||
+                        ""
+                    ).trim();
+
+
+                if (!puntoMassOrganizadorId) {
+
+                    alert(
+                        "❌ No se pudo identificar la relación Punto MASS + Organizador."
+                    );
+
+                    return;
+                }
+
+
+                await mostrarOperadoresPuntoMassAdmin(
+                    puntoMassOrganizadorId
+                );
+
+            }
+        );
+
+    }
+);
 
 
         // =================================================
@@ -6981,6 +7047,433 @@ if (
             </div>
         `;
     }
+}
+
+// ============================================================
+// MASS PUNTO AUTORIZADO
+// OPERADORES POR PUNTO MASS + ORGANIZADOR
+// ============================================================
+
+async function mostrarOperadoresPuntoMassAdmin(
+    puntoMassOrganizadorId
+) {
+
+    const contenedor =
+        document.getElementById(
+            "adminContenido"
+        );
+
+
+    if (!contenedor) {
+
+        alert(
+            "❌ No se encontró el contenedor administrativo."
+        );
+
+        return;
+    }
+
+
+    const relacionId =
+        String(
+            puntoMassOrganizadorId || ""
+        ).trim();
+
+
+    if (!relacionId) {
+
+        alert(
+            "❌ No se pudo identificar la relación Punto MASS + Organizador."
+        );
+
+        return;
+    }
+
+
+    contenedor.innerHTML = `
+        <div
+            style="
+                padding:18px;
+                text-align:center;
+            "
+        >
+            ⏳ Cargando operadores del Punto MASS...
+        </div>
+    `;
+
+
+    try {
+
+        // ====================================================
+        // 1. LISTADO SEGURO DESDE SUPABASE
+        // ====================================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_operadores_punto_mass_organizador_seguro",
+            {
+                p_punto_mass_organizador_id:
+                    relacionId
+            }
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            throw new Error(
+                "No se recibió una respuesta válida al consultar operadores."
+            );
+        }
+
+
+        const operadores =
+            Array.isArray(
+                data.operadores
+            )
+                ? data.operadores
+                : [];
+
+
+        // ====================================================
+        // 2. CONSTRUIR TARJETAS
+        // ====================================================
+
+        const tarjetasOperadores =
+
+            operadores.length === 0
+
+                ? `
+                    <div
+                        style="
+                            margin-top:16px;
+                            padding:18px;
+                            border:1px solid rgba(57,255,20,.40);
+                            border-radius:14px;
+                            text-align:center;
+                        "
+                    >
+                        Todavía no tienes operadores registrados
+                        en este Punto MASS.
+                    </div>
+                `
+
+                : operadores
+                    .map(
+                        operador => {
+
+                            const activo =
+                                operador?.activo === true;
+
+
+                            const rol =
+                                String(
+                                    operador?.rol || ""
+                                )
+                                .trim()
+                                .toLowerCase() ===
+                                "supervisor"
+
+                                    ? "Supervisor"
+                                    : "Operador";
+
+
+                            return `
+                                <div
+                                    style="
+                                        margin:14px 0;
+                                        padding:16px;
+                                        border:1px solid rgba(57,255,20,.45);
+                                        border-radius:14px;
+                                        background:#111;
+                                        text-align:left;
+                                    "
+                                >
+
+                                    <div
+                                        style="
+                                            font-size:18px;
+                                            font-weight:bold;
+                                            color:#39ff14;
+                                            margin-bottom:10px;
+                                        "
+                                    >
+                                        ${escaparHtml(
+                                            operador?.nombre ||
+                                            "Usuario MASS"
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>MASS ID:</b>
+                                        ${escaparHtml(
+                                            operador?.mass_id ||
+                                            "—"
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Rol:</b>
+                                        ${escaparHtml(
+                                            rol
+                                        )}
+                                    </div>
+
+
+                                    <div>
+                                        <b>Estado:</b>
+                                        ${
+                                            activo
+                                                ? "🟢 Activo"
+                                                : "🔴 Inactivo"
+                                        }
+                                    </div>
+
+                                </div>
+                            `;
+                        }
+                    )
+                    .join("");
+
+
+        // ====================================================
+        // 3. PINTAR MÓDULO
+        // ====================================================
+
+        contenedor.innerHTML = `
+
+            <div
+                style="
+                    max-width:760px;
+                    margin:0 auto;
+                    padding:18px;
+                "
+            >
+
+                <h2
+                    style="
+                        color:#39ff14;
+                        text-align:center;
+                        margin-bottom:8px;
+                    "
+                >
+                    👥 Operadores
+                </h2>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        margin-bottom:18px;
+                    "
+                >
+
+                    <div
+                        style="
+                            font-size:18px;
+                            font-weight:bold;
+                        "
+                    >
+                        ${escaparHtml(
+                            data.punto_nombre ||
+                            "Punto MASS"
+                        )}
+                    </div>
+
+
+                    <div>
+                        Código:
+                        ${escaparHtml(
+                            data.punto_codigo ||
+                            "—"
+                        )}
+                    </div>
+
+
+                    <div>
+                        Organizador:
+                        ${escaparHtml(
+                            data.organizador_nombre ||
+                            "—"
+                        )}
+                    </div>
+
+                </div>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        margin-bottom:14px;
+                    "
+                >
+                    Operadores registrados:
+                    <b>${operadores.length}</b>
+                </div>
+
+
+                ${tarjetasOperadores}
+
+
+                <div
+                    style="
+                        margin-top:20px;
+                        text-align:center;
+                    "
+                >
+
+                    <button
+                        id="btnAgregarOperadorPuntoMass"
+                        type="button"
+                        data-punto-mass-organizador-id="${escaparHtml(
+                            relacionId
+                        )}"
+                        style="
+                            padding:12px 18px;
+                            margin:6px;
+                        "
+                    >
+                        ➕ Agregar operador
+                    </button>
+
+
+                    <button
+                        id="btnVolverMisPuntosMass"
+                        type="button"
+                        style="
+                            padding:12px 18px;
+                            margin:6px;
+                        "
+                    >
+                        ← Volver a Mis Puntos MASS
+                    </button>
+
+                </div>
+
+            </div>
+        `;
+
+
+        // ====================================================
+        // 4. VOLVER
+        // ====================================================
+
+        const btnVolver =
+            document.getElementById(
+                "btnVolverMisPuntosMass"
+            );
+
+
+        if (btnVolver) {
+
+            btnVolver.addEventListener(
+                "click",
+                async () => {
+
+                    await mostrarMisPuntosMassAdmin();
+
+                }
+            );
+
+        }
+
+
+        // ====================================================
+        // 5. AGREGAR OPERADOR
+        // Se conectará en el siguiente paso.
+        // ====================================================
+
+        const btnAgregar =
+            document.getElementById(
+                "btnAgregarOperadorPuntoMass"
+            );
+
+
+        if (btnAgregar) {
+
+            btnAgregar.addEventListener(
+                "click",
+                () => {
+
+                    alert(
+                        "Formulario para agregar operador por MASS ID en preparación."
+                    );
+
+                }
+            );
+
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR MOSTRANDO OPERADORES DE PUNTO MASS:",
+            error
+        );
+
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:16px;
+                    border:1px solid #ff4d4f;
+                    border-radius:12px;
+                    color:#ff8a8a;
+                    text-align:center;
+                "
+            >
+                ❌ No fue posible cargar los operadores
+                de este Punto MASS.
+
+                <div
+                    style="
+                        margin-top:14px;
+                    "
+                >
+                    <button
+                        id="btnVolverMisPuntosMassError"
+                        type="button"
+                    >
+                        ← Volver a Mis Puntos MASS
+                    </button>
+                </div>
+            </div>
+        `;
+
+
+        const btnVolverError =
+            document.getElementById(
+                "btnVolverMisPuntosMassError"
+            );
+
+
+        if (btnVolverError) {
+
+            btnVolverError.addEventListener(
+                "click",
+                async () => {
+
+                    await mostrarMisPuntosMassAdmin();
+
+                }
+            );
+
+        }
+
+    }
+
 }	
 
 function abrirModalGanadores() {
