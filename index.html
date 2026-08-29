@@ -1929,6 +1929,18 @@ font-size:15px;
 ✅ Tu saldo MASS estará disponible automáticamente después de que el organizador apruebe tu comprobante.
 </p>
   </div>
+
+	<button
+  id="btnVerMiFichaMass"
+  type="button"
+  style="
+    display:none;
+    margin-top:14px;
+  "
+>
+  🎫 Ver mi Ficha MASS
+</button>
+	
   </div>	
 
 <div class="card">
@@ -26069,7 +26081,33 @@ async function obtenerMiFichaEfectivoMassActual() {
     }
 
     return fichaMass;
-}	
+}
+
+	function actualizarBotonVerMiFichaMass() {
+
+    const boton =
+        document.getElementById(
+            "btnVerMiFichaMass"
+        );
+
+    if (!boton) {
+        return;
+    }
+
+    const fichaId =
+        String(
+            localStorage.getItem(
+                "mass_ficha_efectivo_actual_id"
+            ) || ""
+        ).trim();
+
+    boton.style.display =
+        fichaId
+            ? "inline-block"
+            : "none";
+}
+
+actualizarBotonVerMiFichaMass();
 
 async function recargarSaldo() {
 const comprobante = document.getElementById("comprobante").files[0];	
