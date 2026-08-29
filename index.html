@@ -2223,12 +2223,12 @@ Cargando historial...
 </button>
 
 <button
-    id="btnPuntosMassAdmin"
+    id="btnMisPuntosMassAdmin"
     type="button"
-    onclick="mostrarPuntosMassAdmin()"
+    onclick="mostrarMisPuntosMassAdmin()"
     style="display:none;"
 >
-    🏪 MASS Punto Autorizado
+    🏪 Mis Puntos MASS
 </button>	
 
 <button
@@ -3057,7 +3057,8 @@ window.addEventListener("load", () => {
     const btn = document.getElementById("btnConfigAdmin");
 	const btnDivisas = document.getElementById("btnDivisasAdmin");
 	const btnMetodosPago = document.getElementById("btnMetodosPagoAdmin");
-	const btnPuntosMass = document.getElementById("btnPuntosMassAdmin");
+	const btnMisPuntosMass =
+    document.getElementById("btnMisPuntosMassAdmin");
 	const btnConvertidor =
     document.getElementById("btnConvertidorMassAdmin");
     const rol = localStorage.getItem("admin_rol");
@@ -3077,12 +3078,16 @@ if (btnMetodosPago) {
     puedeAdministrarMetodosPago ? "" : "none";
 }
 
-if (btnPuntosMass) {
-    const puedeAdministrarPuntosMass =
-        rol === "super_admin";
+if (btnMisPuntosMass) {
 
-    btnPuntosMass.style.display =
-        puedeAdministrarPuntosMass ? "" : "none";
+    const puedeAdministrarMisPuntosMass =
+        rol === "super_admin" ||
+        rol === "organizador";
+
+    btnMisPuntosMass.style.display =
+        puedeAdministrarMisPuntosMass
+            ? ""
+            : "none";
 }	
 
 if (btnConvertidor) {
@@ -5775,6 +5780,478 @@ async function mostrarPuntosMassAdmin() {
             >
                 ❌ No fue posible abrir
                 MASS Punto Autorizado.
+            </div>
+        `;
+    }
+}
+
+// =====================================================
+// MASS PUNTO AUTORIZADO
+// MIS PUNTOS MASS — ORGANIZADOR
+// =====================================================
+
+async function mostrarMisPuntosMassAdmin() {
+
+    const contenedor =
+        document.getElementById("adminContenido");
+
+
+    if (!contenedor) {
+
+        alert(
+            "❌ No se encontró el contenedor administrativo."
+        );
+
+        return;
+    }
+
+
+    contenedor.innerHTML = `
+        <div
+            style="
+                padding:18px;
+                text-align:center;
+            "
+        >
+            ⏳ Cargando Mis Puntos MASS...
+        </div>
+    `;
+
+
+    const escaparHtml = valor =>
+        String(valor ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+
+    try {
+
+        // =================================================
+        // 1. VALIDAR SESIÓN ADMINISTRATIVA
+        // =================================================
+
+        const adminActual =
+            await obtenerAdminActual();
+
+
+        if (
+            !adminActual ||
+            ![
+                "super_admin",
+                "organizador"
+            ].includes(adminActual.rol)
+        ) {
+
+            contenedor.innerHTML = `
+                <div
+                    style="
+                        padding:16px;
+                        border:1px solid #ff4d4f;
+                        border-radius:12px;
+                        color:#ff8a8a;
+                    "
+                >
+                    ❌ No existe una sesión administrativa
+                    autorizada para administrar Puntos MASS.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // =================================================
+        // 2. RESOLVER ORGANIZADOR
+        // =================================================
+
+        let organizadorId = null;
+
+
+        if (adminActual.rol === "organizador") {
+
+            organizadorId =
+                adminActual.organizador_id ||
+                localStorage.getItem(
+                    "admin_organizador_id"
+                ) ||
+                localStorage.getItem(
+                    "organizador_admin_id"
+                );
+
+        } else {
+
+            organizadorId =
+                localStorage.getItem(
+                    "admin_organizador_id"
+                ) ||
+                localStorage.getItem(
+                    "organizador_admin_id"
+                ) ||
+                (
+                    clienteActual &&
+                    clienteActual.id
+                        ? clienteActual.id
+                        : null
+                ) ||
+                adminActual.organizador_id;
+
+        }
+
+
+        if (!organizadorId) {
+
+            contenedor.innerHTML = `
+                <div
+                    style="
+                        padding:16px;
+                        border:1px solid #facc15;
+                        border-radius:12px;
+                        color:#facc15;
+                    "
+                >
+                    ⚠️ Primero selecciona un organizador.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        // =================================================
+        // 3. CARGAR MIS PUNTOS MASS
+        // =================================================
+
+        const {
+            data: dataPuntos,
+            error: errorPuntos
+        } = await supabaseClient.rpc(
+            "listar_mis_puntos_mass_organizador_seguro",
+            {
+                p_organizador_id:
+                    organizadorId
+            }
+        );
+
+
+        if (errorPuntos) {
+
+            throw errorPuntos;
+        }
+
+
+        // =================================================
+        // 4. CARGAR PAÍSES HABILITADOS
+        // =================================================
+
+        const {
+            data: dataPaises,
+            error: errorPaises
+        } = await supabaseClient.rpc(
+            "listar_paises_puntos_mass_organizador_seguro",
+            {
+                p_organizador_id:
+                    organizadorId
+            }
+        );
+
+
+        if (errorPaises) {
+
+            throw errorPaises;
+        }
+
+
+        const puntos =
+            Array.isArray(dataPuntos?.puntos)
+                ? dataPuntos.puntos
+                : [];
+
+
+        const paises =
+            Array.isArray(dataPaises?.paises)
+                ? dataPaises.paises
+                : [];
+
+
+        // =================================================
+        // 5. TARJETAS DE PUNTOS EXISTENTES
+        // =================================================
+
+        const tarjetasPuntos =
+            puntos.length === 0
+
+                ? `
+                    <div
+                        style="
+                            padding:18px;
+                            border:1px solid rgba(57,255,20,.35);
+                            border-radius:14px;
+                            color:#ccc;
+                            text-align:center;
+                        "
+                    >
+                        Todavía no tienes Puntos MASS registrados.
+                    </div>
+                `
+
+                : puntos
+                    .map(punto => {
+
+                        const pais =
+                            punto?.pais || {};
+
+
+                        const puntoActivo =
+                            punto?.punto_activo === true;
+
+
+                        const relacionActiva =
+                            punto?.relacion_activa === true;
+
+
+                        const disponible =
+                            puntoActivo &&
+                            relacionActiva;
+
+
+                        return `
+                            <div
+                                style="
+                                    margin:14px 0;
+                                    padding:16px;
+                                    border:1px solid rgba(57,255,20,.45);
+                                    border-radius:14px;
+                                    background:#111;
+                                    text-align:left;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        font-size:19px;
+                                        font-weight:bold;
+                                        color:#39ff14;
+                                        margin-bottom:10px;
+                                    "
+                                >
+                                    ${escaparHtml(
+                                        punto?.nombre ||
+                                        "Punto MASS"
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <b>Código:</b>
+                                    ${escaparHtml(
+                                        punto?.codigo || "--"
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <b>País:</b>
+                                    ${escaparHtml(
+                                        pais?.nombre || "--"
+                                    )}
+
+                                    ${
+                                        pais?.codigo_iso2
+                                            ? `(${escaparHtml(
+                                                pais.codigo_iso2
+                                            )})`
+                                            : ""
+                                    }
+                                </div>
+
+
+                                <div>
+                                    <b>Ciudad:</b>
+                                    ${escaparHtml(
+                                        punto?.ciudad || "--"
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <b>Dirección:</b>
+                                    ${escaparHtml(
+                                        punto?.direccion_linea1 ||
+                                        "--"
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <b>Estado:</b>
+                                    ${
+                                        disponible
+                                            ? "🟢 Activo"
+                                            : "🔴 Deshabilitado"
+                                    }
+                                </div>
+
+                            </div>
+                        `;
+
+                    })
+                    .join("");
+
+
+        // =================================================
+        // 6. PINTAR MÓDULO
+        // =================================================
+
+        contenedor.innerHTML = `
+
+            <div
+                style="
+                    max-width:760px;
+                    margin:0 auto;
+                    padding:18px;
+                "
+            >
+
+                <h2
+                    style="
+                        color:#39ff14;
+                        text-align:center;
+                    "
+                >
+                    🏪 Mis Puntos MASS
+                </h2>
+
+
+                <div
+                    style="
+                        margin-bottom:18px;
+                        text-align:center;
+                        color:#ccc;
+                    "
+                >
+                    Registra y administra los lugares
+                    autorizados donde tus usuarios
+                    pueden pagar en efectivo.
+                </div>
+
+
+                <div
+                    style="
+                        margin-bottom:20px;
+                        text-align:center;
+                    "
+                >
+
+                    <button
+                        id="btnRegistrarNuevoPuntoMass"
+                        type="button"
+                        style="
+                            padding:12px 18px;
+                            font-weight:bold;
+                        "
+                        ${
+                            paises.length === 0
+                                ? "disabled"
+                                : ""
+                        }
+                    >
+                        ➕ Registrar nuevo Punto MASS
+                    </button>
+
+                </div>
+
+
+                ${
+                    paises.length === 0
+                        ? `
+                            <div
+                                style="
+                                    margin-bottom:18px;
+                                    padding:14px;
+                                    border:1px solid #facc15;
+                                    border-radius:12px;
+                                    color:#facc15;
+                                "
+                            >
+                                ⚠️ Para registrar un Punto MASS
+                                primero debes tener
+                                “Efectivo en punto autorizado”
+                                configurado y activo en al menos
+                                un país.
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                <div
+                    style="
+                        margin-bottom:14px;
+                        color:#ccc;
+                    "
+                >
+                    Puntos registrados:
+                    <b>${puntos.length}</b>
+                </div>
+
+
+                ${tarjetasPuntos}
+
+            </div>
+        `;
+
+
+        // =================================================
+        // 7. BOTÓN DE REGISTRO
+        //
+        // En el siguiente paso conectaremos el formulario.
+        // =================================================
+
+        const btnRegistrarNuevoPuntoMass =
+            document.getElementById(
+                "btnRegistrarNuevoPuntoMass"
+            );
+
+
+        if (btnRegistrarNuevoPuntoMass) {
+
+            btnRegistrarNuevoPuntoMass
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        alert(
+                            "Formulario de registro de Punto MASS " +
+                            "en preparación."
+                        );
+
+                    }
+                );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR MOSTRANDO MIS PUNTOS MASS:",
+            error
+        );
+
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    padding:16px;
+                    border:1px solid #ff4d4f;
+                    border-radius:12px;
+                    color:#ff8a8a;
+                "
+            >
+                ❌ No fue posible cargar
+                Mis Puntos MASS.
             </div>
         `;
     }
