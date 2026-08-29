@@ -26937,6 +26937,111 @@ async function abrirMisComprobantesMass() {
         </div>
     `;
 
+	const botonesAbrirComprobante =
+    panel.querySelectorAll(
+        ".btnAbrirComprobanteMass"
+    );
+
+botonesAbrirComprobante.forEach(
+    (boton) => {
+
+        boton.addEventListener(
+            "click",
+            async () => {
+
+                if (boton.disabled) {
+                    return;
+                }
+
+                const indice =
+                    Number(
+                        boton.dataset.indice
+                    );
+
+                const comprobanteSeleccionado =
+                    comprobantes[indice];
+
+                const fichaId =
+                    String(
+                        comprobanteSeleccionado?.ficha_id ||
+                        ""
+                    ).trim();
+
+                if (!fichaId) {
+
+                    alert(
+                        "❌ No fue posible identificar este Comprobante MASS."
+                    );
+
+                    return;
+                }
+
+                const textoOriginal =
+                    boton.textContent;
+
+                boton.disabled = true;
+
+                boton.textContent =
+                    "⏳ Consultando comprobante...";
+
+                const {
+                    data: respuestaComprobante,
+                    error: errorComprobante
+                } = await supabaseClient.rpc(
+                    "obtener_mi_comprobante_efectivo_mass_seguro",
+                    {
+                        p_ficha_id:
+                            fichaId
+                    }
+                );
+
+                boton.disabled = false;
+                boton.textContent =
+                    textoOriginal;
+
+                if (errorComprobante) {
+
+                    console.error(
+                        "ERROR OBTENIENDO COMPROBANTE MASS:",
+                        errorComprobante
+                    );
+
+                    alert(
+                        "❌ No fue posible abrir este Comprobante MASS."
+                    );
+
+                    return;
+                }
+
+                const comprobante =
+                    Array.isArray(
+                        respuestaComprobante
+                    )
+                        ? respuestaComprobante[0]
+                        : respuestaComprobante;
+
+                if (!comprobante?.ok) {
+
+                    alert(
+                        "❌ El Comprobante MASS no devolvió una respuesta válida."
+                    );
+
+                    return;
+                }
+
+                console.log(
+                    "COMPROBANTE MASS SELECCIONADO:",
+                    comprobante
+                );
+
+                alert(
+                    "✅ Comprobante MASS recuperado correctamente."
+                );
+            }
+        );
+    }
+);
+
     const botonCerrar =
         panel.querySelector(
             "#btnCerrarMisComprobantesMass"
