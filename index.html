@@ -28593,6 +28593,41 @@ if (abriendoListadoOrganizadores) {
     }
 
     limpiarMetodosPago();
+
+window.rifaSeleccionada = null;
+window.unidadMassActual = "";
+
+actualizarBotonesCompraSorteo();
+
+const cantidadBoletosReset =
+    document.getElementById(
+        "cantidadBoletos"
+    );
+
+if (cantidadBoletosReset) {
+    cantidadBoletosReset.textContent = "0";
+}
+
+const precioBoletoReset =
+    document.getElementById(
+        "precioBoleto"
+    );
+
+if (precioBoletoReset) {
+    precioBoletoReset.textContent = "0";
+}
+
+const totalCompraReset =
+    document.getElementById(
+        "totalCompra"
+    );
+
+if (totalCompraReset) {
+    totalCompraReset.textContent =
+        "0 MASS";
+}
+
+cargarSaldo();	
 }
 
 box.style.display =
