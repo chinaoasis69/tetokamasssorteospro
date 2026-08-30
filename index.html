@@ -44693,18 +44693,57 @@ async function cargarMetodosPagoUsuarioMass() {
             rifaPago?.cliente_id ||
             null;
 
-    } else {
+   } else {
 
-        organizadorIdPago =
+    const organizadorLocalPago =
+        String(
             localStorage.getItem(
                 "organizador_actual_id"
-            ) ||
-            (
-                clienteActual?.id
-                    ? clienteActual.id
-                    : null
-            );
+            ) || ""
+        ).trim();
+
+    const clienteActualPagoId =
+        (
+            typeof clienteActual !== "undefined" &&
+            clienteActual?.id
+        )
+            ? String(clienteActual.id).trim()
+            : "";
+
+    const sorteosBoxPago =
+        document.getElementById(
+            "sorteosActivosBox"
+        );
+
+    const contextoOrganizadorVisible =
+        !!sorteosBoxPago &&
+        window.getComputedStyle(
+            sorteosBoxPago
+        ).display !== "none";
+
+    organizadorIdPago =
+    contextoOrganizadorVisible
+        ? (
+            clienteActualPagoId ||
+            organizadorLocalPago ||
+            null
+          )
+        : null;
+
+    if (!organizadorIdPago) {
+
+        localStorage.removeItem(
+            "organizador_actual_id"
+        );
+
+        localStorage.removeItem(
+            "organizador_publico_id"
+        );
+
+        metodoPagoRecargaSeleccionado =
+            null;
     }
+} 
 
 
     if (!organizadorIdPago) {
