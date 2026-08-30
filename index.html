@@ -44254,6 +44254,403 @@ async function mostrarRecargasMassAdmin() {
     .innerHTML = html;
 }
 
+async function abrirComprobanteEfectivoMassAdmin(recargaId) {
+
+    const idRecarga =
+        String(recargaId || "")
+            .trim();
+
+    if (!idRecarga) {
+
+        alert(
+            "❌ No fue posible identificar la recarga."
+        );
+
+        return;
+    }
+
+
+    const {
+        data: respuestaComprobante,
+        error: errorComprobante
+    } = await supabaseClient.rpc(
+        "obtener_comprobante_efectivo_mass_admin_seguro",
+        {
+            p_recarga_id:
+                idRecarga
+        }
+    );
+
+
+    if (errorComprobante) {
+
+        console.error(
+            "ERROR OBTENIENDO COMPROBANTE MASS ADMIN:",
+            errorComprobante
+        );
+
+        alert(
+            "❌ No fue posible abrir el Comprobante MASS."
+        );
+
+        return;
+    }
+
+
+    const comprobante =
+        Array.isArray(
+            respuestaComprobante
+        )
+            ? respuestaComprobante[0]
+            : respuestaComprobante;
+
+
+    if (!comprobante?.ok) {
+
+        alert(
+            "❌ El Comprobante MASS no devolvió una respuesta válida."
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "COMPROBANTE MASS ADMIN SELECCIONADO:",
+        comprobante
+    );
+
+
+    const escaparHtmlComprobanteAdmin =
+        (valor) =>
+            String(valor ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+
+
+    let fechaPagoComprobanteAdmin =
+        String(
+            comprobante.pagado_en || ""
+        ).trim();
+
+
+    if (fechaPagoComprobanteAdmin) {
+
+        try {
+
+            const opcionesFechaComprobanteAdmin = {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+            };
+
+
+            const zonaHorariaComprobanteAdmin =
+                String(
+                    comprobante?.punto_mass
+                        ?.zona_horaria || ""
+                ).trim();
+
+
+            if (zonaHorariaComprobanteAdmin) {
+
+                opcionesFechaComprobanteAdmin.timeZone =
+                    zonaHorariaComprobanteAdmin;
+            }
+
+
+            fechaPagoComprobanteAdmin =
+                new Intl.DateTimeFormat(
+                    "es-MX",
+                    opcionesFechaComprobanteAdmin
+                ).format(
+                    new Date(
+                        comprobante.pagado_en
+                    )
+                );
+
+        } catch (errorFechaComprobanteAdmin) {
+
+            console.warn(
+                "No fue posible formatear la fecha del Comprobante MASS administrativo:",
+                errorFechaComprobanteAdmin
+            );
+        }
+    }
+
+
+    const direccionComprobanteAdmin =
+        [
+            comprobante?.punto_mass
+                ?.direccion_linea1,
+
+            comprobante?.punto_mass
+                ?.direccion_linea2,
+
+            comprobante?.punto_mass
+                ?.ciudad,
+
+            comprobante?.punto_mass
+                ?.estado_region,
+
+            comprobante?.punto_mass
+                ?.codigo_postal
+        ]
+            .filter(Boolean)
+            .join(", ");
+
+
+    const panelComprobanteAnteriorAdmin =
+        document.getElementById(
+            "panelComprobanteMassAdminDetalle"
+        );
+
+
+    if (panelComprobanteAnteriorAdmin) {
+
+        panelComprobanteAnteriorAdmin.remove();
+    }
+
+
+    const panelComprobanteAdmin =
+        document.createElement(
+            "div"
+        );
+
+
+    panelComprobanteAdmin.id =
+        "panelComprobanteMassAdminDetalle";
+
+
+    panelComprobanteAdmin.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:100000;
+        background:rgba(0,0,0,0.96);
+        overflow-y:auto;
+        padding:25px 14px;
+    `;
+
+
+    document.body.appendChild(
+        panelComprobanteAdmin
+    );
+
+
+    panelComprobanteAdmin.innerHTML = `
+        <div
+            style="
+                max-width:650px;
+                margin:0 auto;
+                padding:24px;
+                text-align:center;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    margin-bottom:8px;
+                "
+            >
+                🧾 COMPROBANTE MASS
+            </h2>
+
+
+            <div
+                style="
+                    display:inline-block;
+                    padding:7px 16px;
+                    margin-bottom:20px;
+                    border:2px solid #39ff14;
+                    border-radius:20px;
+                    color:#39ff14;
+                    font-weight:bold;
+                "
+            >
+                ✅ PAGADO
+            </div>
+
+
+            <div
+                style="
+                    text-align:left;
+                    line-height:1.8;
+                    border:2px solid #39ff14;
+                    border-radius:14px;
+                    padding:18px;
+                "
+            >
+
+                <div>
+                    <strong>MASS ID:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.mass_id
+                    )}
+                </div>
+
+                <div>
+                    <strong>Folio:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.folio
+                    )}
+                </div>
+
+                <div>
+                    <strong>Código:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.codigo_corto
+                    )}
+                </div>
+
+                <div>
+                    <strong>Efectivo recibido:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.cantidad_efectivo
+                    )}
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Crédito MASS:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.credito_mass
+                    )}
+                    MASS
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Saldo anterior:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.saldo_anterior
+                    )}
+                    MASS
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Saldo nuevo:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.saldo_nuevo
+                    )}
+                    MASS
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante.moneda_codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Punto MASS:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante?.punto_mass?.nombre
+                    )}
+                </div>
+
+                <div>
+                    <strong>Código del Punto:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante?.punto_mass?.codigo
+                    )}
+                </div>
+
+                <div>
+                    <strong>Dirección:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        direccionComprobanteAdmin
+                    )}
+                </div>
+
+                <div>
+                    <strong>Organizador:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante?.organizador?.nombre
+                    )}
+                </div>
+
+                <div>
+                    <strong>Recibido por:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante?.operador?.nombre
+                    )}
+                </div>
+
+                <div>
+                    <strong>Rol:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        comprobante?.operador?.rol
+                    )}
+                </div>
+
+                <div>
+                    <strong>Pagado el:</strong>
+                    ${escaparHtmlComprobanteAdmin(
+                        fechaPagoComprobanteAdmin
+                    )}
+                </div>
+
+            </div>
+
+
+            <p
+                style="
+                    margin-top:18px;
+                    font-weight:bold;
+                    color:#39ff14;
+                "
+            >
+                ✅ Pago confirmado y acreditado correctamente.
+            </p>
+
+
+            <button
+                id="btnCerrarComprobanteMassAdminDetalle"
+                type="button"
+                style="
+                    margin-top:20px;
+                    padding:12px 24px;
+                    border-radius:10px;
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                ✕ Cerrar
+            </button>
+
+        </div>
+    `;
+
+
+    const btnCerrarComprobanteMassAdminDetalle =
+        panelComprobanteAdmin.querySelector(
+            "#btnCerrarComprobanteMassAdminDetalle"
+        );
+
+
+    if (btnCerrarComprobanteMassAdminDetalle) {
+
+        btnCerrarComprobanteMassAdminDetalle
+            .addEventListener(
+                "click",
+                () => {
+
+                    panelComprobanteAdmin.remove();
+                }
+            );
+    }
+}	
+
 async function mostrarHistorialRecargasMassAdmin() {
 
   const orgId =
@@ -44417,6 +44814,53 @@ const nombreOrganizador =
           "MASS-ID-NO-DISPONIBLE"
         );
 
+	const esPuntoMass =
+    String(
+        r.metodo_codigo || ""
+    )
+        .trim()
+        .toUpperCase() ===
+        "EFECTIVO_PUNTO_MASS";
+
+
+const comprobanteHistorialHtml =
+    esPuntoMass
+        ? `
+            <button
+                type="button"
+                onclick="abrirComprobanteEfectivoMassAdmin('${r.id}')"
+                style="
+                    margin-top:10px;
+                    padding:10px 16px;
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                🧾 Ver Comprobante MASS
+            </button>
+          `
+        : r.comprobante_url
+            ? `
+                <a
+                    href="${r.comprobante_url}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Ver comprobante
+                </a>
+              `
+            : `
+                <span
+                    style="
+                        display:inline-block;
+                        margin-top:10px;
+                        color:#aaa;
+                    "
+                >
+                    Comprobante no disponible
+                </span>
+              `;
+
       html += `
         <div class="card">
 
@@ -44452,13 +44896,7 @@ const nombreOrganizador =
             ).toLocaleString()}
           </p>
 
-          <a
-            href="${r.comprobante_url}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ver comprobante
-          </a>
+          ${comprobanteHistorialHtml}
 
         </div>
       `;
