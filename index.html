@@ -28627,7 +28627,124 @@ if (totalCompraReset) {
         "0 MASS";
 }
 
-cargarSaldo();	
+cargarSaldo();
+
+const imagenRifaReset =
+    document.getElementById(
+        "imagenRifa"
+    );
+
+if (imagenRifaReset) {
+    imagenRifaReset.style.display = "none";
+    imagenRifaReset.src = "";
+}
+
+const galeriaRifaReset =
+    document.getElementById(
+        "galeriaRifa"
+    );
+
+if (galeriaRifaReset) {
+    galeriaRifaReset.innerHTML = "";
+}
+
+const videoRifaReset =
+    document.getElementById(
+        "videoRifaPrincipal"
+    );
+
+if (videoRifaReset) {
+
+    videoRifaReset.pause();
+
+    videoRifaReset.removeAttribute(
+        "src"
+    );
+
+    videoRifaReset.load();
+
+    videoRifaReset.style.display =
+        "none";
+}
+
+const btnVideoRifaReset =
+    document.getElementById(
+        "btnVideoRifa"
+    );
+
+if (btnVideoRifaReset) {
+
+    btnVideoRifaReset.style.display =
+        "none";
+
+    btnVideoRifaReset.dataset.video =
+        "";
+}
+
+const controlesCarruselReset =
+    document.getElementById(
+        "controlesCarruselPremio"
+    );
+
+if (controlesCarruselReset) {
+    controlesCarruselReset.style.display =
+        "none";
+}
+
+const contadorCarruselReset =
+    document.getElementById(
+        "contadorCarruselPremio"
+    );
+
+if (contadorCarruselReset) {
+    contadorCarruselReset.textContent =
+        "0 / 0";
+}
+
+premioCarruselActivo = null;
+indiceCarruselPremioActivo = 0;
+carruselesPremiosPublicos = {};
+
+const patrocinadoresSorteoBoxReset =
+    document.getElementById(
+        "patrocinadoresBox"
+    );
+
+if (patrocinadoresSorteoBoxReset) {
+
+    patrocinadoresSorteoBoxReset.innerHTML =
+        "";
+
+    const patrocinadoresSorteoCardReset =
+        patrocinadoresSorteoBoxReset.closest(
+            ".card"
+        );
+
+    if (patrocinadoresSorteoCardReset) {
+        patrocinadoresSorteoCardReset.style.display =
+            "none";
+    }
+}
+
+const patrocinadoresPlataformaBoxReset =
+    document.getElementById(
+        "patrocinadoresPlataformaBox"
+    );
+
+if (patrocinadoresPlataformaBoxReset) {
+
+    const patrocinadoresPlataformaCardReset =
+        patrocinadoresPlataformaBoxReset.closest(
+            ".card"
+        );
+
+    if (patrocinadoresPlataformaCardReset) {
+        patrocinadoresPlataformaCardReset.style.display =
+            "block";
+    }
+}
+
+cargarPatrocinadoresPlataforma();	
 }
 
 box.style.display =
