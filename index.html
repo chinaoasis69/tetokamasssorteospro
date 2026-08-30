@@ -44275,7 +44275,7 @@ async function mostrarHistorialRecargasMassAdmin() {
 ] = await Promise.all([
 
     supabaseClient.rpc(
-      "listar_recargas_mass_admin",
+     "listar_recargas_mass_admin_v2",
       {
         p_organizador_id: orgId,
         p_estado: null
@@ -44428,6 +44428,11 @@ const nombreOrganizador =
           <p>
             <b>🏢 Organizador:</b>
             ${nombreOrganizador}
+          </p>
+
+		  <p>
+          <b>💳 Método de pago:</b>
+          ${r.metodo_nombre || "Método no disponible"}
           </p>
 
           <p>
