@@ -28571,8 +28571,32 @@ if (typeof aplicarFiltros === "function") {
     aplicarFiltros();
 }	
 
-    box.style.display =
-        box.style.display === "none"
+    const abriendoListadoOrganizadores =
+    box.style.display === "none";
+
+if (abriendoListadoOrganizadores) {
+
+    localStorage.removeItem(
+        "organizador_actual_id"
+    );
+
+    localStorage.removeItem(
+        "organizador_publico_id"
+    );
+
+    metodoPagoRecargaSeleccionado = null;
+
+    if (
+        typeof clienteActual !== "undefined"
+    ) {
+        clienteActual = null;
+    }
+
+    limpiarMetodosPago();
+}
+
+box.style.display =
+    abriendoListadoOrganizadores
         ? "block"
         : "none";
 }
