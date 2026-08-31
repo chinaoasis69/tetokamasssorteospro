@@ -6536,6 +6536,42 @@ async function mostrarMisPuntosMassAdmin() {
                                                         : "❌ Comprobante privado no disponible"
                                                 }
                                             </div>
+                                            ${
+                                                comprobante
+                                                    ?.objeto_existe ===
+                                                true
+
+                                                    ? `
+
+                                                        <div
+                                                            style="
+                                                                margin-top:14px;
+                                                                text-align:center;
+                                                            "
+                                                        >
+
+                                                            <button
+                                                                type="button"
+                                                                class="btnVerComprobanteEntregaFondosAdmin"
+                                                                data-entrega-id="${escaparHtml(
+                                                                    entrega?.entrega_id ||
+                                                                    ""
+                                                                )}"
+                                                                style="
+                                                                    padding:12px 18px;
+                                                                    font-weight:bold;
+                                                                    cursor:pointer;
+                                                                "
+                                                            >
+                                                                🧾 Ver comprobante privado
+                                                            </button>
+
+                                                        </div>
+                                                    `
+
+                                                    : ""
+                                            }
+	
 
                                         </div>
                                     `;
@@ -6576,6 +6612,301 @@ async function mostrarMisPuntosMassAdmin() {
 
                     ${tarjetasEntregas}
                 `;
+
+		         // =================================================
+                // VER COMPROBANTE PRIVADO
+                // SOLO LECTURA — NO CONFIRMA FONDOS
+                // =================================================
+
+                const botonesVerComprobante =
+                    contenedorEntregasPorConfirmar
+                        .querySelectorAll(
+                            ".btnVerComprobanteEntregaFondosAdmin"
+                        );
+
+
+                botonesVerComprobante.forEach(
+                    boton => {
+
+                        boton.addEventListener(
+                            "click",
+                            async () => {
+
+                                const entregaId =
+                                    String(
+                                        boton.dataset.entregaId ||
+                                        ""
+                                    ).trim();
+
+
+                                const entregaActual =
+                                    entregas.find(
+                                        item =>
+                                            String(
+                                                item?.entrega_id ||
+                                                ""
+                                            ) ===
+                                            entregaId
+                                    ) || null;
+
+
+                                if (!entregaActual) {
+
+                                    alert(
+                                        "❌ No fue posible identificar la entrega."
+                                    );
+
+                                    return;
+                                }
+
+
+                                if (
+                                    String(
+                                        entregaActual?.estado ||
+                                        ""
+                                    ) !== "entregada"
+                                ) {
+
+                                    alert(
+                                        "❌ Esta entrega ya no está disponible para revisión."
+                                    );
+
+                                    return;
+                                }
+
+
+                                const comprobanteActual =
+                                    entregaActual?.comprobante ||
+                                    {};
+
+
+                                if (
+                                    comprobanteActual
+                                        ?.objeto_existe !==
+                                    true
+                                ) {
+
+                                    alert(
+                                        "❌ El comprobante privado no está disponible."
+                                    );
+
+                                    return;
+                                }
+
+
+                                const bucket =
+                                    String(
+                                        comprobanteActual
+                                            ?.bucket ||
+                                        ""
+                                    ).trim();
+
+
+                                const path =
+                                    String(
+                                        comprobanteActual
+                                            ?.path ||
+                                        ""
+                                    ).trim();
+
+
+                                const mimeEsperado =
+                                    String(
+                                        comprobanteActual
+                                            ?.mime_type ||
+                                        ""
+                                    )
+                                    .trim()
+                                    .toLowerCase();
+
+
+                                const tamanoEsperado =
+                                    Number(
+                                        comprobanteActual
+                                            ?.tamano_bytes
+                                    );
+
+
+                                if (
+                                    bucket !==
+                                        "entregas-fondos-mass" ||
+                                    !path
+                                ) {
+
+                                    alert(
+                                        "❌ La referencia del comprobante no es válida."
+                                    );
+
+                                    return;
+                                }
+
+
+                                // Se abre inmediatamente por el clic
+                                // para evitar bloqueo de ventanas
+                                // en navegadores móviles.
+
+                                const ventanaComprobante =
+                                    window.open(
+                                        "",
+                                        "_blank"
+                                    );
+
+
+                                if (!ventanaComprobante) {
+
+                                    alert(
+                                        "❌ El navegador bloqueó la ventana del comprobante. Permite ventanas emergentes e inténtalo nuevamente."
+                                    );
+
+                                    return;
+                                }
+
+
+                                try {
+
+                                    ventanaComprobante.opener =
+                                        null;
+
+
+                                    boton.disabled =
+                                        true;
+
+
+                                    boton.textContent =
+                                        "⏳ Abriendo comprobante...";
+
+
+                                    const {
+                                        data: archivo,
+                                        error: errorDescarga
+                                    } =
+                                        await supabaseClient
+                                            .storage
+                                            .from(
+                                                bucket
+                                            )
+                                            .download(
+                                                path
+                                            );
+
+
+                                    if (errorDescarga) {
+                                        throw errorDescarga;
+                                    }
+
+
+                                    if (
+                                        !(archivo instanceof Blob)
+                                    ) {
+
+                                        throw new Error(
+                                            "Storage no devolvió un archivo válido."
+                                        );
+
+                                    }
+
+
+                                    const mimeRecibido =
+                                        String(
+                                            archivo.type ||
+                                            ""
+                                        )
+                                        .trim()
+                                        .toLowerCase();
+
+
+                                    const tamanoRecibido =
+                                        Number(
+                                            archivo.size
+                                        );
+
+
+                                    if (
+                                        mimeEsperado &&
+                                        mimeRecibido !==
+                                            mimeEsperado
+                                    ) {
+
+                                        throw new Error(
+                                            "El tipo del comprobante no coincide con el registro."
+                                        );
+
+                                    }
+
+
+                                    if (
+                                        Number.isFinite(
+                                            tamanoEsperado
+                                        ) &&
+                                        tamanoEsperado > 0 &&
+                                        tamanoRecibido !==
+                                            tamanoEsperado
+                                    ) {
+
+                                        throw new Error(
+                                            "El tamaño del comprobante no coincide con el registro."
+                                        );
+
+                                    }
+
+
+                                    const urlTemporal =
+                                        URL.createObjectURL(
+                                            archivo
+                                        );
+
+
+                                    ventanaComprobante
+                                        .location.href =
+                                        urlTemporal;
+
+
+                                    setTimeout(
+                                        () => {
+
+                                            URL.revokeObjectURL(
+                                                urlTemporal
+                                            );
+
+                                        },
+                                        300000
+                                    );
+
+
+                                } catch (error) {
+
+                                    console.error(
+                                        "ERROR ABRIENDO COMPROBANTE PRIVADO MASS:",
+                                        error
+                                    );
+
+
+                                    try {
+                                        ventanaComprobante.close();
+                                    } catch (_) {}
+
+
+                                    alert(
+                                        "❌ No fue posible abrir el comprobante privado."
+                                    );
+
+
+                                } finally {
+
+                                    boton.disabled =
+                                        false;
+
+
+                                    boton.textContent =
+                                        "🧾 Ver comprobante privado";
+
+                                }
+
+                            }
+                        );
+
+                    }
+                );		
 
 
             } catch (error) {
