@@ -23643,6 +23643,196 @@ function mostrarOperacionPuntoMassOperador(
                     )
                     .join("");
 
+	            // =================================================
+            // MOSTRAR ENTREGAS PENDIENTES
+            // =================================================
+
+            const contenedorEntregas =
+                document.getElementById(
+                    "entregasPendientesMassOperador"
+                );
+
+
+            if (contenedorEntregas) {
+
+                const entregasPendientes =
+                    Array.isArray(
+                        data.entregas_pendientes
+                    )
+                        ? data.entregas_pendientes
+                        : [];
+
+
+                if (entregasPendientes.length === 0) {
+
+                    contenedorEntregas.innerHTML = `
+
+                        <div
+                            style="
+                                text-align:center;
+                                color:#aaa;
+                                padding:12px;
+                            "
+                        >
+                            No tienes entregas pendientes actualmente.
+                        </div>
+                    `;
+
+                } else {
+
+                    contenedorEntregas.innerHTML =
+
+                        entregasPendientes
+                            .map(
+                                entrega => {
+
+                                    const metodo =
+                                        entrega?.metodo || {};
+
+
+                                    const moneda =
+                                        String(
+                                            entrega
+                                                ?.moneda_codigo ||
+                                            ""
+                                        )
+                                        .trim()
+                                        .toUpperCase();
+
+
+                                    const destinoTipo =
+                                        String(
+                                            metodo
+                                                ?.destino_tipo ||
+                                            ""
+                                        )
+                                        .trim()
+                                        .toLowerCase();
+
+
+                                    const etiquetaDestino =
+
+                                        destinoTipo === "clabe"
+
+                                            ? "CLABE"
+
+                                            : destinoTipo
+                                                ? destinoTipo.toUpperCase()
+                                                : "Destino";
+
+
+                                    return `
+
+                                        <div
+                                            style="
+                                                margin-top:14px;
+                                                padding:16px;
+                                                border:1px solid rgba(255,215,0,.55);
+                                                border-radius:14px;
+                                                background:#0b0b0b;
+                                                text-align:left;
+                                            "
+                                        >
+
+                                            <div
+                                                style="
+                                                    text-align:center;
+                                                    color:#ffd700;
+                                                    font-size:18px;
+                                                    font-weight:bold;
+                                                    margin-bottom:12px;
+                                                "
+                                            >
+                                                💰 Entrega pendiente
+                                            </div>
+
+
+                                            <div>
+                                                <b>Folio:</b>
+                                                ${escaparHtmlOperacion(
+                                                    entrega?.folio || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Estado:</b>
+                                                ${escaparHtmlOperacion(
+                                                    entrega?.estado || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Monto:</b>
+                                                ${escaparHtmlOperacion(
+                                                    formatearMonto(
+                                                        entrega?.monto
+                                                    )
+                                                )}
+                                                ${escaparHtmlOperacion(
+                                                    moneda
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Método:</b>
+                                                ${escaparHtmlOperacion(
+                                                    metodo?.nombre || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Banco:</b>
+                                                ${escaparHtmlOperacion(
+                                                    metodo?.banco || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Titular:</b>
+                                                ${escaparHtmlOperacion(
+                                                    metodo?.titular || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>${escaparHtmlOperacion(
+                                                    etiquetaDestino
+                                                )}:</b>
+                                                ${escaparHtmlOperacion(
+                                                    metodo?.destino_valor || "—"
+                                                )}
+                                            </div>
+
+
+                                            <div
+                                                style="
+                                                    margin-top:10px;
+                                                "
+                                            >
+                                                <b>Instrucciones:</b><br>
+
+                                                ${escaparHtmlOperacion(
+                                                    metodo?.instrucciones || "—"
+                                                )}
+                                            </div>
+
+                                        </div>
+                                    `;
+
+                                }
+                            )
+                            .join("");
+
+                }
+
+            }
+
 
         } catch (error) {
 
