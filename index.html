@@ -7723,16 +7723,57 @@ data-entrega-id="${escaparHtml(
 
                                     return `
 
-                                        <div
-                                            style="
-                                                margin-top:14px;
-                                                padding:16px;
-                                                border:1px solid rgba(57,255,20,.45);
-                                                border-radius:14px;
-                                                background:#0b0b0b;
-                                                text-align:left;
-                                            "
-                                        >
+                                        <details
+    style="
+        margin-top:14px;
+        border:1px solid rgba(57,255,20,.45);
+        border-radius:14px;
+        background:#0b0b0b;
+    "
+>
+
+    <summary
+        style="
+            padding:14px 16px;
+            cursor:pointer;
+            font-weight:bold;
+            color:${colorEstado};
+            list-style-position:inside;
+        "
+    >
+        ${escaparHtml1(
+            entrega?.folio ||
+            "—"
+        )}
+
+        &nbsp; | &nbsp;
+
+        ${escaparHtml1(
+            String(
+                entrega?.monto ??
+                "—"
+            )
+        )}
+
+        ${escaparHtml1(
+            entrega?.moneda_codigo ||
+            ""
+        )}
+
+        &nbsp; | &nbsp;
+
+        ${escaparHtml1(
+            etiquetaEstado
+        )}
+    </summary>
+
+
+    <div
+        style="
+            padding:0 16px 16px 16px;
+            text-align:left;
+        "
+    >
 
                                             <div
                                                 style="
@@ -7935,6 +7976,8 @@ data-entrega-id="${escaparHtml(
 
                                         </div>
 
+										</details>
+
                                     `;
 
                                 }
@@ -8007,7 +8050,7 @@ data-entrega-id="${escaparHtml(
 
                 `;
 
-	                // ======================================================
+	            // ======================================================
                 // VER COMPROBANTE PRIVADO DESDE EL HISTORIAL
                 // SOLO LECTURA
                 // ======================================================
