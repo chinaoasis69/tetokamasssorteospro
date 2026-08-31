@@ -6592,6 +6592,11 @@ async function mostrarMisPuntosMassAdmin() {
     </button>
 
     <div
+	   class="estadoConfirmarRecepcionFondosAdmin"
+data-entrega-id="${escaparHtml(
+    entrega?.entrega_id ||
+    ""
+)}"
         style="
             margin-top:8px;
             color:#aaa;
@@ -6600,7 +6605,7 @@ async function mostrarMisPuntosMassAdmin() {
         "
     >
         La confirmación permanecerá bloqueada
-        hasta conectar la validación segura.
+        hasta validar la revisión del comprobante.
     </div>
 
 </div>							
@@ -6887,7 +6892,57 @@ async function mostrarMisPuntosMassAdmin() {
                                         );
 
                                     }
+									
+                                    // =================================
+                                    // COMPROBANTE REVISADO CORRECTAMENTE
+                                    //
+                                    // TODAVÍA NO CONFIRMA FONDOS.
+                                    // =================================
 
+                                    const botonConfirmar =
+                                        contenedorEntregasPorConfirmar
+                                            .querySelector(
+                                                `.btnConfirmarRecepcionFondosAdmin[data-entrega-id="${entregaId}"]`
+                                            );
+
+
+                                    const estadoConfirmacion =
+                                        contenedorEntregasPorConfirmar
+                                            .querySelector(
+                                                `.estadoConfirmarRecepcionFondosAdmin[data-entrega-id="${entregaId}"]`
+                                            );
+
+
+                                    if (estadoConfirmacion) {
+
+                                        estadoConfirmacion.style.color =
+                                            "#39ff14";
+
+
+                                        estadoConfirmacion.textContent =
+                                            "✅ Comprobante privado revisado correctamente. La confirmación financiera todavía permanece bloqueada.";
+
+                                    }
+
+
+                                    if (botonConfirmar) {
+
+                                        botonConfirmar.disabled =
+                                            true;
+
+
+                                        botonConfirmar.textContent =
+                                            "🔒 Comprobante revisado — falta activar confirmación";
+
+
+                                        botonConfirmar.style.opacity =
+                                            ".70";
+
+
+                                        botonConfirmar.style.cursor =
+                                            "not-allowed";
+
+                                    }
 
                                     const urlTemporal =
                                         URL.createObjectURL(
