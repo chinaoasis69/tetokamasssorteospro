@@ -32579,7 +32579,51 @@ async function abrirHistorialFichasMass() {
     agregarFichas(
         primerasFichas
     );
+	
+// ============================================================
+// MASS - ACORDEÓN: SOLO UNA FICHA ABIERTA A LA VEZ
+// ============================================================
 
+if (contenedor) {
+
+    contenedor.addEventListener(
+        "toggle",
+        (evento) => {
+
+            const detalleAbierto =
+                evento.target;
+
+
+            if (
+                !detalleAbierto ||
+                detalleAbierto.tagName !== "DETAILS" ||
+                detalleAbierto.open !== true
+            ) {
+                return;
+            }
+
+
+            contenedor
+                .querySelectorAll(
+                    "details[open]"
+                )
+                .forEach(
+                    (otroDetalle) => {
+
+                        if (
+                            otroDetalle !==
+                            detalleAbierto
+                        ) {
+
+                            otroDetalle.open =
+                                false;
+                        }
+                    }
+                );
+        },
+        true
+    );
+}
 
     actualizarBotonVerAnteriores(
         primeraPagina
