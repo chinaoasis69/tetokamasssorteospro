@@ -902,6 +902,11 @@ input{
 </style>
 
 <link rel="stylesheet" href="mass-id.css">
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+  defer
+></script>	
 	
 </head>
 
@@ -49178,6 +49183,44 @@ const urlVerificacionComprobanteAdmin =
 
 } 
 
+	${
+
+    urlVerificacionComprobanteAdmin
+
+        ? `
+
+            <div
+                id="qrComprobanteMassAdmin"
+                style="
+                    width:190px;
+                    min-height:190px;
+                    margin:18px auto 0;
+                    padding:5px;
+                    background:#fff;
+                    border-radius:10px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                "
+            ></div>
+
+            <div
+                style="
+                    margin-top:8px;
+                    color:#aaa;
+                    font-size:12px;
+                    text-align:center;
+                "
+            >
+                Escanea para verificar este Comprobante MASS
+            </div>
+
+        `
+
+        : ""
+
+}
+
             <button
                 id="btnCerrarComprobanteMassAdminDetalle"
                 type="button"
@@ -49194,6 +49237,75 @@ const urlVerificacionComprobanteAdmin =
 
         </div>
     `;
+
+// ============================================================
+// MASS - GENERAR QR VERIFICABLE DEL COMPROBANTE ADMIN
+// ============================================================
+
+if (urlVerificacionComprobanteAdmin) {
+
+    const contenedorQrComprobanteAdmin =
+        panelComprobanteAdmin.querySelector(
+            "#qrComprobanteMassAdmin"
+        );
+
+
+    if (contenedorQrComprobanteAdmin) {
+
+        contenedorQrComprobanteAdmin.innerHTML = "";
+
+
+        try {
+
+            if (typeof QRCode === "function") {
+
+                new QRCode(
+                    contenedorQrComprobanteAdmin,
+                    {
+                        text:
+                            urlVerificacionComprobanteAdmin,
+
+                        width:
+                            180,
+
+                        height:
+                            180,
+
+                        correctLevel:
+                            QRCode.CorrectLevel.M
+                    }
+                );
+
+            } else {
+
+                throw new Error(
+                    "QRCode.js no está disponible."
+                );
+            }
+
+        } catch (errorQrComprobanteAdmin) {
+
+            console.error(
+                "ERROR GENERANDO QR DEL COMPROBANTE MASS ADMIN:",
+                errorQrComprobanteAdmin
+            );
+
+
+            contenedorQrComprobanteAdmin.innerHTML = `
+                <div
+                    style="
+                        color:#111;
+                        font-size:12px;
+                        text-align:center;
+                        padding:10px;
+                    "
+                >
+                    QR no disponible
+                </div>
+            `;
+        }
+    }
+}	
 
 
     const btnCerrarComprobanteMassAdminDetalle =
