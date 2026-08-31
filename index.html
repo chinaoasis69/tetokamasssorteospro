@@ -6309,7 +6309,311 @@ async function mostrarMisPuntosMassAdmin() {
             </div>
         `;
 
-	// ============================================================
+        // =====================================================
+        // ENTREGAS DE FONDOS POR CONFIRMAR
+        // SOLO LECTURA
+        // =====================================================
+
+        const contenedorEntregasPorConfirmar =
+            document.getElementById(
+                "entregasFondosPorConfirmarAdmin"
+            );
+
+
+        if (contenedorEntregasPorConfirmar) {
+
+            contenedorEntregasPorConfirmar.innerHTML = `
+
+                <h3
+                    style="
+                        margin-top:0;
+                        text-align:center;
+                        color:#ffd700;
+                    "
+                >
+                    💰 Entregas de fondos por confirmar
+                </h3>
+
+                <div
+                    style="
+                        text-align:center;
+                        color:#aaa;
+                    "
+                >
+                    ⏳ Consultando entregas...
+                </div>
+            `;
+
+
+            try {
+
+                const {
+                    data: dataEntregas,
+                    error: errorEntregas
+                } = await supabaseClient.rpc(
+
+                    "listar_entregas_fondos_por_confirmar_organizador_seguro",
+
+                    {
+                        p_organizador_id:
+                            organizadorId
+                    }
+
+                );
+
+
+                if (errorEntregas) {
+                    throw errorEntregas;
+                }
+
+
+                if (
+                    !dataEntregas ||
+                    dataEntregas.ok !== true
+                ) {
+
+                    throw new Error(
+                        "No se recibió una respuesta válida de entregas de fondos."
+                    );
+
+                }
+
+
+                const organizadorCoincide =
+
+                    String(
+                        dataEntregas.organizador_id ||
+                        ""
+                    ) ===
+
+                    String(
+                        organizadorId ||
+                        ""
+                    );
+
+
+                if (!organizadorCoincide) {
+
+                    throw new Error(
+                        "Las entregas recibidas no corresponden al Organizador seleccionado."
+                    );
+
+                }
+
+
+                const entregas =
+                    Array.isArray(
+                        dataEntregas.entregas
+                    )
+                        ? dataEntregas.entregas
+                        : [];
+
+
+                const tarjetasEntregas =
+
+                    entregas.length === 0
+
+                        ? `
+
+                            <div
+                                style="
+                                    text-align:center;
+                                    color:#aaa;
+                                    padding:14px;
+                                "
+                            >
+                                No tienes entregas de fondos
+                                pendientes de confirmación.
+                            </div>
+                        `
+
+                        : entregas
+                            .map(
+                                entrega => {
+
+                                    const punto =
+                                        entrega?.punto_mass ||
+                                        {};
+
+
+                                    const comprobante =
+                                        entrega?.comprobante ||
+                                        {};
+
+
+                                    return `
+
+                                        <div
+                                            style="
+                                                margin-top:14px;
+                                                padding:16px;
+                                                border:1px solid rgba(255,215,0,.55);
+                                                border-radius:14px;
+                                                background:#0b0b0b;
+                                                text-align:left;
+                                            "
+                                        >
+
+                                            <div
+                                                style="
+                                                    text-align:center;
+                                                    color:#ffd700;
+                                                    font-weight:bold;
+                                                    margin-bottom:12px;
+                                                "
+                                            >
+                                                💰 Entrega por confirmar
+                                            </div>
+
+
+                                            <div>
+                                                <b>Folio:</b>
+                                                ${escaparHtml(
+                                                    entrega?.folio ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Estado:</b>
+                                                ${escaparHtml(
+                                                    entrega?.estado ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Monto:</b>
+                                                ${escaparHtml(
+                                                    entrega?.monto ??
+                                                    "—"
+                                                )}
+                                                ${escaparHtml(
+                                                    entrega?.moneda_codigo ||
+                                                    ""
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Punto MASS:</b>
+                                                ${escaparHtml(
+                                                    punto?.nombre ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Código:</b>
+                                                ${escaparHtml(
+                                                    punto?.codigo ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div
+                                                style="
+                                                    margin-top:10px;
+                                                    color:${
+                                                        comprobante
+                                                            ?.objeto_existe ===
+                                                        true
+                                                            ? "#39ff14"
+                                                            : "#ff8a8a"
+                                                    };
+                                                    font-weight:bold;
+                                                "
+                                            >
+                                                ${
+                                                    comprobante
+                                                        ?.objeto_existe ===
+                                                    true
+                                                        ? "✅ Comprobante privado disponible"
+                                                        : "❌ Comprobante privado no disponible"
+                                                }
+                                            </div>
+
+                                        </div>
+                                    `;
+
+                                }
+                            )
+                            .join("");
+
+
+                contenedorEntregasPorConfirmar.innerHTML = `
+
+                    <h3
+                        style="
+                            margin-top:0;
+                            text-align:center;
+                            color:#ffd700;
+                        "
+                    >
+                        💰 Entregas de fondos por confirmar
+                    </h3>
+
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#ccc;
+                            margin-bottom:10px;
+                        "
+                    >
+                        Total por confirmar:
+                        <b>${escaparHtml(
+                            dataEntregas
+                                .total_por_confirmar ??
+                            0
+                        )}</b>
+                    </div>
+
+
+                    ${tarjetasEntregas}
+                `;
+
+
+            } catch (error) {
+
+                console.error(
+                    "ERROR CARGANDO ENTREGAS DE FONDOS POR CONFIRMAR:",
+                    error
+                );
+
+
+                contenedorEntregasPorConfirmar.innerHTML = `
+
+                    <h3
+                        style="
+                            margin-top:0;
+                            text-align:center;
+                            color:#ffd700;
+                        "
+                    >
+                        💰 Entregas de fondos por confirmar
+                    </h3>
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#ff8a8a;
+                        "
+                    >
+                        ❌ No fue posible consultar
+                        las entregas por confirmar.
+                    </div>
+                `;
+
+            }
+
+        }	
+
+// ============================================================
 // BOTONES DE OPERADORES DE CADA PUNTO MASS
 // ============================================================
 
