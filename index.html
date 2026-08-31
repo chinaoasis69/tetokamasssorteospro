@@ -30816,11 +30816,15 @@ async function actualizarBotonMisComprobantesMass() {
     boton.style.display = "none";
 
     const {
-        data: respuestaHistorial,
-        error: errorHistorial
-    } = await supabaseClient.rpc(
-        "listar_mis_comprobantes_efectivo_mass_seguro"
-    );
+    data: respuestaHistorial,
+    error: errorHistorial
+} = await supabaseClient.rpc(
+    "listar_mis_comprobantes_efectivo_mass_paginado_seguro",
+    {
+        p_limite: 1,
+        p_offset: 0
+    }
+);
 
     if (errorHistorial) {
 
@@ -31267,11 +31271,15 @@ if (btnVerMiFichaMass) {
 async function abrirMisComprobantesMass() {
 
     const {
-        data: respuestaHistorial,
-        error: errorHistorial
-    } = await supabaseClient.rpc(
-        "listar_mis_comprobantes_efectivo_mass_seguro"
-    );
+    data: respuestaHistorial,
+    error: errorHistorial
+} = await supabaseClient.rpc(
+    "listar_mis_comprobantes_efectivo_mass_paginado_seguro",
+    {
+        p_limite: 10,
+        p_offset: 0
+    }
+);
 
     if (errorHistorial) {
 
@@ -31343,107 +31351,76 @@ async function abrirMisComprobantesMass() {
 
     document.body.appendChild(panel);
 
-  const tarjetas =
-    comprobantes
-        .map(
-            (comprobante, indice) => {
+ const construirTarjetasComprobantesMass =
+    (
+        listaComprobantes,
+        indiceBase = 0
+    ) => {
 
-                const estadoComprobante =
-                    String(
-                        comprobante?.estado || ""
-                    )
-                        .trim()
-                        .toLowerCase();
+        return listaComprobantes
+            .map(
+                (
+                    comprobante,
+                    indicePagina
+                ) => {
 
-
-                const etiquetaEstado =
-                    estadoComprobante === "pagado"
-                        ? "✅ PAGADO"
-                        : (
-                            estadoComprobante
-                                ? estadoComprobante.toUpperCase()
-                                : "SIN ESTADO"
-                        );
+                    const indice =
+                        indiceBase +
+                        indicePagina;
 
 
-                const colorEstado =
-                    estadoComprobante === "pagado"
-                        ? "#39ff14"
-                        : "#ccc";
+                    const estadoComprobante =
+                        String(
+                            comprobante?.estado || ""
+                        )
+                            .trim()
+                            .toLowerCase();
 
 
-                return `
-                    <details
-                        class="acordeonComprobanteMass"
-                        style="
-                            margin:12px auto;
-                            max-width:650px;
-                            border:2px solid ${colorEstado};
-                            border-radius:14px;
-                            background:#0b0b0b;
-                            overflow:hidden;
-                        "
-                    >
+                    const etiquetaEstado =
+                        estadoComprobante === "pagado"
+                            ? "✅ PAGADO"
+                            : (
+                                estadoComprobante
+                                    ? estadoComprobante.toUpperCase()
+                                    : "SIN ESTADO"
+                            );
 
-                        <summary
+
+                    const colorEstado =
+                        estadoComprobante === "pagado"
+                            ? "#39ff14"
+                            : "#ccc";
+
+
+                    return `
+                        <details
+                            class="acordeonComprobanteMass"
                             style="
-                                padding:14px 16px;
-                                cursor:pointer;
-                                font-weight:bold;
-                                color:${colorEstado};
-                                line-height:1.5;
-                                text-align:center;
-                            "
-                        >
-                            🧾 ${escaparHtmlComprobante(
-                                comprobante?.folio
-                            )}
-
-                            &nbsp; | &nbsp;
-
-                            ${escaparHtmlComprobante(
-                                comprobante?.cantidad_efectivo
-                            )}
-
-                            ${escaparHtmlComprobante(
-                                comprobante?.moneda_codigo
-                            )}
-
-                            &nbsp; | &nbsp;
-
-                            ${escaparHtmlComprobante(
-                                etiquetaEstado
-                            )}
-                        </summary>
-
-
-                        <div
-                            style="
-                                padding:4px 16px 18px;
-                                text-align:left;
-                                line-height:1.75;
-                                color:#fff;
+                                margin:12px auto;
+                                max-width:650px;
+                                border:2px solid ${colorEstado};
+                                border-radius:14px;
+                                background:#0b0b0b;
+                                overflow:hidden;
                             "
                         >
 
-                            <div>
-                                <strong>Estado:</strong>
+                            <summary
+                                style="
+                                    padding:14px 16px;
+                                    cursor:pointer;
+                                    font-weight:bold;
+                                    color:${colorEstado};
+                                    line-height:1.5;
+                                    text-align:center;
+                                "
+                            >
+                                🧾 ${escaparHtmlComprobante(
+                                    comprobante?.folio
+                                )}
 
-                                <span
-                                    style="
-                                        color:${colorEstado};
-                                        font-weight:bold;
-                                    "
-                                >
-                                    ${escaparHtmlComprobante(
-                                        etiquetaEstado
-                                    )}
-                                </span>
-                            </div>
-
-
-                            <div>
-                                <strong>Efectivo:</strong>
+                                &nbsp; | &nbsp;
 
                                 ${escaparHtmlComprobante(
                                     comprobante?.cantidad_efectivo
@@ -31452,63 +31429,115 @@ async function abrirMisComprobantesMass() {
                                 ${escaparHtmlComprobante(
                                     comprobante?.moneda_codigo
                                 )}
-                            </div>
 
-
-                            <div>
-                                <strong>Crédito MASS:</strong>
+                                &nbsp; | &nbsp;
 
                                 ${escaparHtmlComprobante(
-                                    comprobante?.credito_mass
+                                    etiquetaEstado
                                 )}
-
-                                MASS
-
-                                ${escaparHtmlComprobante(
-                                    comprobante?.moneda_codigo
-                                )}
-                            </div>
+                            </summary>
 
 
-                            <div>
-                                <strong>Punto MASS:</strong>
-
-                                ${escaparHtmlComprobante(
-                                    comprobante?.punto_mass?.nombre
-                                )}
-                            </div>
-
-
-                            <div>
-                                <strong>Organizador:</strong>
-
-                                ${escaparHtmlComprobante(
-                                    comprobante?.organizador?.nombre
-                                )}
-                            </div>
-
-
-                            <button
-                                type="button"
-                                class="btnAbrirComprobanteMass"
-                                data-indice="${indice}"
+                            <div
                                 style="
-                                    margin-top:14px;
-                                    padding:10px 18px;
-                                    font-weight:bold;
-                                    cursor:pointer;
+                                    padding:4px 16px 18px;
+                                    text-align:left;
+                                    line-height:1.75;
+                                    color:#fff;
                                 "
                             >
-                                🧾 Ver comprobante
-                            </button>
 
-                        </div>
+                                <div>
+                                    <strong>Estado:</strong>
 
-                    </details>
-                `;
-            }
-        )
-        .join(""); 
+                                    <span
+                                        style="
+                                            color:${colorEstado};
+                                            font-weight:bold;
+                                        "
+                                    >
+                                        ${escaparHtmlComprobante(
+                                            etiquetaEstado
+                                        )}
+                                    </span>
+                                </div>
+
+
+                                <div>
+                                    <strong>Efectivo:</strong>
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.cantidad_efectivo
+                                    )}
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.moneda_codigo
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <strong>Crédito MASS:</strong>
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.credito_mass
+                                    )}
+
+                                    MASS
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.moneda_codigo
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <strong>Punto MASS:</strong>
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.punto_mass?.nombre
+                                    )}
+                                </div>
+
+
+                                <div>
+                                    <strong>Organizador:</strong>
+
+                                    ${escaparHtmlComprobante(
+                                        comprobante?.organizador?.nombre
+                                    )}
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    class="btnAbrirComprobanteMass"
+                                    data-indice="${indice}"
+                                    style="
+                                        margin-top:14px;
+                                        padding:10px 18px;
+                                        font-weight:bold;
+                                        cursor:pointer;
+                                    "
+                                >
+                                    🧾 Ver comprobante
+                                </button>
+
+                            </div>
+
+                        </details>
+                    `;
+                }
+            )
+            .join("");
+    };
+
+
+const tarjetas =
+    construirTarjetasComprobantesMass(
+        comprobantes,
+        0
+    ); 
 
     panel.innerHTML = `
         <div
@@ -31524,10 +31553,28 @@ async function abrirMisComprobantesMass() {
 
             <p>
                 Total de comprobantes:
-                <strong>${comprobantes.length}</strong>
+                <strong>${Number(historial?.total || 0)}</strong>
             </p>
 
-            ${tarjetas}
+            <div id="contenedorMisComprobantesMass">
+    ${tarjetas}
+</div>
+
+	<button
+    id="btnVerComprobantesAnterioresMass"
+    type="button"
+    style="
+        display:none;
+        margin-top:16px;
+        padding:12px 20px;
+        font-weight:bold;
+        cursor:pointer;
+    "
+>
+    📄 Ver comprobantes anteriores
+</button>
+
+<br>
 
             <button
                 id="btnCerrarMisComprobantesMass"
@@ -31543,6 +31590,32 @@ async function abrirMisComprobantesMass() {
             </button>
         </div>
     `;
+
+	const contenedorMisComprobantesMass =
+    panel.querySelector(
+        "#contenedorMisComprobantesMass"
+    );
+
+
+const botonVerComprobantesAnterioresMass =
+    panel.querySelector(
+        "#btnVerComprobantesAnterioresMass"
+    );
+
+
+let siguienteOffsetComprobantesMass =
+    historial?.siguiente_offset;
+
+
+if (botonVerComprobantesAnterioresMass) {
+
+    botonVerComprobantesAnterioresMass.style.display =
+        historial?.hay_mas === true &&
+        siguienteOffsetComprobantesMass !== null &&
+        siguienteOffsetComprobantesMass !== undefined
+            ? "inline-block"
+            : "none";
+}
 
 // ============================================================
 // MASS - ACORDEÓN DE COMPROBANTES
@@ -31591,17 +31664,28 @@ panel.addEventListener(
     true
 );	
 
-	const botonesAbrirComprobante =
-    panel.querySelectorAll(
-        ".btnAbrirComprobanteMass"
-    );
+	// ============================================================
+// MASS - ABRIR COMPROBANTES MEDIANTE DELEGACIÓN DE EVENTOS
+// FUNCIONA TAMBIÉN PARA COMPROBANTES CARGADOS DESPUÉS
+// ============================================================
 
-botonesAbrirComprobante.forEach(
-    (boton) => {
+panel.addEventListener(
+    "click",
+    async (evento) => {
 
-        boton.addEventListener(
-            "click",
-            async () => {
+        const boton =
+            evento.target.closest?.(
+                ".btnAbrirComprobanteMass"
+            );
+
+
+        if (
+            !boton ||
+            !panel.contains(boton)
+        ) {
+
+            return;
+        }
 
                 if (boton.disabled) {
                     return;
@@ -32019,10 +32103,182 @@ if (btnCerrarComprobanteMassDetalle) {
         }
     );
 }
-            }
-        );
+            
+        
     }
 );
+
+// ============================================================
+// MASS - CARGAR COMPROBANTES ANTERIORES
+// 10 POR CARGA
+// ============================================================
+
+if (botonVerComprobantesAnterioresMass) {
+
+    botonVerComprobantesAnterioresMass.addEventListener(
+        "click",
+        async () => {
+
+            if (
+                botonVerComprobantesAnterioresMass.disabled
+            ) {
+                return;
+            }
+
+
+            const offset =
+                Number(
+                    siguienteOffsetComprobantesMass
+                );
+
+
+            if (
+                !Number.isFinite(offset) ||
+                offset < 0
+            ) {
+
+                botonVerComprobantesAnterioresMass
+                    .style.display =
+                        "none";
+
+                return;
+            }
+
+
+            const textoOriginal =
+                botonVerComprobantesAnterioresMass
+                    .textContent;
+
+
+            botonVerComprobantesAnterioresMass.disabled =
+                true;
+
+
+            botonVerComprobantesAnterioresMass.textContent =
+                "⏳ Cargando comprobantes...";
+
+
+            try {
+
+                const {
+                    data: respuestaPagina,
+                    error: errorPagina
+                } = await supabaseClient.rpc(
+                    "listar_mis_comprobantes_efectivo_mass_paginado_seguro",
+                    {
+                        p_limite: 10,
+                        p_offset: offset
+                    }
+                );
+
+
+                if (errorPagina) {
+
+                    throw errorPagina;
+                }
+
+
+                const pagina =
+                    Array.isArray(
+                        respuestaPagina
+                    )
+                        ? respuestaPagina[0]
+                        : respuestaPagina;
+
+
+                if (pagina?.ok !== true) {
+
+                    throw new Error(
+                        "La página de Comprobantes MASS no devolvió una respuesta válida."
+                    );
+                }
+
+
+                const nuevosComprobantes =
+                    Array.isArray(
+                        pagina?.comprobantes
+                    )
+                        ? pagina.comprobantes
+                        : [];
+
+
+                if (
+                    nuevosComprobantes.length > 0
+                ) {
+
+                    const indiceBase =
+                        comprobantes.length;
+
+
+                    const nuevasTarjetas =
+                        construirTarjetasComprobantesMass(
+                            nuevosComprobantes,
+                            indiceBase
+                        );
+
+
+                    comprobantes.push(
+                        ...nuevosComprobantes
+                    );
+
+
+                    if (
+                        contenedorMisComprobantesMass
+                    ) {
+
+                        contenedorMisComprobantesMass
+                            .insertAdjacentHTML(
+                                "beforeend",
+                                nuevasTarjetas
+                            );
+                    }
+                }
+
+
+                siguienteOffsetComprobantesMass =
+                    pagina?.siguiente_offset;
+
+
+                botonVerComprobantesAnterioresMass
+                    .style.display =
+                        pagina?.hay_mas === true &&
+                        siguienteOffsetComprobantesMass !== null &&
+                        siguienteOffsetComprobantesMass !== undefined
+                            ? "inline-block"
+                            : "none";
+
+
+            } catch (errorComprobantesAnteriores) {
+
+                console.error(
+                    "ERROR CARGANDO COMPROBANTES MASS ANTERIORES:",
+                    errorComprobantesAnteriores
+                );
+
+
+                alert(
+                    "❌ No fue posible cargar los comprobantes anteriores."
+                );
+
+
+            } finally {
+
+                if (
+                    botonVerComprobantesAnterioresMass
+                        .isConnected
+                ) {
+
+                    botonVerComprobantesAnterioresMass.disabled =
+                        false;
+
+
+                    botonVerComprobantesAnterioresMass.textContent =
+                        textoOriginal;
+                }
+            }
+        }
+    );
+}	
 
     const botonCerrar =
         panel.querySelector(
