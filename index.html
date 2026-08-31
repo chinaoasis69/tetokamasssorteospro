@@ -23289,6 +23289,386 @@ function mostrarOperacionPuntoMassOperador(
         </div>
     `;
 
+     // ========================================================
+    // CONTROL DE FONDOS MASS
+    // CARGAR RESUMEN SEGURO DEL PUNTO SELECCIONADO
+    // ========================================================
+
+    (async () => {
+
+        const resumenFondos =
+            document.getElementById(
+                "resumenFondosMassOperador"
+            );
+
+
+        if (!resumenFondos) {
+            return;
+        }
+
+
+        const puntoMassOrganizadorId =
+            String(
+                puntoSeleccionado
+                    ?.punto_mass_organizador_id ||
+                ""
+            ).trim();
+
+
+        if (!puntoMassOrganizadorId) {
+
+            resumenFondos.innerHTML = `
+
+                <div
+                    style="
+                        text-align:center;
+                        color:#ff8a8a;
+                    "
+                >
+                    ❌ No fue posible identificar la relación
+                    Punto MASS + Organizador.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        resumenFondos.innerHTML = `
+
+            <div
+                style="
+                    text-align:center;
+                    color:#aaa;
+                "
+            >
+                ⏳ Consultando fondos del Punto MASS...
+            </div>
+        `;
+
+
+        try {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.rpc(
+
+                "obtener_control_fondos_punto_mass_operador_seguro",
+
+                {
+                    p_punto_mass_organizador_id:
+                        puntoMassOrganizadorId
+                }
+
+            );
+
+
+            if (error) {
+                throw error;
+            }
+
+
+            if (
+                !data ||
+                data.ok !== true
+            ) {
+
+                throw new Error(
+                    "No se recibió una respuesta válida del control de fondos."
+                );
+
+            }
+
+
+            // =================================================
+            // SEGUNDA BARRERA:
+            // LA RESPUESTA DEBE SER EXACTAMENTE DEL
+            // PUNTO + ORGANIZADOR SELECCIONADOS
+            // =================================================
+
+            const relacionCoincide =
+
+                String(
+                    data
+                        ?.punto_mass
+                        ?.punto_mass_organizador_id ||
+                    ""
+                ) ===
+                puntoMassOrganizadorId;
+
+
+            const puntoCoincide =
+
+                String(
+                    data
+                        ?.punto_mass
+                        ?.punto_mass_id ||
+                    ""
+                ) ===
+
+                String(
+                    puntoSeleccionado
+                        ?.punto_mass_id ||
+                    ""
+                );
+
+
+            const organizadorCoincide =
+
+                String(
+                    data
+                        ?.organizador
+                        ?.id ||
+                    ""
+                ) ===
+
+                String(
+                    puntoSeleccionado
+                        ?.organizador_id ||
+                    ""
+                );
+
+
+            if (
+                !relacionCoincide ||
+                !puntoCoincide ||
+                !organizadorCoincide
+            ) {
+
+                throw new Error(
+                    "El control de fondos no corresponde al Punto MASS seleccionado."
+                );
+
+            }
+
+
+            const fondos =
+                Array.isArray(
+                    data.fondos
+                )
+                    ? data.fondos
+                    : [];
+
+
+            if (fondos.length === 0) {
+
+                resumenFondos.innerHTML = `
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#aaa;
+                        "
+                    >
+                        Este Punto MASS todavía no tiene
+                        movimientos de fondos.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            const formatearMonto = valor => {
+
+                const numero =
+                    Number(valor);
+
+
+                if (!Number.isFinite(numero)) {
+                    return "0";
+                }
+
+
+                return numero.toLocaleString(
+                    "es-MX",
+                    {
+                        minimumFractionDigits:0,
+                        maximumFractionDigits:2
+                    }
+                );
+
+            };
+
+
+            resumenFondos.innerHTML =
+
+                fondos
+                    .map(
+                        fondo => {
+
+                            const moneda =
+                                String(
+                                    fondo
+                                        ?.moneda_codigo ||
+                                    ""
+                                )
+                                .trim()
+                                .toUpperCase();
+
+
+                            const saldoNegativo =
+                                fondo
+                                    ?.alerta_saldo_negativo ===
+                                true;
+
+
+                            return `
+
+                                <div
+                                    style="
+                                        padding:14px;
+                                        margin-bottom:12px;
+                                        border:1px solid #444;
+                                        border-radius:12px;
+                                        background:#111;
+                                    "
+                                >
+
+                                    <div
+                                        style="
+                                            text-align:center;
+                                            font-weight:bold;
+                                            color:#ffd700;
+                                            margin-bottom:12px;
+                                        "
+                                    >
+                                        ${escaparHtmlOperacion(
+                                            moneda || "—"
+                                        )}
+                                    </div>
+
+
+                                    <div
+                                        style="
+                                            display:grid;
+                                            grid-template-columns:
+                                                repeat(
+                                                    2,
+                                                    minmax(0,1fr)
+                                                );
+                                            gap:10px;
+                                        "
+                                    >
+
+                                        <div>
+                                            <b>Efectivo recibido:</b><br>
+                                            ${escaparHtmlOperacion(
+                                                formatearMonto(
+                                                    fondo
+                                                        ?.efectivo_recibido
+                                                )
+                                            )}
+                                            ${escaparHtmlOperacion(
+                                                moneda
+                                            )}
+                                        </div>
+
+
+                                        <div>
+                                            <b>Entrega pendiente:</b><br>
+                                            ${escaparHtmlOperacion(
+                                                formatearMonto(
+                                                    fondo
+                                                        ?.entregas_pendientes
+                                                )
+                                            )}
+                                            ${escaparHtmlOperacion(
+                                                moneda
+                                            )}
+                                        </div>
+
+
+                                        <div>
+                                            <b>En proceso:</b><br>
+                                            ${escaparHtmlOperacion(
+                                                formatearMonto(
+                                                    fondo
+                                                        ?.en_proceso
+                                                )
+                                            )}
+                                            ${escaparHtmlOperacion(
+                                                moneda
+                                            )}
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                color:${
+                                                    saldoNegativo
+                                                        ? "#ff4d4f"
+                                                        : "#39ff14"
+                                                };
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            <b>Disponible para entregar:</b><br>
+
+                                            ${escaparHtmlOperacion(
+                                                formatearMonto(
+                                                    fondo
+                                                        ?.disponible
+                                                )
+                                            )}
+                                            ${escaparHtmlOperacion(
+                                                moneda
+                                            )}
+                                        </div>
+
+                                    </div>
+
+
+                                    <div
+                                        style="
+                                            margin-top:12px;
+                                            text-align:center;
+                                            color:#aaa;
+                                            font-size:13px;
+                                        "
+                                    >
+                                        Recepciones registradas:
+                                        ${escaparHtmlOperacion(
+                                            fondo
+                                                ?.total_recepciones ??
+                                            0
+                                        )}
+                                    </div>
+
+                                </div>
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+
+        } catch (error) {
+
+            console.error(
+                "ERROR CARGANDO CONTROL DE FONDOS MASS:",
+                error
+            );
+
+
+            resumenFondos.innerHTML = `
+
+                <div
+                    style="
+                        text-align:center;
+                        color:#ff8a8a;
+                    "
+                >
+                    ❌ No fue posible consultar
+                    los fondos del Punto MASS.
+                </div>
+            `;
+
+        }
+
+    })();
+
 
     // ========================================================
     // VOLVER AL LISTADO DE PUNTOS
