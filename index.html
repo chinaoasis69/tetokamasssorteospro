@@ -6566,6 +6566,45 @@ async function mostrarMisPuntosMassAdmin() {
                                                                 🧾 Ver comprobante privado
                                                             </button>
 
+								<div
+    style="
+        margin-top:12px;
+    "
+>
+
+    <button
+        type="button"
+        class="btnConfirmarRecepcionFondosAdmin"
+        data-entrega-id="${escaparHtml(
+            entrega?.entrega_id ||
+            ""
+        )}"
+        disabled
+        style="
+            width:100%;
+            padding:12px 18px;
+            font-weight:bold;
+            opacity:.55;
+            cursor:not-allowed;
+        "
+    >
+        🔒 Confirmar recepción de fondos
+    </button>
+
+    <div
+        style="
+            margin-top:8px;
+            color:#aaa;
+            font-size:12px;
+            text-align:center;
+        "
+    >
+        La confirmación permanecerá bloqueada
+        hasta conectar la validación segura.
+    </div>
+
+</div>							
+
                                                         </div>
                                                     `
 
