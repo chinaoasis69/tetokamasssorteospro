@@ -6925,24 +6925,28 @@ data-entrega-id="${escaparHtml(
                                     }
 
 
-                                    if (botonConfirmar) {
+    if (botonConfirmar) {
 
-                                        botonConfirmar.disabled =
-                                            true;
-
-
-                                        botonConfirmar.textContent =
-                                            "🔒 Comprobante revisado — falta activar confirmación";
+    botonConfirmar.disabled =
+        false;
 
 
-                                        botonConfirmar.style.opacity =
-                                            ".70";
+    botonConfirmar.textContent =
+        "✅ Confirmar recepción de fondos";
 
 
-                                        botonConfirmar.style.cursor =
-                                            "not-allowed";
+    botonConfirmar.style.opacity =
+        "1";
 
-                                    }
+
+    botonConfirmar.style.cursor =
+        "pointer";
+
+
+    botonConfirmar.dataset.comprobanteRevisado =
+        "true";
+
+}
 
                                     const urlTemporal =
                                         URL.createObjectURL(
@@ -7000,7 +7004,158 @@ data-entrega-id="${escaparHtml(
                         );
 
                     }
-                );		
+                );
+
+                // =================================================
+                // CONFIRMAR RECEPCIÓN DE FONDOS
+                // PRUEBA VISUAL — TODAVÍA SIN RPC
+                // =================================================
+
+                const botonesConfirmarRecepcion =
+                    contenedorEntregasPorConfirmar
+                        .querySelectorAll(
+                            ".btnConfirmarRecepcionFondosAdmin"
+                        );
+
+
+                botonesConfirmarRecepcion.forEach(
+                    botonConfirmar => {
+
+                        botonConfirmar.addEventListener(
+                            "click",
+                            () => {
+
+                                const entregaId =
+                                    String(
+                                        botonConfirmar
+                                            .dataset
+                                            .entregaId ||
+                                        ""
+                                    ).trim();
+
+
+                                const comprobanteRevisado =
+                                    String(
+                                        botonConfirmar
+                                            .dataset
+                                            .comprobanteRevisado ||
+                                        ""
+                                    ) === "true";
+
+
+                                if (!comprobanteRevisado) {
+
+                                    alert(
+                                        "❌ Primero debes abrir y revisar correctamente el comprobante privado."
+                                    );
+
+                                    return;
+                                }
+
+
+                                const entregaActual =
+                                    entregas.find(
+                                        item =>
+                                            String(
+                                                item?.entrega_id ||
+                                                ""
+                                            ) ===
+                                            entregaId
+                                    ) || null;
+
+
+                                if (!entregaActual) {
+
+                                    alert(
+                                        "❌ No fue posible identificar la entrega."
+                                    );
+
+                                    return;
+                                }
+
+
+                                if (
+                                    String(
+                                        entregaActual?.estado ||
+                                        ""
+                                    ) !== "entregada"
+                                ) {
+
+                                    alert(
+                                        "❌ Esta entrega ya no está disponible para confirmación."
+                                    );
+
+                                    return;
+                                }
+
+
+                                const folio =
+                                    String(
+                                        entregaActual?.folio ||
+                                        "—"
+                                    );
+
+
+                                const monto =
+                                    String(
+                                        entregaActual?.monto ??
+                                        "—"
+                                    );
+
+
+                                const moneda =
+                                    String(
+                                        entregaActual
+                                            ?.moneda_codigo ||
+                                        ""
+                                    );
+
+
+                                const confirmarVisual =
+                                    window.confirm(
+
+                                        "CONFIRMACIÓN DE RECEPCIÓN DE FONDOS MASS\n\n" +
+
+                                        "Folio: " +
+                                        folio +
+                                        "\n" +
+
+                                        "Monto: " +
+                                        monto +
+                                        " " +
+                                        moneda +
+                                        "\n\n" +
+
+                                        "Confirma únicamente si verificaste el comprobante y recibiste los fondos correspondientes.\n\n" +
+
+                                        "PRUEBA ACTUAL:\n" +
+                                        "Esta pantalla todavía NO cambiará el estado de la entrega."
+
+                                    );
+
+
+                                if (!confirmarVisual) {
+                                    return;
+                                }
+
+
+                                alert(
+
+                                    "✅ PRUEBA VISUAL CORRECTA\n\n" +
+
+                                    "La confirmación fue aceptada en pantalla.\n\n" +
+
+                                    "MASS-ENT continúa en estado ENTREGADA.\n" +
+
+                                    "Todavía NO se ejecutó ninguna RPC financiera."
+
+                                );
+
+                            }
+                        );
+
+                    }
+                );				
 
 
             } catch (error) {
