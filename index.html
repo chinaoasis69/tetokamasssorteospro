@@ -23860,7 +23860,6 @@ function mostrarOperacionPuntoMassOperador(
             entrega?.entrega_id || ""
         )}"
         accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
-        disabled
         style="
             width:100%;
             box-sizing:border-box;
@@ -23888,6 +23887,10 @@ function mostrarOperacionPuntoMassOperador(
 
 
     <div
+	class="estadoComprobanteEntregaFondosMass"
+data-entrega-id="${escaparHtmlOperacion(
+    entrega?.entrega_id || ""
+)}"
         style="
             margin-top:9px;
             color:#aaa;
@@ -23895,8 +23898,9 @@ function mostrarOperacionPuntoMassOperador(
             text-align:center;
         "
     >
-        La carga se habilitará cuando terminemos
-        la conexión segura con Storage.
+        Puedes seleccionar el comprobante para validarlo.
+        La carga segura todavía permanece bloqueada.
+
     </div>
 
 </div>
@@ -23907,6 +23911,155 @@ function mostrarOperacionPuntoMassOperador(
                                 }
                             )
                             .join("");
+
+// =================================================
+// VALIDACIÓN LOCAL DEL COMPROBANTE
+// TODAVÍA SIN RPC Y SIN STORAGE
+// =================================================
+
+const inputsComprobante =
+    contenedorEntregas.querySelectorAll(
+        ".inputComprobanteEntregaFondosMass"
+    );
+
+
+inputsComprobante.forEach(
+    input => {
+
+        input.addEventListener(
+            "change",
+            () => {
+
+                const entregaId =
+                    String(
+                        input.dataset.entregaId ||
+                        ""
+                    ).trim();
+
+
+                const estado =
+                    contenedorEntregas.querySelector(
+                        `.estadoComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
+                    );
+
+
+                const boton =
+                    contenedorEntregas.querySelector(
+                        `.btnSubirComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
+                    );
+
+
+                // El botón continúa bloqueado
+                // hasta conectar el flujo seguro.
+                if (boton) {
+                    boton.disabled = true;
+                }
+
+
+                const archivo =
+                    input.files?.[0] || null;
+
+
+                if (!archivo) {
+
+                    if (estado) {
+                        estado.style.color = "#aaa";
+
+                        estado.textContent =
+                            "Puedes seleccionar el comprobante para validarlo. La carga segura todavía permanece bloqueada.";
+                    }
+
+                    return;
+                }
+
+
+                const mime =
+                    String(
+                        archivo.type || ""
+                    )
+                    .trim()
+                    .toLowerCase();
+
+
+                const mimePermitidos = new Set([
+                    "image/jpeg",
+                    "image/png",
+                    "image/webp",
+                    "image/heic",
+                    "image/heif",
+                    "application/pdf"
+                ]);
+
+
+                if (!mimePermitidos.has(mime)) {
+
+                    input.value = "";
+
+                    if (estado) {
+                        estado.style.color = "#ff8a8a";
+
+                        estado.textContent =
+                            "❌ Tipo de archivo no permitido. Usa JPG, PNG, WEBP, HEIC, HEIF o PDF.";
+                    }
+
+                    return;
+                }
+
+
+                const tamanoBytes =
+                    Number(
+                        archivo.size
+                    );
+
+
+                if (
+                    !Number.isFinite(tamanoBytes) ||
+                    tamanoBytes < 1
+                ) {
+
+                    input.value = "";
+
+                    if (estado) {
+                        estado.style.color = "#ff8a8a";
+
+                        estado.textContent =
+                            "❌ El archivo seleccionado está vacío o no es válido.";
+                    }
+
+                    return;
+                }
+
+
+                if (tamanoBytes > 10485760) {
+
+                    input.value = "";
+
+                    if (estado) {
+                        estado.style.color = "#ff8a8a";
+
+                        estado.textContent =
+                            "❌ El comprobante excede el máximo permitido de 10 MB.";
+                    }
+
+                    return;
+                }
+
+
+                if (estado) {
+
+                    estado.style.color =
+                        "#39ff14";
+
+                    estado.textContent =
+                        `✅ Archivo válido: ${archivo.name}. La carga segura todavía permanece bloqueada.`;
+
+                }
+
+            }
+        );
+
+    }
+);
 
                 }
 
