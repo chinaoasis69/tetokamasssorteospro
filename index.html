@@ -48953,7 +48953,25 @@ async function abrirComprobanteEfectivoMassAdmin(recargaId) {
     document.body.appendChild(
         panelComprobanteAdmin
     );
+	
+const tokenVerificacionComprobanteAdmin =
+    String(
+        comprobante?.token_verificacion ||
+        ""
+    ).trim();
 
+
+const urlVerificacionComprobanteAdmin =
+    tokenVerificacionComprobanteAdmin
+        ? (
+            window.location.origin +
+            window.location.pathname +
+            "?comprobante_mass=" +
+            encodeURIComponent(
+                tokenVerificacionComprobanteAdmin
+            )
+        )
+        : "";
 
     panelComprobanteAdmin.innerHTML = `
         <div
@@ -49125,7 +49143,40 @@ async function abrirComprobanteEfectivoMassAdmin(recargaId) {
             >
                 ✅ Pago confirmado y acreditado correctamente.
             </p>
+			
+         ${
 
+    urlVerificacionComprobanteAdmin
+
+        ? `
+
+            <a
+                href="${escaparHtmlComprobanteAdmin(
+                    urlVerificacionComprobanteAdmin
+                )}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                    display:block;
+                    margin-top:18px;
+                    padding:12px 18px;
+                    border:2px solid #39ff14;
+                    border-radius:10px;
+                    color:#39ff14;
+                    text-decoration:none;
+                    font-weight:bold;
+                    text-align:center;
+                    cursor:pointer;
+                "
+            >
+                🔐 Verificar este Comprobante MASS
+            </a>
+
+        `
+
+        : ""
+
+} 
 
             <button
                 id="btnCerrarComprobanteMassAdminDetalle"
