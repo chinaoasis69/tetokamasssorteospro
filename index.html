@@ -7444,7 +7444,542 @@ data-entrega-id="${escaparHtml(
 
             }
 
-        }	
+        }
+
+        // ======================================================
+        // HISTORIAL DE ENTREGAS DE FONDOS MASS
+        // SOLO LECTURA
+        // ======================================================
+
+        const contenedorHistorialEntregasFondos =
+            document.getElementById(
+                "historialEntregasFondosMassAdmin"
+            );
+
+
+        if (contenedorHistorialEntregasFondos) {
+
+            contenedorHistorialEntregasFondos.innerHTML = `
+
+                <h3
+                    style="
+                        margin-top:0;
+                        text-align:center;
+                        color:#39ff14;
+                    "
+                >
+                    📋 Historial de Entregas de Fondos MASS
+                </h3>
+
+
+                <div
+                    style="
+                        text-align:center;
+                        color:#aaa;
+                    "
+                >
+                    ⏳ Consultando historial...
+                </div>
+
+            `;
+
+
+            try {
+
+                const {
+                    data: dataHistorial,
+                    error: errorHistorial
+
+                } = await supabaseClient.rpc(
+
+                    "listar_historial_entregas_fondos_organizador_seguro",
+
+                    {
+                        p_organizador_id:
+                            organizadorId
+                    }
+
+                );
+
+
+                if (errorHistorial) {
+                    throw errorHistorial;
+                }
+
+
+                if (
+                    !dataHistorial ||
+                    dataHistorial.ok !== true
+                ) {
+
+                    throw new Error(
+                        "No se recibió una respuesta válida del historial de entregas."
+                    );
+
+                }
+
+
+                const organizadorHistorialCoincide =
+
+                    String(
+                        dataHistorial.organizador_id ||
+                        ""
+                    ) ===
+
+                    String(
+                        organizadorId ||
+                        ""
+                    );
+
+
+                if (!organizadorHistorialCoincide) {
+
+                    throw new Error(
+                        "El historial recibido no corresponde al Organizador seleccionado."
+                    );
+
+                }
+
+
+                const entregasHistorial =
+
+                    Array.isArray(
+                        dataHistorial.entregas
+                    )
+
+                        ? dataHistorial.entregas
+
+                        : [];
+
+
+                const formatearFechaHistorial =
+                    valor => {
+
+                        if (!valor) {
+                            return "—";
+                        }
+
+
+                        const fecha =
+                            new Date(valor);
+
+
+                        if (
+                            Number.isNaN(
+                                fecha.getTime()
+                            )
+                        ) {
+
+                            return "—";
+
+                        }
+
+
+                        return fecha.toLocaleString(
+                            "es-MX"
+                        );
+
+                    };
+
+
+                const tarjetasHistorial =
+
+                    entregasHistorial.length === 0
+
+                        ? `
+
+                            <div
+                                style="
+                                    text-align:center;
+                                    color:#aaa;
+                                    padding:14px;
+                                "
+                            >
+                                No tienes entregas confirmadas
+                                ni canceladas actualmente.
+                            </div>
+
+                        `
+
+                        : entregasHistorial
+
+                            .map(
+
+                                entrega => {
+
+                                    const estado =
+                                        String(
+                                            entrega?.estado ||
+                                            ""
+                                        )
+                                            .trim()
+                                            .toLowerCase();
+
+
+                                    const punto =
+                                        entrega?.punto_mass ||
+                                        {};
+
+
+                                    const metodo =
+                                        entrega?.metodo ||
+                                        {};
+
+
+                                    const entregado =
+                                        entrega?.entregado ||
+                                        {};
+
+
+                                    const confirmado =
+                                        entrega?.confirmado ||
+                                        {};
+
+
+                                    const cancelado =
+                                        entrega?.cancelado ||
+                                        {};
+
+
+                                    const comprobante =
+                                        entrega?.comprobante ||
+                                        {};
+
+
+                                    const esConfirmada =
+                                        estado ===
+                                        "confirmada";
+
+
+                                    const esCancelada =
+                                        estado ===
+                                        "cancelada";
+
+
+                                    const etiquetaEstado =
+
+                                        esConfirmada
+
+                                            ? "✅ CONFIRMADA"
+
+                                            : esCancelada
+
+                                                ? "❌ CANCELADA"
+
+                                                : estado
+                                                    .toUpperCase();
+
+
+                                    const colorEstado =
+
+                                        esConfirmada
+
+                                            ? "#39ff14"
+
+                                            : esCancelada
+
+                                                ? "#ff8a8a"
+
+                                                : "#ffd700";
+
+
+                                    const fechaCierre =
+
+                                        esConfirmada
+
+                                            ? confirmado
+                                                ?.confirmado_en
+
+                                            : cancelado
+                                                ?.cancelado_en;
+
+
+                                    return `
+
+                                        <div
+                                            style="
+                                                margin-top:14px;
+                                                padding:16px;
+                                                border:1px solid rgba(57,255,20,.45);
+                                                border-radius:14px;
+                                                background:#0b0b0b;
+                                                text-align:left;
+                                            "
+                                        >
+
+                                            <div
+                                                style="
+                                                    text-align:center;
+                                                    color:${colorEstado};
+                                                    font-size:18px;
+                                                    font-weight:bold;
+                                                    margin-bottom:12px;
+                                                "
+                                            >
+                                                ${escaparHtml1(
+                                                    etiquetaEstado
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Folio:</b>
+                                                ${escaparHtml1(
+                                                    entrega?.folio ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Monto:</b>
+                                                ${escaparHtml1(
+                                                    String(
+                                                        entrega?.monto ??
+                                                        "—"
+                                                    )
+                                                )}
+                                                ${escaparHtml1(
+                                                    entrega
+                                                        ?.moneda_codigo ||
+                                                    ""
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Método:</b>
+                                                ${escaparHtml1(
+                                                    metodo?.nombre ||
+                                                    metodo?.codigo ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Punto MASS:</b>
+                                                ${escaparHtml1(
+                                                    punto?.nombre ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div>
+                                                <b>Código:</b>
+                                                ${escaparHtml1(
+                                                    punto?.codigo ||
+                                                    "—"
+                                                )}
+                                            </div>
+
+
+                                            <div
+                                                style="
+                                                    margin-top:10px;
+                                                "
+                                            >
+                                                <b>Entregado:</b><br>
+
+                                                ${escaparHtml1(
+                                                    formatearFechaHistorial(
+                                                        entregado
+                                                            ?.entregado_en
+                                                    )
+                                                )}
+                                            </div>
+
+
+                                            <div
+                                                style="
+                                                    margin-top:8px;
+                                                "
+                                            >
+                                                <b>
+                                                    ${
+                                                        esConfirmada
+                                                            ? "Confirmado:"
+                                                            : "Cancelado:"
+                                                    }
+                                                </b><br>
+
+                                                ${escaparHtml1(
+                                                    formatearFechaHistorial(
+                                                        fechaCierre
+                                                    )
+                                                )}
+                                            </div>
+
+
+                                            ${
+                                                esCancelada &&
+                                                cancelado?.motivo
+
+                                                    ? `
+
+                                                        <div
+                                                            style="
+                                                                margin-top:8px;
+                                                                color:#ff8a8a;
+                                                            "
+                                                        >
+                                                            <b>
+                                                                Motivo de cancelación:
+                                                            </b><br>
+
+                                                            ${escaparHtml1(
+                                                                cancelado
+                                                                    .motivo
+                                                            )}
+                                                        </div>
+
+                                                    `
+
+                                                    : ""
+                                            }
+
+
+                                            <div
+                                                style="
+                                                    margin-top:10px;
+                                                    color:${
+                                                        comprobante
+                                                            ?.objeto_existe ===
+                                                        true
+
+                                                            ? "#39ff14"
+
+                                                            : "#aaa"
+                                                    };
+                                                    font-weight:bold;
+                                                "
+                                            >
+
+                                                ${
+                                                    comprobante
+                                                        ?.objeto_existe ===
+                                                    true
+
+                                                        ? "✅ Comprobante privado archivado"
+
+                                                        : "Comprobante privado no disponible"
+                                                }
+
+                                            </div>
+
+                                        </div>
+
+                                    `;
+
+                                }
+
+                            )
+
+                            .join("");
+
+
+                contenedorHistorialEntregasFondos.innerHTML = `
+
+                    <h3
+                        style="
+                            margin-top:0;
+                            text-align:center;
+                            color:#39ff14;
+                        "
+                    >
+                        📋 Historial de Entregas de Fondos MASS
+                    </h3>
+
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#ccc;
+                            margin-bottom:12px;
+                        "
+                    >
+                        Total:
+                        <b>
+                            ${escaparHtml1(
+                                String(
+                                    dataHistorial
+                                        .total_historial ??
+                                    0
+                                )
+                            )}
+                        </b>
+
+                        &nbsp; | &nbsp;
+
+                        Confirmadas:
+                        <b>
+                            ${escaparHtml1(
+                                String(
+                                    dataHistorial
+                                        .total_confirmadas ??
+                                    0
+                                )
+                            )}
+                        </b>
+
+                        &nbsp; | &nbsp;
+
+                        Canceladas:
+                        <b>
+                            ${escaparHtml1(
+                                String(
+                                    dataHistorial
+                                        .total_canceladas ??
+                                    0
+                                )
+                            )}
+                        </b>
+                    </div>
+
+
+                    ${tarjetasHistorial}
+
+                `;
+
+
+            } catch (error) {
+
+                console.error(
+                    "ERROR CARGANDO HISTORIAL DE ENTREGAS DE FONDOS MASS:",
+                    error
+                );
+
+
+                contenedorHistorialEntregasFondos.innerHTML = `
+
+                    <h3
+                        style="
+                            margin-top:0;
+                            text-align:center;
+                            color:#39ff14;
+                        "
+                    >
+                        📋 Historial de Entregas de Fondos MASS
+                    </h3>
+
+
+                    <div
+                        style="
+                            text-align:center;
+                            color:#ff8a8a;
+                            padding:14px;
+                        "
+                    >
+                        ❌ No fue posible consultar
+                        el historial de entregas.
+                    </div>
+
+                `;
+
+            }
+
+        }		
 
 // ============================================================
 // BOTONES DE OPERADORES DE CADA PUNTO MASS
