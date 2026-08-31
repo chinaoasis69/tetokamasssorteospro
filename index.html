@@ -27974,6 +27974,432 @@ if (
 }
 });
 
+// ============================================================
+// MASS - VERIFICACIÓN PÚBLICA DE COMPROBANTE DE EFECTIVO
+// SOLO LECTURA
+// ============================================================
+
+async function mostrarVerificacionComprobanteMassPublico() {
+
+    const parametros =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    const tokenVerificacion =
+        String(
+            parametros.get(
+                "comprobante_mass"
+            ) || ""
+        ).trim();
+
+
+    if (!tokenVerificacion) {
+
+        return false;
+
+    }
+
+
+    // ========================================================
+    // VALIDAR FORMATO UUID ANTES DE CONSULTAR
+    // ========================================================
+
+    const patronUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+
+    if (!patronUuid.test(tokenVerificacion)) {
+
+        document.body.innerHTML = `
+            <div
+                style="
+                    min-height:100vh;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    padding:20px;
+                    background:#050505;
+                    color:white;
+                    font-family:Arial,sans-serif;
+                    text-align:center;
+                "
+            >
+                <div
+                    style="
+                        width:100%;
+                        max-width:620px;
+                        padding:26px;
+                        border:2px solid #ff4d4d;
+                        border-radius:18px;
+                        background:#111;
+                    "
+                >
+                    <h2
+                        style="
+                            color:#ff4d4d;
+                            margin-top:0;
+                        "
+                    >
+                        ❌ Comprobante MASS no válido
+                    </h2>
+
+                    <p>
+                        El enlace de verificación no contiene
+                        un token válido.
+                    </p>
+                </div>
+            </div>
+        `;
+
+        return true;
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+
+        } = await supabaseClient.rpc(
+
+            "verificar_comprobante_efectivo_mass_publico",
+
+            {
+                p_token_verificacion:
+                    tokenVerificacion
+            }
+
+        );
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        const resultado =
+            Array.isArray(data)
+                ? data[0]
+                : data;
+
+
+        const valido =
+            resultado?.ok === true &&
+            resultado?.valido === true;
+
+
+        if (!valido) {
+
+            document.body.innerHTML = `
+                <div
+                    style="
+                        min-height:100vh;
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        padding:20px;
+                        background:#050505;
+                        color:white;
+                        font-family:Arial,sans-serif;
+                        text-align:center;
+                    "
+                >
+                    <div
+                        style="
+                            width:100%;
+                            max-width:620px;
+                            padding:26px;
+                            border:2px solid #ff4d4d;
+                            border-radius:18px;
+                            background:#111;
+                        "
+                    >
+                        <h2
+                            style="
+                                color:#ff4d4d;
+                                margin-top:0;
+                            "
+                        >
+                            ❌ Comprobante MASS no válido
+                        </h2>
+
+                        <p>
+                            Este comprobante no pudo ser
+                            validado como un pago de efectivo
+                            confirmado.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            return true;
+
+        }
+
+
+        const escaparVerificacionMass =
+            valor => {
+
+                return String(
+                    valor ?? ""
+                ).replace(
+                    /[&<>"']/g,
+                    caracter => {
+
+                        const equivalencias = {
+                            "&": "&amp;",
+                            "<": "&lt;",
+                            ">": "&gt;",
+                            '"': "&quot;",
+                            "'": "&#039;"
+                        };
+
+                        return equivalencias[
+                            caracter
+                        ];
+
+                    }
+                );
+
+            };
+
+
+        const organizador =
+            resultado?.organizador ||
+            {};
+
+
+        const puntoMass =
+            resultado?.punto_mass ||
+            {};
+
+
+        const paisTexto =
+            [
+                puntoMass?.pais,
+                puntoMass?.pais_codigo_iso2
+                    ? `(${puntoMass.pais_codigo_iso2})`
+                    : ""
+            ]
+                .filter(Boolean)
+                .join(" ");
+
+
+        document.body.innerHTML = `
+            <div
+                style="
+                    min-height:100vh;
+                    padding:24px 14px;
+                    background:#050505;
+                    color:white;
+                    font-family:Arial,sans-serif;
+                "
+            >
+                <div
+                    style="
+                        max-width:650px;
+                        margin:0 auto;
+                        padding:24px;
+                        border:2px solid #39ff14;
+                        border-radius:18px;
+                        background:#111;
+                    "
+                >
+
+                    <h2
+                        style="
+                            margin-top:0;
+                            text-align:center;
+                            color:#39ff14;
+                        "
+                    >
+                        ✅ COMPROBANTE MASS VERIFICADO
+                    </h2>
+
+
+                    <div
+                        style="
+                            text-align:center;
+                            margin-bottom:20px;
+                            color:#39ff14;
+                            font-weight:bold;
+                        "
+                    >
+                        PAGO EN EFECTIVO VÁLIDO
+                    </div>
+
+
+                    <div
+                        style="
+                            line-height:1.8;
+                        "
+                    >
+
+                        <div>
+                            <strong>Folio:</strong>
+                            ${escaparVerificacionMass(
+                                resultado?.folio
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Efectivo recibido:</strong>
+                            ${escaparVerificacionMass(
+                                resultado?.cantidad_efectivo
+                            )}
+                            ${escaparVerificacionMass(
+                                resultado?.moneda_codigo
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Crédito MASS:</strong>
+                            ${escaparVerificacionMass(
+                                resultado?.credito_mass
+                            )}
+                            MASS
+                            ${escaparVerificacionMass(
+                                resultado?.moneda_codigo
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Organizador:</strong>
+                            ${escaparVerificacionMass(
+                                organizador?.nombre
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Punto MASS:</strong>
+                            ${escaparVerificacionMass(
+                                puntoMass?.nombre
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Código:</strong>
+                            ${escaparVerificacionMass(
+                                puntoMass?.codigo
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Ciudad:</strong>
+                            ${escaparVerificacionMass(
+                                puntoMass?.ciudad
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>Estado / Región:</strong>
+                            ${escaparVerificacionMass(
+                                puntoMass?.estado_region
+                            )}
+                        </div>
+
+
+                        <div>
+                            <strong>País:</strong>
+                            ${escaparVerificacionMass(
+                                paisTexto
+                            )}
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            margin-top:22px;
+                            padding-top:16px;
+                            border-top:1px solid #444;
+                            text-align:center;
+                            color:#aaa;
+                            font-size:13px;
+                        "
+                    >
+                        Verificación oficial de
+                        TE-TO-KA MASS SORTEOS PRO
+                    </div>
+
+                </div>
+            </div>
+        `;
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR VERIFICANDO COMPROBANTE MASS PÚBLICO:",
+            error
+        );
+
+
+        document.body.innerHTML = `
+            <div
+                style="
+                    min-height:100vh;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    padding:20px;
+                    background:#050505;
+                    color:white;
+                    font-family:Arial,sans-serif;
+                    text-align:center;
+                "
+            >
+                <div
+                    style="
+                        width:100%;
+                        max-width:620px;
+                        padding:26px;
+                        border:2px solid #ff4d4d;
+                        border-radius:18px;
+                        background:#111;
+                    "
+                >
+                    <h2
+                        style="
+                            color:#ff4d4d;
+                            margin-top:0;
+                        "
+                    >
+                        ❌ No fue posible verificar
+                        el Comprobante MASS
+                    </h2>
+
+                    <p>
+                        Intenta nuevamente más tarde.
+                    </p>
+                </div>
+            </div>
+        `;
+
+
+        return true;
+
+    }
+
+}	
+
 function mostrarContinuacionRecuperacionMassId() {
   const parametros =
     new URLSearchParams(
@@ -47545,6 +47971,17 @@ function iniciarRealtime() {
 
 // Abrir acceso MASS ID únicamente cuando no existe sesión activa
 window.addEventListener("DOMContentLoaded", async () => {
+
+    // ============================================================
+    // MASS - ATENDER VERIFICACIÓN PÚBLICA DE COMPROBANTE PRIMERO
+    // ============================================================
+
+    const comprobanteMassPublicoAtendido =
+        await mostrarVerificacionComprobanteMassPublico();
+
+    if (comprobanteMassPublicoAtendido) {
+        return;
+    }	
 
 // ==========================================================
 // MASS - MOSTRAR BOTÓN DE MENSAJES AL RECARGAR LA PÁGINA
