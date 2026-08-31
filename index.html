@@ -31343,92 +31343,172 @@ async function abrirMisComprobantesMass() {
 
     document.body.appendChild(panel);
 
-    const tarjetas =
-        comprobantes
-            .map(
-                (comprobante, indice) => `
-                    <div
+  const tarjetas =
+    comprobantes
+        .map(
+            (comprobante, indice) => {
+
+                const estadoComprobante =
+                    String(
+                        comprobante?.estado || ""
+                    )
+                        .trim()
+                        .toLowerCase();
+
+
+                const etiquetaEstado =
+                    estadoComprobante === "pagado"
+                        ? "✅ PAGADO"
+                        : (
+                            estadoComprobante
+                                ? estadoComprobante.toUpperCase()
+                                : "SIN ESTADO"
+                        );
+
+
+                const colorEstado =
+                    estadoComprobante === "pagado"
+                        ? "#39ff14"
+                        : "#ccc";
+
+
+                return `
+                    <details
+                        class="acordeonComprobanteMass"
                         style="
-                            margin:14px auto;
-                            padding:18px;
+                            margin:12px auto;
                             max-width:650px;
-                            border:2px solid #39ff14;
+                            border:2px solid ${colorEstado};
                             border-radius:14px;
-                            text-align:left;
+                            background:#0b0b0b;
+                            overflow:hidden;
                         "
                     >
-                        <div
+
+                        <summary
                             style="
-                                color:#39ff14;
-                                font-size:20px;
+                                padding:14px 16px;
+                                cursor:pointer;
                                 font-weight:bold;
-                                margin-bottom:10px;
+                                color:${colorEstado};
+                                line-height:1.5;
+                                text-align:center;
                             "
                         >
                             🧾 ${escaparHtmlComprobante(
-                                comprobante.folio
+                                comprobante?.folio
                             )}
-                        </div>
 
-                        <div>
-                            <strong>Estado:</strong>
-                            ${escaparHtmlComprobante(
-                                comprobante.estado
-                            )}
-                        </div>
+                            &nbsp; | &nbsp;
 
-                        <div>
-                            <strong>Efectivo:</strong>
                             ${escaparHtmlComprobante(
-                                comprobante.cantidad_efectivo
+                                comprobante?.cantidad_efectivo
                             )}
-                            ${escaparHtmlComprobante(
-                                comprobante.moneda_codigo
-                            )}
-                        </div>
 
-                        <div>
-                            <strong>Crédito MASS:</strong>
                             ${escaparHtmlComprobante(
-                                comprobante.credito_mass
+                                comprobante?.moneda_codigo
                             )}
-                            MASS
-                            ${escaparHtmlComprobante(
-                                comprobante.moneda_codigo
-                            )}
-                        </div>
 
-                        <div>
-                            <strong>Punto MASS:</strong>
-                            ${escaparHtmlComprobante(
-                                comprobante?.punto_mass?.nombre
-                            )}
-                        </div>
+                            &nbsp; | &nbsp;
 
-                        <div>
-                            <strong>Organizador:</strong>
                             ${escaparHtmlComprobante(
-                                comprobante?.organizador?.nombre
+                                etiquetaEstado
                             )}
-                        </div>
+                        </summary>
 
-                        <button
-                            type="button"
-                            class="btnAbrirComprobanteMass"
-                            data-indice="${indice}"
+
+                        <div
                             style="
-                                margin-top:14px;
-                                padding:10px 18px;
-                                font-weight:bold;
-                                cursor:pointer;
+                                padding:4px 16px 18px;
+                                text-align:left;
+                                line-height:1.75;
+                                color:#fff;
                             "
                         >
-                            🧾 Ver comprobante
-                        </button>
-                    </div>
-                `
-            )
-            .join("");
+
+                            <div>
+                                <strong>Estado:</strong>
+
+                                <span
+                                    style="
+                                        color:${colorEstado};
+                                        font-weight:bold;
+                                    "
+                                >
+                                    ${escaparHtmlComprobante(
+                                        etiquetaEstado
+                                    )}
+                                </span>
+                            </div>
+
+
+                            <div>
+                                <strong>Efectivo:</strong>
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.cantidad_efectivo
+                                )}
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.moneda_codigo
+                                )}
+                            </div>
+
+
+                            <div>
+                                <strong>Crédito MASS:</strong>
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.credito_mass
+                                )}
+
+                                MASS
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.moneda_codigo
+                                )}
+                            </div>
+
+
+                            <div>
+                                <strong>Punto MASS:</strong>
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.punto_mass?.nombre
+                                )}
+                            </div>
+
+
+                            <div>
+                                <strong>Organizador:</strong>
+
+                                ${escaparHtmlComprobante(
+                                    comprobante?.organizador?.nombre
+                                )}
+                            </div>
+
+
+                            <button
+                                type="button"
+                                class="btnAbrirComprobanteMass"
+                                data-indice="${indice}"
+                                style="
+                                    margin-top:14px;
+                                    padding:10px 18px;
+                                    font-weight:bold;
+                                    cursor:pointer;
+                                "
+                            >
+                                🧾 Ver comprobante
+                            </button>
+
+                        </div>
+
+                    </details>
+                `;
+            }
+        )
+        .join(""); 
 
     panel.innerHTML = `
         <div
@@ -31463,6 +31543,53 @@ async function abrirMisComprobantesMass() {
             </button>
         </div>
     `;
+
+// ============================================================
+// MASS - ACORDEÓN DE COMPROBANTES
+// SOLO UN COMPROBANTE ABIERTO A LA VEZ
+// ============================================================
+
+panel.addEventListener(
+    "toggle",
+    (evento) => {
+
+        const detalleAbierto =
+            evento.target;
+
+
+        if (
+            !detalleAbierto ||
+            detalleAbierto.tagName !== "DETAILS" ||
+            !detalleAbierto.classList.contains(
+                "acordeonComprobanteMass"
+            ) ||
+            detalleAbierto.open !== true
+        ) {
+
+            return;
+        }
+
+
+        panel
+            .querySelectorAll(
+                "details.acordeonComprobanteMass[open]"
+            )
+            .forEach(
+                (otroDetalle) => {
+
+                    if (
+                        otroDetalle !==
+                        detalleAbierto
+                    ) {
+
+                        otroDetalle.open =
+                            false;
+                    }
+                }
+            );
+    },
+    true
+);	
 
 	const botonesAbrirComprobante =
     panel.querySelectorAll(
