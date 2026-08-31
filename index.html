@@ -7551,6 +7551,33 @@ data-entrega-id="${escaparHtml(
 
                         : [];
 
+	                const escaparHtml1 =
+                    valor => {
+
+                        return String(
+                            valor ?? ""
+                        ).replace(
+                            /[&<>"']/g,
+                            caracter => {
+
+                                const equivalencias = {
+                                    "&": "&amp;",
+                                    "<": "&lt;",
+                                    ">": "&gt;",
+                                    '"': "&quot;",
+                                    "'": "&#039;"
+                                };
+
+
+                                return equivalencias[
+                                    caracter
+                                ];
+
+                            }
+                        );
+
+                    };
+
 
                 const formatearFechaHistorial =
                     valor => {
