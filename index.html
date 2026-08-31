@@ -7895,6 +7895,44 @@ data-entrega-id="${escaparHtml(
 
                                             </div>
 
+	                                                                      ${
+                                                comprobante
+                                                    ?.objeto_existe ===
+                                                true
+
+                                                    ? `
+
+                                                        <div
+                                                            style="
+                                                                margin-top:14px;
+                                                                text-align:center;
+                                                            "
+                                                        >
+
+                                                            <button
+                                                                type="button"
+                                                                class="btnVerComprobanteHistorialFondosAdmin"
+                                                                data-entrega-id="${escaparHtml1(
+                                                                    entrega?.entrega_id ||
+                                                                    ""
+                                                                )}"
+                                                                style="
+                                                                    width:100%;
+                                                                    padding:12px 18px;
+                                                                    font-weight:bold;
+                                                                    cursor:pointer;
+                                                                "
+                                                            >
+                                                                🧾 Ver comprobante privado
+                                                            </button>
+
+                                                        </div>
+
+                                                    `
+
+                                                    : ""
+                                            } 
+
                                         </div>
 
                                     `;
