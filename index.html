@@ -23912,154 +23912,1150 @@ data-entrega-id="${escaparHtmlOperacion(
                             )
                             .join("");
 
-// =================================================
-// VALIDACIÓN LOCAL DEL COMPROBANTE
-// TODAVÍA SIN RPC Y SIN STORAGE
-// =================================================
+                    // =================================================
+                    // COMPROBANTE ENTREGA FONDOS MASS
+                    //
+                    // FLUJO FINAL:
+                    //
+                    // 1. validación local
+                    // 2. habilitar botón
+                    // 3. confirmación consciente
+                    // 4. reservar ruta privada por RPC
+                    // 5. upload a Storage privado
+                    // 6. marcar entrega como entregada
+                    // 7. refrescar control de fondos
+                    // =================================================
 
-const inputsComprobante =
-    contenedorEntregas.querySelectorAll(
-        ".inputComprobanteEntregaFondosMass"
-    );
-
-
-inputsComprobante.forEach(
-    input => {
-
-        input.addEventListener(
-            "change",
-            () => {
-
-                const entregaId =
-                    String(
-                        input.dataset.entregaId ||
-                        ""
-                    ).trim();
+                    const inputsComprobante =
+                        contenedorEntregas.querySelectorAll(
+                            ".inputComprobanteEntregaFondosMass"
+                        );
 
 
-                const estado =
-                    contenedorEntregas.querySelector(
-                        `.estadoComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
+                    const mimePermitidosComprobante =
+                        new Set([
+                            "image/jpeg",
+                            "image/png",
+                            "image/webp",
+                            "image/heic",
+                            "image/heif",
+                            "application/pdf"
+                        ]);
+
+
+                    const mimePorExtensionComprobante = {
+
+                        jpg: "image/jpeg",
+                        jpeg: "image/jpeg",
+                        png: "image/png",
+                        webp: "image/webp",
+                        heic: "image/heic",
+                        heif: "image/heif",
+                        pdf: "application/pdf"
+
+                    };
+
+
+                    const resolverMimeComprobante =
+                        archivo => {
+
+                            const mimeOriginal =
+                                String(
+                                    archivo?.type ||
+                                    ""
+                                )
+                                .trim()
+                                .toLowerCase();
+
+
+                            if (
+                                mimePermitidosComprobante.has(
+                                    mimeOriginal
+                                )
+                            ) {
+
+                                return mimeOriginal;
+
+                            }
+
+
+                            const nombre =
+                                String(
+                                    archivo?.name ||
+                                    ""
+                                )
+                                .trim()
+                                .toLowerCase();
+
+
+                            const posicionPunto =
+                                nombre.lastIndexOf(".");
+
+
+                            if (posicionPunto < 0) {
+                                return "";
+                            }
+
+
+                            const extension =
+                                nombre.slice(
+                                    posicionPunto + 1
+                                );
+
+
+                            return (
+                                mimePorExtensionComprobante[
+                                    extension
+                                ] ||
+                                ""
+                            );
+
+                        };
+
+
+                    inputsComprobante.forEach(
+                        input => {
+
+                            const entregaId =
+                                String(
+                                    input.dataset.entregaId ||
+                                    ""
+                                ).trim();
+
+
+                            const estado =
+                                contenedorEntregas.querySelector(
+                                    `.estadoComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
+                                );
+
+
+                            const boton =
+                                contenedorEntregas.querySelector(
+                                    `.btnSubirComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
+                                );
+
+
+                            const entregaActual =
+                                entregasPendientes.find(
+                                    entrega =>
+                                        String(
+                                            entrega?.entrega_id ||
+                                            ""
+                                        ) ===
+                                        entregaId
+                                ) || null;
+
+
+                            if (
+                                !entregaId ||
+                                !boton ||
+                                !entregaActual
+                            ) {
+
+                                input.disabled = true;
+
+                                if (boton) {
+                                    boton.disabled = true;
+                                }
+
+                                return;
+                            }
+
+
+                            let archivoValidado = null;
+
+                            let mimeValidado = "";
+
+                            let tamanoValidado = 0;
+
+                            let operacionEnCurso = false;
+
+
+                            const bloquearBoton = () => {
+
+                                boton.disabled = true;
+
+                                boton.textContent =
+                                    "🔒 Subir comprobante";
+
+                                boton.style.opacity =
+                                    ".55";
+
+                                boton.style.cursor =
+                                    "not-allowed";
+
+                            };
+
+
+                            const habilitarBoton = () => {
+
+                                boton.disabled = false;
+
+                                boton.textContent =
+                                    "🧾 Subir comprobante";
+
+                                boton.style.opacity =
+                                    "1";
+
+                                boton.style.cursor =
+                                    "pointer";
+
+                            };
+
+
+                            const mostrarEstado = (
+                                mensaje,
+                                color
+                            ) => {
+
+                                if (!estado) {
+                                    return;
+                                }
+
+
+                                estado.style.color =
+                                    color;
+
+
+                                estado.textContent =
+                                    mensaje;
+
+                            };
+
+
+                            const entregaYaNoEstaPendiente =
+                                async () => {
+
+                                    try {
+
+                                        const {
+                                            data:
+                                                controlActual,
+                                            error:
+                                                errorControl
+                                        } =
+                                            await supabaseClient.rpc(
+
+                                                "obtener_control_fondos_punto_mass_operador_seguro",
+
+                                                {
+                                                    p_punto_mass_organizador_id:
+                                                        puntoMassOrganizadorId
+                                                }
+
+                                            );
+
+
+                                        if (
+                                            errorControl ||
+                                            !controlActual ||
+                                            controlActual.ok !== true
+                                        ) {
+
+                                            return false;
+
+                                        }
+
+
+                                        const pendientesActuales =
+                                            Array.isArray(
+                                                controlActual
+                                                    .entregas_pendientes
+                                            )
+                                                ? controlActual
+                                                    .entregas_pendientes
+                                                : [];
+
+
+                                        return !pendientesActuales
+                                            .some(
+                                                entrega =>
+                                                    String(
+                                                        entrega
+                                                            ?.entrega_id ||
+                                                        ""
+                                                    ) ===
+                                                    entregaId
+                                            );
+
+
+                                    } catch (error) {
+
+                                        console.error(
+                                            "ERROR VERIFICANDO ESTADO FINAL DE ENTREGA MASS:",
+                                            error
+                                        );
+
+                                        return false;
+
+                                    }
+
+                                };
+
+
+                            bloquearBoton();
+
+
+                            // =============================================
+                            // VALIDACIÓN LOCAL
+                            // =============================================
+
+                            input.addEventListener(
+                                "change",
+                                () => {
+
+                                    archivoValidado = null;
+
+                                    mimeValidado = "";
+
+                                    tamanoValidado = 0;
+
+
+                                    bloquearBoton();
+
+
+                                    const archivo =
+                                        input.files?.[0] ||
+                                        null;
+
+
+                                    if (!archivo) {
+
+                                        mostrarEstado(
+                                            "Puedes seleccionar el comprobante para validarlo. La carga segura permanece bloqueada hasta seleccionar un archivo válido.",
+                                            "#aaa"
+                                        );
+
+                                        return;
+                                    }
+
+
+                                    const mime =
+                                        resolverMimeComprobante(
+                                            archivo
+                                        );
+
+
+                                    if (
+                                        !mimePermitidosComprobante
+                                            .has(mime)
+                                    ) {
+
+                                        input.value = "";
+
+
+                                        mostrarEstado(
+                                            "❌ Tipo de archivo no permitido. Usa JPG, PNG, WEBP, HEIC, HEIF o PDF.",
+                                            "#ff8a8a"
+                                        );
+
+                                        return;
+                                    }
+
+
+                                    const tamanoBytes =
+                                        Number(
+                                            archivo.size
+                                        );
+
+
+                                    if (
+                                        !Number.isFinite(
+                                            tamanoBytes
+                                        ) ||
+                                        tamanoBytes < 1
+                                    ) {
+
+                                        input.value = "";
+
+
+                                        mostrarEstado(
+                                            "❌ El archivo seleccionado está vacío o no es válido.",
+                                            "#ff8a8a"
+                                        );
+
+                                        return;
+                                    }
+
+
+                                    if (
+                                        tamanoBytes >
+                                        10485760
+                                    ) {
+
+                                        input.value = "";
+
+
+                                        mostrarEstado(
+                                            "❌ El comprobante excede el máximo permitido de 10 MB.",
+                                            "#ff8a8a"
+                                        );
+
+                                        return;
+                                    }
+
+
+                                    archivoValidado =
+                                        archivo;
+
+                                    mimeValidado =
+                                        mime;
+
+                                    tamanoValidado =
+                                        tamanoBytes;
+
+
+                                    mostrarEstado(
+                                        `✅ Archivo válido: ${archivo.name}. Revisa que sea el comprobante REAL antes de subirlo.`,
+                                        "#39ff14"
+                                    );
+
+
+                                    habilitarBoton();
+
+                                }
+                            );
+
+
+                            // =============================================
+                            // SUBIDA SEGURA
+                            // =============================================
+
+                            boton.addEventListener(
+                                "click",
+                                async () => {
+
+                                    if (operacionEnCurso) {
+                                        return;
+                                    }
+
+
+                                    const archivo =
+                                        input.files?.[0] ||
+                                        null;
+
+
+                                    const mime =
+                                        resolverMimeComprobante(
+                                            archivo
+                                        );
+
+
+                                    const tamanoBytes =
+                                        Number(
+                                            archivo?.size
+                                        );
+
+
+                                    if (
+                                        !archivo ||
+                                        archivo !==
+                                            archivoValidado ||
+                                        mime !==
+                                            mimeValidado ||
+                                        tamanoBytes !==
+                                            tamanoValidado ||
+                                        !mimePermitidosComprobante
+                                            .has(mime) ||
+                                        !Number.isFinite(
+                                            tamanoBytes
+                                        ) ||
+                                        tamanoBytes < 1 ||
+                                        tamanoBytes >
+                                            10485760
+                                    ) {
+
+                                        bloquearBoton();
+
+
+                                        mostrarEstado(
+                                            "❌ El archivo ya no coincide con la validación realizada. Selecciónalo nuevamente.",
+                                            "#ff8a8a"
+                                        );
+
+                                        return;
+                                    }
+
+
+                                    const folio =
+                                        String(
+                                            entregaActual
+                                                ?.folio ||
+                                            "—"
+                                        );
+
+
+                                    const moneda =
+                                        String(
+                                            entregaActual
+                                                ?.moneda_codigo ||
+                                            ""
+                                        )
+                                        .trim()
+                                        .toUpperCase();
+
+
+                                    const monto =
+                                        formatearMonto(
+                                            entregaActual
+                                                ?.monto
+                                        );
+
+
+                                    const confirmar =
+                                        window.confirm(
+
+                                            "CONFIRMACIÓN DE COMPROBANTE MASS\n\n" +
+
+                                            "Folio: " +
+                                            folio +
+                                            "\n" +
+
+                                            "Monto: " +
+                                            monto +
+                                            " " +
+                                            moneda +
+                                            "\n\n" +
+
+                                            "Confirma únicamente si YA realizaste la transferencia fuera de TE-TO-KA MASS y este archivo es el comprobante REAL de esa entrega.\n\n" +
+
+                                            "TE-TO-KA MASS no realizará la transferencia bancaria por ti."
+
+                                        );
+
+
+                                    if (!confirmar) {
+                                        return;
+                                    }
+
+
+                                    operacionEnCurso =
+                                        true;
+
+
+                                    input.disabled =
+                                        true;
+
+
+                                    boton.disabled =
+                                        true;
+
+
+                                    boton.textContent =
+                                        "⏳ Procesando...";
+
+
+                                    boton.style.opacity =
+                                        ".55";
+
+
+                                    boton.style.cursor =
+                                        "not-allowed";
+
+
+                                    let reservaCreada =
+                                        false;
+
+
+                                    let archivoSubido =
+                                        false;
+
+
+                                    let procesoCompletado =
+                                        false;
+
+
+                                    let requiereRevision =
+                                        false;
+
+
+                                    try {
+
+                                        // =================================
+                                        // 1. RESERVAR RUTA PRIVADA
+                                        // =================================
+
+                                        mostrarEstado(
+                                            "⏳ Reservando ruta segura para el comprobante...",
+                                            "#ffd700"
+                                        );
+
+
+                                        const {
+                                            data:
+                                                reserva,
+                                            error:
+                                                errorReserva
+                                        } =
+                                            await supabaseClient.rpc(
+
+                                                "reservar_comprobante_entrega_fondos_seguro",
+
+                                                {
+                                                    p_entrega_id:
+                                                        entregaId,
+
+                                                    p_mime_type:
+                                                        mime,
+
+                                                    p_tamano_bytes:
+                                                        tamanoBytes
+                                                }
+
+                                            );
+
+
+                                        if (errorReserva) {
+                                            throw errorReserva;
+                                        }
+
+
+                                        if (
+                                            !reserva ||
+                                            reserva.ok !== true
+                                        ) {
+
+                                            throw new Error(
+                                                "No se recibió una reserva válida para el comprobante."
+                                            );
+
+                                        }
+
+
+                                        reservaCreada =
+                                            true;
+
+
+                                        const comprobante =
+                                            reserva
+                                                ?.comprobante ||
+                                            {};
+
+
+                                        const bucket =
+                                            String(
+                                                comprobante
+                                                    ?.bucket ||
+                                                ""
+                                            ).trim();
+
+
+                                        const path =
+                                            String(
+                                                comprobante
+                                                    ?.path ||
+                                                ""
+                                            ).trim();
+
+
+                                        const mimeReservado =
+                                            String(
+                                                comprobante
+                                                    ?.mime_type ||
+                                                ""
+                                            )
+                                            .trim()
+                                            .toLowerCase();
+
+
+                                        const tamanoReservado =
+                                            Number(
+                                                comprobante
+                                                    ?.tamano_bytes
+                                            );
+
+
+                                        const upsertReservado =
+                                            comprobante
+                                                ?.upsert;
+
+
+                                        if (
+                                            bucket !==
+                                                "entregas-fondos-mass" ||
+                                            !path ||
+                                            mimeReservado !==
+                                                mime ||
+                                            tamanoReservado !==
+                                                tamanoBytes ||
+                                            upsertReservado !==
+                                                false
+                                        ) {
+
+                                            throw new Error(
+                                                "La reserva del comprobante no coincide con el archivo validado."
+                                            );
+
+                                        }
+
+
+                                        // =================================
+                                        // 2. SUBIR A STORAGE PRIVADO
+                                        // =================================
+
+                                        mostrarEstado(
+                                            "⏳ Subiendo comprobante a la bóveda privada...",
+                                            "#ffd700"
+                                        );
+
+
+                                        const {
+                                            error:
+                                                errorUpload
+                                        } =
+                                            await supabaseClient
+                                                .storage
+                                                .from(
+                                                    bucket
+                                                )
+                                                .upload(
+
+                                                    path,
+
+                                                    archivo,
+
+                                                    {
+                                                        cacheControl:
+                                                            "3600",
+
+                                                        upsert:
+                                                            false,
+
+                                                        contentType:
+                                                            mime
+                                                    }
+
+                                                );
+
+
+                                        // =================================
+                                        // RECUPERACIÓN SI EL NAVEGADOR
+                                        // RECIBE ERROR DE UPLOAD
+                                        // =================================
+
+                                        if (errorUpload) {
+
+                                            mostrarEstado(
+                                                "⏳ Verificando si Storage recibió el archivo...",
+                                                "#ffd700"
+                                            );
+
+
+                                            const {
+                                                error:
+                                                    errorLiberacion
+                                            } =
+                                                await supabaseClient.rpc(
+
+                                                    "liberar_reserva_comprobante_entrega_fondos_seguro",
+
+                                                    {
+                                                        p_entrega_id:
+                                                            entregaId
+                                                    }
+
+                                                );
+
+
+                                            if (
+                                                !errorLiberacion
+                                            ) {
+
+                                                reservaCreada =
+                                                    false;
+
+
+                                                throw errorUpload;
+
+                                            }
+
+
+                                            // Si la reserva NO pudo liberarse,
+                                            // podría significar que el objeto
+                                            // físico sí llegó a Storage.
+                                            // Intentamos finalizar la entrega.
+
+                                            const {
+                                                error:
+                                                    errorMarcadoRecuperacion
+                                            } =
+                                                await supabaseClient.rpc(
+
+                                                    "marcar_entrega_fondos_entregada_seguro",
+
+                                                    {
+                                                        p_entrega_id:
+                                                            entregaId
+                                                    }
+
+                                                );
+
+
+                                            if (
+                                                !errorMarcadoRecuperacion
+                                            ) {
+
+                                                archivoSubido =
+                                                    true;
+
+                                                procesoCompletado =
+                                                    true;
+
+                                            } else {
+
+                                                const yaFinalizada =
+                                                    await entregaYaNoEstaPendiente();
+
+
+                                                if (
+                                                    yaFinalizada
+                                                ) {
+
+                                                    archivoSubido =
+                                                        true;
+
+                                                    procesoCompletado =
+                                                        true;
+
+                                                } else {
+
+                                                    requiereRevision =
+                                                        true;
+
+
+                                                    throw new Error(
+                                                        "No fue posible confirmar de forma segura si Storage recibió el comprobante. No vuelvas a intentar la carga hasta revisar esta entrega."
+                                                    );
+
+                                                }
+
+                                            }
+
+                                        } else {
+
+                                            archivoSubido =
+                                                true;
+
+
+                                            // =================================
+                                            // 3. MARCAR ENTREGADA
+                                            // =================================
+
+                                            mostrarEstado(
+                                                "⏳ Validando el comprobante y finalizando la entrega...",
+                                                "#ffd700"
+                                            );
+
+
+                                            let {
+                                                error:
+                                                    errorMarcado
+                                            } =
+                                                await supabaseClient.rpc(
+
+                                                    "marcar_entrega_fondos_entregada_seguro",
+
+                                                    {
+                                                        p_entrega_id:
+                                                            entregaId
+                                                    }
+
+                                                );
+
+
+                                            if (
+                                                !errorMarcado
+                                            ) {
+
+                                                procesoCompletado =
+                                                    true;
+
+                                            } else {
+
+                                                // Puede ocurrir que el backend
+                                                // haya confirmado la operación
+                                                // pero la respuesta al navegador
+                                                // se haya perdido.
+
+                                                let yaFinalizada =
+                                                    await entregaYaNoEstaPendiente();
+
+
+                                                if (
+                                                    yaFinalizada
+                                                ) {
+
+                                                    procesoCompletado =
+                                                        true;
+
+                                                } else {
+
+                                                    // Un único reintento seguro.
+                                                    ({
+                                                        error:
+                                                            errorMarcado
+                                                    } =
+                                                        await supabaseClient.rpc(
+
+                                                            "marcar_entrega_fondos_entregada_seguro",
+
+                                                            {
+                                                                p_entrega_id:
+                                                                    entregaId
+                                                            }
+
+                                                        ));
+
+
+                                                    if (
+                                                        !errorMarcado
+                                                    ) {
+
+                                                        procesoCompletado =
+                                                            true;
+
+                                                    } else {
+
+                                                        yaFinalizada =
+                                                            await entregaYaNoEstaPendiente();
+
+
+                                                        if (
+                                                            yaFinalizada
+                                                        ) {
+
+                                                            procesoCompletado =
+                                                                true;
+
+                                                        } else {
+
+                                                            requiereRevision =
+                                                                true;
+
+
+                                                            throw new Error(
+                                                                "El comprobante quedó cargado, pero no fue posible finalizar de forma segura la entrega. No vuelvas a subir el archivo."
+                                                            );
+
+                                                        }
+
+                                                    }
+
+                                                }
+
+                                            }
+
+                                        }
+
+
+                                        if (
+                                            !procesoCompletado
+                                        ) {
+
+                                            throw new Error(
+                                                "La entrega no pudo finalizarse de forma segura."
+                                            );
+
+                                        }
+
+
+                                        // =================================
+                                        // 4. ÉXITO
+                                        // =================================
+
+                                        mostrarEstado(
+                                            "✅ Comprobante verificado. Entrega marcada como ENTREGADA.",
+                                            "#39ff14"
+                                        );
+
+
+                                        alert(
+
+                                            "✅ ENTREGA DE FONDOS MASS REGISTRADA\n\n" +
+
+                                            "Folio: " +
+                                            folio +
+                                            "\n" +
+
+                                            "Monto: " +
+                                            monto +
+                                            " " +
+                                            moneda +
+                                            "\n\n" +
+
+                                            "Estado: ENTREGADA\n\n" +
+
+                                            "Ahora falta la confirmación de recepción por parte del Organizador."
+
+                                        );
+
+
+                                        mostrarOperacionPuntoMassOperador(
+                                            panel,
+                                            puntoSeleccionado
+                                        );
+
+
+                                    } catch (error) {
+
+                                        console.error(
+                                            "ERROR SUBIENDO COMPROBANTE ENTREGA FONDOS MASS:",
+                                            error
+                                        );
+
+
+                                        // =================================
+                                        // LIBERAR RESERVA SI TODAVÍA
+                                        // NO EXISTE ARCHIVO FÍSICO
+                                        // =================================
+
+                                        if (
+                                            reservaCreada &&
+                                            !archivoSubido &&
+                                            !requiereRevision
+                                        ) {
+
+                                            try {
+
+                                                const {
+                                                    error:
+                                                        errorLiberacionFinal
+                                                } =
+                                                    await supabaseClient.rpc(
+
+                                                        "liberar_reserva_comprobante_entrega_fondos_seguro",
+
+                                                        {
+                                                            p_entrega_id:
+                                                                entregaId
+                                                        }
+
+                                                    );
+
+
+                                                if (
+                                                    !errorLiberacionFinal
+                                                ) {
+
+                                                    reservaCreada =
+                                                        false;
+
+                                                } else {
+
+                                                    requiereRevision =
+                                                        true;
+
+                                                }
+
+
+                                            } catch (
+                                                errorLiberacionFinal
+                                            ) {
+
+                                                console.error(
+                                                    "ERROR LIBERANDO RESERVA DE COMPROBANTE:",
+                                                    errorLiberacionFinal
+                                                );
+
+
+                                                requiereRevision =
+                                                    true;
+
+                                            }
+
+                                        }
+
+
+                                        const mensajeError =
+                                            String(
+                                                error?.message ||
+                                                "No fue posible procesar el comprobante."
+                                            );
+
+
+                                        if (
+                                            requiereRevision ||
+                                            (
+                                                reservaCreada &&
+                                                archivoSubido
+                                            )
+                                        ) {
+
+                                            input.disabled =
+                                                true;
+
+
+                                            boton.disabled =
+                                                true;
+
+
+                                            boton.textContent =
+                                                "🔒 Revisión necesaria";
+
+
+                                            boton.style.opacity =
+                                                ".55";
+
+
+                                            boton.style.cursor =
+                                                "not-allowed";
+
+
+                                            mostrarEstado(
+                                                "❌ " +
+                                                mensajeError +
+                                                " No vuelvas a subir otro archivo para esta entrega hasta revisarla.",
+                                                "#ff8a8a"
+                                            );
+
+                                        } else {
+
+                                            input.disabled =
+                                                false;
+
+
+                                            mostrarEstado(
+                                                "❌ " +
+                                                mensajeError +
+                                                " Puedes revisar el archivo e intentarlo nuevamente.",
+                                                "#ff8a8a"
+                                            );
+
+
+                                            const archivoActual =
+                                                input.files?.[0] ||
+                                                null;
+
+
+                                            if (
+                                                archivoActual &&
+                                                archivoActual ===
+                                                    archivoValidado
+                                            ) {
+
+                                                habilitarBoton();
+
+                                            } else {
+
+                                                bloquearBoton();
+
+                                            }
+
+                                        }
+
+
+                                    } finally {
+
+                                        operacionEnCurso =
+                                            false;
+
+                                    }
+
+                                }
+                            );
+
+                        }
                     );
-
-
-                const boton =
-                    contenedorEntregas.querySelector(
-                        `.btnSubirComprobanteEntregaFondosMass[data-entrega-id="${entregaId}"]`
-                    );
-
-
-                // El botón continúa bloqueado
-                // hasta conectar el flujo seguro.
-                if (boton) {
-                    boton.disabled = true;
-                }
-
-
-                const archivo =
-                    input.files?.[0] || null;
-
-
-                if (!archivo) {
-
-                    if (estado) {
-                        estado.style.color = "#aaa";
-
-                        estado.textContent =
-                            "Puedes seleccionar el comprobante para validarlo. La carga segura todavía permanece bloqueada.";
-                    }
-
-                    return;
-                }
-
-
-                const mime =
-                    String(
-                        archivo.type || ""
-                    )
-                    .trim()
-                    .toLowerCase();
-
-
-                const mimePermitidos = new Set([
-                    "image/jpeg",
-                    "image/png",
-                    "image/webp",
-                    "image/heic",
-                    "image/heif",
-                    "application/pdf"
-                ]);
-
-
-                if (!mimePermitidos.has(mime)) {
-
-                    input.value = "";
-
-                    if (estado) {
-                        estado.style.color = "#ff8a8a";
-
-                        estado.textContent =
-                            "❌ Tipo de archivo no permitido. Usa JPG, PNG, WEBP, HEIC, HEIF o PDF.";
-                    }
-
-                    return;
-                }
-
-
-                const tamanoBytes =
-                    Number(
-                        archivo.size
-                    );
-
-
-                if (
-                    !Number.isFinite(tamanoBytes) ||
-                    tamanoBytes < 1
-                ) {
-
-                    input.value = "";
-
-                    if (estado) {
-                        estado.style.color = "#ff8a8a";
-
-                        estado.textContent =
-                            "❌ El archivo seleccionado está vacío o no es válido.";
-                    }
-
-                    return;
-                }
-
-
-                if (tamanoBytes > 10485760) {
-
-                    input.value = "";
-
-                    if (estado) {
-                        estado.style.color = "#ff8a8a";
-
-                        estado.textContent =
-                            "❌ El comprobante excede el máximo permitido de 10 MB.";
-                    }
-
-                    return;
-                }
-
-
-                if (estado) {
-
-                    estado.style.color =
-                        "#39ff14";
-
-                    estado.textContent =
-                        `✅ Archivo válido: ${archivo.name}. La carga segura todavía permanece bloqueada.`;
-
-                }
-
-            }
-        );
-
-    }
-);
 
                 }
 
