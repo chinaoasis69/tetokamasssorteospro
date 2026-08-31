@@ -23822,6 +23822,85 @@ function mostrarOperacionPuntoMassOperador(
                                                 )}
                                             </div>
 
+	      <div
+    style="
+        margin-top:18px;
+        padding-top:16px;
+        border-top:1px solid #444;
+    "
+>
+
+    <div
+        style="
+            font-weight:bold;
+            margin-bottom:8px;
+        "
+    >
+        🧾 Comprobante de la entrega
+    </div>
+
+
+    <div
+        style="
+            color:#aaa;
+            font-size:13px;
+            margin-bottom:12px;
+        "
+    >
+        Después de realizar la transferencia fuera de
+        TE-TO-KA MASS, podrás seleccionar aquí el
+        comprobante real.
+    </div>
+
+
+    <input
+        type="file"
+        class="inputComprobanteEntregaFondosMass"
+        data-entrega-id="${escaparHtmlOperacion(
+            entrega?.entrega_id || ""
+        )}"
+        accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+        disabled
+        style="
+            width:100%;
+            box-sizing:border-box;
+            margin-bottom:10px;
+        "
+    >
+
+
+    <button
+        type="button"
+        class="btnSubirComprobanteEntregaFondosMass"
+        data-entrega-id="${escaparHtmlOperacion(
+            entrega?.entrega_id || ""
+        )}"
+        disabled
+        style="
+            width:100%;
+            padding:12px;
+            opacity:.55;
+            cursor:not-allowed;
+        "
+    >
+        🔒 Subir comprobante
+    </button>
+
+
+    <div
+        style="
+            margin-top:9px;
+            color:#aaa;
+            font-size:12px;
+            text-align:center;
+        "
+    >
+        La carga se habilitará cuando terminemos
+        la conexión segura con Storage.
+    </div>
+
+</div>
+
                                         </div>
                                     `;
 
