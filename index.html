@@ -26317,8 +26317,8 @@ panelCrearEntregaMass.innerHTML = `
                     text-align:center;
                 "
             >
-                El botón final todavía está bloqueado
-                durante esta prueba.
+                Verifica cuidadosamente el monto y el método antes de crear la entrega.
+				
             </div>
 
         </div>
@@ -26790,6 +26790,587 @@ const nombreOrganizadorEntrega =
             }
         );
 }
+
+// ============================================================
+// MASS - CREAR ENTREGA DE FONDOS
+// RPC IDEMPOTENTE SEGURA
+// ============================================================
+
+const CLAVE_SOLICITUD_ENTREGA_FONDOS_MASS =
+    "mass_entrega_fondos_solicitud_actual";
+
+
+// ============================================================
+// OBTENER O REUTILIZAR SOLICITUD IDEMPOTENTE
+//
+// Si una llamada sí llegó a Supabase pero el navegador
+// perdió la respuesta, un reintento con los mismos datos
+// reutilizará el mismo UUID.
+// ============================================================
+
+const obtenerSolicitudIdEntregaFondosMass =
+    (firmaSolicitud) => {
+
+        let solicitudGuardada =
+            null;
+
+
+        try {
+
+            solicitudGuardada =
+                JSON.parse(
+                    sessionStorage.getItem(
+                        CLAVE_SOLICITUD_ENTREGA_FONDOS_MASS
+                    ) || "null"
+                );
+
+        } catch (errorLecturaSolicitud) {
+
+            solicitudGuardada =
+                null;
+        }
+
+
+        if (
+            solicitudGuardada &&
+            solicitudGuardada.firma ===
+                firmaSolicitud &&
+            typeof solicitudGuardada.solicitudId ===
+                "string" &&
+            solicitudGuardada.solicitudId.trim()
+        ) {
+
+            return solicitudGuardada
+                .solicitudId
+                .trim();
+        }
+
+
+        if (
+            !window.crypto ||
+            typeof window.crypto.randomUUID !==
+                "function"
+        ) {
+
+            throw new Error(
+                "Este navegador no permite generar un identificador seguro para la entrega."
+            );
+        }
+
+
+        const solicitudId =
+            window.crypto.randomUUID();
+
+
+        try {
+
+            sessionStorage.setItem(
+                CLAVE_SOLICITUD_ENTREGA_FONDOS_MASS,
+                JSON.stringify({
+                    firma:
+                        firmaSolicitud,
+
+                    solicitudId:
+                        solicitudId
+                })
+            );
+
+        } catch (errorGuardarSolicitud) {
+
+            throw new Error(
+                "No fue posible proteger la solicitud de la entrega en este navegador."
+            );
+        }
+
+
+        return solicitudId;
+    };
+
+
+// ============================================================
+// LIMPIAR SOLICITUD SOLAMENTE DESPUÉS
+// DE RECIBIR RESPUESTA EXITOSA
+// ============================================================
+
+const limpiarSolicitudEntregaFondosMass =
+    (solicitudId) => {
+
+        try {
+
+            const solicitudGuardada =
+                JSON.parse(
+                    sessionStorage.getItem(
+                        CLAVE_SOLICITUD_ENTREGA_FONDOS_MASS
+                    ) || "null"
+                );
+
+
+            if (
+                solicitudGuardada
+                    ?.solicitudId ===
+                solicitudId
+            ) {
+
+                sessionStorage.removeItem(
+                    CLAVE_SOLICITUD_ENTREGA_FONDOS_MASS
+                );
+            }
+
+        } catch (errorLimpiarSolicitud) {
+
+            console.warn(
+                "No fue posible limpiar la solicitud local de entrega MASS:",
+                errorLimpiarSolicitud
+            );
+        }
+    };
+
+
+// ============================================================
+// BOTÓN FINAL
+// ============================================================
+
+if (btnConfirmarCrearEntregaFondosMass) {
+
+    btnConfirmarCrearEntregaFondosMass
+        .addEventListener(
+            "click",
+            async () => {
+
+                // ============================================
+                // 1. REVALIDAR TODO JUSTO ANTES DE CREAR
+                // ============================================
+
+                actualizarEstadoBotonCrearEntregaFondosMass();
+
+
+                if (
+                    btnConfirmarCrearEntregaFondosMass
+                        .disabled
+                ) {
+
+                    return;
+                }
+
+
+                const montoEntrega =
+                    Number(
+                        inputMontoEntregaFondosMass
+                            ?.value
+                    );
+
+
+                const valorMetodo =
+                    String(
+                        selectMetodoEntregaFondosMass
+                            ?.value || ""
+                    ).trim();
+
+
+                const indiceMetodo =
+                    Number(
+                        valorMetodo
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        montoEntrega
+                    ) ||
+                    montoEntrega <= 0 ||
+                    montoEntrega >
+                        disponibleEntrega
+                ) {
+
+                    alert(
+                        "❌ El monto de la entrega no es válido."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    !valorMetodo ||
+                    !Number.isInteger(
+                        indiceMetodo
+                    ) ||
+                    indiceMetodo < 0 ||
+                    indiceMetodo >=
+                        metodosAutorizados.length
+                ) {
+
+                    alert(
+                        "❌ Selecciona un método de entrega válido."
+                    );
+
+                    return;
+                }
+
+
+                const metodoSeleccionado =
+                    metodosAutorizados[
+                        indiceMetodo
+                    ];
+
+
+                const configuracionId =
+                    String(
+                        metodoSeleccionado
+                            ?.configuracion_id || ""
+                    ).trim();
+
+
+                if (!configuracionId) {
+
+                    alert(
+                        "❌ No fue posible identificar la configuración del método."
+                    );
+
+                    return;
+                }
+
+
+                const nombreMetodo =
+                    String(
+                        metodoSeleccionado
+                            ?.metodo_nombre ||
+                        metodoSeleccionado
+                            ?.metodo_codigo ||
+                        "Método de entrega"
+                    ).trim();
+
+
+                // ============================================
+                // 2. CONFIRMACIÓN HUMANA
+                // ============================================
+
+                const continuar =
+                    window.confirm(
+                        "Confirma la creación de esta entrega MASS:\n\n" +
+                        "Monto: " +
+                        montoEntrega +
+                        " " +
+                        monedaEntrega +
+                        "\n\nMétodo: " +
+                        nombreMetodo +
+                        "\n\nEl monto quedará reservado como una entrega pendiente."
+                    );
+
+
+                if (!continuar) {
+
+                    return;
+                }
+
+
+                // ============================================
+                // 3. FIRMA LÓGICA DE ESTA SOLICITUD
+                //
+                // Si se repite exactamente esta misma
+                // operación después de un error de red,
+                // reutilizamos el mismo solicitud_id.
+                // ============================================
+
+                const firmaSolicitud =
+                    JSON.stringify([
+                        relacionId,
+                        configuracionId,
+                        String(
+                            montoEntrega
+                        ),
+                        monedaEntrega
+                    ]);
+
+
+                let solicitudId;
+
+
+                try {
+
+                    solicitudId =
+                        obtenerSolicitudIdEntregaFondosMass(
+                            firmaSolicitud
+                        );
+
+                } catch (errorSolicitudId) {
+
+                    console.error(
+                        "ERROR GENERANDO SOLICITUD IDEMPOTENTE MASS:",
+                        errorSolicitudId
+                    );
+
+
+                    alert(
+                        "❌ No fue posible preparar de forma segura la solicitud de entrega."
+                    );
+
+                    return;
+                }
+
+
+                // ============================================
+                // 4. BLOQUEAR CONTROLES DURANTE LA LLAMADA
+                // ============================================
+
+                const textoOriginalBoton =
+                    btnConfirmarCrearEntregaFondosMass
+                        .textContent;
+
+
+                btnConfirmarCrearEntregaFondosMass
+                    .disabled =
+                        true;
+
+
+                btnConfirmarCrearEntregaFondosMass
+                    .textContent =
+                        "⏳ Creando entrega...";
+
+
+                if (inputMontoEntregaFondosMass) {
+
+                    inputMontoEntregaFondosMass
+                        .disabled =
+                            true;
+                }
+
+
+                if (selectMetodoEntregaFondosMass) {
+
+                    selectMetodoEntregaFondosMass
+                        .disabled =
+                            true;
+                }
+
+
+                if (btnUsarTodoEntregaFondosMass) {
+
+                    btnUsarTodoEntregaFondosMass
+                        .disabled =
+                            true;
+                }
+
+
+                if (btnCerrarCrearEntregaFondosMass) {
+
+                    btnCerrarCrearEntregaFondosMass
+                        .disabled =
+                            true;
+                }
+
+
+                let operacionExitosa =
+                    false;
+
+
+                try {
+
+                    // ========================================
+                    // 5. RPC REAL IDEMPOTENTE
+                    // ========================================
+
+                    const {
+                        data:
+                            respuestaCrearEntrega,
+
+                        error:
+                            errorCrearEntrega
+
+                    } = await supabaseClient.rpc(
+
+                        "crear_entrega_fondos_punto_mass_idempotente_segura",
+
+                        {
+                            p_solicitud_id:
+                                solicitudId,
+
+                            p_punto_mass_organizador_id:
+                                relacionId,
+
+                            p_metodo_pago_configuracion_id:
+                                configuracionId,
+
+                            p_monto:
+                                montoEntrega,
+
+                            p_moneda_codigo:
+                                monedaEntrega
+                        }
+                    );
+
+
+                    if (errorCrearEntrega) {
+
+                        throw errorCrearEntrega;
+                    }
+
+
+                    const resultadoCrearEntrega =
+                        Array.isArray(
+                            respuestaCrearEntrega
+                        )
+                            ? respuestaCrearEntrega[0]
+                            : respuestaCrearEntrega;
+
+
+                    if (
+                        !resultadoCrearEntrega ||
+                        resultadoCrearEntrega.ok !==
+                            true ||
+                        !resultadoCrearEntrega
+                            .entrega_id
+                    ) {
+
+                        throw new Error(
+                            "La creación de la entrega no devolvió una respuesta válida."
+                        );
+                    }
+
+
+                    operacionExitosa =
+                        true;
+
+
+                    // ========================================
+                    // 6. YA TENEMOS RESPUESTA CONFIRMADA
+                    //    AHORA SÍ LIMPIAMOS LA SOLICITUD
+                    // ========================================
+
+                    limpiarSolicitudEntregaFondosMass(
+                        solicitudId
+                    );
+
+
+                    const folioEntrega =
+                        String(
+                            resultadoCrearEntrega
+                                ?.folio || ""
+                        ).trim();
+
+
+                    const fueReutilizada =
+                        resultadoCrearEntrega
+                            ?.reutilizada ===
+                        true;
+
+
+                    alert(
+
+                        fueReutilizada
+
+                            ? (
+                                "✅ Esta entrega ya había sido creada y fue recuperada de forma segura." +
+                                (
+                                    folioEntrega
+                                        ? "\n\nFolio: " +
+                                          folioEntrega
+                                        : ""
+                                )
+                              )
+
+                            : (
+                                "✅ Entrega de fondos MASS creada correctamente." +
+                                (
+                                    folioEntrega
+                                        ? "\n\nFolio: " +
+                                          folioEntrega
+                                        : ""
+                                ) +
+                                "\nMonto reservado: " +
+                                montoEntrega +
+                                " " +
+                                monedaEntrega
+                              )
+                    );
+
+
+                    // ========================================
+                    // 7. RECARGAR PARA MOSTRAR
+                    //    SALDOS Y ENTREGA PENDIENTE REALES
+                    // ========================================
+
+                    window.location.reload();
+
+
+                } catch (errorCrearEntregaMass) {
+
+                    console.error(
+                        "ERROR CREANDO ENTREGA DE FONDOS MASS:",
+                        errorCrearEntregaMass
+                    );
+
+
+                    alert(
+                        "❌ No fue posible confirmar la creación de la entrega.\n\n" +
+                        "La misma solicitud quedó protegida para que puedas reintentar sin duplicarla."
+                    );
+
+
+                } finally {
+
+                    // ========================================
+                    // SI NO HUBO ÉXITO CONFIRMADO,
+                    // PERMITIR REINTENTAR LA MISMA SOLICITUD.
+                    // ========================================
+
+                    if (
+                        !operacionExitosa &&
+                        panelCrearEntregaMass
+                            .isConnected
+                    ) {
+
+                        if (
+                            inputMontoEntregaFondosMass
+                        ) {
+
+                            inputMontoEntregaFondosMass
+                                .disabled =
+                                    false;
+                        }
+
+
+                        if (
+                            selectMetodoEntregaFondosMass
+                        ) {
+
+                            selectMetodoEntregaFondosMass
+                                .disabled =
+                                    false;
+                        }
+
+
+                        if (
+                            btnUsarTodoEntregaFondosMass
+                        ) {
+
+                            btnUsarTodoEntregaFondosMass
+                                .disabled =
+                                    false;
+                        }
+
+
+                        if (
+                            btnCerrarCrearEntregaFondosMass
+                        ) {
+
+                            btnCerrarCrearEntregaFondosMass
+                                .disabled =
+                                    false;
+                        }
+
+
+                        btnConfirmarCrearEntregaFondosMass
+                            .textContent =
+                                textoOriginalBoton;
+
+
+                        actualizarEstadoBotonCrearEntregaFondosMass();
+                    }
+                }
+            }
+        );
+}	
 
 
 // ============================================================
