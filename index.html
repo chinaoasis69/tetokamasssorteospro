@@ -26369,11 +26369,124 @@ const detalleMetodoEntregaFondosMass =
         "#detalleMetodoEntregaFondosMass"
     );
 
+const btnConfirmarCrearEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#btnConfirmarCrearEntregaFondosMass"
+    );	
+
 
 const btnCerrarCrearEntregaFondosMass =
     panelCrearEntregaMass.querySelector(
         "#btnCerrarCrearEntregaFondosMass"
     );
+
+// ============================================================
+// MASS - VALIDAR MONTO + MÉTODO PARA CREAR ENTREGA
+// TODAVÍA NO CREA NINGUNA ENTREGA
+// ============================================================
+
+const actualizarEstadoBotonCrearEntregaFondosMass =
+    () => {
+
+        if (
+            !inputMontoEntregaFondosMass ||
+            !selectMetodoEntregaFondosMass ||
+            !btnConfirmarCrearEntregaFondosMass
+        ) {
+
+            return;
+        }
+
+
+        const monto =
+            Number(
+                inputMontoEntregaFondosMass.value
+            );
+
+
+        const valorMetodo =
+            String(
+                selectMetodoEntregaFondosMass.value || ""
+            ).trim();
+
+
+        const indiceMetodo =
+            Number(
+                valorMetodo
+            );
+
+
+        const montoValido =
+            Number.isFinite(
+                monto
+            ) &&
+            monto > 0 &&
+            monto <= disponibleEntrega;
+
+
+        const metodoValido =
+            valorMetodo !== "" &&
+            Number.isInteger(
+                indiceMetodo
+            ) &&
+            indiceMetodo >= 0 &&
+            indiceMetodo <
+                metodosAutorizados.length;
+
+
+        const formularioValido =
+            montoValido &&
+            metodoValido;
+
+
+        btnConfirmarCrearEntregaFondosMass.disabled =
+            !formularioValido;
+
+
+        btnConfirmarCrearEntregaFondosMass.style.opacity =
+            formularioValido
+                ? "1"
+                : ".55";
+
+
+        btnConfirmarCrearEntregaFondosMass.style.cursor =
+            formularioValido
+                ? "pointer"
+                : "not-allowed";
+    };
+
+
+// ============================================================
+// MASS - REVALIDAR CUANDO CAMBIE EL MONTO
+// ============================================================
+
+if (inputMontoEntregaFondosMass) {
+
+    inputMontoEntregaFondosMass.addEventListener(
+        "input",
+        actualizarEstadoBotonCrearEntregaFondosMass
+    );
+}
+
+
+// ============================================================
+// MASS - REVALIDAR CUANDO CAMBIE EL MÉTODO
+// ============================================================
+
+if (selectMetodoEntregaFondosMass) {
+
+    selectMetodoEntregaFondosMass.addEventListener(
+        "change",
+        actualizarEstadoBotonCrearEntregaFondosMass
+    );
+}
+
+
+// ============================================================
+// MASS - ESTADO INICIAL
+// ============================================================
+
+actualizarEstadoBotonCrearEntregaFondosMass();					
 
 
 // ============================================================
@@ -26394,6 +26507,9 @@ if (
                     String(
                         disponibleEntrega
                     );
+
+				actualizarEstadoBotonCrearEntregaFondosMass();
+				
             }
         );
 }
