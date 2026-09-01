@@ -8465,71 +8465,127 @@ botonesConfirmarEfectivo.forEach(
                                             }
 
 
-                                            <div
-                                                style="
-                                                    margin-top:10px;
-                                                    color:${
-                                                        comprobante
-                                                            ?.objeto_existe ===
-                                                        true
+${
+    String(
+        entrega?.metodo?.categoria || ""
+    )
+        .trim()
+        .toLowerCase() === "efectivo"
 
-                                                            ? "#39ff14"
+    &&
 
-                                                            : "#aaa"
-                                                    };
-                                                    font-weight:bold;
-                                                "
-                                            >
+    String(
+        entrega?.metodo?.codigo || ""
+    )
+        .trim()
+        .toUpperCase() === "EFECTIVO_PUNTO_MASS"
 
-                                                ${
-                                                    comprobante
-                                                        ?.objeto_existe ===
-                                                    true
+    &&
 
-                                                        ? "✅ Comprobante privado archivado"
+    String(
+        entrega?.metodo?.destino_tipo || ""
+    )
+        .trim()
+        .toLowerCase() === "efectivo"
 
-                                                        : "Comprobante privado no disponible"
-                                                }
+        ? `
 
-                                            </div>
+            <div
+                style="
+                    margin-top:10px;
+                    padding:12px;
+                    border:1px solid rgba(57,255,20,.55);
+                    border-radius:10px;
+                    color:#39ff14;
+                    font-weight:bold;
+                    text-align:center;
+                "
+            >
+                💵 Entrega física de efectivo
+                <br>
 
-	                                                                      ${
-                                                comprobante
-                                                    ?.objeto_existe ===
-                                                true
+                <span
+                    style="
+                        color:#fff;
+                        font-size:12px;
+                        font-weight:normal;
+                    "
+                >
+                    No requiere comprobante privado.
+                </span>
+            </div>
 
-                                                    ? `
+        `
 
-                                                        <div
-                                                            style="
-                                                                margin-top:14px;
-                                                                text-align:center;
-                                                            "
-                                                        >
+        : `
 
-                                                            <button
-                                                                type="button"
-                                                                class="btnVerComprobanteHistorialFondosAdmin"
-                                                                data-entrega-id="${escaparHtml1(
-                                                                    entrega?.entrega_id ||
-                                                                    ""
-                                                                )}"
-                                                                style="
-                                                                    width:100%;
-                                                                    padding:12px 18px;
-                                                                    font-weight:bold;
-                                                                    cursor:pointer;
-                                                                "
-                                                            >
-                                                                🧾 Ver comprobante privado
-                                                            </button>
+            <div
+                style="
+                    margin-top:10px;
+                    color:${
+                        comprobante
+                            ?.objeto_existe ===
+                            true
+                                ? "#39ff14"
+                                : "#aaa"
+                    };
+                    font-weight:bold;
+                "
+            >
+                ${
+                    comprobante
+                        ?.objeto_existe ===
+                        true
+                            ? "✅ Comprobante privado archivado"
+                            : "Comprobante privado no disponible"
+                }
+            </div>
 
-                                                        </div>
 
-                                                    `
+            ${
+                comprobante
+                    ?.objeto_existe ===
+                    true
 
-                                                    : ""
-                                            } 
+                    ? `
+
+                        <div
+                            style="
+                                margin-top:14px;
+                                text-align:center;
+                            "
+                        >
+
+                            <button
+                                type="button"
+
+                                class="btnVerComprobanteHistorialFondosAdmin"
+
+                                data-entrega-id="${escaparHtml(
+                                    entrega?.entrega_id ||
+                                    ""
+                                )}"
+
+                                style="
+                                    width:100%;
+                                    padding:12px 18px;
+                                    font-weight:bold;
+                                    cursor:pointer;
+                                "
+                            >
+                                🧾 Ver comprobante privado
+                            </button>
+
+                        </div>
+
+                    `
+
+                    : ""
+            }
+
+        `
+}
+
 
                                         </div>
 
