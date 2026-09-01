@@ -26484,90 +26484,189 @@ if (
                         .trim()
                         .toUpperCase();
 
+			const categoriaMetodo =
+    String(
+        metodoSeleccionado
+            ?.metodo_categoria || ""
+    )
+        .trim()
+        .toLowerCase();
 
-                detalleMetodoEntregaFondosMass
-                    .innerHTML = `
+
+const codigoMetodo =
+    String(
+        metodoSeleccionado
+            ?.metodo_codigo || ""
+    )
+        .trim()
+        .toUpperCase();
+
+
+const esEntregaFisica =
+    categoriaMetodo === "efectivo" ||
+    codigoMetodo === "EFECTIVO_PUNTO_MASS";
+
+
+const nombrePuntoEntrega =
+    String(
+        resultadoMetodos
+            ?.punto_nombre || ""
+    ).trim();
+
+
+const nombreOrganizadorEntrega =
+    String(
+        resultadoMetodos
+            ?.organizador_nombre || ""
+    ).trim();	
+
+
+    detalleMetodoEntregaFondosMass
+    .innerHTML = `
+        <div>
+            <strong>Método:</strong>
+
+            ${escaparHtmlOperacion(
+                metodoSeleccionado
+                    ?.metodo_nombre ||
+                metodoSeleccionado
+                    ?.metodo_codigo ||
+                ""
+            )}
+        </div>
+
+
+        ${
+            esEntregaFisica
+                ? `
+                    <div
+                        style="
+                            margin-top:12px;
+                            padding:12px;
+                            border:1px solid #ffd700;
+                            border-radius:10px;
+                        "
+                    >
+
                         <div>
-                            <strong>Método:</strong>
+                            <strong>Punto MASS:</strong>
+
                             ${escaparHtmlOperacion(
-                                metodoSeleccionado
-                                    ?.metodo_nombre ||
-                                metodoSeleccionado
-                                    ?.metodo_codigo ||
-                                ""
+                                nombrePuntoEntrega
                             )}
                         </div>
 
-                        ${
-                            banco
-                                ? `
-                                    <div>
-                                        <strong>Banco:</strong>
-                                        ${escaparHtmlOperacion(
-                                            banco
-                                        )}
-                                    </div>
-                                `
-                                : ""
-                        }
 
-                        ${
+                        <div>
+                            <strong>Organizador:</strong>
+
+                            ${escaparHtmlOperacion(
+                                nombreOrganizadorEntrega
+                            )}
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:12px;
+                            "
+                        >
+                            💵 El efectivo será entregado
+                            físicamente al organizador
+                            en este Punto MASS.
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:8px;
+                            "
+                        >
+                            🔐 La entrega permanecerá
+                            pendiente hasta que el
+                            organizador confirme
+                            que recibió los fondos.
+                        </div>
+
+                    </div>
+                `
+                : `
+                    ${
+                        banco
+                            ? `
+                                <div>
+                                    <strong>Banco:</strong>
+
+                                    ${escaparHtmlOperacion(
+                                        banco
+                                    )}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        metodoSeleccionado
+                            ?.titular
+                            ? `
+                                <div>
+                                    <strong>Titular:</strong>
+
+                                    ${escaparHtmlOperacion(
+                                        metodoSeleccionado
+                                            .titular
+                                    )}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        metodoSeleccionado
+                            ?.destino_valor
+                            ? `
+                                <div>
+                                    <strong>
+                                        ${escaparHtmlOperacion(
+                                            destinoTipo ||
+                                            "Destino"
+                                        )}:
+                                    </strong>
+
+                                    ${escaparHtmlOperacion(
+                                        metodoSeleccionado
+                                            .destino_valor
+                                    )}
+                                </div>
+                            `
+                            : ""
+                    }
+                `
+        }
+
+
+        ${
+            metodoSeleccionado
+                ?.instrucciones
+                ? `
+                    <div
+                        style="
+                            margin-top:10px;
+                        "
+                    >
+                        <strong>Instrucciones:</strong><br>
+
+                        ${escaparHtmlOperacion(
                             metodoSeleccionado
-                                ?.titular
-                                ? `
-                                    <div>
-                                        <strong>Titular:</strong>
-                                        ${escaparHtmlOperacion(
-                                            metodoSeleccionado
-                                                .titular
-                                        )}
-                                    </div>
-                                `
-                                : ""
-                        }
-
-                        ${
-                            metodoSeleccionado
-                                ?.destino_valor
-                                ? `
-                                    <div>
-                                        <strong>
-                                            ${escaparHtmlOperacion(
-                                                destinoTipo ||
-                                                "Destino"
-                                            )}:
-                                        </strong>
-
-                                        ${escaparHtmlOperacion(
-                                            metodoSeleccionado
-                                                .destino_valor
-                                        )}
-                                    </div>
-                                `
-                                : ""
-                        }
-
-                        ${
-                            metodoSeleccionado
-                                ?.instrucciones
-                                ? `
-                                    <div
-                                        style="
-                                            margin-top:10px;
-                                        "
-                                    >
-                                        <strong>Instrucciones:</strong><br>
-
-                                        ${escaparHtmlOperacion(
-                                            metodoSeleccionado
-                                                .instrucciones
-                                        )}
-                                    </div>
-                                `
-                                : ""
-                        }
-                    `;
-
+                                .instrucciones
+                        )}
+                    </div>
+                `
+                : ""
+        }
+    `;           
 
                 detalleMetodoEntregaFondosMass
                     .style.display =
