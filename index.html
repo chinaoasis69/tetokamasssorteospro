@@ -26041,11 +26041,557 @@ botonesCrearEntregaFondosMass.forEach(
                     }
 
 
-                    alert(
-                        "✅ Métodos de entrega disponibles: " +
-                        metodosAutorizados.length +
-                        "."
+// ============================================================
+// MASS - VENTANA PARA PREPARAR ENTREGA DE FONDOS
+// TODAVÍA NO CREA LA ENTREGA
+// ============================================================
+
+const panelAnteriorCrearEntregaMass =
+    document.getElementById(
+        "panelCrearEntregaFondosMass"
+    );
+
+
+if (panelAnteriorCrearEntregaMass) {
+
+    panelAnteriorCrearEntregaMass.remove();
+}
+
+
+const panelCrearEntregaMass =
+    document.createElement(
+        "div"
+    );
+
+
+panelCrearEntregaMass.id =
+    "panelCrearEntregaFondosMass";
+
+
+panelCrearEntregaMass.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:100000;
+    background:rgba(0,0,0,0.96);
+    overflow-y:auto;
+    padding:25px 14px;
+`;
+
+
+document.body.appendChild(
+    panelCrearEntregaMass
+);
+
+
+const opcionesMetodosEntregaMass =
+    metodosAutorizados
+        .map(
+            (metodo, indiceMetodo) => {
+
+                const nombreMetodo =
+                    String(
+                        metodo?.metodo_nombre ||
+                        metodo?.metodo_codigo ||
+                        "Método de entrega"
+                    ).trim();
+
+
+                const bancoMetodo =
+                    String(
+                        metodo
+                            ?.datos_adicionales
+                            ?.banco || ""
+                    ).trim();
+
+
+                const etiquetaOpcion =
+                    bancoMetodo
+                        ? `${nombreMetodo} — ${bancoMetodo}`
+                        : nombreMetodo;
+
+
+                return `
+                    <option value="${indiceMetodo}">
+                        ${escaparHtmlOperacion(
+                            etiquetaOpcion
+                        )}
+                    </option>
+                `;
+            }
+        )
+        .join("");
+
+
+panelCrearEntregaMass.innerHTML = `
+    <div
+        style="
+            max-width:650px;
+            margin:0 auto;
+            padding:24px;
+            text-align:center;
+        "
+    >
+
+        <h2
+            style="
+                color:#ffd700;
+                margin-bottom:8px;
+            "
+        >
+            💰 Crear entrega de fondos
+        </h2>
+
+
+        <div
+            style="
+                margin-bottom:20px;
+                color:#fff;
+                font-weight:bold;
+            "
+        >
+            Disponible:
+            <span style="color:#39ff14;">
+                ${escaparHtmlOperacion(
+                    formatearMonto(
+                        disponibleEntrega
+                    )
+                )}
+                ${escaparHtmlOperacion(
+                    monedaEntrega
+                )}
+            </span>
+        </div>
+
+
+        <div
+            style="
+                border:2px solid #ffd700;
+                border-radius:14px;
+                padding:18px;
+                text-align:left;
+            "
+        >
+
+            <label
+                for="inputMontoEntregaFondosMass"
+                style="
+                    display:block;
+                    margin-bottom:8px;
+                    font-weight:bold;
+                "
+            >
+                Monto a entregar
+            </label>
+
+
+            <div
+                style="
+                    display:flex;
+                    gap:8px;
+                    align-items:center;
+                    margin-bottom:10px;
+                "
+            >
+
+                <input
+                    id="inputMontoEntregaFondosMass"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    max="${escaparHtmlOperacion(
+                        disponibleEntrega
+                    )}"
+                    inputmode="decimal"
+                    placeholder="Ingresa el monto"
+                    style="
+                        flex:1;
+                        min-width:0;
+                        padding:12px;
+                        box-sizing:border-box;
+                    "
+                >
+
+                <span
+                    style="
+                        font-weight:bold;
+                        white-space:nowrap;
+                    "
+                >
+                    ${escaparHtmlOperacion(
+                        monedaEntrega
+                    )}
+                </span>
+
+            </div>
+
+
+            <button
+                id="btnUsarTodoEntregaFondosMass"
+                type="button"
+                style="
+                    width:100%;
+                    padding:10px;
+                    margin-bottom:20px;
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                💯 Usar todo:
+                ${escaparHtmlOperacion(
+                    formatearMonto(
+                        disponibleEntrega
+                    )
+                )}
+                ${escaparHtmlOperacion(
+                    monedaEntrega
+                )}
+            </button>
+
+
+            <label
+                for="selectMetodoEntregaFondosMass"
+                style="
+                    display:block;
+                    margin-bottom:8px;
+                    font-weight:bold;
+                "
+            >
+                Método de entrega
+            </label>
+
+
+            <select
+                id="selectMetodoEntregaFondosMass"
+                style="
+                    width:100%;
+                    padding:12px;
+                    box-sizing:border-box;
+                    margin-bottom:16px;
+                "
+            >
+                <option value="">
+                    Selecciona un método
+                </option>
+
+                ${opcionesMetodosEntregaMass}
+
+            </select>
+
+
+            <div
+                id="detalleMetodoEntregaFondosMass"
+                style="
+                    display:none;
+                    margin-top:12px;
+                    padding:14px;
+                    border:1px solid #555;
+                    border-radius:10px;
+                    line-height:1.7;
+                    color:#fff;
+                "
+            ></div>
+
+
+            <button
+                id="btnConfirmarCrearEntregaFondosMass"
+                type="button"
+                disabled
+                style="
+                    width:100%;
+                    margin-top:18px;
+                    padding:12px;
+                    font-weight:bold;
+                    opacity:.55;
+                    cursor:not-allowed;
+                "
+            >
+                💰 Crear entrega
+            </button>
+
+
+            <div
+                style="
+                    margin-top:10px;
+                    color:#aaa;
+                    font-size:12px;
+                    text-align:center;
+                "
+            >
+                El botón final todavía está bloqueado
+                durante esta prueba.
+            </div>
+
+        </div>
+
+
+        <button
+            id="btnCerrarCrearEntregaFondosMass"
+            type="button"
+            style="
+                margin-top:20px;
+                padding:12px 24px;
+                border-radius:10px;
+                cursor:pointer;
+                font-weight:bold;
+            "
+        >
+            ✕ Cerrar
+        </button>
+
+    </div>
+`;
+
+
+// ============================================================
+// MASS - REFERENCIAS DE LA VENTANA
+// ============================================================
+
+const inputMontoEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#inputMontoEntregaFondosMass"
+    );
+
+
+const btnUsarTodoEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#btnUsarTodoEntregaFondosMass"
+    );
+
+
+const selectMetodoEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#selectMetodoEntregaFondosMass"
+    );
+
+
+const detalleMetodoEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#detalleMetodoEntregaFondosMass"
+    );
+
+
+const btnCerrarCrearEntregaFondosMass =
+    panelCrearEntregaMass.querySelector(
+        "#btnCerrarCrearEntregaFondosMass"
+    );
+
+
+// ============================================================
+// MASS - USAR TODO EL DISPONIBLE
+// ============================================================
+
+if (
+    inputMontoEntregaFondosMass &&
+    btnUsarTodoEntregaFondosMass
+) {
+
+    btnUsarTodoEntregaFondosMass
+        .addEventListener(
+            "click",
+            () => {
+
+                inputMontoEntregaFondosMass.value =
+                    String(
+                        disponibleEntrega
                     );
+            }
+        );
+}
+
+
+// ============================================================
+// MASS - MOSTRAR DETALLE DEL MÉTODO SELECCIONADO
+// ============================================================
+
+if (
+    selectMetodoEntregaFondosMass &&
+    detalleMetodoEntregaFondosMass
+) {
+
+    selectMetodoEntregaFondosMass
+        .addEventListener(
+            "change",
+            () => {
+
+      const valorMetodo =
+    String(
+        selectMetodoEntregaFondosMass.value || ""
+    ).trim();
+
+
+if (!valorMetodo) {
+
+    detalleMetodoEntregaFondosMass
+        .style.display =
+            "none";
+
+    detalleMetodoEntregaFondosMass
+        .innerHTML =
+            "";
+
+    return;
+}
+
+
+const indiceMetodo =
+    Number(
+        valorMetodo
+    );
+
+
+if (
+    !Number.isInteger(
+        indiceMetodo
+    ) ||
+	
+                    indiceMetodo < 0 ||
+                    indiceMetodo >=
+                        metodosAutorizados.length
+                ) {
+
+                    detalleMetodoEntregaFondosMass
+                        .style.display =
+                            "none";
+
+
+                    detalleMetodoEntregaFondosMass
+                        .innerHTML =
+                            "";
+
+                    return;
+                }
+
+
+                const metodoSeleccionado =
+                    metodosAutorizados[
+                        indiceMetodo
+                    ];
+
+
+                const banco =
+                    String(
+                        metodoSeleccionado
+                            ?.datos_adicionales
+                            ?.banco || ""
+                    ).trim();
+
+
+                const destinoTipo =
+                    String(
+                        metodoSeleccionado
+                            ?.destino_tipo || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                detalleMetodoEntregaFondosMass
+                    .innerHTML = `
+                        <div>
+                            <strong>Método:</strong>
+                            ${escaparHtmlOperacion(
+                                metodoSeleccionado
+                                    ?.metodo_nombre ||
+                                metodoSeleccionado
+                                    ?.metodo_codigo ||
+                                ""
+                            )}
+                        </div>
+
+                        ${
+                            banco
+                                ? `
+                                    <div>
+                                        <strong>Banco:</strong>
+                                        ${escaparHtmlOperacion(
+                                            banco
+                                        )}
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            metodoSeleccionado
+                                ?.titular
+                                ? `
+                                    <div>
+                                        <strong>Titular:</strong>
+                                        ${escaparHtmlOperacion(
+                                            metodoSeleccionado
+                                                .titular
+                                        )}
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            metodoSeleccionado
+                                ?.destino_valor
+                                ? `
+                                    <div>
+                                        <strong>
+                                            ${escaparHtmlOperacion(
+                                                destinoTipo ||
+                                                "Destino"
+                                            )}:
+                                        </strong>
+
+                                        ${escaparHtmlOperacion(
+                                            metodoSeleccionado
+                                                .destino_valor
+                                        )}
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                        ${
+                            metodoSeleccionado
+                                ?.instrucciones
+                                ? `
+                                    <div
+                                        style="
+                                            margin-top:10px;
+                                        "
+                                    >
+                                        <strong>Instrucciones:</strong><br>
+
+                                        ${escaparHtmlOperacion(
+                                            metodoSeleccionado
+                                                .instrucciones
+                                        )}
+                                    </div>
+                                `
+                                : ""
+                        }
+                    `;
+
+
+                detalleMetodoEntregaFondosMass
+                    .style.display =
+                        "block";
+            }
+        );
+}
+
+
+// ============================================================
+// MASS - CERRAR VENTANA
+// ============================================================
+
+if (btnCerrarCrearEntregaFondosMass) {
+
+    btnCerrarCrearEntregaFondosMass
+        .addEventListener(
+            "click",
+            () => {
+
+                panelCrearEntregaMass.remove();
+            }
+        );
+}        
 
 
                 } catch (errorPrepararEntrega) {
