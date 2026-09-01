@@ -27285,12 +27285,40 @@ if (btnConfirmarCrearEntregaFondosMass) {
                     );
 
 
-                    // ========================================
-                    // 7. RECARGAR PARA MOSTRAR
-                    //    SALDOS Y ENTREGA PENDIENTE REALES
-                    // ========================================
+// ========================================
+// 7. REFRESCAR EL MISMO PUNTO MASS
+//    SIN REGRESAR A LA PÁGINA PRINCIPAL
+// ========================================
 
-                    window.location.reload();
+if (
+    panelCrearEntregaMass &&
+    panelCrearEntregaMass.isConnected
+) {
+
+    panelCrearEntregaMass.remove();
+}
+
+
+try {
+
+    await mostrarOperacionPuntoMassOperador(
+        panel,
+        puntoSeleccionado
+    );
+
+} catch (errorRefrescarPuntoMass) {
+
+    console.error(
+        "ERROR REFRESCANDO EL PUNTO MASS DESPUÉS DE CREAR LA ENTREGA:",
+        errorRefrescarPuntoMass
+    );
+
+
+    alert(
+        "✅ La entrega fue creada correctamente, pero no fue posible refrescar automáticamente el Punto MASS.\n\n" +
+        "Puedes volver a entrar a MASS Punto Autorizado para consultar la entrega."
+    );
+}
 
 
                 } catch (errorCrearEntregaMass) {
@@ -27497,6 +27525,26 @@ if (btnCerrarCrearEntregaFondosMass) {
                                                 ? destinoTipo.toUpperCase()
                                                 : "Destino";
 
+	                              const categoriaMetodo =
+    String(
+        metodo?.categoria || ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+const codigoMetodo =
+    String(
+        metodo?.codigo || ""
+    )
+        .trim()
+        .toUpperCase();
+
+
+const esEntregaFisicaEfectivo =
+    categoriaMetodo === "efectivo" &&
+    codigoMetodo === "EFECTIVO_PUNTO_MASS";
+
 
                                     return `
 
@@ -27599,95 +27647,410 @@ if (btnCerrarCrearEntregaFondosMass) {
                                                 )}
                                             </div>
 
-	      <div
-    style="
-        margin-top:18px;
-        padding-top:16px;
-        border-top:1px solid #444;
-    "
->
+	${
+    esEntregaFisicaEfectivo
 
-    <div
-        style="
-            font-weight:bold;
-            margin-bottom:8px;
-        "
-    >
-        🧾 Comprobante de la entrega
-    </div>
+        ? `
+            <div
+                style="
+                    margin-top:18px;
+                    padding-top:16px;
+                    border-top:1px solid #444;
+                "
+            >
 
-
-    <div
-        style="
-            color:#aaa;
-            font-size:13px;
-            margin-bottom:12px;
-        "
-    >
-        Después de realizar la transferencia fuera de
-        TE-TO-KA MASS, podrás seleccionar aquí el
-        comprobante real.
-    </div>
+                <div
+                    style="
+                        font-weight:bold;
+                        margin-bottom:10px;
+                    "
+                >
+                    💵 Entrega física de efectivo
+                </div>
 
 
-    <input
-        type="file"
-        class="inputComprobanteEntregaFondosMass"
-        data-entrega-id="${escaparHtmlOperacion(
-            entrega?.entrega_id || ""
-        )}"
-        accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
-        style="
-            width:100%;
-            box-sizing:border-box;
-            margin-bottom:10px;
-        "
-    >
+                <div
+                    style="
+                        color:#fff;
+                        font-size:13px;
+                        line-height:1.6;
+                        margin-bottom:14px;
+                    "
+                >
+                    El efectivo será entregado físicamente
+                    al organizador en este Punto MASS.
+                </div>
 
 
-    <button
-        type="button"
-        class="btnSubirComprobanteEntregaFondosMass"
-        data-entrega-id="${escaparHtmlOperacion(
-            entrega?.entrega_id || ""
-        )}"
-        disabled
-        style="
-            width:100%;
-            padding:12px;
-            opacity:.55;
-            cursor:not-allowed;
-        "
-    >
-        🔒 Subir comprobante
-    </button>
+                <div
+                    style="
+                        color:#ffd700;
+                        font-size:13px;
+                        line-height:1.6;
+                        margin-bottom:14px;
+                    "
+                >
+                    🔒 Esta entrega permanecerá pendiente
+                    hasta que confirmes que entregaste
+                    físicamente los fondos.
+                </div>
 
 
-    <div
-	class="estadoComprobanteEntregaFondosMass"
-data-entrega-id="${escaparHtmlOperacion(
-    entrega?.entrega_id || ""
-)}"
-        style="
-            margin-top:9px;
-            color:#aaa;
-            font-size:12px;
-            text-align:center;
-        "
-    >
-        Puedes seleccionar el comprobante para validarlo.
-        La carga segura todavía permanece bloqueada.
+                <button
+                    type="button"
 
-    </div>
+                    class="btnMarcarEntregaEfectivoFondosMass"
 
-</div>
+                    data-entrega-id="${escaparHtmlOperacion(
+                        entrega?.entrega_id || ""
+                    )}"
 
+                    disabled
+
+                    style="
+                        width:100%;
+                        padding:12px;
+                        font-weight:bold;
+                        opacity:.55;
+                        cursor:not-allowed;
+                    "
+                >
+                    💵 Confirmar entrega física
+                </button>
+
+
+                <div
+                    style="
+                        margin-top:9px;
+                        color:#aaa;
+                        font-size:12px;
+                        text-align:center;
+                    "
+                >
+                    No se requiere comprobante para una
+                    entrega física en efectivo.
+                </div>
+
+            </div>
+        `
+
+        : `
+            <div
+                style="
+                    margin-top:18px;
+                    padding-top:16px;
+                    border-top:1px solid #444;
+                "
+            >
+
+                <div
+                    style="
+                        font-weight:bold;
+                        margin-bottom:8px;
+                    "
+                >
+                    🧾 Comprobante de la entrega
+                </div>
+
+
+                <div
+                    style="
+                        color:#aaa;
+                        font-size:13px;
+                        margin-bottom:12px;
+                    "
+                >
+                    Después de realizar la transferencia fuera de
+                    TE-TO-KA MASS, podrás seleccionar aquí el
+                    comprobante real.
+                </div>
+
+
+                <input
+                    type="file"
+
+                    class="inputComprobanteEntregaFondosMass"
+
+                    data-entrega-id="${escaparHtmlOperacion(
+                        entrega?.entrega_id || ""
+                    )}"
+
+                    accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        margin-bottom:10px;
+                    "
+                >
+
+
+                <button
+                    type="button"
+
+                    class="btnSubirComprobanteEntregaFondosMass"
+
+                    data-entrega-id="${escaparHtmlOperacion(
+                        entrega?.entrega_id || ""
+                    )}"
+
+                    disabled
+
+                    style="
+                        width:100%;
+                        padding:12px;
+                        opacity:.55;
+                        cursor:not-allowed;
+                    "
+                >
+                    🔒 Subir comprobante
+                </button>
+
+
+                <div
+                    class="estadoComprobanteEntregaFondosMass"
+
+                    data-entrega-id="${escaparHtmlOperacion(
+                        entrega?.entrega_id || ""
+                    )}"
+
+                    style="
+                        margin-top:9px;
+                        color:#aaa;
+                        font-size:12px;
+                        text-align:center;
+                    "
+                >
+                    Puedes seleccionar el comprobante para validarlo.
+                    La carga segura todavía permanece bloqueada.
+                </div>
+
+            </div>
+        `
+}
                                         </div>
                                     `;
 
                                 }
                             )
                             .join("");
+
+// ============================================================
+// MASS - ENTREGA FÍSICA DE EFECTIVO
+// OPERADOR CONFIRMA QUE YA ENTREGÓ LOS FONDOS
+// ============================================================
+
+const botonesEntregaFisicaEfectivo =
+    contenedorEntregas.querySelectorAll(
+        ".btnMarcarEntregaEfectivoFondosMass"
+    );
+
+
+botonesEntregaFisicaEfectivo.forEach(
+    (boton) => {
+
+        const entregaId =
+            String(
+                boton.dataset.entregaId || ""
+            ).trim();
+
+
+        // ====================================================
+        // SOLO HABILITAR SI TENEMOS UNA ENTREGA IDENTIFICABLE
+        // ====================================================
+
+        if (!entregaId) {
+
+            boton.disabled = true;
+
+            boton.style.opacity = ".55";
+
+            boton.style.cursor =
+                "not-allowed";
+
+            return;
+        }
+
+
+        boton.disabled = false;
+
+        boton.style.opacity = "1";
+
+        boton.style.cursor =
+            "pointer";
+
+
+        boton.addEventListener(
+            "click",
+            async () => {
+
+                if (boton.disabled) {
+
+                    return;
+                }
+
+
+                // ============================================
+                // CONFIRMACIÓN HUMANA OBLIGATORIA
+                // ============================================
+
+                const continuar =
+                    window.confirm(
+                        "Confirma únicamente si YA entregaste físicamente el efectivo al organizador en este Punto MASS.\n\n" +
+                        "Después de continuar, la entrega quedará esperando la confirmación del organizador."
+                    );
+
+
+                if (!continuar) {
+
+                    return;
+                }
+
+
+                const textoOriginal =
+                    boton.textContent;
+
+
+                boton.disabled = true;
+
+                boton.style.opacity =
+                    ".55";
+
+                boton.style.cursor =
+                    "not-allowed";
+
+                boton.textContent =
+                    "⏳ Registrando entrega física...";
+
+
+                try {
+
+                    // ========================================
+                    // RPC SEGURA EXCLUSIVA PARA EFECTIVO
+                    // ========================================
+
+                    const {
+                        data:
+                            respuestaEntregaFisica,
+
+                        error:
+                            errorEntregaFisica
+
+                    } = await supabaseClient.rpc(
+
+                        "marcar_entrega_fondos_efectivo_entregada_seguro",
+
+                        {
+                            p_entrega_id:
+                                entregaId
+                        }
+
+                    );
+
+
+                    if (errorEntregaFisica) {
+
+                        throw errorEntregaFisica;
+                    }
+
+
+                    const resultadoEntregaFisica =
+                        Array.isArray(
+                            respuestaEntregaFisica
+                        )
+                            ? respuestaEntregaFisica[0]
+                            : respuestaEntregaFisica;
+
+
+                    if (
+                        !resultadoEntregaFisica ||
+                        resultadoEntregaFisica.ok !==
+                            true
+                    ) {
+
+                        throw new Error(
+                            "La entrega física no devolvió una respuesta válida."
+                        );
+                    }
+
+
+                    const folio =
+                        String(
+                            resultadoEntregaFisica
+                                ?.folio || ""
+                        ).trim();
+
+
+                    alert(
+                        resultadoEntregaFisica
+                            ?.ya_entregada === true
+
+                            ? (
+                                "✅ Esta entrega física ya había sido registrada." +
+                                (
+                                    folio
+                                        ? "\n\nFolio: " +
+                                          folio
+                                        : ""
+                                )
+                              )
+
+                            : (
+                                "✅ Entrega física registrada correctamente." +
+                                (
+                                    folio
+                                        ? "\n\nFolio: " +
+                                          folio
+                                        : ""
+                                ) +
+                                "\n\nAhora queda pendiente la confirmación del organizador."
+                              )
+                    );
+
+
+                    // ========================================
+                    // REFRESCAR EL MISMO PUNTO MASS
+                    // ========================================
+
+                    await mostrarOperacionPuntoMassOperador(
+                        panel,
+                        puntoSeleccionado
+                    );
+
+
+                } catch (errorMarcarEntregaFisica) {
+
+                    console.error(
+                        "ERROR REGISTRANDO ENTREGA FÍSICA MASS:",
+                        errorMarcarEntregaFisica
+                    );
+
+
+                    alert(
+                        "❌ No fue posible registrar la entrega física.\n\n" +
+                        "No vuelvas a entregar el dinero hasta verificar el estado actual de esta entrega."
+                    );
+
+
+                    if (boton.isConnected) {
+
+                        boton.disabled =
+                            false;
+
+                        boton.style.opacity =
+                            "1";
+
+                        boton.style.cursor =
+                            "pointer";
+
+                        boton.textContent =
+                            textoOriginal;
+                    }
+                }
+            }
+        );
+    }
+);
 
                     // =================================================
                     // COMPROBANTE ENTREGA FONDOS MASS
