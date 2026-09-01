@@ -6482,16 +6482,52 @@ async function mostrarMisPuntosMassAdmin() {
                                 entrega => {
 
                                     const punto =
-                                        entrega?.punto_mass ||
-                                        {};
+    entrega?.punto_mass ||
+    {};
 
 
-                                    const comprobante =
-                                        entrega?.comprobante ||
-                                        {};
+const metodo =
+    entrega?.metodo ||
+    {};
 
 
-                                    return `
+const comprobante =
+    entrega?.comprobante ||
+    {};
+
+
+const categoriaMetodo =
+    String(
+        metodo?.categoria || ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+const codigoMetodo =
+    String(
+        metodo?.codigo || ""
+    )
+        .trim()
+        .toUpperCase();
+
+
+const destinoTipoMetodo =
+    String(
+        metodo?.destino_tipo || ""
+    )
+        .trim()
+        .toLowerCase();
+
+
+const esEntregaFisicaEfectivo =
+    categoriaMetodo === "efectivo" &&
+    codigoMetodo === "EFECTIVO_PUNTO_MASS" &&
+    destinoTipoMetodo === "efectivo";
+
+
+return `
+
 
                                         <div
                                             style="
@@ -6565,106 +6601,222 @@ async function mostrarMisPuntosMassAdmin() {
                                             </div>
 
 
-                                            <div
-                                                style="
-                                                    margin-top:10px;
-                                                    color:${
-                                                        comprobante
-                                                            ?.objeto_existe ===
-                                                        true
-                                                            ? "#39ff14"
-                                                            : "#ff8a8a"
-                                                    };
-                                                    font-weight:bold;
-                                                "
-                                            >
-                                                ${
-                                                    comprobante
-                                                        ?.objeto_existe ===
-                                                    true
-                                                        ? "✅ Comprobante privado disponible"
-                                                        : "❌ Comprobante privado no disponible"
-                                                }
-                                            </div>
-                                            ${
-                                                comprobante
-                                                    ?.objeto_existe ===
-                                                true
+${
+    esEntregaFisicaEfectivo
 
-                                                    ? `
+        ? `
 
-                                                        <div
-                                                            style="
-                                                                margin-top:14px;
-                                                                text-align:center;
-                                                            "
-                                                        >
+            <div
+                style="
+                    margin-top:12px;
+                    padding:14px;
+                    border:1px solid rgba(57,255,20,.55);
+                    border-radius:12px;
+                    background:#101010;
+                "
+            >
 
-                                                            <button
-                                                                type="button"
-                                                                class="btnVerComprobanteEntregaFondosAdmin"
-                                                                data-entrega-id="${escaparHtml(
-                                                                    entrega?.entrega_id ||
-                                                                    ""
-                                                                )}"
-                                                                style="
-                                                                    padding:12px 18px;
-                                                                    font-weight:bold;
-                                                                    cursor:pointer;
-                                                                "
-                                                            >
-                                                                🧾 Ver comprobante privado
-                                                            </button>
+                <div
+                    style="
+                        color:#39ff14;
+                        font-weight:bold;
+                        margin-bottom:10px;
+                    "
+                >
+                    💵 Entrega física de efectivo
+                </div>
 
-								<div
-    style="
-        margin-top:12px;
-    "
->
 
-    <button
-        type="button"
-        class="btnConfirmarRecepcionFondosAdmin"
-        data-entrega-id="${escaparHtml(
-            entrega?.entrega_id ||
-            ""
-        )}"
-        disabled
-        style="
-            width:100%;
-            padding:12px 18px;
-            font-weight:bold;
-            opacity:.55;
-            cursor:not-allowed;
-        "
-    >
-        🔒 Confirmar recepción de fondos
-    </button>
+                <div
+                    style="
+                        color:#fff;
+                        font-size:13px;
+                        line-height:1.6;
+                        margin-bottom:10px;
+                    "
+                >
+                    El operador registró que entregó físicamente
+                    estos fondos en el Punto MASS.
+                </div>
 
-    <div
-	   class="estadoConfirmarRecepcionFondosAdmin"
-data-entrega-id="${escaparHtml(
-    entrega?.entrega_id ||
-    ""
-)}"
-        style="
-            margin-top:8px;
-            color:#aaa;
-            font-size:12px;
-            text-align:center;
-        "
-    >
-        La confirmación permanecerá bloqueada
-        hasta validar la revisión del comprobante.
-    </div>
 
-</div>							
+                <div
+                    style="
+                        color:#ffd700;
+                        font-size:13px;
+                        line-height:1.6;
+                        margin-bottom:14px;
+                    "
+                >
+                    🔒 No se requiere comprobante privado.
+                    Confirma solamente después de verificar que
+                    recibiste físicamente el efectivo.
+                </div>
 
-                                                        </div>
-                                                    `
 
-                                                    : ""
-                                            }
+                <button
+                    type="button"
+                    class="btnConfirmarRecepcionEfectivoFondosAdmin"
+
+                    data-entrega-id="${escaparHtml(
+                        entrega?.entrega_id ||
+                        ""
+                    )}"
+
+                    disabled
+
+                    style="
+                        width:100%;
+                        padding:12px 18px;
+                        font-weight:bold;
+                        opacity:.55;
+                        cursor:not-allowed;
+                    "
+                >
+                    🔒 Confirmar recepción de efectivo
+                </button>
+
+
+                <div
+                    class="estadoConfirmarRecepcionEfectivoFondosAdmin"
+
+                    data-entrega-id="${escaparHtml(
+                        entrega?.entrega_id ||
+                        ""
+                    )}"
+
+                    style="
+                        margin-top:8px;
+                        color:#aaa;
+                        font-size:12px;
+                        text-align:center;
+                    "
+                >
+                    Verifica físicamente el efectivo antes
+                    de confirmar la recepción.
+                </div>
+
+            </div>
+
+        `
+
+        : `
+
+            <div
+                style="
+                    margin-top:10px;
+                    color:${
+                        comprobante
+                            ?.objeto_existe ===
+                        true
+                            ? "#39ff14"
+                            : "#ff8a8a"
+                    };
+                    font-weight:bold;
+                "
+            >
+                ${
+                    comprobante
+                        ?.objeto_existe ===
+                    true
+                        ? "✅ Comprobante privado disponible"
+                        : "❌ Comprobante privado no disponible"
+                }
+            </div>
+
+
+            ${
+                comprobante
+                    ?.objeto_existe ===
+                true
+
+                    ? `
+
+                        <div
+                            style="
+                                margin-top:14px;
+                                text-align:center;
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                class="btnVerComprobanteEntregaFondosAdmin"
+
+                                data-entrega-id="${escaparHtml(
+                                    entrega?.entrega_id ||
+                                    ""
+                                )}"
+
+                                style="
+                                    padding:12px 18px;
+                                    font-weight:bold;
+                                    cursor:pointer;
+                                "
+                            >
+                                🧾 Ver comprobante privado
+                            </button>
+
+
+                            <div
+                                style="
+                                    margin-top:12px;
+                                "
+                            >
+
+                                <button
+                                    type="button"
+                                    class="btnConfirmarRecepcionFondosAdmin"
+
+                                    data-entrega-id="${escaparHtml(
+                                        entrega?.entrega_id ||
+                                        ""
+                                    )}"
+
+                                    disabled
+
+                                    style="
+                                        width:100%;
+                                        padding:12px 18px;
+                                        font-weight:bold;
+                                        opacity:.55;
+                                        cursor:not-allowed;
+                                    "
+                                >
+                                    🔒 Confirmar recepción de fondos
+                                </button>
+
+
+                                <div
+                                    class="estadoConfirmarRecepcionFondosAdmin"
+
+                                    data-entrega-id="${escaparHtml(
+                                        entrega?.entrega_id ||
+                                        ""
+                                    )}"
+
+                                    style="
+                                        margin-top:8px;
+                                        color:#aaa;
+                                        font-size:12px;
+                                        text-align:center;
+                                    "
+                                >
+                                    La confirmación permanecerá bloqueada
+                                    hasta validar la revisión del comprobante.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    `
+
+                    : ""
+            }
+
+        `
+}
 	
 
                                         </div>
@@ -7055,6 +7207,395 @@ data-entrega-id="${escaparHtml(
 
                     }
                 );
+
+// =================================================
+// MASS - CONFIRMAR RECEPCIÓN DE EFECTIVO FÍSICO
+// ORGANIZADOR — ENTREGADA -> CONFIRMADA
+// SIN COMPROBANTE
+// =================================================
+
+const botonesConfirmarEfectivo =
+    contenedorEntregasPorConfirmar
+        .querySelectorAll(
+            ".btnConfirmarRecepcionEfectivoFondosAdmin"
+        );
+
+
+botonesConfirmarEfectivo.forEach(
+    botonConfirmarEfectivo => {
+
+        const entregaId =
+            String(
+                botonConfirmarEfectivo
+                    .dataset
+                    .entregaId ||
+                ""
+            ).trim();
+
+
+        const entregaActual =
+            entregas.find(
+                item =>
+                    String(
+                        item?.entrega_id ||
+                        ""
+                    ) ===
+                    entregaId
+            ) || null;
+
+
+        const metodoActual =
+            entregaActual?.metodo ||
+            {};
+
+
+        const categoriaActual =
+            String(
+                metodoActual?.categoria ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+        const codigoActual =
+            String(
+                metodoActual?.codigo ||
+                ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const destinoTipoActual =
+            String(
+                metodoActual?.destino_tipo ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+
+        const esEfectivoFisicoValido =
+            entregaActual &&
+            String(
+                entregaActual?.estado ||
+                ""
+            ) === "entregada" &&
+            categoriaActual === "efectivo" &&
+            codigoActual ===
+                "EFECTIVO_PUNTO_MASS" &&
+            destinoTipoActual ===
+                "efectivo";
+
+
+        // ============================================
+        // SOLO HABILITAR UNA ENTREGA FÍSICA VÁLIDA
+        // ============================================
+
+        if (
+            !entregaId ||
+            !esEfectivoFisicoValido
+        ) {
+
+            botonConfirmarEfectivo.disabled =
+                true;
+
+            botonConfirmarEfectivo.style.opacity =
+                ".55";
+
+            botonConfirmarEfectivo.style.cursor =
+                "not-allowed";
+
+            return;
+        }
+
+
+        botonConfirmarEfectivo.disabled =
+            false;
+
+        botonConfirmarEfectivo.style.opacity =
+            "1";
+
+        botonConfirmarEfectivo.style.cursor =
+            "pointer";
+
+        botonConfirmarEfectivo.textContent =
+            "✅ Confirmar recepción de efectivo";
+
+
+        botonConfirmarEfectivo.addEventListener(
+            "click",
+            async () => {
+
+                if (
+                    botonConfirmarEfectivo.disabled
+                ) {
+
+                    return;
+                }
+
+
+                const folio =
+                    String(
+                        entregaActual?.folio ||
+                        "—"
+                    );
+
+
+                const monto =
+                    String(
+                        entregaActual?.monto ??
+                        "—"
+                    );
+
+
+                const moneda =
+                    String(
+                        entregaActual
+                            ?.moneda_codigo ||
+                        ""
+                    );
+
+
+                // ====================================
+                // CONFIRMACIÓN HUMANA OBLIGATORIA
+                // ====================================
+
+                const continuar =
+                    window.confirm(
+
+                        "CONFIRMACIÓN DE RECEPCIÓN DE EFECTIVO MASS\n\n" +
+
+                        "Folio: " +
+                        folio +
+                        "\n" +
+
+                        "Monto: " +
+                        monto +
+                        " " +
+                        moneda +
+                        "\n\n" +
+
+                        "Confirma únicamente si YA recibiste físicamente este efectivo del Operador del Punto MASS.\n\n" +
+
+                        "Esta operación cambiará la entrega de ENTREGADA a CONFIRMADA."
+                    );
+
+
+                if (!continuar) {
+
+                    return;
+                }
+
+
+                const textoOriginal =
+                    botonConfirmarEfectivo
+                        .textContent;
+
+
+                botonConfirmarEfectivo.disabled =
+                    true;
+
+                botonConfirmarEfectivo.style.opacity =
+                    ".55";
+
+                botonConfirmarEfectivo.style.cursor =
+                    "not-allowed";
+
+                botonConfirmarEfectivo.textContent =
+                    "⏳ Confirmando recepción...";
+
+
+                let confirmacionCompletada =
+                    false;
+
+
+                try {
+
+                    // =================================
+                    // RPC EXCLUSIVA PARA EFECTIVO
+                    // =================================
+
+                    const {
+                        data:
+                            respuestaConfirmacionEfectivo,
+
+                        error:
+                            errorConfirmacionEfectivo
+
+                    } = await supabaseClient.rpc(
+
+                        "confirmar_entrega_fondos_efectivo_organizador_seguro",
+
+                        {
+                            p_entrega_id:
+                                entregaId
+                        }
+
+                    );
+
+
+                    if (
+                        errorConfirmacionEfectivo
+                    ) {
+
+                        throw errorConfirmacionEfectivo;
+                    }
+
+
+                    const resultadoConfirmacionEfectivo =
+                        Array.isArray(
+                            respuestaConfirmacionEfectivo
+                        )
+                            ? respuestaConfirmacionEfectivo[0]
+                            : respuestaConfirmacionEfectivo;
+
+
+                    if (
+                        !resultadoConfirmacionEfectivo ||
+                        resultadoConfirmacionEfectivo.ok !==
+                            true
+                    ) {
+
+                        throw new Error(
+                            "La confirmación de efectivo no devolvió una respuesta válida."
+                        );
+                    }
+
+
+                    const respuestaCoincide =
+                        String(
+                            resultadoConfirmacionEfectivo
+                                ?.entrega_id ||
+                            ""
+                        ) ===
+                            entregaId
+
+                        &&
+
+                        String(
+                            resultadoConfirmacionEfectivo
+                                ?.folio ||
+                            ""
+                        ) ===
+                            folio
+
+                        &&
+
+                        String(
+                            resultadoConfirmacionEfectivo
+                                ?.estado ||
+                            ""
+                        ) ===
+                            "confirmada";
+
+
+                    if (!respuestaCoincide) {
+
+                        throw new Error(
+                            "La respuesta no corresponde a la entrega seleccionada."
+                        );
+                    }
+
+
+                    confirmacionCompletada =
+                        true;
+
+
+                    alert(
+
+                        "✅ RECEPCIÓN DE EFECTIVO MASS CONFIRMADA\n\n" +
+
+                        "Folio: " +
+                        folio +
+                        "\n" +
+
+                        "Monto: " +
+                        monto +
+                        " " +
+                        moneda +
+                        "\n\n" +
+
+                        "Estado: CONFIRMADA\n\n" +
+
+                        (
+                            resultadoConfirmacionEfectivo
+                                ?.ya_confirmada ===
+                            true
+
+                                ? "Esta entrega ya se encontraba confirmada."
+                                : "La recepción física del efectivo quedó registrada correctamente."
+                        )
+                    );
+
+
+                    // =================================
+                    // REFRESCAR PANEL DEL ORGANIZADOR
+                    // =================================
+
+                    try {
+
+                        await mostrarMisPuntosMassAdmin();
+
+                    } catch (
+                        errorActualizarVistaEfectivo
+                    ) {
+
+                        console.error(
+                            "CONFIRMACIÓN DE EFECTIVO COMPLETADA, PERO FALLÓ LA ACTUALIZACIÓN DE LA VISTA:",
+                            errorActualizarVistaEfectivo
+                        );
+
+
+                        alert(
+                            "⚠️ La recepción SÍ quedó confirmada, pero no fue posible actualizar la pantalla.\n\n" +
+                            "Actualiza la página antes de realizar otra operación."
+                        );
+                    }
+
+
+                } catch (
+                    errorConfirmarEfectivo
+                ) {
+
+                    console.error(
+                        "ERROR CONFIRMANDO RECEPCIÓN DE EFECTIVO MASS:",
+                        errorConfirmarEfectivo
+                    );
+
+
+                    alert(
+                        "❌ No fue posible confirmar la recepción del efectivo.\n\n" +
+                        "No asumas que quedó confirmada hasta revisar nuevamente el estado."
+                    );
+
+
+                } finally {
+
+                    if (
+                        !confirmacionCompletada &&
+                        botonConfirmarEfectivo
+                            .isConnected
+                    ) {
+
+                        botonConfirmarEfectivo.disabled =
+                            false;
+
+                        botonConfirmarEfectivo.style.opacity =
+                            "1";
+
+                        botonConfirmarEfectivo.style.cursor =
+                            "pointer";
+
+                        botonConfirmarEfectivo.textContent =
+                            textoOriginal;
+                    }
+                }
+            }
+        );
+    }
+);	
 
                 // =================================================
                 // CONFIRMAR RECEPCIÓN DE FONDOS
