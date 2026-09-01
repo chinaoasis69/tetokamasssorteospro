@@ -25777,6 +25777,49 @@ function mostrarOperacionPuntoMassOperador(
                                             )}
                                         </div>
 
+	${
+    !saldoNegativo &&
+    Number(fondo?.disponible || 0) > 0
+
+        ? `
+            <div
+                style="
+                    grid-column:1 / -1;
+                    margin-top:14px;
+                    text-align:center;
+                "
+            >
+                <button
+                    type="button"
+                    class="btnCrearEntregaFondosMass"
+
+	                data-punto-mass-organizador-id="${escaparHtmlOperacion(
+                    puntoMassOrganizadorId
+                    )}"
+
+                    data-moneda="${escaparHtmlOperacion(
+                        moneda
+                    )}"
+                    data-disponible="${escaparHtmlOperacion(
+                        Number(
+                            fondo?.disponible || 0
+                        )
+                    )}"
+                    style="
+                        padding:12px 20px;
+                        font-weight:bold;
+                        cursor:pointer;
+                        border-radius:10px;
+                    "
+                >
+                    💰 Crear entrega de fondos
+                </button>
+            </div>
+        `
+
+        : ""
+}
+
                                     </div>
 
 
@@ -25803,7 +25846,239 @@ function mostrarOperacionPuntoMassOperador(
                     )
                     .join("");
 
-	            // =================================================
+// ============================================================
+// MASS - PREPARAR CREACIÓN DE ENTREGA DE FONDOS
+// PASO 1: CONSULTAR MÉTODOS AUTORIZADOS
+// ============================================================
+
+const botonesCrearEntregaFondosMass =
+    resumenFondos.querySelectorAll(
+        ".btnCrearEntregaFondosMass"
+    );
+
+
+botonesCrearEntregaFondosMass.forEach(
+    (boton) => {
+
+        boton.addEventListener(
+            "click",
+            async () => {
+
+                if (boton.disabled) {
+                    return;
+                }
+
+
+                const relacionId =
+                    String(
+                        boton.dataset
+                            .puntoMassOrganizadorId || ""
+                    ).trim();
+
+
+                const monedaEntrega =
+                    String(
+                        boton.dataset.moneda || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                const disponibleEntrega =
+                    Number(
+                        boton.dataset.disponible
+                    );
+
+
+                if (!relacionId) {
+
+                    alert(
+                        "❌ No fue posible identificar la relación Punto MASS + Organizador."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    !/^[A-Z]{3}$/.test(
+                        monedaEntrega
+                    )
+                ) {
+
+                    alert(
+                        "❌ No fue posible identificar la moneda de la entrega."
+                    );
+
+                    return;
+                }
+
+
+                if (
+                    !Number.isFinite(
+                        disponibleEntrega
+                    ) ||
+                    disponibleEntrega <= 0
+                ) {
+
+                    alert(
+                        "❌ No hay fondos disponibles para crear una entrega."
+                    );
+
+                    return;
+                }
+
+
+                const textoOriginal =
+                    boton.textContent;
+
+
+                boton.disabled =
+                    true;
+
+
+                boton.textContent =
+                    "⏳ Consultando métodos...";
+
+
+                try {
+
+                    const {
+                        data: respuestaMetodos,
+                        error: errorMetodos
+                    } = await supabaseClient.rpc(
+                        "listar_metodos_entrega_fondos_punto_mass_seguro",
+                        {
+                            p_punto_mass_organizador_id:
+                                relacionId
+                        }
+                    );
+
+
+                    if (errorMetodos) {
+
+                        throw errorMetodos;
+                    }
+
+
+                    const resultadoMetodos =
+                        Array.isArray(
+                            respuestaMetodos
+                        )
+                            ? respuestaMetodos[0]
+                            : respuestaMetodos;
+
+
+                    if (
+                        !resultadoMetodos ||
+                        resultadoMetodos.ok !== true
+                    ) {
+
+                        throw new Error(
+                            "La consulta de métodos de entrega no devolvió una respuesta válida."
+                        );
+                    }
+
+
+                    const metodosAutorizados =
+                        Array.isArray(
+                            resultadoMetodos.metodos
+                        )
+                            ? resultadoMetodos.metodos
+                                .filter(
+                                    (metodo) => {
+
+                                        const monedas =
+                                            Array.isArray(
+                                                metodo
+                                                    ?.monedas_aceptadas
+                                            )
+                                                ? metodo
+                                                    .monedas_aceptadas
+                                                : [];
+
+
+                                        return monedas
+                                            .map(
+                                                (codigo) =>
+                                                    String(
+                                                        codigo || ""
+                                                    )
+                                                        .trim()
+                                                        .toUpperCase()
+                                            )
+                                            .includes(
+                                                monedaEntrega
+                                            );
+                                    }
+                                )
+                            : [];
+
+
+                    console.log(
+                        "MASS - PREPARAR ENTREGA DE FONDOS:",
+                        {
+                            relacionId,
+                            monedaEntrega,
+                            disponibleEntrega,
+                            resultadoMetodos,
+                            metodosAutorizados
+                        }
+                    );
+
+
+                    if (
+                        metodosAutorizados.length === 0
+                    ) {
+
+                        alert(
+                            "⚠️ El organizador no tiene un método de entrega autorizado para " +
+                            monedaEntrega +
+                            "."
+                        );
+
+                        return;
+                    }
+
+
+                    alert(
+                        "✅ Métodos de entrega disponibles: " +
+                        metodosAutorizados.length +
+                        "."
+                    );
+
+
+                } catch (errorPrepararEntrega) {
+
+                    console.error(
+                        "ERROR PREPARANDO ENTREGA DE FONDOS MASS:",
+                        errorPrepararEntrega
+                    );
+
+
+                    alert(
+                        "❌ No fue posible consultar los métodos de entrega."
+                    );
+
+
+                } finally {
+
+                    if (boton.isConnected) {
+
+                        boton.disabled =
+                            false;
+
+
+                        boton.textContent =
+                            textoOriginal;
+                    }
+                }
+            }
+        );
+    }
+);
+
+	        // =================================================
             // MOSTRAR ENTREGAS PENDIENTES
             // =================================================
 
