@@ -44673,13 +44673,6 @@ await cargarSaldo();
 
 const org = mapaOrganizadores[rifa.organizador_id];
 
-if(org){
-  pintarMetodoPago("pagoZelle", org.zelle);
-pintarMetodoPago("pagoCashapp", org.cashapp);
-pintarMetodoPago("pagoApplePay", org.apple_pay);
-pintarMetodoPago("pagoPaypal", org.paypal);
-}
-
 document.getElementById("nombreOrganizadorSorteo").innerText =
 "👥 " + (org?.nombre_publico || org?.nombre || "");
 
