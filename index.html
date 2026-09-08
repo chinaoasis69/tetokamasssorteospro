@@ -21520,14 +21520,6 @@ const cfg = clienteActual || {};
 
 <input id="cfgWhatsapp" placeholder="WhatsApp"><br><br>
 
-<input id="cfgZelle" placeholder="Zelle"><br><br>
-
-<input id="cfgCashapp" placeholder="Cash App"><br><br>
-
-<input id="cfgApplePay" placeholder="Apple Pay"><br><br>
-
-<input id="cfgPaypal" placeholder="PayPal"><br><br>
-
 <label>📷 Logo del organizador</label><br>
 <input type="file" id="fileLogo" accept="image/*" onchange="subirImagenOrganizador('logo')"><br><br>
 
@@ -21558,11 +21550,6 @@ document.getElementById("cfgNombre").value =
   "";
 document.getElementById("cfgSlogan").value = cfg.slogan || "";
 document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
-document.getElementById("cfgZelle").value = cfg.zelle || "";
-document.getElementById("cfgCashapp").value = cfg.cashapp || "";
-document.getElementById("cfgApplePay").value = cfg.apple_pay || "";
-document.getElementById("cfgPaypal").value = cfg.paypal || "";
-
 document.getElementById("cfgLogoUrl").value = cfg.logo_url || "";
 document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
 document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";	
@@ -23956,10 +23943,6 @@ clienteActual = data;
       nombre: document.getElementById("cfgNombre").value.trim(),
       slogan: document.getElementById("cfgSlogan").value.trim(),
       whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
-      zelle: document.getElementById("cfgZelle").value.trim(),
-      cashapp: document.getElementById("cfgCashapp").value.trim(),
-      apple_pay: document.getElementById("cfgApplePay").value.trim(),
-      paypal: document.getElementById("cfgPaypal").value.trim(),
       logo_url: document.getElementById("cfgLogoUrl").value.trim(),
       banner_url: document.getElementById("cfgBannerUrl").value.trim(),
       color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
