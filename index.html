@@ -45074,21 +45074,6 @@ window.scrollTo({
 }
 }
 
-function pintarMetodoPago(id, valor) {
-  const span = document.getElementById(id);
-  if (!span) return;
-
-  const fila = span.closest("p");
-  if (!fila) return;
-
-  if (valor && valor.trim() !== "") {
-    span.textContent = valor;
-    fila.style.display = "block";
-  } else {
-    fila.style.display = "none";
-  }
-}
-
 function copiarPago(id, event) {
   const valor = document.getElementById(id)?.innerText?.trim();
 
