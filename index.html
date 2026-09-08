@@ -38409,11 +38409,6 @@ async function cargarClientePorId(clienteId){
     logo.src = data.logo_url;
     logo.style.display = "block";
   }
-
-  document.getElementById("pagoZelle").textContent = data.zelle || "--";
-  document.getElementById("pagoCashapp").textContent = data.cashapp || "--";
-  document.getElementById("pagoApplePay").textContent = data.apple_pay || "--";
-  document.getElementById("pagoPaypal").textContent = data.paypal || "--";
 }
 
 function mostrarPatrocinadorPlataforma(mostrar = true) {
