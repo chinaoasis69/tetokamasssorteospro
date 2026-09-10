@@ -15597,9 +15597,10 @@ if (soloLectura === true) {
 
                     <br><br>
 
-                    🔒 Las versiones publicadas
-                    forman parte del historial legal
-                    y son de solo lectura.
+                    🔒 Las versiones publicadas son oficiales,
+                        quedan protegidas contra modificaciones
+                        y se muestran en modo solo lectura
+                        para preservar su integridad.
 
                 </div>
 
@@ -23950,8 +23951,12 @@ async function activarRifaAdmin(id) {
     );
 
     alert(
-      "❌ No se pudo activar la rifa."
-    );
+    "❌ " +
+    (
+        errorActivar?.message ||
+        "No se puede activar esta dinámica porque todavía no tiene Reglas Oficiales publicadas. Crea y publica las Reglas Oficiales antes de activarla."
+    )
+);
 
     return;
   }
