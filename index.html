@@ -14614,6 +14614,10 @@ ${(
   👁️ Ver pre-sorteos
 </button>
 
+<button onclick="abrirReglasOficialesRifa('${r.id}', true)">
+  ⚖️ Ver Reglas Oficiales
+</button>	
+
 <button onclick="mostrarPatrocinadoresRifa('${r.id}', true)">
   👁️ Ver patrocinadores
 </button>
@@ -14732,7 +14736,11 @@ ${
 
 <button onclick="mostrarPreSorteosRifa('${r.id}')">
     🎉 Pre-sorteos
-</button>	
+</button>
+
+<button onclick="abrirReglasOficialesRifa('${r.id}')">
+  ⚖️ Reglas Oficiales
+</button>		   
 
 <button onclick="mostrarPatrocinadoresRifa('${r.id}')">
   🤝 Patrocinadores de esta rifa
@@ -14812,6 +14820,10 @@ ${
 <button onclick="mostrarPreSorteosRifa('${r.id}')">
     🎉 Pre-sorteos
 </button>
+
+<button onclick="abrirReglasOficialesRifa('${r.id}')">
+  ⚖️ Reglas Oficiales
+</button>	
 
 ${(
   String(r.metodo_sorteo || "")
@@ -15213,6 +15225,2782 @@ async function ejecutarRifaAleatoria(
     );
 
   }
+}
+
+// ============================================================
+// TE-TO-KA MASS SORTEOS PRO
+// REGLAS OFICIALES
+// PASO 19J-3
+//
+// FUNCIÓN PRINCIPAL DEL MÓDULO
+//
+// soloLectura = true
+//   -> solamente versiones PUBLICADAS
+//   -> usa RPC pública segura
+//
+// soloLectura = false
+//   -> panel administrativo
+//   -> usa RPC administrativa segura
+//
+// NO CONSULTA DIRECTAMENTE:
+//   public.rifa_reglas_oficiales
+// ============================================================
+
+async function abrirReglasOficialesRifa(
+    rifaId,
+    soloLectura = false
+) {
+
+    const cont =
+        document.getElementById("adminContenido");
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+
+    if (!cont || !rifaIdSeguro) {
+
+        alert(
+            "❌ No se encontró la dinámica seleccionada."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // UTILIDADES LOCALES
+    // ========================================================
+
+    const escaparHTML = (valor) => {
+
+        return String(
+            valor ?? ""
+        )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
+
+    const formatearFecha = (valor) => {
+
+        if (!valor) {
+            return "—";
+        }
+
+        const fecha =
+            new Date(valor);
+
+        if (
+            Number.isNaN(
+                fecha.getTime()
+            )
+        ) {
+            return escaparHTML(valor);
+        }
+
+        return fecha.toLocaleString(
+            "es-MX"
+        );
+    };
+
+
+    // ========================================================
+    // PANTALLA DE CARGA
+    // ========================================================
+
+    cont.innerHTML = `
+        <h3>⚖️ Reglas Oficiales</h3>
+
+        <p>
+            Cargando Reglas Oficiales...
+        </p>
+    `;
+
+
+    try {
+
+
+        // ====================================================
+        // A. SOLO LECTURA
+        //
+        // Para dinámicas protegidas/finalizadas.
+        // Solamente consulta PUBLICACIONES.
+        // ====================================================
+
+        if (soloLectura === true) {
+
+            const {
+                data,
+                error
+            } = await supabaseClient.rpc(
+                "obtener_reglas_oficiales_publicas_seguras",
+                {
+                    p_rifa_id:
+                        rifaIdSeguro
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    "Error cargando Reglas Oficiales públicas:",
+                    error
+                );
+
+                cont.innerHTML = `
+                    <h3>
+                        ⚖️ Reglas Oficiales — Solo lectura
+                    </h3>
+
+                    <p>
+                        ❌ No fue posible consultar
+                        las Reglas Oficiales.
+                    </p>
+
+                    <button
+                        onclick="mostrarSorteosAdmin()"
+                    >
+                        ⬅️ Volver a sorteos
+                    </button>
+                `;
+
+                return;
+            }
+
+
+            const documentos =
+                Array.isArray(data)
+                    ? data
+                    : [];
+
+
+            if (
+                documentos.length === 0
+            ) {
+
+                cont.innerHTML = `
+                    <h3>
+                        ⚖️ Reglas Oficiales — Solo lectura
+                    </h3>
+
+                    <button
+                        onclick="mostrarSorteosAdmin()"
+                    >
+                        ⬅️ Volver a sorteos
+                    </button>
+
+                    <div
+                        style="
+                            margin-top:15px;
+                            padding:14px;
+                            border:1px solid #475569;
+                            border-radius:10px;
+                            background:#111827;
+                        "
+                    >
+                        🔒
+                        <strong>
+                            Expediente protegido
+                        </strong>
+
+                        <br><br>
+
+                        Esta dinámica no tiene
+                        Reglas Oficiales publicadas
+                        dentro del nuevo sistema
+                        de versionado legal.
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            const dinamicaTitulo =
+                documentos[0]
+                    ?.dinamica_titulo_actual
+                || "Dinámica";
+
+            const organizadorNombre =
+                documentos[0]
+                    ?.organizador_nombre_actual
+                || "Organizador";
+
+
+            const historialHTML =
+                documentos
+                .map(
+                    documento => {
+
+                        return `
+                            <div
+                                style="
+                                    margin-top:15px;
+                                    padding:16px;
+                                    border:1px solid #475569;
+                                    border-radius:12px;
+                                    background:#111827;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        font-weight:bold;
+                                        margin-bottom:8px;
+                                    "
+                                >
+                                    🔒
+                                    ${escaparHTML(
+                                        documento.titulo
+                                        || "Reglas Oficiales"
+                                    )}
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-bottom:8px;
+                                    "
+                                >
+                                    Versión:
+                                    <strong>
+                                        ${Number(
+                                            documento.version
+                                            || 0
+                                        )}
+                                    </strong>
+                                </div>
+
+                                <div
+                                    style="
+                                        margin-bottom:12px;
+                                    "
+                                >
+                                    Publicada:
+                                    ${formatearFecha(
+                                        documento.publicada_en
+                                    )}
+                                </div>
+
+                                <div
+                                    style="
+                                        white-space:pre-wrap;
+                                        overflow-wrap:anywhere;
+                                        padding:14px;
+                                        border-radius:8px;
+                                        background:#0f172a;
+                                        line-height:1.55;
+                                    "
+                                >${escaparHTML(
+                                    documento.contenido
+                                    || ""
+                                )}</div>
+
+                            </div>
+                        `;
+                    }
+                )
+                .join("");
+
+
+            cont.innerHTML = `
+
+                <h3>
+                    ⚖️ Reglas Oficiales — Solo lectura
+                </h3>
+
+                <button
+                    onclick="mostrarSorteosAdmin()"
+                >
+                    ⬅️ Volver a sorteos
+                </button>
+
+                <div
+                    style="
+                        margin-top:14px;
+                        padding:12px;
+                        border-radius:10px;
+                        background:#111827;
+                    "
+                >
+
+                    <strong>
+                        ${escaparHTML(
+                            dinamicaTitulo
+                        )}
+                    </strong>
+
+                    <br>
+
+                    Organizador:
+                    ${escaparHTML(
+                        organizadorNombre
+                    )}
+
+                    <br><br>
+
+                    🔒 Las versiones publicadas
+                    forman parte del historial legal
+                    y son de solo lectura.
+
+                </div>
+
+                ${historialHTML}
+            `;
+
+
+            return;
+        }
+
+
+        // ====================================================
+        // B. MODO ADMINISTRATIVO
+        //
+        // Consulta historial completo autorizado.
+        // ====================================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_reglas_oficiales_admin_seguro",
+            {
+                p_rifa_id:
+                    rifaIdSeguro
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "Error cargando Reglas Oficiales administrativas:",
+                error
+            );
+
+            cont.innerHTML = `
+                <h3>
+                    ⚖️ Reglas Oficiales
+                </h3>
+
+                <p>
+                    ❌ No fue posible cargar
+                    el expediente de Reglas Oficiales.
+                </p>
+
+                <button
+                    onclick="mostrarSorteosAdmin()"
+                >
+                    ⬅️ Volver a sorteos
+                </button>
+            `;
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        if (
+            respuesta.ok !== true
+        ) {
+
+            console.error(
+                "Respuesta inválida de Reglas Oficiales:",
+                respuesta
+            );
+
+            cont.innerHTML = `
+                <h3>
+                    ⚖️ Reglas Oficiales
+                </h3>
+
+                <p>
+                    ❌ Supabase no devolvió
+                    un expediente válido.
+                </p>
+
+                <button
+                    onclick="mostrarSorteosAdmin()"
+                >
+                    ⬅️ Volver a sorteos
+                </button>
+            `;
+
+            return;
+        }
+
+
+        const documentos =
+            Array.isArray(
+                respuesta.documentos
+            )
+                ? respuesta.documentos
+                : [];
+
+	// ========================================================
+// CONTROLES ADMINISTRATIVOS DE REGLAS OFICIALES
+// ========================================================
+
+const borradorActual =
+    documentos.find(
+        documento =>
+            documento.estado === "borrador"
+    ) || null;
+
+
+let accionesAdminHTML = "";
+
+
+if (
+    respuesta.puede_crear_primer_borrador === true
+) {
+
+    accionesAdminHTML = `
+        <div
+            style="
+                margin-top:15px;
+                padding:14px;
+                border:1px solid #475569;
+                border-radius:10px;
+                background:#111827;
+            "
+        >
+            <strong>
+                📝 Crear Reglas Oficiales
+            </strong>
+
+            <br><br>
+
+            Esta dinámica todavía no tiene
+            Reglas Oficiales.
+
+            <br><br>
+
+            <button
+                onclick="abrirEditorReglasOficiales(
+                    '${rifaIdSeguro}'
+                )"
+            >
+                ⚖️ Crear primer borrador
+            </button>
+        </div>
+    `;
+
+}
+
+
+else if (
+    borradorActual
+) {
+
+    accionesAdminHTML = `
+        <div
+            style="
+                margin-top:15px;
+                padding:14px;
+                border:1px solid #475569;
+                border-radius:10px;
+                background:#111827;
+            "
+        >
+            <strong>
+                📝 Borrador actual
+            </strong>
+
+            <br><br>
+
+            Versión:
+            <strong>
+                ${Number(
+                    borradorActual.version || 0
+                )}
+            </strong>
+
+            <br><br>
+
+            <button
+                onclick="abrirEditorReglasOficiales(
+                    '${rifaIdSeguro}',
+                    '${borradorActual.regla_id}'
+                )"
+            >
+                ✏️ Editar borrador
+            </button>
+
+            ${
+                borradorActual.puede_publicar === true
+                    ? `
+                        <button
+                            onclick="publicarReglasOficialesUI(
+                                '${rifaIdSeguro}',
+                                '${borradorActual.regla_id}'
+                            )"
+                        >
+                            📢 Publicar
+                        </button>
+                    `
+                    : ""
+            }
+
+            ${
+                borradorActual.puede_eliminar === true
+                    ? `
+                        <button
+                            onclick="eliminarBorradorReglasOficialesUI(
+                                '${rifaIdSeguro}',
+                                '${borradorActual.regla_id}'
+                            )"
+                            style="
+                                background:#a30000;
+                                color:white;
+                            "
+                        >
+                            🗑️ Eliminar borrador
+                        </button>
+                    `
+                    : ""
+            }
+        </div>
+    `;
+
+}
+
+
+else if (
+    respuesta.puede_crear_nueva_version === true
+) {
+
+    accionesAdminHTML = `
+        <div
+            style="
+                margin-top:15px;
+                padding:14px;
+                border:1px solid #475569;
+                border-radius:10px;
+                background:#111827;
+            "
+        >
+            🔒 La versión publicada permanece
+            protegida e inmutable.
+
+            <br><br>
+
+            <button
+                onclick="crearNuevaVersionReglasOficialesUI(
+                    '${rifaIdSeguro}'
+                )"
+            >
+                ➕ Crear nueva versión
+            </button>
+        </div>
+    `;
+
+}
+
+
+        const documentosHTML =
+            documentos.length === 0
+
+                ? `
+                    <div
+                        style="
+                            margin-top:15px;
+                            padding:14px;
+                            border:1px solid #475569;
+                            border-radius:10px;
+                            background:#111827;
+                        "
+                    >
+                        Todavía no existen
+                        Reglas Oficiales para
+                        esta dinámica.
+                    </div>
+                `
+
+                : documentos
+                    .map(
+                        documento => {
+
+                            const publicada =
+                                documento.estado
+                                === "publicada";
+
+                            const estadoTexto =
+                                publicada
+                                    ? "🔒 PUBLICADA"
+                                    : "📝 BORRADOR";
+
+                            return `
+                                <div
+                                    style="
+                                        margin-top:15px;
+                                        padding:16px;
+                                        border:1px solid #475569;
+                                        border-radius:12px;
+                                        background:#111827;
+                                    "
+                                >
+
+                                    <strong>
+                                        ${escaparHTML(
+                                            documento.titulo
+                                            || "Reglas Oficiales"
+                                        )}
+                                    </strong>
+
+                                    <br><br>
+
+                                    ${estadoTexto}
+
+                                    <br>
+
+                                    Versión:
+                                    <strong>
+                                        ${Number(
+                                            documento.version
+                                            || 0
+                                        )}
+                                    </strong>
+
+                                    <br>
+
+                                    Modo:
+                                    ${escaparHTML(
+                                        documento.modo_creacion
+                                        || ""
+                                    )}
+
+                                    <br>
+
+                                    Creada:
+                                    ${formatearFecha(
+                                        documento.creada_en
+                                    )}
+
+                                    <br>
+
+                                    Actualizada:
+                                    ${formatearFecha(
+                                        documento.actualizada_en
+                                    )}
+
+                                    ${
+                                        publicada
+                                            ? `
+                                                <br>
+                                                Publicada:
+                                                ${formatearFecha(
+                                                    documento.publicada_en
+                                                )}
+                                            `
+                                            : ""
+                                    }
+
+                                    <div
+                                        style="
+                                            margin-top:12px;
+                                            white-space:pre-wrap;
+                                            overflow-wrap:anywhere;
+                                            padding:12px;
+                                            border-radius:8px;
+                                            background:#0f172a;
+                                            line-height:1.5;
+                                        "
+                                    >${escaparHTML(
+                                        documento.contenido
+                                        || ""
+                                    )}</div>
+
+                                </div>
+                            `;
+                        }
+                    )
+                    .join("");
+
+
+        cont.innerHTML = `
+
+            <h3>
+                ⚖️ Reglas Oficiales
+            </h3>
+
+            <button
+                onclick="mostrarSorteosAdmin()"
+            >
+                ⬅️ Volver a sorteos
+            </button>
+
+            <div
+                style="
+                    margin-top:14px;
+                    padding:14px;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <strong>
+                    ${escaparHTML(
+                        respuesta.dinamica_titulo
+                        || "Dinámica"
+                    )}
+                </strong>
+
+                <br>
+
+                Organizador:
+                ${escaparHTML(
+                    respuesta.organizador_nombre
+                    || ""
+                )}
+
+                <br>
+
+                Estado de la dinámica:
+                ${escaparHTML(
+                    respuesta.estado_dinamica
+                    || ""
+                )}
+
+                <br><br>
+
+                Versiones:
+                <strong>
+                    ${Number(
+                        respuesta.total_versiones
+                        || 0
+                    )}
+                </strong>
+
+                <br>
+
+                Publicada:
+                ${
+                    respuesta.tiene_publicada
+                    === true
+                        ? "✅ Sí"
+                        : "❌ No"
+                }
+
+                <br>
+
+                Borrador actual:
+                ${
+                    respuesta.tiene_borrador
+                    === true
+                        ? "📝 Sí"
+                        : "— No"
+                }
+
+            </div>
+
+			${accionesAdminHTML}
+
+            ${documentosHTML}
+        `;
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INESPERADO EN REGLAS OFICIALES:",
+            error
+        );
+
+
+        cont.innerHTML = `
+            <h3>
+                ⚖️ Reglas Oficiales
+            </h3>
+
+            <p>
+                ❌ Ocurrió un error inesperado
+                al abrir las Reglas Oficiales.
+            </p>
+
+            <button
+                onclick="mostrarSorteosAdmin()"
+            >
+                ⬅️ Volver a sorteos
+            </button>
+        `;
+    }
+}
+
+// ============================================================
+// TE-TO-KA MASS SORTEOS PRO
+// REGLAS OFICIALES
+// PASO 19J-5
+//
+// EDITOR SEGURO DE REGLAS OFICIALES
+//
+// SOPORTA:
+//   - Plantilla guiada MASS
+//   - Texto personalizado
+//   - Crear primer borrador
+//   - Editar borrador existente
+//   - Vista previa
+//   - Guardar mediante RPC segura
+//
+// NO CONSULTA NI ESCRIBE DIRECTAMENTE:
+//   public.rifa_reglas_oficiales
+// ============================================================
+
+
+async function abrirEditorReglasOficiales(
+    rifaId,
+    reglaId = null
+) {
+
+    const cont =
+        document.getElementById("adminContenido");
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+    let reglaIdSeguro =
+        String(reglaId || "").trim();
+
+
+    if (!cont || !rifaIdSeguro) {
+
+        alert(
+            "❌ No se encontró la dinámica seleccionada."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // ESCAPE LOCAL PARA MOSTRAR DATOS EN HTML
+    // ========================================================
+
+    const escaparHTML = (valor) => {
+
+        return String(
+            valor ?? ""
+        )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    };
+
+
+    // ========================================================
+    // CARGANDO
+    // ========================================================
+
+    cont.innerHTML = `
+        <h3>
+            ⚖️ Editor de Reglas Oficiales
+        </h3>
+
+        <p>
+            Cargando expediente...
+        </p>
+    `;
+
+
+    try {
+
+        // ====================================================
+        // CONSULTAR EXPEDIENTE ADMINISTRATIVO
+        // ====================================================
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_reglas_oficiales_admin_seguro",
+            {
+                p_rifa_id:
+                    rifaIdSeguro
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "Error cargando expediente para edición:",
+                error
+            );
+
+            alert(
+                "❌ No fue posible cargar las Reglas Oficiales.\n\n" +
+                (
+                    error.message ||
+                    "Error desconocido."
+                )
+            );
+
+            await abrirReglasOficialesRifa(
+                rifaIdSeguro,
+                false
+            );
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        if (
+            respuesta.ok !== true
+        ) {
+
+            alert(
+                "❌ Supabase no devolvió un expediente válido."
+            );
+
+            await abrirReglasOficialesRifa(
+                rifaIdSeguro,
+                false
+            );
+
+            return;
+        }
+
+
+        const documentos =
+            Array.isArray(
+                respuesta.documentos
+            )
+                ? respuesta.documentos
+                : [];
+
+
+        // ====================================================
+        // LOCALIZAR BORRADOR
+        // ====================================================
+
+        let borradorActual = null;
+
+
+        if (reglaIdSeguro) {
+
+            borradorActual =
+                documentos.find(
+                    documento =>
+                        String(
+                            documento.regla_id || ""
+                        ) === reglaIdSeguro
+                ) || null;
+
+
+            if (
+                !borradorActual ||
+                borradorActual.estado !== "borrador"
+            ) {
+
+                alert(
+                    "🔒 La versión seleccionada ya no es un borrador editable."
+                );
+
+                await abrirReglasOficialesRifa(
+                    rifaIdSeguro,
+                    false
+                );
+
+                return;
+            }
+
+        } else {
+
+            // Si la pantalla estaba desactualizada y ya existe
+            // un borrador, lo recuperamos en vez de crear otro.
+
+            borradorActual =
+                documentos.find(
+                    documento =>
+                        documento.estado === "borrador"
+                ) || null;
+
+
+            if (borradorActual) {
+
+                reglaIdSeguro =
+                    String(
+                        borradorActual.regla_id || ""
+                    ).trim();
+            }
+        }
+
+
+        // ====================================================
+        // VALORES INICIALES
+        // ====================================================
+
+        const modosPermitidos =
+            [
+                "plantilla_guiada",
+                "texto_personalizado"
+            ];
+
+
+        const modoActual =
+            modosPermitidos.includes(
+                borradorActual?.modo_creacion
+            )
+                ? borradorActual.modo_creacion
+                : "plantilla_guiada";
+
+
+        const tituloActual =
+            String(
+                borradorActual?.titulo ||
+                "Reglas Oficiales"
+            );
+
+
+        const contenidoActual =
+            String(
+                borradorActual?.contenido ||
+                ""
+            );
+
+
+        const datosPlantilla =
+            (
+                borradorActual?.datos_plantilla &&
+                typeof borradorActual.datos_plantilla === "object" &&
+                !Array.isArray(
+                    borradorActual.datos_plantilla
+                )
+            )
+                ? borradorActual.datos_plantilla
+                : {};
+
+
+        const dinamicaTitulo =
+            String(
+                respuesta.dinamica_titulo ||
+                "Dinámica"
+            );
+
+
+        const organizadorNombre =
+            String(
+                respuesta.organizador_nombre ||
+                "Organizador"
+            );
+
+
+        const valorDato =
+            (nombre) => {
+
+                return String(
+                    datosPlantilla?.[nombre] ||
+                    ""
+                );
+            };
+
+
+        // ====================================================
+        // CONSTRUIR EDITOR
+        // ====================================================
+
+        cont.innerHTML = `
+
+            <h3>
+                ⚖️ Editor de Reglas Oficiales
+            </h3>
+
+            <button
+                onclick="abrirReglasOficialesRifa(
+                    '${rifaIdSeguro}'
+                )"
+            >
+                ⬅️ Volver al expediente
+            </button>
+
+
+            <div
+                style="
+                    margin-top:15px;
+                    padding:14px;
+                    border:1px solid #475569;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <strong>
+                    ${escaparHTML(
+                        dinamicaTitulo
+                    )}
+                </strong>
+
+                <br>
+
+                Organizador:
+                ${escaparHTML(
+                    organizadorNombre
+                )}
+
+                <br>
+
+                ${
+                    borradorActual
+                        ? `
+                            Versión:
+                            <strong>
+                                ${Number(
+                                    borradorActual.version || 1
+                                )}
+                            </strong>
+
+                            <br>
+
+                            Estado:
+                            📝 BORRADOR
+                        `
+                        : `
+                            Nueva versión:
+                            <strong>
+                                1
+                            </strong>
+
+                            <br>
+
+                            Estado:
+                            📝 NUEVO BORRADOR
+                        `
+                }
+
+            </div>
+
+
+            <input
+                type="hidden"
+                id="reglasEditorDinamica"
+                value="${escaparHTML(
+                    dinamicaTitulo
+                )}"
+            >
+
+            <input
+                type="hidden"
+                id="reglasEditorOrganizador"
+                value="${escaparHTML(
+                    organizadorNombre
+                )}"
+            >
+
+
+            <div
+                style="
+                    margin-top:15px;
+                    padding:14px;
+                    border:1px solid #475569;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <label
+                    for="reglasModoCreacion"
+                >
+                    <strong>
+                        Forma de creación
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <select
+                    id="reglasModoCreacion"
+                    onchange="cambiarModoReglasOficialesEditor()"
+                    style="
+                        width:100%;
+                        max-width:500px;
+                        padding:10px;
+                    "
+                >
+
+                    <option
+                        value="plantilla_guiada"
+                        ${
+                            modoActual ===
+                            "plantilla_guiada"
+                                ? "selected"
+                                : ""
+                        }
+                    >
+                        🧭 Plantilla guiada MASS
+                    </option>
+
+                    <option
+                        value="texto_personalizado"
+                        ${
+                            modoActual ===
+                            "texto_personalizado"
+                                ? "selected"
+                                : ""
+                        }
+                    >
+                        ✍️ Texto personalizado
+                    </option>
+
+                </select>
+
+
+                <br><br>
+
+
+                <label
+                    for="reglasTitulo"
+                >
+                    <strong>
+                        Título del documento
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <input
+                    id="reglasTitulo"
+                    type="text"
+                    maxlength="250"
+                    value="${escaparHTML(
+                        tituloActual
+                    )}"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >
+
+            </div>
+
+
+            <!-- =============================================
+                 PLANTILLA GUIADA MASS
+                 ============================================= -->
+
+            <div
+                id="reglasPanelPlantilla"
+                style="
+                    margin-top:15px;
+                    padding:14px;
+                    border:1px solid #475569;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <h4>
+                    🧭 Plantilla guiada MASS
+                </h4>
+
+                <p>
+                    Completa los campos y MASS construirá
+                    el documento final de manera estructurada.
+                </p>
+
+
+                <label>
+                    <strong>
+                        1. Premio u objeto de la dinámica
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaPremio"
+                    rows="3"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "premio"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        2. Quién puede participar / elegibilidad
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaElegibilidad"
+                    rows="3"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "elegibilidad"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        3. Periodo o vigencia de participación
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaPeriodo"
+                    rows="3"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "periodo"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        4. Mecánica / forma de participación
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaMecanica"
+                    rows="4"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "mecanica"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        5. Método de selección del ganador
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaSeleccion"
+                    rows="4"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "seleccion_ganador"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        6. Entrega o reclamación del premio
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaEntrega"
+                    rows="4"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "entrega_premio"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        7. Restricciones / causas de descalificación
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaRestricciones"
+                    rows="4"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "restricciones"
+                    )
+                )}</textarea>
+
+
+                <br><br>
+
+
+                <label>
+                    <strong>
+                        8. Información adicional
+                    </strong>
+                </label>
+
+                <br><br>
+
+                <textarea
+                    id="reglasPlantillaAdicional"
+                    rows="4"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:10px;
+                    "
+                >${escaparHTML(
+                    valorDato(
+                        "informacion_adicional"
+                    )
+                )}</textarea>
+
+            </div>
+
+
+            <!-- =============================================
+                 TEXTO PERSONALIZADO
+                 ============================================= -->
+
+            <div
+                id="reglasPanelTexto"
+                style="
+                    display:none;
+                    margin-top:15px;
+                    padding:14px;
+                    border:1px solid #475569;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <h4>
+                    ✍️ Texto personalizado
+                </h4>
+
+                <p>
+                    Escribe o pega directamente
+                    las Reglas Oficiales completas.
+                </p>
+
+                <textarea
+                    id="reglasContenidoPersonalizado"
+                    rows="20"
+                    oninput="actualizarVistaPreviaReglasOficiales()"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:12px;
+                        line-height:1.5;
+                    "
+                >${escaparHTML(
+                    contenidoActual
+                )}</textarea>
+
+            </div>
+
+
+            <!-- =============================================
+                 VISTA PREVIA
+                 ============================================= -->
+
+            <div
+                style="
+                    margin-top:15px;
+                    padding:14px;
+                    border:1px solid #475569;
+                    border-radius:10px;
+                    background:#111827;
+                "
+            >
+
+                <h4>
+                    👁️ Vista previa
+                </h4>
+
+                <div
+                    id="reglasVistaPrevia"
+                    style="
+                        white-space:pre-wrap;
+                        overflow-wrap:anywhere;
+                        padding:14px;
+                        border-radius:8px;
+                        background:#0f172a;
+                        line-height:1.55;
+                    "
+                ></div>
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:15px;
+                "
+            >
+
+                <button
+                    id="btnGuardarReglasOficiales"
+                    onclick="guardarReglasOficialesDesdeEditor(
+                        '${rifaIdSeguro}',
+                        '${reglaIdSeguro}'
+                    )"
+                >
+                    💾 Guardar borrador
+                </button>
+
+                <button
+                    onclick="abrirReglasOficialesRifa(
+                        '${rifaIdSeguro}'
+                    )"
+                >
+                    ❌ Cancelar
+                </button>
+
+            </div>
+        `;
+
+
+        cambiarModoReglasOficialesEditor();
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR ABRIENDO EDITOR DE REGLAS OFICIALES:",
+            error
+        );
+
+        alert(
+            "❌ Ocurrió un error inesperado al abrir el editor.\n\n" +
+            (
+                error instanceof Error
+                    ? error.message
+                    : "Error desconocido."
+            )
+        );
+
+        await abrirReglasOficialesRifa(
+            rifaIdSeguro,
+            false
+        );
+    }
+}
+
+
+// ============================================================
+// CAMBIAR ENTRE:
+//   - PLANTILLA GUIADA
+//   - TEXTO PERSONALIZADO
+// ============================================================
+
+function cambiarModoReglasOficialesEditor() {
+
+    const selector =
+        document.getElementById(
+            "reglasModoCreacion"
+        );
+
+    const panelPlantilla =
+        document.getElementById(
+            "reglasPanelPlantilla"
+        );
+
+    const panelTexto =
+        document.getElementById(
+            "reglasPanelTexto"
+        );
+
+
+    if (
+        !selector ||
+        !panelPlantilla ||
+        !panelTexto
+    ) {
+        return;
+    }
+
+
+    const modo =
+        String(
+            selector.value || ""
+        );
+
+
+    panelPlantilla.style.display =
+        modo === "plantilla_guiada"
+            ? "block"
+            : "none";
+
+
+    panelTexto.style.display =
+        modo === "texto_personalizado"
+            ? "block"
+            : "none";
+
+
+    actualizarVistaPreviaReglasOficiales();
+}
+
+
+// ============================================================
+// LEER CAMPO
+// ============================================================
+
+function obtenerValorCampoReglasOficiales(
+    id
+) {
+
+    return String(
+        document.getElementById(id)
+            ?.value || ""
+    ).trim();
+}
+
+
+// ============================================================
+// GENERAR DOCUMENTO DESDE PLANTILLA GUIADA
+// ============================================================
+
+function generarContenidoPlantillaReglasOficiales() {
+
+    const dinamica =
+        obtenerValorCampoReglasOficiales(
+            "reglasEditorDinamica"
+        );
+
+    const organizador =
+        obtenerValorCampoReglasOficiales(
+            "reglasEditorOrganizador"
+        );
+
+    const premio =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaPremio"
+        );
+
+    const elegibilidad =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaElegibilidad"
+        );
+
+    const periodo =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaPeriodo"
+        );
+
+    const mecanica =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaMecanica"
+        );
+
+    const seleccion =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaSeleccion"
+        );
+
+    const entrega =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaEntrega"
+        );
+
+    const restricciones =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaRestricciones"
+        );
+
+    const adicional =
+        obtenerValorCampoReglasOficiales(
+            "reglasPlantillaAdicional"
+        );
+
+
+    const partes = [
+
+        "REGLAS OFICIALES",
+
+        dinamica
+            ? `Dinámica: ${dinamica}`
+            : "",
+
+        organizador
+            ? `Organizador: ${organizador}`
+            : "",
+
+        premio
+            ? `1. PREMIO U OBJETO DE LA DINÁMICA\n${premio}`
+            : "",
+
+        elegibilidad
+            ? `2. ELEGIBILIDAD\n${elegibilidad}`
+            : "",
+
+        periodo
+            ? `3. PERIODO DE PARTICIPACIÓN\n${periodo}`
+            : "",
+
+        mecanica
+            ? `4. MECÁNICA DE PARTICIPACIÓN\n${mecanica}`
+            : "",
+
+        seleccion
+            ? `5. SELECCIÓN DEL GANADOR\n${seleccion}`
+            : "",
+
+        entrega
+            ? `6. ENTREGA O RECLAMACIÓN DEL PREMIO\n${entrega}`
+            : "",
+
+        restricciones
+            ? `7. RESTRICCIONES Y DESCALIFICACIÓN\n${restricciones}`
+            : "",
+
+        adicional
+            ? `8. INFORMACIÓN ADICIONAL\n${adicional}`
+            : "",
+
+        "9. ACEPTACIÓN DE LAS REGLAS\nLa participación en esta dinámica implica la aceptación de las Reglas Oficiales publicadas para la misma."
+
+    ];
+
+
+    return partes
+        .filter(Boolean)
+        .join("\n\n");
+}
+
+
+// ============================================================
+// VISTA PREVIA
+// ============================================================
+
+function actualizarVistaPreviaReglasOficiales() {
+
+    const vista =
+        document.getElementById(
+            "reglasVistaPrevia"
+        );
+
+    const selector =
+        document.getElementById(
+            "reglasModoCreacion"
+        );
+
+
+    if (!vista || !selector) {
+        return;
+    }
+
+
+    const modo =
+        String(
+            selector.value || ""
+        );
+
+
+    let contenido = "";
+
+
+    if (
+        modo === "plantilla_guiada"
+    ) {
+
+        contenido =
+            generarContenidoPlantillaReglasOficiales();
+
+    } else {
+
+        contenido =
+            obtenerValorCampoReglasOficiales(
+                "reglasContenidoPersonalizado"
+            );
+    }
+
+
+    vista.textContent =
+        contenido ||
+        "Completa la información para generar la vista previa.";
+}
+
+
+// ============================================================
+// GUARDAR BORRADOR
+//
+// SIN reglaId:
+//   -> crear_borrador_reglas_oficiales_seguro()
+//
+// CON reglaId:
+//   -> guardar_borrador_reglas_oficiales_seguro()
+//
+// ============================================================
+
+async function guardarReglasOficialesDesdeEditor(
+    rifaId,
+    reglaId = null
+) {
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+    const reglaIdSeguro =
+        String(reglaId || "").trim();
+
+
+    if (!rifaIdSeguro) {
+
+        alert(
+            "❌ No se encontró la dinámica."
+        );
+
+        return;
+    }
+
+
+    const modo =
+        obtenerValorCampoReglasOficiales(
+            "reglasModoCreacion"
+        );
+
+    const titulo =
+        obtenerValorCampoReglasOficiales(
+            "reglasTitulo"
+        );
+
+
+    if (
+        ![
+            "plantilla_guiada",
+            "texto_personalizado"
+        ].includes(modo)
+    ) {
+
+        alert(
+            "❌ Selecciona una forma válida de creación."
+        );
+
+        return;
+    }
+
+
+    if (!titulo) {
+
+        alert(
+            "❌ Escribe el título de las Reglas Oficiales."
+        );
+
+        return;
+    }
+
+
+    let contenido = "";
+
+    let datosPlantilla = null;
+
+
+    // ========================================================
+    // PLANTILLA GUIADA
+    // ========================================================
+
+    if (
+        modo === "plantilla_guiada"
+    ) {
+
+        const premio =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaPremio"
+            );
+
+        const elegibilidad =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaElegibilidad"
+            );
+
+        const periodo =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaPeriodo"
+            );
+
+        const mecanica =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaMecanica"
+            );
+
+        const seleccion =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaSeleccion"
+            );
+
+        const entrega =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaEntrega"
+            );
+
+        const restricciones =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaRestricciones"
+            );
+
+        const adicional =
+            obtenerValorCampoReglasOficiales(
+                "reglasPlantillaAdicional"
+            );
+
+
+        if (
+            !premio ||
+            !elegibilidad ||
+            !periodo ||
+            !mecanica ||
+            !seleccion ||
+            !entrega
+        ) {
+
+            alert(
+                "⚠️ Para guardar la Plantilla guiada MASS completa:\n\n" +
+                "Debes llenar los campos 1 al 6."
+            );
+
+            return;
+        }
+
+
+        datosPlantilla = {
+
+            version_plantilla:
+                1,
+
+            premio:
+                premio,
+
+            elegibilidad:
+                elegibilidad,
+
+            periodo:
+                periodo,
+
+            mecanica:
+                mecanica,
+
+            seleccion_ganador:
+                seleccion,
+
+            entrega_premio:
+                entrega,
+
+            restricciones:
+                restricciones,
+
+            informacion_adicional:
+                adicional
+
+        };
+
+
+        contenido =
+            generarContenidoPlantillaReglasOficiales();
+    }
+
+
+    // ========================================================
+    // TEXTO PERSONALIZADO
+    // ========================================================
+
+    else {
+
+        contenido =
+            obtenerValorCampoReglasOficiales(
+                "reglasContenidoPersonalizado"
+            );
+
+
+        if (!contenido) {
+
+            alert(
+                "❌ Escribe el contenido de las Reglas Oficiales."
+            );
+
+            return;
+        }
+
+
+        datosPlantilla = null;
+    }
+
+
+    // ========================================================
+    // BLOQUEAR DOBLE CLIC
+    // ========================================================
+
+    const boton =
+        document.getElementById(
+            "btnGuardarReglasOficiales"
+        );
+
+
+    if (boton?.disabled) {
+        return;
+    }
+
+
+    if (boton) {
+
+        boton.disabled = true;
+
+        boton.textContent =
+            "⏳ Guardando...";
+    }
+
+
+    try {
+
+        let data;
+        let error;
+
+
+        // ====================================================
+        // EDITAR BORRADOR EXISTENTE
+        // ====================================================
+
+        if (reglaIdSeguro) {
+
+            ({
+                data,
+                error
+            } = await supabaseClient.rpc(
+                "guardar_borrador_reglas_oficiales_seguro",
+                {
+                    p_regla_id:
+                        reglaIdSeguro,
+
+                    p_rifa_id:
+                        rifaIdSeguro,
+
+                    p_modo_creacion:
+                        modo,
+
+                    p_titulo:
+                        titulo,
+
+                    p_contenido:
+                        contenido,
+
+                    p_datos_plantilla:
+                        datosPlantilla
+                }
+            ));
+
+        }
+
+
+        // ====================================================
+        // CREAR PRIMER BORRADOR
+        // ====================================================
+
+        else {
+
+            ({
+                data,
+                error
+            } = await supabaseClient.rpc(
+                "crear_borrador_reglas_oficiales_seguro",
+                {
+                    p_rifa_id:
+                        rifaIdSeguro,
+
+                    p_modo_creacion:
+                        modo,
+
+                    p_titulo:
+                        titulo,
+
+                    p_contenido:
+                        contenido,
+
+                    p_datos_plantilla:
+                        datosPlantilla
+                }
+            ));
+        }
+
+
+        if (error) {
+
+            console.error(
+                "Error guardando Reglas Oficiales:",
+                error
+            );
+
+            alert(
+                "❌ No fue posible guardar el borrador.\n\n" +
+                (
+                    error.message ||
+                    "Error desconocido."
+                )
+            );
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        if (
+            respuesta.ok !== true
+        ) {
+
+            console.error(
+                "Respuesta inválida al guardar Reglas Oficiales:",
+                respuesta
+            );
+
+            alert(
+                "❌ Supabase no confirmó el guardado del borrador."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ " +
+            (
+                respuesta.mensaje ||
+                "Borrador de Reglas Oficiales guardado correctamente."
+            )
+        );
+
+
+        await abrirReglasOficialesRifa(
+            rifaIdSeguro,
+            false
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INESPERADO GUARDANDO REGLAS OFICIALES:",
+            error
+        );
+
+        alert(
+            "❌ Ocurrió un error inesperado al guardar.\n\n" +
+            (
+                error instanceof Error
+                    ? error.message
+                    : "Error desconocido."
+            )
+        );
+
+
+    } finally {
+
+        const botonActual =
+            document.getElementById(
+                "btnGuardarReglasOficiales"
+            );
+
+
+        if (botonActual) {
+
+            botonActual.disabled = false;
+
+            botonActual.textContent =
+                "💾 Guardar borrador";
+        }
+    }
+}
+
+// ============================================================
+// TE-TO-KA MASS SORTEOS PRO
+// REGLAS OFICIALES
+// PASO 19J-6A
+//
+// PUBLICAR BORRADOR DE REGLAS OFICIALES
+//
+// USA EXCLUSIVAMENTE:
+//   publicar_reglas_oficiales_seguro()
+//
+// UNA VEZ PUBLICADA:
+//   - queda inmutable en PostgreSQL
+//   - ya no puede editarse
+//   - ya no puede eliminarse
+// ============================================================
+
+async function publicarReglasOficialesUI(
+    rifaId,
+    reglaId
+) {
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+    const reglaIdSeguro =
+        String(reglaId || "").trim();
+
+
+    if (
+        !rifaIdSeguro ||
+        !reglaIdSeguro
+    ) {
+
+        alert(
+            "❌ No se encontró el borrador que deseas publicar."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            "⚠️ PUBLICAR REGLAS OFICIALES\n\n" +
+            "Una vez publicada esta versión quedará protegida e inmutable.\n\n" +
+            "Ya no podrá editarse ni eliminarse.\n\n" +
+            "¿Deseas continuar?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "publicar_reglas_oficiales_seguro",
+            {
+                p_regla_id:
+                    reglaIdSeguro,
+
+                p_rifa_id:
+                    rifaIdSeguro,
+
+                p_confirmar:
+                    true
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "Error publicando Reglas Oficiales:",
+                error
+            );
+
+            alert(
+                "❌ No fue posible publicar las Reglas Oficiales.\n\n" +
+                (
+                    error.message ||
+                    "Error desconocido."
+                )
+            );
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        if (
+            respuesta.ok !== true ||
+            respuesta.estado !== "publicada"
+        ) {
+
+            console.error(
+                "Respuesta inválida al publicar Reglas Oficiales:",
+                respuesta
+            );
+
+            alert(
+                "❌ Supabase no confirmó correctamente la publicación."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ Reglas Oficiales publicadas correctamente.\n\n" +
+            "Versión: " +
+            Number(
+                respuesta.version || 0
+            ) +
+            "\n\n🔒 Esta versión queda protegida e inmutable."
+        );
+
+
+        await abrirReglasOficialesRifa(
+            rifaIdSeguro,
+            false
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INESPERADO PUBLICANDO REGLAS OFICIALES:",
+            error
+        );
+
+        alert(
+            "❌ Ocurrió un error inesperado al publicar.\n\n" +
+            (
+                error instanceof Error
+                    ? error.message
+                    : "Error desconocido."
+            )
+        );
+    }
+}
+
+// ============================================================
+// TE-TO-KA MASS SORTEOS PRO
+// REGLAS OFICIALES
+// PASO 19J-6B
+//
+// ELIMINAR EXCLUSIVAMENTE UN BORRADOR
+//
+// USA:
+//   eliminar_borrador_reglas_oficiales_seguro()
+//
+// PROTECCIÓN:
+//   - requiere confirmación
+//   - exige rifa + regla
+//   - solamente permite BORRADOR
+//   - una versión PUBLICADA no puede eliminarse
+// ============================================================
+
+async function eliminarBorradorReglasOficialesUI(
+    rifaId,
+    reglaId
+) {
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+    const reglaIdSeguro =
+        String(reglaId || "").trim();
+
+
+    if (
+        !rifaIdSeguro ||
+        !reglaIdSeguro
+    ) {
+
+        alert(
+            "❌ No se encontró el borrador que deseas eliminar."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            "⚠️ ELIMINAR BORRADOR DE REGLAS OFICIALES\n\n" +
+            "Esta operación eliminará únicamente este BORRADOR.\n\n" +
+            "Las versiones publicadas permanecen protegidas e inmutables.\n\n" +
+            "¿Deseas continuar?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    // ========================================================
+    // EVITAR DOBLE EJECUCIÓN
+    // ========================================================
+
+    if (
+        !(window.MASS_REGLAS_OPERACIONES_EN_CURSO instanceof Set)
+    ) {
+
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO =
+            new Set();
+    }
+
+
+    const claveOperacion =
+        `eliminar:${rifaIdSeguro}:${reglaIdSeguro}`;
+
+
+    if (
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO.has(
+            claveOperacion
+        )
+    ) {
+        return;
+    }
+
+
+    window.MASS_REGLAS_OPERACIONES_EN_CURSO.add(
+        claveOperacion
+    );
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "eliminar_borrador_reglas_oficiales_seguro",
+            {
+                p_regla_id:
+                    reglaIdSeguro,
+
+                p_rifa_id:
+                    rifaIdSeguro,
+
+                p_confirmar:
+                    true
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "Error eliminando borrador de Reglas Oficiales:",
+                error
+            );
+
+            alert(
+                "❌ No fue posible eliminar el borrador.\n\n" +
+                (
+                    error.message ||
+                    "Error desconocido."
+                )
+            );
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        if (
+            respuesta.ok !== true ||
+            respuesta.eliminado !== true
+        ) {
+
+            console.error(
+                "Respuesta inválida al eliminar borrador:",
+                respuesta
+            );
+
+            alert(
+                "❌ Supabase no confirmó correctamente la eliminación del borrador."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ " +
+            (
+                respuesta.mensaje ||
+                "Borrador de Reglas Oficiales eliminado correctamente."
+            )
+        );
+
+
+        await abrirReglasOficialesRifa(
+            rifaIdSeguro,
+            false
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INESPERADO ELIMINANDO BORRADOR DE REGLAS OFICIALES:",
+            error
+        );
+
+        alert(
+            "❌ Ocurrió un error inesperado al eliminar el borrador.\n\n" +
+            (
+                error instanceof Error
+                    ? error.message
+                    : "Error desconocido."
+            )
+        );
+
+
+    } finally {
+
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO.delete(
+            claveOperacion
+        );
+    }
+}
+
+// ============================================================
+// TE-TO-KA MASS SORTEOS PRO
+// REGLAS OFICIALES
+// PASO 19J-6C
+//
+// CREAR NUEVA VERSIÓN DE REGLAS OFICIALES
+//
+// USA EXCLUSIVAMENTE:
+//   crear_nueva_version_reglas_oficiales_seguro()
+//
+// FUNCIONAMIENTO:
+//   - conserva intacta la versión publicada
+//   - crea una copia como nuevo BORRADOR
+//   - incrementa automáticamente la versión
+//   - abre inmediatamente el nuevo borrador en el editor
+// ============================================================
+
+async function crearNuevaVersionReglasOficialesUI(
+    rifaId
+) {
+
+    const rifaIdSeguro =
+        String(rifaId || "").trim();
+
+
+    if (!rifaIdSeguro) {
+
+        alert(
+            "❌ No se encontró la dinámica."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        confirm(
+            "➕ CREAR NUEVA VERSIÓN DE REGLAS OFICIALES\n\n" +
+            "La versión actualmente publicada permanecerá protegida e inmutable.\n\n" +
+            "Se creará una copia como nuevo BORRADOR para que puedas modificarla.\n\n" +
+            "¿Deseas continuar?"
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    // ========================================================
+    // EVITAR DOBLE EJECUCIÓN
+    // ========================================================
+
+    if (
+        !(window.MASS_REGLAS_OPERACIONES_EN_CURSO instanceof Set)
+    ) {
+
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO =
+            new Set();
+    }
+
+
+    const claveOperacion =
+        `nueva-version:${rifaIdSeguro}`;
+
+
+    if (
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO.has(
+            claveOperacion
+        )
+    ) {
+        return;
+    }
+
+
+    window.MASS_REGLAS_OPERACIONES_EN_CURSO.add(
+        claveOperacion
+    );
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "crear_nueva_version_reglas_oficiales_seguro",
+            {
+                p_rifa_id:
+                    rifaIdSeguro
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "Error creando nueva versión de Reglas Oficiales:",
+                error
+            );
+
+            alert(
+                "❌ No fue posible crear la nueva versión.\n\n" +
+                (
+                    error.message ||
+                    "Error desconocido."
+                )
+            );
+
+            return;
+        }
+
+
+        const respuesta =
+            data || {};
+
+
+        const nuevaReglaId =
+            String(
+                respuesta.regla_id || ""
+            ).trim();
+
+
+        if (
+            respuesta.ok !== true ||
+            respuesta.estado !== "borrador" ||
+            !nuevaReglaId
+        ) {
+
+            console.error(
+                "Respuesta inválida creando nueva versión:",
+                respuesta
+            );
+
+            alert(
+                "❌ Supabase no confirmó correctamente la creación de la nueva versión."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "✅ Nueva versión creada correctamente.\n\n" +
+            "Versión: " +
+            Number(
+                respuesta.version || 0
+            ) +
+            "\n\n📝 La nueva versión está en estado BORRADOR."
+        );
+
+
+        await abrirEditorReglasOficiales(
+            rifaIdSeguro,
+            nuevaReglaId
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INESPERADO CREANDO NUEVA VERSIÓN DE REGLAS OFICIALES:",
+            error
+        );
+
+        alert(
+            "❌ Ocurrió un error inesperado al crear la nueva versión.\n\n" +
+            (
+                error instanceof Error
+                    ? error.message
+                    : "Error desconocido."
+            )
+        );
+
+
+    } finally {
+
+        window.MASS_REGLAS_OPERACIONES_EN_CURSO.delete(
+            claveOperacion
+        );
+    }
 }	
 
 async function mostrarPreSorteosRifa(
