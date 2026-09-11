@@ -16367,7 +16367,12 @@ async function abrirEditorReglasOficiales(
                     ""
                 );
             };
-
+		
+const tipoPremioGuardado =
+    String(
+        datosPlantilla?.tipo_premio ||
+        ""
+    ).trim();
 
         // ====================================================
         // CONSTRUIR EDITOR
@@ -16647,6 +16652,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="premio_fisico"
+			${tipoPremioGuardado === "premio_fisico" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16679,6 +16685,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="vehiculo"
+			${tipoPremioGuardado === "vehiculo" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16711,6 +16718,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="herramienta_equipo"
+			${tipoPremioGuardado === "herramienta_equipo" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16743,6 +16751,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="servicio"
+			${tipoPremioGuardado === "servicio" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16775,6 +16784,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="saldo_mass"
+			${tipoPremioGuardado === "saldo_mass" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16807,6 +16817,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="varios_premios"
+			${tipoPremioGuardado === "varios_premios" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -16839,6 +16850,7 @@ async function abrirEditorReglasOficiales(
             type="radio"
             name="reglasPremioTipo"
             value="otro"
+			${tipoPremioGuardado === "otro" ? "checked" : ""}
             onchange="actualizarVistaPreviaReglasOficiales()"
             style="
                 width:auto;
@@ -17556,9 +17568,16 @@ async function guardarReglasOficialesDesdeEditor(
             obtenerValorCampoReglasOficiales(
                 "reglasPlantillaAdicional"
             );
-
+		
+       const tipoPremio =
+           String(
+        document.querySelector(
+            'input[name="reglasPremioTipo"]:checked'
+        )?.value || ""
+    ).trim();
 
         if (
+			!tipoPremio ||
             !premio ||
             !elegibilidad ||
             !periodo ||
@@ -17578,11 +17597,14 @@ async function guardarReglasOficialesDesdeEditor(
 
         datosPlantilla = {
 
-            version_plantilla:
-                1,
+    version_plantilla:
+        2,
 
-            premio:
-                premio,
+    tipo_premio:
+        tipoPremio,
+
+    premio:
+        premio,
 
             elegibilidad:
                 elegibilidad,
