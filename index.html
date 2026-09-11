@@ -16374,6 +16374,80 @@ const tipoPremioGuardado =
         ""
     ).trim();
 
+	const elegibilidadOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.elegibilidad_opciones
+    )
+        ? datosPlantilla.elegibilidad_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+window.actualizarElegibilidadPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaElegibilidad"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasElegibilidadOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        mayores_18:
+            "Personas mayores de 18 años.",
+
+        usuario_registrado:
+            "La persona participante deberá contar con un registro válido en la plataforma.",
+
+        zona_permitida:
+            "La participación está disponible únicamente para personas que residan o se encuentren dentro de la zona permitida por el organizador.",
+
+        una_cuenta:
+            "Se permite una sola cuenta por participante.",
+
+        excluir_personal:
+            "No podrán participar empleados, colaboradores directos ni familiares del organizador."
+
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+
+    textarea.value =
+        condiciones.join(" ");
+
+
+    actualizarVistaPreviaReglasOficiales();
+};		
+
         // ====================================================
         // CONSTRUIR EDITOR
         // ====================================================
@@ -16578,7 +16652,7 @@ const tipoPremioGuardado =
                 </p>
 
 
-     <!-- =========================================================
+<!-- =========================================================
      MASS REGLAS OFICIALES V2
      ACORDEÓN 1 — PREMIO U OBJETO
 ========================================================= -->
@@ -16893,32 +16967,288 @@ const tipoPremioGuardado =
     </div>
 </details>           
 
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 2 — ELEGIBILIDAD
+========================================================= -->
 
-                <label>
-                    <strong>
-                        2. Quién puede participar / elegibilidad
-                    </strong>
-                </label>
+<details
+    id="reglasAcordeonElegibilidad"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        👤 2. Quién puede participar / elegibilidad
+    </summary>
 
-                <br><br>
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
 
-                <textarea
-                    id="reglasPlantillaElegibilidad"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona todas las condiciones que correspondan.
+            Puedes elegir más de una opción.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="mayores_18"
+					${elegibilidadOpcionesGuardadas.includes("mayores_18") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "elegibilidad"
-                    )
-                )}</textarea>
+                >
+                <span>Personas mayores de 18 años</span>
+            </label>
 
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="usuario_registrado"
+					${elegibilidadOpcionesGuardadas.includes("usuario_registrado") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>Usuario registrado en la plataforma</span>
+            </label>
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="zona_permitida"
+					${elegibilidadOpcionesGuardadas.includes("zona_permitida") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>Residir o encontrarse en la zona permitida por el organizador</span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="una_cuenta"
+					${elegibilidadOpcionesGuardadas.includes("una_cuenta") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>Una cuenta por participante</span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="excluir_personal"
+					${elegibilidadOpcionesGuardadas.includes("excluir_personal") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>Empleados, colaboradores directos o familiares del organizador no participan</span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="otro"
+					${elegibilidadOpcionesGuardadas.includes("otro") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>Otra condición / Personalizar</span>
+            </label>
+
+        </div>
+
+        <label
+            for="reglasPlantillaElegibilidad"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Condiciones de elegibilidad
+        </label>
+
+        <textarea
+            id="reglasPlantillaElegibilidad"
+            rows="3"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "elegibilidad"
+            )
+        )}</textarea>
+
+    </div>
+</details>             
 
 
                 <label>
@@ -17576,7 +17906,20 @@ async function guardarReglasOficialesDesdeEditor(
         )?.value || ""
     ).trim();
 
+	const elegibilidadOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasElegibilidadOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
         if (
+			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
             !premio ||
             !elegibilidad ||
@@ -17602,6 +17945,9 @@ async function guardarReglasOficialesDesdeEditor(
 
     tipo_premio:
         tipoPremio,
+
+	elegibilidad_opciones:
+    elegibilidadOpciones,
 
     premio:
         premio,
