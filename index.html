@@ -16440,6 +16440,44 @@ window.actualizarElegibilidadPlantillaV2 = function () {
                     textos[valor]
             );
 
+const otroBox =
+    document.getElementById(
+        "reglasElegibilidadOtroBox"
+    );
+
+const otroTexto =
+    document.getElementById(
+        "reglasElegibilidadOtroTexto"
+    );
+
+const incluyeOtro =
+    seleccionadas.includes("otro");
+
+
+if (otroBox) {
+
+    otroBox.style.display =
+        incluyeOtro
+            ? "block"
+            : "none";
+}
+
+
+const textoPersonalizado =
+    incluyeOtro
+        ? String(
+            otroTexto?.value || ""
+        ).trim()
+        : "";
+
+
+if (textoPersonalizado) {
+
+    condiciones.push(
+        textoPersonalizado
+    );
+}	
+
 
     textarea.value =
         condiciones.join(" ");
@@ -17221,6 +17259,49 @@ window.actualizarElegibilidadPlantillaV2 = function () {
 
         </div>
 
+	<div
+    id="reglasElegibilidadOtroBox"
+    style="
+        display:${
+            elegibilidadOpcionesGuardadas.includes("otro")
+                ? "block"
+                : "none"
+        };
+        margin-bottom:16px;
+        padding:12px;
+        border:1px solid #334155;
+        border-radius:9px;
+        background:#111827;
+    "
+>
+    <label
+        for="reglasElegibilidadOtroTexto"
+        style="
+            display:block;
+            margin-bottom:6px;
+            font-weight:bold;
+        "
+    >
+        ✏️ Escribe la condición personalizada
+    </label>
+
+    <textarea
+        id="reglasElegibilidadOtroTexto"
+        rows="3"
+        oninput="actualizarElegibilidadPlantillaV2()"
+        style="
+            width:100%;
+            box-sizing:border-box;
+            padding:10px;
+        "
+    >${escaparHTML(
+        String(
+            datosPlantilla?.elegibilidad_otro ||
+            ""
+        )
+    )}</textarea>
+</div>
+
         <label
             for="reglasPlantillaElegibilidad"
             style="
@@ -17918,7 +17999,18 @@ async function guardarReglasOficialesDesdeEditor(
     )
     .filter(Boolean);
 
+	const elegibilidadOtro =
+    elegibilidadOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasElegibilidadOtroTexto"
+        )
+        : "";
+
         if (
+			(
+    elegibilidadOpciones.includes("otro") &&
+    !elegibilidadOtro
+) ||
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
             !premio ||
@@ -17948,6 +18040,9 @@ async function guardarReglasOficialesDesdeEditor(
 
 	elegibilidad_opciones:
     elegibilidadOpciones,
+
+	elegibilidad_otro:
+    elegibilidadOtro,		
 
     premio:
         premio,
