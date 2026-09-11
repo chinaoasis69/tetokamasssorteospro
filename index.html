@@ -16574,7 +16574,6 @@ async function abrirEditorReglasOficiales(
 
 <details
     id="reglasAcordeonPremio"
-    open
     style="
         margin-bottom:14px;
         border:1px solid #475569;
@@ -16590,7 +16589,6 @@ async function abrirEditorReglasOficiales(
             font-weight:bold;
             background:#1e293b;
             color:white;
-            list-style:none;
         "
     >
         🎁 1. Premio u objeto de la dinámica
@@ -16614,110 +16612,240 @@ async function abrirEditorReglasOficiales(
             la descripción del premio de esta dinámica.
         </p>
 
-        <label
-            style="
-                display:block;
-                margin-bottom:8px;
-            "
-        >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="premio_fisico"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Premio físico
-        </label>
+  <div
+    style="
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        margin-bottom:16px;
+    "
+>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="premio_fisico"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:8px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="vehiculo"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Vehículo
-        </label>
+        <span>Premio físico</span>
+    </label>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="vehiculo"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:8px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="herramienta_equipo"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Herramienta o equipo
-        </label>
+        <span>Vehículo</span>
+    </label>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="herramienta_equipo"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:8px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="servicio"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Servicio
-        </label>
+        <span>Herramienta o equipo</span>
+    </label>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="servicio"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:8px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="saldo_mass"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Saldo o beneficio MASS
-        </label>
+        <span>Servicio</span>
+    </label>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="saldo_mass"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:8px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="varios_premios"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Varios premios
-        </label>
+        <span>Saldo o beneficio MASS</span>
+    </label>
 
-        <label
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="varios_premios"
+            onchange="actualizarVistaPreviaReglasOficiales()"
             style="
-                display:block;
-                margin-bottom:14px;
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
             "
         >
-            <input
-                type="radio"
-                name="reglasPremioTipo"
-                value="otro"
-                onchange="actualizarVistaPreviaReglasOficiales()"
-            >
-            Otro / Personalizar
-        </label>
+        <span>Varios premios</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="otro"
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Otro / Personalizar</span>
+    </label>
+
+</div>     
 
         <label
             for="reglasPlantillaPremio"
