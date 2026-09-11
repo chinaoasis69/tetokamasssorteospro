@@ -16567,31 +16567,186 @@ async function abrirEditorReglasOficiales(
                 </p>
 
 
-                <label>
-                    <strong>
-                        1. Premio u objeto de la dinámica
-                    </strong>
-                </label>
+     <!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 1 — PREMIO U OBJETO
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonPremio"
+    open
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+            list-style:none;
+        "
+    >
+        🎁 1. Premio u objeto de la dinámica
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaPremio"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
-                    style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
-                    "
-                >${escaparHTML(
-                    valorDato(
-                        "premio"
-                    )
-                )}</textarea>
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
 
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona el tipo de premio. Después confirma o completa
+            la descripción del premio de esta dinámica.
+        </p>
 
-                <br><br>
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="premio_fisico"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Premio físico
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="vehiculo"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Vehículo
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="herramienta_equipo"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Herramienta o equipo
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="servicio"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Servicio
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="saldo_mass"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Saldo o beneficio MASS
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:8px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="varios_premios"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Varios premios
+        </label>
+
+        <label
+            style="
+                display:block;
+                margin-bottom:14px;
+            "
+        >
+            <input
+                type="radio"
+                name="reglasPremioTipo"
+                value="otro"
+                onchange="actualizarVistaPreviaReglasOficiales()"
+            >
+            Otro / Personalizar
+        </label>
+
+        <label
+            for="reglasPlantillaPremio"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Descripción del premio
+        </label>
+
+        <textarea
+            id="reglasPlantillaPremio"
+            rows="3"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "premio"
+            )
+        )}</textarea>
+
+    </div>
+</details>           
 
 
                 <label>
