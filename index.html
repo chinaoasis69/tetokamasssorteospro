@@ -16345,6 +16345,12 @@ async function abrirEditorReglasOficiales(
                 "Dinámica"
             );
 
+	const dinamicaPremio =
+    String(
+        respuesta.dinamica_premio ||
+        ""
+    ).trim();
+
 
         const organizadorNombre =
             String(
@@ -16868,10 +16874,9 @@ async function abrirEditorReglasOficiales(
                 padding:10px;
             "
         >${escaparHTML(
-            valorDato(
-                "premio"
-            )
-        )}</textarea>
+    valorDato("premio") ||
+    dinamicaPremio
+)}</textarea>
 
     </div>
 </details>           
