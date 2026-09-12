@@ -16345,13 +16345,311 @@ async function abrirEditorReglasOficiales(
                 "Dinámica"
             );
 
+	const dinamicaPremio =
+    String(
+        respuesta.dinamica_premio ||
+        ""
+    ).trim();
 
-        const organizadorNombre =
-            String(
-                respuesta.organizador_nombre ||
-                "Organizador"
+	const dinamicaFechaSorteo =
+    String(
+        respuesta.dinamica_fecha_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaHoraSorteo =
+    String(
+        respuesta.dinamica_hora_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaZonaHoraria =
+    String(
+        respuesta.dinamica_zona_horaria ||
+        ""
+    ).trim();
+
+const dinamicaPrecioBoleto =
+    Number(
+        respuesta.dinamica_precio_boleto ||
+        0
+    );
+
+
+const dinamicaTotalNumeros =
+    Number(
+        respuesta.dinamica_total_numeros ||
+        0
+    );
+
+
+const dinamicaDivisasAceptadas =
+    Array.isArray(
+        respuesta.dinamica_divisas_aceptadas
+    )
+        ? respuesta.dinamica_divisas_aceptadas
+        : [];
+
+
+const dinamicaPreciosMassUnidad =
+    (
+        respuesta.dinamica_precios_mass_unidad &&
+        typeof respuesta.dinamica_precios_mass_unidad === "object" &&
+        !Array.isArray(
+            respuesta.dinamica_precios_mass_unidad
+        )
+    )
+        ? respuesta.dinamica_precios_mass_unidad
+        : {};
+
+
+const dinamicaModalidad =
+    Number(
+        respuesta.dinamica_modalidad ||
+        1
+    );
+
+
+const dinamicaTiempoApartadoHoras =
+    Number(
+        respuesta.dinamica_tiempo_apartado_horas ||
+        0
+    );
+
+
+const dinamicaCierreApartadosHorasAntes =
+    Number(
+        respuesta.dinamica_cierre_apartados_horas_antes ||
+        0
+    );
+
+
+const dinamicaCantidadPremios =
+    Number(
+        respuesta.dinamica_cantidad_premios ||
+        1
+    );
+
+const dinamicaMetodoSorteo =
+    String(
+        respuesta.dinamica_metodo_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaCifrasSorteo =
+    Number(
+        respuesta.dinamica_cifras_sorteo ||
+        0
+    );
+
+const dinamicaMetodoSorteoTexto =
+    dinamicaMetodoSorteo
+        ? (
+            dinamicaMetodoSorteo
+                .charAt(0)
+                .toUpperCase() +
+            dinamicaMetodoSorteo.slice(1)
+        )
+        : "Método configurado";
+
+
+const dinamicaCifrasSorteoTexto =
+    dinamicaCifrasSorteo > 0
+        ? (
+            dinamicaCifrasSorteo === 1
+                ? "última cifra"
+                : (
+                    "últimas " +
+                    dinamicaCifrasSorteo +
+                    " cifras"
+                )
+        )
+        : "";	
+
+const dinamicaDivisaPrincipal =
+    String(
+        dinamicaDivisasAceptadas[0] ||
+        ""
+    ).trim();
+
+
+const dinamicaPrecioMass =
+    Number(
+        dinamicaPreciosMassUnidad?.[
+            dinamicaDivisaPrincipal
+        ] ??
+        dinamicaPrecioBoleto ??
+        0
+    );
+
+
+const dinamicaPrecioMassTexto =
+    (
+        dinamicaPrecioMass > 0 &&
+        dinamicaDivisaPrincipal
+    )
+        ? (
+            dinamicaPrecioMass +
+            " MASS " +
+            dinamicaDivisaPrincipal
+        )
+        : "";
+
+
+const dinamicaModalidadTexto =
+    dinamicaModalidad === 1
+        ? "Modalidad 1 — entrega 1 número"
+        : (
+            "Modalidad " +
+            dinamicaModalidad
+        );	
+
+
+const organizadorNombre =
+    String(
+        respuesta.organizador_nombre ||
+            "Organizador"
+            );
+		
+const formatearFechaReglasV2 =
+    (fecha) => {
+
+        const valor =
+            String(fecha || "").trim();
+
+        const partes =
+            valor.match(
+                /^(\d{4})-(\d{2})-(\d{2})$/
             );
 
+        if (!partes) {
+            return valor;
+        }
+
+        const meses = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre"
+        ];
+
+        const anio =
+            Number(partes[1]);
+
+        const mes =
+            Number(partes[2]);
+
+        const dia =
+            Number(partes[3]);
+
+        if (
+            mes < 1 ||
+            mes > 12 ||
+            dia < 1 ||
+            dia > 31
+        ) {
+            return valor;
+        }
+
+        return (
+            dia +
+            " de " +
+            meses[mes - 1] +
+            " de " +
+            anio
+        );
+    };
+
+
+const formatearHoraReglasV2 =
+    (hora) => {
+
+        const valor =
+            String(hora || "").trim();
+
+        const partes =
+            valor.match(
+                /^(\d{2}):(\d{2})(?::\d{2})?$/
+            );
+
+        if (!partes) {
+            return valor;
+        }
+
+        const hora24 =
+            Number(partes[1]);
+
+        const minutos =
+            partes[2];
+
+        if (
+            hora24 < 0 ||
+            hora24 > 23
+        ) {
+            return valor;
+        }
+
+        const periodo =
+            hora24 >= 12
+                ? "PM"
+                : "AM";
+
+        const hora12 =
+            hora24 % 12 || 12;
+
+        return (
+            hora12 +
+            ":" +
+            minutos +
+            " " +
+            periodo
+        );
+    };
+
+
+const formatearZonaReglasV2 =
+    (zona) => {
+
+        const valor =
+            String(zona || "").trim();
+
+        if (
+            valor === "America/Chicago"
+        ) {
+            return "Texas / Centro de Estados Unidos";
+        }
+
+        return valor;
+    };
+
+
+const dinamicaFechaSorteoTexto =
+    formatearFechaReglasV2(
+        dinamicaFechaSorteo
+    );
+
+
+const dinamicaHoraSorteoTexto =
+    formatearHoraReglasV2(
+        dinamicaHoraSorteo
+    );
+
+
+const dinamicaZonaHorariaTexto =
+    formatearZonaReglasV2(
+        dinamicaZonaHoraria
+    );
 
         const valorDato =
             (nombre) => {
@@ -16361,7 +16659,720 @@ async function abrirEditorReglasOficiales(
                     ""
                 );
             };
+		
+const tipoPremioGuardado =
+    String(
+        datosPlantilla?.tipo_premio ||
+        ""
+    ).trim();
 
+	const elegibilidadOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.elegibilidad_opciones
+    )
+        ? datosPlantilla.elegibilidad_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+const periodoTipoGuardado =
+    String(
+        datosPlantilla?.periodo_tipo ||
+        ""
+    ).trim();
+
+
+const periodoOtroGuardado =
+    String(
+        datosPlantilla?.periodo_otro ||
+        ""
+    ).trim();
+
+const mecanicaOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.mecanica_opciones
+    )
+        ? datosPlantilla.mecanica_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+
+const mecanicaOtroGuardado =
+    String(
+        datosPlantilla?.mecanica_otro ||
+        ""
+    ).trim();
+
+const seleccionTipoGuardado =
+    String(
+        datosPlantilla?.seleccion_tipo ||
+        ""
+    ).trim();
+
+
+const seleccionOtroGuardado =
+    String(
+        datosPlantilla?.seleccion_otro ||
+        ""
+    ).trim();
+
+const entregaTipoGuardado =
+    String(
+        datosPlantilla?.entrega_tipo ||
+        ""
+    ).trim();
+
+
+const entregaOtroGuardado =
+    String(
+        datosPlantilla?.entrega_otro ||
+        ""
+    ).trim();
+
+const restriccionesOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.restricciones_opciones
+    )
+        ? datosPlantilla.restricciones_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+
+const restriccionesOtroGuardado =
+    String(
+        datosPlantilla?.restricciones_otro ||
+        ""
+    ).trim();	
+
+window.actualizarPeriodoPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaPeriodo"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasPeriodoTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasPeriodoOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasPeriodoOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (
+        tipo ===
+        "publicacion_hasta_sorteo"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la publicación de la dinámica hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ".";
+    }
+
+
+    if (
+        tipo ===
+        "activacion_hasta_sorteo"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la activación oficial de la dinámica hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ".";
+    }
+
+
+    if (
+        tipo ===
+        "agotar_o_fecha"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la publicación de la dinámica hasta que se agoten los números disponibles o hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ", lo que ocurra primero.";
+    }
+
+
+    if (
+        tipo === "otro"
+    ) {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarMecanicaPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaMecanica"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasMecanicaOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        seleccionar_numeros:
+            "La participación se realiza seleccionando y adquiriendo números disponibles dentro de la dinámica.",
+
+        precio_mass:
+            dinamicaPrecioMassTexto
+                ? (
+                    "El precio por número es de " +
+                    dinamicaPrecioMassTexto +
+                    "."
+                )
+                : "",
+
+        total_numeros:
+            dinamicaTotalNumeros > 0
+                ? (
+                    "La dinámica cuenta con " +
+                    dinamicaTotalNumeros +
+                    " números disponibles."
+                )
+                : "",
+
+        modalidad:
+            dinamicaModalidadTexto
+                ? (
+                    "La dinámica opera bajo " +
+                    dinamicaModalidadTexto +
+                    "."
+                )
+                : "",
+
+        apartado:
+            dinamicaTiempoApartadoHoras > 0
+                ? (
+                    "Los números apartados podrán mantenerse reservados por un máximo de " +
+                    dinamicaTiempoApartadoHoras +
+                    (
+                        dinamicaTiempoApartadoHoras === 1
+                            ? " hora."
+                            : " horas."
+                    )
+                )
+                : "",
+
+        cierre_apartados:
+            dinamicaCierreApartadosHorasAntes > 0
+                ? (
+                    "Los apartados cerrarán automáticamente " +
+                    dinamicaCierreApartadosHorasAntes +
+                    (
+                        dinamicaCierreApartadosHorasAntes === 1
+                            ? " hora antes del sorteo."
+                            : " horas antes del sorteo."
+                    )
+                )
+                : "No existe un cierre automático de apartados previo al sorteo."
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasMecanicaOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasMecanicaOtroTexto"
+        );
+
+    const incluyeOtro =
+        seleccionadas.includes("otro");
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            incluyeOtro
+                ? "block"
+                : "none";
+    }
+
+
+    const textoPersonalizado =
+        incluyeOtro
+            ? String(
+                otroTexto?.value || ""
+            ).trim()
+            : "";
+
+
+    if (textoPersonalizado) {
+
+        condiciones.push(
+            textoPersonalizado
+        );
+    }
+
+
+    textarea.value =
+        condiciones.join(" ");
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarSeleccionPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaSeleccion"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasSeleccionTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasSeleccionOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasSeleccionOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (tipo === "configurado") {
+
+        texto =
+            "La selección del ganador se realizará mediante " +
+            dinamicaMetodoSorteoTexto;
+
+
+        if (
+            dinamicaCifrasSorteo > 0 &&
+            dinamicaCifrasSorteoTexto
+        ) {
+
+            texto +=
+                ", utilizando " +
+                (
+                    dinamicaCifrasSorteo === 1
+                        ? "la "
+                        : "las "
+                ) +
+                dinamicaCifrasSorteoTexto +
+                " del resultado.";
+        } else {
+
+            texto += ".";
+        }
+    }
+
+
+    if (tipo === "otro") {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarEntregaPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaEntrega"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasEntregaTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasEntregaOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasEntregaOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (tipo === "organizador") {
+
+        texto =
+            "El ganador deberá comunicarse con " +
+            organizadorNombre +
+            " para coordinar la entrega o reclamación del premio.";
+    }
+
+
+    if (tipo === "otro") {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarRestriccionesPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaRestricciones"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasRestriccionesOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        incumplir_reglas:
+            "El incumplimiento de estas Reglas Oficiales podrá resultar en la descalificación de la persona participante.",
+
+        fraude:
+            "Cualquier intento de fraude, manipulación o alteración del funcionamiento de la dinámica será motivo de descalificación.",
+
+        datos_falsos:
+            "Proporcionar información falsa, incompleta o engañosa podrá resultar en descalificación.",
+
+        pagos_no_confirmados:
+            "Las participaciones asociadas con pagos rechazados, revertidos o no confirmados no serán válidas.",
+
+        cuentas_multiples:
+            "El uso de múltiples cuentas para obtener una ventaja indebida podrá resultar en descalificación."
+
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasRestriccionesOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasRestriccionesOtroTexto"
+        );
+
+
+    const incluyeOtro =
+        seleccionadas.includes("otro");
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            incluyeOtro
+                ? "block"
+                : "none";
+    }
+
+
+    const textoPersonalizado =
+        incluyeOtro
+            ? String(
+                otroTexto?.value || ""
+            ).trim()
+            : "";
+
+
+    if (textoPersonalizado) {
+
+        condiciones.push(
+            textoPersonalizado
+        );
+    }
+
+
+    textarea.value =
+        condiciones.join(" ");
+
+
+    actualizarVistaPreviaReglasOficiales();
+};		
+
+window.actualizarElegibilidadPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaElegibilidad"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasElegibilidadOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        mayores_18:
+            "Personas mayores de 18 años.",
+
+        usuario_registrado:
+            "La persona participante deberá contar con un registro válido en la plataforma.",
+
+        zona_permitida:
+            "La participación está disponible únicamente para personas que residan o se encuentren dentro de la zona permitida por el organizador.",
+
+        una_cuenta:
+            "Se permite una sola cuenta por participante.",
+
+        excluir_personal:
+            "No podrán participar empleados, colaboradores directos ni familiares del organizador."
+
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+const otroBox =
+    document.getElementById(
+        "reglasElegibilidadOtroBox"
+    );
+
+const otroTexto =
+    document.getElementById(
+        "reglasElegibilidadOtroTexto"
+    );
+
+const incluyeOtro =
+    seleccionadas.includes("otro");
+
+
+if (otroBox) {
+
+    otroBox.style.display =
+        incluyeOtro
+            ? "block"
+            : "none";
+}
+
+
+const textoPersonalizado =
+    incluyeOtro
+        ? String(
+            otroTexto?.value || ""
+        ).trim()
+        : "";
+
+
+if (textoPersonalizado) {
+
+    condiciones.push(
+        textoPersonalizado
+    );
+}	
+
+
+    textarea.value =
+        condiciones.join(" ");
+
+
+    actualizarVistaPreviaReglasOficiales();
+};		
 
         // ====================================================
         // CONSTRUIR EDITOR
@@ -16567,217 +17578,2135 @@ async function abrirEditorReglasOficiales(
                 </p>
 
 
-                <label>
-                    <strong>
-                        1. Premio u objeto de la dinámica
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 1 — PREMIO U OBJETO
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonPremio"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🎁 1. Premio u objeto de la dinámica
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaPremio"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona el tipo de premio. Después confirma o completa
+            la descripción del premio de esta dinámica.
+        </p>
+
+  <div
+    style="
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        margin-bottom:16px;
+    "
+>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="premio_fisico"
+			${tipoPremioGuardado === "premio_fisico" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Premio físico</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="vehiculo"
+			${tipoPremioGuardado === "vehiculo" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Vehículo</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="herramienta_equipo"
+			${tipoPremioGuardado === "herramienta_equipo" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Herramienta o equipo</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="servicio"
+			${tipoPremioGuardado === "servicio" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Servicio</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="saldo_mass"
+			${tipoPremioGuardado === "saldo_mass" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Saldo o beneficio MASS</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="varios_premios"
+			${tipoPremioGuardado === "varios_premios" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Varios premios</span>
+    </label>
+
+    <label
+        style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+            width:100%;
+            margin:0;
+            padding:10px 12px;
+            border:1px solid #334155;
+            border-radius:9px;
+            background:#111827;
+            cursor:pointer;
+            text-align:left;
+            box-sizing:border-box;
+        "
+    >
+        <input
+            type="radio"
+            name="reglasPremioTipo"
+            value="otro"
+			${tipoPremioGuardado === "otro" ? "checked" : ""}
+            onchange="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:auto;
+                max-width:none;
+                margin:0;
+                padding:0;
+                flex:0 0 auto;
+            "
+        >
+        <span>Otro / Personalizar</span>
+    </label>
+
+</div>     
+
+        <label
+            for="reglasPlantillaPremio"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Descripción del premio
+        </label>
+
+        <textarea
+            id="reglasPlantillaPremio"
+            rows="3"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+    valorDato("premio") ||
+    dinamicaPremio
+)}</textarea>
+
+    </div>
+</details>           
+
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 2 — ELEGIBILIDAD
+========================================================= -->
+
+<details
+    id="reglasAcordeonElegibilidad"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        👤 2. Quién puede participar / elegibilidad
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona todas las condiciones que correspondan.
+            Puedes elegir más de una opción.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="mayores_18"
+					${elegibilidadOpcionesGuardadas.includes("mayores_18") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "premio"
-                    )
-                )}</textarea>
+                >
+                <span>Personas mayores de 18 años</span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        2. Quién puede participar / elegibilidad
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaElegibilidad"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="usuario_registrado"
+					${elegibilidadOpcionesGuardadas.includes("usuario_registrado") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "elegibilidad"
-                    )
-                )}</textarea>
+                >
+                <span>Usuario registrado en la plataforma</span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        3. Periodo o vigencia de participación
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaPeriodo"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="zona_permitida"
+					${elegibilidadOpcionesGuardadas.includes("zona_permitida") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "periodo"
-                    )
-                )}</textarea>
+                >
+                <span>Residir o encontrarse en la zona permitida por el organizador</span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        4. Mecánica / forma de participación
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaMecanica"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="una_cuenta"
+					${elegibilidadOpcionesGuardadas.includes("una_cuenta") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "mecanica"
-                    )
-                )}</textarea>
+                >
+                <span>Una cuenta por participante</span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        5. Método de selección del ganador
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaSeleccion"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="excluir_personal"
+					${elegibilidadOpcionesGuardadas.includes("excluir_personal") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "seleccion_ganador"
-                    )
-                )}</textarea>
+                >
+                <span>Empleados, colaboradores directos o familiares del organizador no participan</span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        6. Entrega o reclamación del premio
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaEntrega"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasElegibilidadOpcion"
+                    value="otro"
+					${elegibilidadOpcionesGuardadas.includes("otro") ? "checked" : ""}
+					onchange="actualizarElegibilidadPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "entrega_premio"
-                    )
-                )}</textarea>
+                >
+                <span>Otra condición / Personalizar</span>
+            </label>
+
+        </div>
+
+	<div
+    id="reglasElegibilidadOtroBox"
+    style="
+        display:${
+            elegibilidadOpcionesGuardadas.includes("otro")
+                ? "block"
+                : "none"
+        };
+        margin-bottom:16px;
+        padding:12px;
+        border:1px solid #334155;
+        border-radius:9px;
+        background:#111827;
+    "
+>
+    <label
+        for="reglasElegibilidadOtroTexto"
+        style="
+            display:block;
+            margin-bottom:6px;
+            font-weight:bold;
+        "
+    >
+        ✏️ Escribe la condición personalizada
+    </label>
+
+    <textarea
+        id="reglasElegibilidadOtroTexto"
+        rows="3"
+        oninput="actualizarElegibilidadPlantillaV2()"
+        style="
+            width:100%;
+            box-sizing:border-box;
+            padding:10px;
+        "
+    >${escaparHTML(
+        String(
+            datosPlantilla?.elegibilidad_otro ||
+            ""
+        )
+    )}</textarea>
+</div>
+
+        <label
+            for="reglasPlantillaElegibilidad"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Condiciones de elegibilidad
+        </label>
+
+        <textarea
+            id="reglasPlantillaElegibilidad"
+            rows="3"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "elegibilidad"
+            )
+        )}</textarea>
+
+    </div>
+</details>             
 
 
-                <br><br>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 3 — PERIODO
+========================================================= -->
 
+<details
+    id="reglasAcordeonPeriodo"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        📅 3. Periodo o vigencia de participación
+    </summary>
 
-                <label>
-                    <strong>
-                        7. Restricciones / causas de descalificación
-                    </strong>
-                </label>
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
 
-                <br><br>
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se definirá el periodo de participación.
+            MASS utilizará automáticamente la fecha, hora y zona horaria
+            configuradas para esta dinámica.
+        </p>
 
-                <textarea
-                    id="reglasPlantillaRestricciones"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="publicacion_hasta_sorteo"
+                    ${periodoTipoGuardado === "publicacion_hasta_sorteo" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "restricciones"
-                    )
-                )}</textarea>
+                >
+                <span>
+                    Desde la publicación hasta la fecha y hora del sorteo
+                </span>
+            </label>
 
-
-                <br><br>
-
-
-                <label>
-                    <strong>
-                        8. Información adicional
-                    </strong>
-                </label>
-
-                <br><br>
-
-                <textarea
-                    id="reglasPlantillaAdicional"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="activacion_hasta_sorteo"
+                    ${periodoTipoGuardado === "activacion_hasta_sorteo" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "informacion_adicional"
-                    )
-                )}</textarea>
+                >
+                <span>
+                    Desde la activación oficial hasta la fecha y hora del sorteo
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="agotar_o_fecha"
+                    ${periodoTipoGuardado === "agotar_o_fecha" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Hasta agotar números o llegar a la fecha del sorteo, lo que ocurra primero
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="otro"
+                    ${periodoTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Otro periodo / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+        <div
+            id="reglasPeriodoOtroBox"
+            style="
+                display:${
+                    periodoTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+            <label
+                for="reglasPeriodoOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe el periodo personalizado
+            </label>
+
+            <textarea
+                id="reglasPeriodoOtroTexto"
+                rows="3"
+                oninput="actualizarPeriodoPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                periodoOtroGuardado
+            )}</textarea>
+        </div>
+
+        <label
+            for="reglasPlantillaPeriodo"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Periodo de participación
+        </label>
+
+        <textarea
+            id="reglasPlantillaPeriodo"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "periodo"
+            )
+        )}</textarea>
+
+    </div>
+</details>
+
+ <!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 4 — MECÁNICA / FORMA DE PARTICIPACIÓN
+========================================================= -->
+
+<details
+    id="reglasAcordeonMecanica"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🎟️ 4. Mecánica / forma de participación
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona las condiciones que correspondan.
+            Puedes elegir más de una opción y MASS construirá
+            automáticamente la mecánica de participación.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="seleccionar_numeros"
+                    ${mecanicaOpcionesGuardadas.includes("seleccionar_numeros") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Seleccionar y adquirir números disponibles
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="precio_mass"
+                    ${mecanicaOpcionesGuardadas.includes("precio_mass") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir precio por número: ${escaparHTML(
+                        dinamicaPrecioMassTexto || "precio configurado"
+                    )}
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="total_numeros"
+                    ${mecanicaOpcionesGuardadas.includes("total_numeros") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir cantidad total de números: ${dinamicaTotalNumeros}
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="modalidad"
+                    ${mecanicaOpcionesGuardadas.includes("modalidad") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir modalidad: ${escaparHTML(
+                        dinamicaModalidadTexto
+                    )}
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="apartado"
+                    ${mecanicaOpcionesGuardadas.includes("apartado") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir tiempo máximo de apartado: ${dinamicaTiempoApartadoHoras} horas
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="cierre_apartados"
+                    ${mecanicaOpcionesGuardadas.includes("cierre_apartados") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir regla de cierre de apartados
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="otro"
+                    ${mecanicaOpcionesGuardadas.includes("otro") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Otra condición / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+        <div
+            id="reglasMecanicaOtroBox"
+            style="
+                display:${
+                    mecanicaOpcionesGuardadas.includes("otro")
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+            <label
+                for="reglasMecanicaOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe la condición personalizada
+            </label>
+
+            <textarea
+                id="reglasMecanicaOtroTexto"
+                rows="3"
+                oninput="actualizarMecanicaPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                mecanicaOtroGuardado
+            )}</textarea>
+        </div>
+
+        <label
+            for="reglasPlantillaMecanica"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Mecánica de participación
+        </label>
+
+        <textarea
+            id="reglasPlantillaMecanica"
+            rows="5"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "mecanica"
+            )
+        )}</textarea>
+
+    </div>
+</details>   
+
+
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 5 — MÉTODO DE SELECCIÓN DEL GANADOR
+========================================================= -->
+
+<details
+    id="reglasAcordeonSeleccion"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🏆 5. Método de selección del ganador
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se describirá el método para determinar al ganador.
+            MASS puede utilizar automáticamente la configuración actual de esta dinámica.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasSeleccionTipo"
+                    value="configurado"
+                    ${seleccionTipoGuardado === "configurado" ? "checked" : ""}
+                    onchange="actualizarSeleccionPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Usar método configurado:
+                    ${escaparHTML(
+                        dinamicaMetodoSorteoTexto
+                    )}
+                    ${
+                        dinamicaCifrasSorteoTexto
+                            ? " · " + escaparHTML(
+                                dinamicaCifrasSorteoTexto
+                            )
+                            : ""
+                    }
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasSeleccionTipo"
+                    value="otro"
+                    ${seleccionTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarSeleccionPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otro método / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasSeleccionOtroBox"
+            style="
+                display:${
+                    seleccionTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasSeleccionOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe el método personalizado
+            </label>
+
+            <textarea
+                id="reglasSeleccionOtroTexto"
+                rows="3"
+                oninput="actualizarSeleccionPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                seleccionOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaSeleccion"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Método de selección del ganador
+        </label>
+
+        <textarea
+            id="reglasPlantillaSeleccion"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "seleccion_ganador"
+            )
+        )}</textarea>
+
+    </div>
+</details>
+
+
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 6 — ENTREGA O RECLAMACIÓN DEL PREMIO
+========================================================= -->
+
+<details
+    id="reglasAcordeonEntrega"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🎁 6. Entrega o reclamación del premio
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se coordinará la entrega o reclamación del premio.
+            MASS puede utilizar automáticamente el nombre del organizador de esta dinámica.
+        </p>
+
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasEntregaTipo"
+                    value="organizador"
+                    ${entregaTipoGuardado === "organizador" ? "checked" : ""}
+                    onchange="actualizarEntregaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Coordinar directamente con:
+                    ${escaparHTML(
+                        organizadorNombre
+                    )}
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasEntregaTipo"
+                    value="otro"
+                    ${entregaTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarEntregaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otro método de entrega / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasEntregaOtroBox"
+            style="
+                display:${
+                    entregaTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasEntregaOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe las condiciones de entrega o reclamación
+            </label>
+
+            <textarea
+                id="reglasEntregaOtroTexto"
+                rows="3"
+                oninput="actualizarEntregaPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                entregaOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaEntrega"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Entrega o reclamación del premio
+        </label>
+
+        <textarea
+            id="reglasPlantillaEntrega"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "entrega_premio"
+            )
+        )}</textarea>
+
+    </div>
+</details>
+
+
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 7 — RESTRICCIONES / CAUSAS DE DESCALIFICACIÓN
+========================================================= -->
+
+<details
+    id="reglasAcordeonRestricciones"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🚫 7. Restricciones / causas de descalificación
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona todas las restricciones que correspondan.
+            Puedes elegir más de una opción y MASS construirá automáticamente esta sección de las Reglas Oficiales.
+        </p>
+
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="incumplir_reglas"
+                    ${restriccionesOpcionesGuardadas.includes("incumplir_reglas") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Incumplimiento de las Reglas Oficiales
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="fraude"
+                    ${restriccionesOpcionesGuardadas.includes("fraude") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Fraude, manipulación o alteración de la dinámica
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="datos_falsos"
+                    ${restriccionesOpcionesGuardadas.includes("datos_falsos") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Información falsa, incompleta o engañosa
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="pagos_no_confirmados"
+                    ${restriccionesOpcionesGuardadas.includes("pagos_no_confirmados") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Pagos rechazados, revertidos o no confirmados
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="cuentas_multiples"
+                    ${restriccionesOpcionesGuardadas.includes("cuentas_multiples") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Uso de múltiples cuentas para obtener una ventaja indebida
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="otro"
+                    ${restriccionesOpcionesGuardadas.includes("otro") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otra restricción / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasRestriccionesOtroBox"
+            style="
+                display:${
+                    restriccionesOpcionesGuardadas.includes("otro")
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasRestriccionesOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe la restricción personalizada
+            </label>
+
+            <textarea
+                id="reglasRestriccionesOtroTexto"
+                rows="3"
+                oninput="actualizarRestriccionesPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                restriccionesOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaRestricciones"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Restricciones / causas de descalificación
+        </label>
+
+        <textarea
+            id="reglasPlantillaRestricciones"
+            rows="5"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "restricciones"
+            )
+        )}</textarea>
+
+    </div>
+</details>
+
+
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 8 — INFORMACIÓN ADICIONAL
+========================================================= -->
+
+<details
+    id="reglasAcordeonAdicional"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        📝 8. Información adicional
+    </summary>
+
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Este campo es opcional. Puedes agregar cualquier información
+            adicional que deba formar parte de las Reglas Oficiales de esta dinámica.
+        </p>
+
+        <label
+            for="reglasPlantillaAdicional"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Información adicional
+        </label>
+
+        <textarea
+            id="reglasPlantillaAdicional"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "informacion_adicional"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
             </div>
 
@@ -17268,20 +20197,166 @@ async function guardarReglasOficialesDesdeEditor(
             obtenerValorCampoReglasOficiales(
                 "reglasPlantillaAdicional"
             );
+		
+       const tipoPremio =
+           String(
+        document.querySelector(
+            'input[name="reglasPremioTipo"]:checked'
+        )?.value || ""
+    ).trim();
 
+	const elegibilidadOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasElegibilidadOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
+	const elegibilidadOtro =
+    elegibilidadOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasElegibilidadOtroTexto"
+        )
+        : "";
+
+const periodoTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasPeriodoTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const periodoOtro =
+    periodoTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasPeriodoOtroTexto"
+        )
+        : "";
+
+const mecanicaOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasMecanicaOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
+
+const mecanicaOtro =
+    mecanicaOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasMecanicaOtroTexto"
+        )
+        : "";
+
+const seleccionTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasSeleccionTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const seleccionOtro =
+    seleccionTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasSeleccionOtroTexto"
+        )
+        : "";
+
+const entregaTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasEntregaTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const entregaOtro =
+    entregaTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasEntregaOtroTexto"
+        )
+        : "";
+
+const restriccionesOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasRestriccionesOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
+
+const restriccionesOtro =
+    restriccionesOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasRestriccionesOtroTexto"
+        )
+        : "";		
 
         if (
+			(
+    elegibilidadOpciones.includes("otro") &&
+    !elegibilidadOtro
+) ||
+			!periodoTipo ||
+(
+    periodoTipo === "otro" &&
+    !periodoOtro
+) ||
+
+mecanicaOpciones.length === 0 ||
+(
+    mecanicaOpciones.includes("otro") &&
+    !mecanicaOtro
+) ||
+
+!seleccionTipo ||
+(
+    seleccionTipo === "otro" &&
+    !seleccionOtro
+) ||
+
+!entregaTipo ||
+(
+    entregaTipo === "otro" &&
+    !entregaOtro
+) ||
+
+restriccionesOpciones.length === 0 ||
+(
+    restriccionesOpciones.includes("otro") &&
+    !restriccionesOtro
+) ||			
+			elegibilidadOpciones.length === 0 ||
+			!tipoPremio ||
             !premio ||
             !elegibilidad ||
             !periodo ||
             !mecanica ||
             !seleccion ||
-            !entrega
+			!entrega ||
+			!restricciones
         ) {
 
             alert(
                 "⚠️ Para guardar la Plantilla guiada MASS completa:\n\n" +
-                "Debes llenar los campos 1 al 6."
+                "Debes llenar los campos 1 al 7."
             );
 
             return;
@@ -17290,11 +20365,50 @@ async function guardarReglasOficialesDesdeEditor(
 
         datosPlantilla = {
 
-            version_plantilla:
-                1,
+    version_plantilla:
+        2,
 
-            premio:
-                premio,
+    tipo_premio:
+        tipoPremio,
+
+	elegibilidad_opciones:
+    elegibilidadOpciones,
+
+	elegibilidad_otro:
+    elegibilidadOtro,
+
+	periodo_tipo:
+    periodoTipo,
+
+periodo_otro:
+    periodoOtro,
+
+mecanica_opciones:
+    mecanicaOpciones,
+
+mecanica_otro:
+    mecanicaOtro,
+
+entrega_tipo:
+    entregaTipo,
+
+entrega_otro:
+    entregaOtro,			
+
+seleccion_tipo:
+    seleccionTipo,
+
+seleccion_otro:
+    seleccionOtro,
+
+restricciones_opciones:
+    restriccionesOpciones,
+
+restricciones_otro:
+    restriccionesOtro,			
+
+    premio:
+        premio,
 
             elegibilidad:
                 elegibilidad,
