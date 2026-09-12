@@ -16432,6 +16432,43 @@ const dinamicaCantidadPremios =
         1
     );
 
+const dinamicaMetodoSorteo =
+    String(
+        respuesta.dinamica_metodo_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaCifrasSorteo =
+    Number(
+        respuesta.dinamica_cifras_sorteo ||
+        0
+    );
+
+const dinamicaMetodoSorteoTexto =
+    dinamicaMetodoSorteo
+        ? (
+            dinamicaMetodoSorteo
+                .charAt(0)
+                .toUpperCase() +
+            dinamicaMetodoSorteo.slice(1)
+        )
+        : "Método configurado";
+
+
+const dinamicaCifrasSorteoTexto =
+    dinamicaCifrasSorteo > 0
+        ? (
+            dinamicaCifrasSorteo === 1
+                ? "última cifra"
+                : (
+                    "últimas " +
+                    dinamicaCifrasSorteo +
+                    " cifras"
+                )
+        )
+        : "";	
+
 const dinamicaDivisaPrincipal =
     String(
         dinamicaDivisasAceptadas[0] ||
@@ -16666,6 +16703,19 @@ const mecanicaOpcionesGuardadas =
 const mecanicaOtroGuardado =
     String(
         datosPlantilla?.mecanica_otro ||
+        ""
+    ).trim();
+
+const seleccionTipoGuardado =
+    String(
+        datosPlantilla?.seleccion_tipo ||
+        ""
+    ).trim();
+
+
+const seleccionOtroGuardado =
+    String(
+        datosPlantilla?.seleccion_otro ||
         ""
     ).trim();		
 
@@ -16931,7 +16981,94 @@ window.actualizarMecanicaPlantillaV2 = function () {
 
 
     actualizarVistaPreviaReglasOficiales();
-};	
+};
+
+window.actualizarSeleccionPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaSeleccion"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasSeleccionTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasSeleccionOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasSeleccionOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (tipo === "configurado") {
+
+        texto =
+            "La selección del ganador se realizará mediante " +
+            dinamicaMetodoSorteoTexto;
+
+
+        if (
+            dinamicaCifrasSorteo > 0 &&
+            dinamicaCifrasSorteoTexto
+        ) {
+
+            texto +=
+                ", utilizando " +
+                (
+                    dinamicaCifrasSorteo === 1
+                        ? "la "
+                        : "las "
+                ) +
+                dinamicaCifrasSorteoTexto +
+                " del resultado.";
+        } else {
+
+            texto += ".";
+        }
+    }
+
+
+    if (tipo === "otro") {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};		
 
 window.actualizarElegibilidadPlantillaV2 = function () {
 
@@ -18523,31 +18660,217 @@ if (textoPersonalizado) {
 </details>   
 
 
-                <label>
-                    <strong>
-                        5. Método de selección del ganador
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 5 — MÉTODO DE SELECCIÓN DEL GANADOR
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonSeleccion"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🏆 5. Método de selección del ganador
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaSeleccion"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se describirá el método para determinar al ganador.
+            MASS puede utilizar automáticamente la configuración actual de esta dinámica.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasSeleccionTipo"
+                    value="configurado"
+                    ${seleccionTipoGuardado === "configurado" ? "checked" : ""}
+                    onchange="actualizarSeleccionPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "seleccion_ganador"
-                    )
-                )}</textarea>
+                >
+
+                <span>
+                    Usar método configurado:
+                    ${escaparHTML(
+                        dinamicaMetodoSorteoTexto
+                    )}
+                    ${
+                        dinamicaCifrasSorteoTexto
+                            ? " · " + escaparHTML(
+                                dinamicaCifrasSorteoTexto
+                            )
+                            : ""
+                    }
+                </span>
+            </label>
 
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasSeleccionTipo"
+                    value="otro"
+                    ${seleccionTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarSeleccionPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otro método / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasSeleccionOtroBox"
+            style="
+                display:${
+                    seleccionTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasSeleccionOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe el método personalizado
+            </label>
+
+            <textarea
+                id="reglasSeleccionOtroTexto"
+                rows="3"
+                oninput="actualizarSeleccionPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                seleccionOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaSeleccion"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Método de selección del ganador
+        </label>
+
+        <textarea
+            id="reglasPlantillaSeleccion"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "seleccion_ganador"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
 
                 <label>
@@ -19176,6 +19499,21 @@ const mecanicaOtro =
         ? obtenerValorCampoReglasOficiales(
             "reglasMecanicaOtroTexto"
         )
+        : "";
+
+const seleccionTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasSeleccionTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const seleccionOtro =
+    seleccionTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasSeleccionOtroTexto"
+        )
         : "";	
 
         if (
@@ -19193,6 +19531,12 @@ mecanicaOpciones.length === 0 ||
 (
     mecanicaOpciones.includes("otro") &&
     !mecanicaOtro
+) ||
+
+!seleccionTipo ||
+(
+    seleccionTipo === "otro" &&
+    !seleccionOtro
 ) ||			
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
@@ -19237,7 +19581,13 @@ mecanica_opciones:
     mecanicaOpciones,
 
 mecanica_otro:
-    mecanicaOtro,	
+    mecanicaOtro,
+
+seleccion_tipo:
+    seleccionTipo,
+
+seleccion_otro:
+    seleccionOtro,	
 
     premio:
         premio,
