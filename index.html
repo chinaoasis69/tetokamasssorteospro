@@ -60196,11 +60196,12 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
         .toUpperCase()
 };
 
-	if (
-    metodoPagoRecargaSeleccionado?.metodo_codigo ===
-    "EFECTIVO_PUNTO_MASS"
+if (
+  metodoPagoRecargaSeleccionado?.metodo_codigo ===
+  "EFECTIVO_PUNTO_MASS"
 ) {
-    await recargarSaldo();
+  await recargarSaldo();
+  return;
 }
 
     const nombreMetodo =
