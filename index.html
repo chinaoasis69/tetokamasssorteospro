@@ -16371,11 +16371,110 @@ const dinamicaZonaHoraria =
         ""
     ).trim();
 
+const dinamicaPrecioBoleto =
+    Number(
+        respuesta.dinamica_precio_boleto ||
+        0
+    );
 
-        const organizadorNombre =
-            String(
-                respuesta.organizador_nombre ||
-                "Organizador"
+
+const dinamicaTotalNumeros =
+    Number(
+        respuesta.dinamica_total_numeros ||
+        0
+    );
+
+
+const dinamicaDivisasAceptadas =
+    Array.isArray(
+        respuesta.dinamica_divisas_aceptadas
+    )
+        ? respuesta.dinamica_divisas_aceptadas
+        : [];
+
+
+const dinamicaPreciosMassUnidad =
+    (
+        respuesta.dinamica_precios_mass_unidad &&
+        typeof respuesta.dinamica_precios_mass_unidad === "object" &&
+        !Array.isArray(
+            respuesta.dinamica_precios_mass_unidad
+        )
+    )
+        ? respuesta.dinamica_precios_mass_unidad
+        : {};
+
+
+const dinamicaModalidad =
+    Number(
+        respuesta.dinamica_modalidad ||
+        1
+    );
+
+
+const dinamicaTiempoApartadoHoras =
+    Number(
+        respuesta.dinamica_tiempo_apartado_horas ||
+        0
+    );
+
+
+const dinamicaCierreApartadosHorasAntes =
+    Number(
+        respuesta.dinamica_cierre_apartados_horas_antes ||
+        0
+    );
+
+
+const dinamicaCantidadPremios =
+    Number(
+        respuesta.dinamica_cantidad_premios ||
+        1
+    );
+
+const dinamicaDivisaPrincipal =
+    String(
+        dinamicaDivisasAceptadas[0] ||
+        ""
+    ).trim();
+
+
+const dinamicaPrecioMass =
+    Number(
+        dinamicaPreciosMassUnidad?.[
+            dinamicaDivisaPrincipal
+        ] ??
+        dinamicaPrecioBoleto ??
+        0
+    );
+
+
+const dinamicaPrecioMassTexto =
+    (
+        dinamicaPrecioMass > 0 &&
+        dinamicaDivisaPrincipal
+    )
+        ? (
+            dinamicaPrecioMass +
+            " MASS " +
+            dinamicaDivisaPrincipal
+        )
+        : "";
+
+
+const dinamicaModalidadTexto =
+    dinamicaModalidad === 1
+        ? "Modalidad 1 — entrega 1 número"
+        : (
+            "Modalidad " +
+            dinamicaModalidad
+        );	
+
+
+const organizadorNombre =
+    String(
+        respuesta.organizador_nombre ||
+            "Organizador"
             );
 		
 const formatearFechaReglasV2 =
@@ -16553,6 +16652,23 @@ const periodoOtroGuardado =
         ""
     ).trim();
 
+const mecanicaOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.mecanica_opciones
+    )
+        ? datosPlantilla.mecanica_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+
+const mecanicaOtroGuardado =
+    String(
+        datosPlantilla?.mecanica_otro ||
+        ""
+    ).trim();		
+
 window.actualizarPeriodoPlantillaV2 = function () {
 
     const textarea =
@@ -16669,6 +16785,149 @@ window.actualizarPeriodoPlantillaV2 = function () {
 
     textarea.value =
         texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarMecanicaPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaMecanica"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasMecanicaOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        seleccionar_numeros:
+            "La participación se realiza seleccionando y adquiriendo números disponibles dentro de la dinámica.",
+
+        precio_mass:
+            dinamicaPrecioMassTexto
+                ? (
+                    "El precio por número es de " +
+                    dinamicaPrecioMassTexto +
+                    "."
+                )
+                : "",
+
+        total_numeros:
+            dinamicaTotalNumeros > 0
+                ? (
+                    "La dinámica cuenta con " +
+                    dinamicaTotalNumeros +
+                    " números disponibles."
+                )
+                : "",
+
+        modalidad:
+            dinamicaModalidadTexto
+                ? (
+                    "La dinámica opera bajo " +
+                    dinamicaModalidadTexto +
+                    "."
+                )
+                : "",
+
+        apartado:
+            dinamicaTiempoApartadoHoras > 0
+                ? (
+                    "Los números apartados podrán mantenerse reservados por un máximo de " +
+                    dinamicaTiempoApartadoHoras +
+                    (
+                        dinamicaTiempoApartadoHoras === 1
+                            ? " hora."
+                            : " horas."
+                    )
+                )
+                : "",
+
+        cierre_apartados:
+            dinamicaCierreApartadosHorasAntes > 0
+                ? (
+                    "Los apartados cerrarán automáticamente " +
+                    dinamicaCierreApartadosHorasAntes +
+                    (
+                        dinamicaCierreApartadosHorasAntes === 1
+                            ? " hora antes del sorteo."
+                            : " horas antes del sorteo."
+                    )
+                )
+                : "No existe un cierre automático de apartados previo al sorteo."
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasMecanicaOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasMecanicaOtroTexto"
+        );
+
+    const incluyeOtro =
+        seleccionadas.includes("otro");
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            incluyeOtro
+                ? "block"
+                : "none";
+    }
+
+
+    const textoPersonalizado =
+        incluyeOtro
+            ? String(
+                otroTexto?.value || ""
+            ).trim()
+            : "";
+
+
+    if (textoPersonalizado) {
+
+        condiciones.push(
+            textoPersonalizado
+        );
+    }
+
+
+    textarea.value =
+        condiciones.join(" ");
 
 
     actualizarVistaPreviaReglasOficiales();
@@ -17888,31 +18147,380 @@ if (textoPersonalizado) {
     </div>
 </details>
 
-                <label>
-                    <strong>
-                        4. Mecánica / forma de participación
-                    </strong>
-                </label>
+ <!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 4 — MECÁNICA / FORMA DE PARTICIPACIÓN
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonMecanica"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🎟️ 4. Mecánica / forma de participación
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaMecanica"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona las condiciones que correspondan.
+            Puedes elegir más de una opción y MASS construirá
+            automáticamente la mecánica de participación.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="seleccionar_numeros"
+                    ${mecanicaOpcionesGuardadas.includes("seleccionar_numeros") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "mecanica"
-                    )
-                )}</textarea>
+                >
+                <span>
+                    Seleccionar y adquirir números disponibles
+                </span>
+            </label>
 
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="precio_mass"
+                    ${mecanicaOpcionesGuardadas.includes("precio_mass") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir precio por número: ${escaparHTML(
+                        dinamicaPrecioMassTexto || "precio configurado"
+                    )}
+                </span>
+            </label>
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="total_numeros"
+                    ${mecanicaOpcionesGuardadas.includes("total_numeros") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir cantidad total de números: ${dinamicaTotalNumeros}
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="modalidad"
+                    ${mecanicaOpcionesGuardadas.includes("modalidad") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir modalidad: ${escaparHTML(
+                        dinamicaModalidadTexto
+                    )}
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="apartado"
+                    ${mecanicaOpcionesGuardadas.includes("apartado") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir tiempo máximo de apartado: ${dinamicaTiempoApartadoHoras} horas
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="cierre_apartados"
+                    ${mecanicaOpcionesGuardadas.includes("cierre_apartados") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Incluir regla de cierre de apartados
+                </span>
+            </label>
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasMecanicaOpcion"
+                    value="otro"
+                    ${mecanicaOpcionesGuardadas.includes("otro") ? "checked" : ""}
+                    onchange="actualizarMecanicaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Otra condición / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+        <div
+            id="reglasMecanicaOtroBox"
+            style="
+                display:${
+                    mecanicaOpcionesGuardadas.includes("otro")
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+            <label
+                for="reglasMecanicaOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe la condición personalizada
+            </label>
+
+            <textarea
+                id="reglasMecanicaOtroTexto"
+                rows="3"
+                oninput="actualizarMecanicaPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                mecanicaOtroGuardado
+            )}</textarea>
+        </div>
+
+        <label
+            for="reglasPlantillaMecanica"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Mecánica de participación
+        </label>
+
+        <textarea
+            id="reglasPlantillaMecanica"
+            rows="5"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "mecanica"
+            )
+        )}</textarea>
+
+    </div>
+</details>   
 
 
                 <label>
@@ -18548,6 +19156,26 @@ const periodoOtro =
         ? obtenerValorCampoReglasOficiales(
             "reglasPeriodoOtroTexto"
         )
+        : "";
+
+const mecanicaOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasMecanicaOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
+
+const mecanicaOtro =
+    mecanicaOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasMecanicaOtroTexto"
+        )
         : "";	
 
         if (
@@ -18560,6 +19188,12 @@ const periodoOtro =
     periodoTipo === "otro" &&
     !periodoOtro
 ) ||
+
+mecanicaOpciones.length === 0 ||
+(
+    mecanicaOpciones.includes("otro") &&
+    !mecanicaOtro
+) ||			
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
             !premio ||
@@ -18597,7 +19231,13 @@ const periodoOtro =
     periodoTipo,
 
 periodo_otro:
-    periodoOtro,		
+    periodoOtro,
+
+mecanica_opciones:
+    mecanicaOpciones,
+
+mecanica_otro:
+    mecanicaOtro,	
 
     premio:
         premio,
