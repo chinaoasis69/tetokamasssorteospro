@@ -60200,6 +60200,9 @@ if (
   metodoPagoRecargaSeleccionado?.metodo_codigo ===
   "EFECTIVO_PUNTO_MASS"
 ) {
+  detalle.style.display = "none";
+  detalle.innerHTML = "";
+
   await recargarSaldo();
   return;
 }
