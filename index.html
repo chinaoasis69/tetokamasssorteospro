@@ -1732,7 +1732,7 @@ display:block;
 Recarga saldo MASS utilizando cualquiera de los siguientes métodos de pago.
 </p>
 
-<p style="font-size:18px;line-height:1.6;">
+<p id="mensajeSubirComprobanteMass" style="font-size:18px;line-height:1.6;">
 Una vez realizado tu pago, sube tu comprobante desde la plataforma para que el organizador apruebe tu recarga.
 </p>
 
@@ -60056,6 +60056,27 @@ async function mostrarDetalleMetodoPagoUsuarioMass(
             "detalleMetodoPagoUsuarioMass"
         );
 
+const mensajeSubirComprobanteMass =
+  document.getElementById("mensajeSubirComprobanteMass");
+
+const boxSubirComprobanteMass =
+  document.getElementById("boxSubirComprobanteMass");
+
+const mensajeSaldoDisponibleMass =
+  document.getElementById("mensajeSaldoDisponibleMass");
+
+if (mensajeSubirComprobanteMass) {
+  mensajeSubirComprobanteMass.style.display = "";
+}
+
+if (boxSubirComprobanteMass) {
+  boxSubirComprobanteMass.style.display = "";
+}
+
+if (mensajeSaldoDisponibleMass) {
+  mensajeSaldoDisponibleMass.style.display = "";
+}	
+
 	const escaparHtml = valor =>
     String(valor ?? "")
         .replace(/&/g, "&amp;")
@@ -60200,6 +60221,19 @@ if (
   metodoPagoRecargaSeleccionado?.metodo_codigo ===
   "EFECTIVO_PUNTO_MASS"
 ) {
+
+if (mensajeSubirComprobanteMass) {
+  mensajeSubirComprobanteMass.style.display = "none";
+}
+
+if (boxSubirComprobanteMass) {
+  boxSubirComprobanteMass.style.display = "none";
+}
+
+if (mensajeSaldoDisponibleMass) {
+  mensajeSaldoDisponibleMass.style.display = "none";
+}
+	
   detalle.style.display = "none";
   detalle.innerHTML = "";
 
