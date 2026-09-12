@@ -16351,13 +16351,169 @@ async function abrirEditorReglasOficiales(
         ""
     ).trim();
 
+	const dinamicaFechaSorteo =
+    String(
+        respuesta.dinamica_fecha_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaHoraSorteo =
+    String(
+        respuesta.dinamica_hora_sorteo ||
+        ""
+    ).trim();
+
+
+const dinamicaZonaHoraria =
+    String(
+        respuesta.dinamica_zona_horaria ||
+        ""
+    ).trim();
+
 
         const organizadorNombre =
             String(
                 respuesta.organizador_nombre ||
                 "Organizador"
             );
+		
+const formatearFechaReglasV2 =
+    (fecha) => {
 
+        const valor =
+            String(fecha || "").trim();
+
+        const partes =
+            valor.match(
+                /^(\d{4})-(\d{2})-(\d{2})$/
+            );
+
+        if (!partes) {
+            return valor;
+        }
+
+        const meses = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre"
+        ];
+
+        const anio =
+            Number(partes[1]);
+
+        const mes =
+            Number(partes[2]);
+
+        const dia =
+            Number(partes[3]);
+
+        if (
+            mes < 1 ||
+            mes > 12 ||
+            dia < 1 ||
+            dia > 31
+        ) {
+            return valor;
+        }
+
+        return (
+            dia +
+            " de " +
+            meses[mes - 1] +
+            " de " +
+            anio
+        );
+    };
+
+
+const formatearHoraReglasV2 =
+    (hora) => {
+
+        const valor =
+            String(hora || "").trim();
+
+        const partes =
+            valor.match(
+                /^(\d{2}):(\d{2})(?::\d{2})?$/
+            );
+
+        if (!partes) {
+            return valor;
+        }
+
+        const hora24 =
+            Number(partes[1]);
+
+        const minutos =
+            partes[2];
+
+        if (
+            hora24 < 0 ||
+            hora24 > 23
+        ) {
+            return valor;
+        }
+
+        const periodo =
+            hora24 >= 12
+                ? "PM"
+                : "AM";
+
+        const hora12 =
+            hora24 % 12 || 12;
+
+        return (
+            hora12 +
+            ":" +
+            minutos +
+            " " +
+            periodo
+        );
+    };
+
+
+const formatearZonaReglasV2 =
+    (zona) => {
+
+        const valor =
+            String(zona || "").trim();
+
+        if (
+            valor === "America/Chicago"
+        ) {
+            return "Texas / Centro de Estados Unidos";
+        }
+
+        return valor;
+    };
+
+
+const dinamicaFechaSorteoTexto =
+    formatearFechaReglasV2(
+        dinamicaFechaSorteo
+    );
+
+
+const dinamicaHoraSorteoTexto =
+    formatearHoraReglasV2(
+        dinamicaHoraSorteo
+    );
+
+
+const dinamicaZonaHorariaTexto =
+    formatearZonaReglasV2(
+        dinamicaZonaHoraria
+    );
 
         const valorDato =
             (nombre) => {
@@ -16383,6 +16539,140 @@ const tipoPremioGuardado =
                 String(valor || "").trim()
         )
         : [];
+
+const periodoTipoGuardado =
+    String(
+        datosPlantilla?.periodo_tipo ||
+        ""
+    ).trim();
+
+
+const periodoOtroGuardado =
+    String(
+        datosPlantilla?.periodo_otro ||
+        ""
+    ).trim();
+
+window.actualizarPeriodoPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaPeriodo"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasPeriodoTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasPeriodoOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasPeriodoOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (
+        tipo ===
+        "publicacion_hasta_sorteo"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la publicación de la dinámica hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ".";
+    }
+
+
+    if (
+        tipo ===
+        "activacion_hasta_sorteo"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la activación oficial de la dinámica hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ".";
+    }
+
+
+    if (
+        tipo ===
+        "agotar_o_fecha"
+    ) {
+
+        texto =
+            "La participación estará disponible desde la publicación de la dinámica hasta que se agoten los números disponibles o hasta el " +
+            dinamicaFechaSorteoTexto +
+            " a las " +
+            dinamicaHoraSorteoTexto +
+            (
+                dinamicaZonaHorariaTexto
+                    ? ", zona horaria " +
+                      dinamicaZonaHorariaTexto
+                    : ""
+            ) +
+            ", lo que ocurra primero.";
+    }
+
+
+    if (
+        tipo === "otro"
+    ) {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};	
 
 window.actualizarElegibilidadPlantillaV2 = function () {
 
@@ -17332,32 +17622,271 @@ if (textoPersonalizado) {
 </details>             
 
 
-                <label>
-                    <strong>
-                        3. Periodo o vigencia de participación
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 3 — PERIODO
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonPeriodo"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        📅 3. Periodo o vigencia de participación
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaPeriodo"
-                    rows="3"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se definirá el periodo de participación.
+            MASS utilizará automáticamente la fecha, hora y zona horaria
+            configuradas para esta dinámica.
+        </p>
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="publicacion_hasta_sorteo"
+                    ${periodoTipoGuardado === "publicacion_hasta_sorteo" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "periodo"
-                    )
-                )}</textarea>
+                >
+                <span>
+                    Desde la publicación hasta la fecha y hora del sorteo
+                </span>
+            </label>
 
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="activacion_hasta_sorteo"
+                    ${periodoTipoGuardado === "activacion_hasta_sorteo" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Desde la activación oficial hasta la fecha y hora del sorteo
+                </span>
+            </label>
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="agotar_o_fecha"
+                    ${periodoTipoGuardado === "agotar_o_fecha" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Hasta agotar números o llegar a la fecha del sorteo, lo que ocurra primero
+                </span>
+            </label>
 
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasPeriodoTipo"
+                    value="otro"
+                    ${periodoTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarPeriodoPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+                <span>
+                    Otro periodo / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+        <div
+            id="reglasPeriodoOtroBox"
+            style="
+                display:${
+                    periodoTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+            <label
+                for="reglasPeriodoOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe el periodo personalizado
+            </label>
+
+            <textarea
+                id="reglasPeriodoOtroTexto"
+                rows="3"
+                oninput="actualizarPeriodoPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                periodoOtroGuardado
+            )}</textarea>
+        </div>
+
+        <label
+            for="reglasPlantillaPeriodo"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Periodo de participación
+        </label>
+
+        <textarea
+            id="reglasPlantillaPeriodo"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "periodo"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
                 <label>
                     <strong>
@@ -18006,10 +18535,30 @@ async function guardarReglasOficialesDesdeEditor(
         )
         : "";
 
+const periodoTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasPeriodoTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const periodoOtro =
+    periodoTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasPeriodoOtroTexto"
+        )
+        : "";	
+
         if (
 			(
     elegibilidadOpciones.includes("otro") &&
     !elegibilidadOtro
+) ||
+			!periodoTipo ||
+(
+    periodoTipo === "otro" &&
+    !periodoOtro
 ) ||
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
@@ -18042,7 +18591,13 @@ async function guardarReglasOficialesDesdeEditor(
     elegibilidadOpciones,
 
 	elegibilidad_otro:
-    elegibilidadOtro,		
+    elegibilidadOtro,
+
+	periodo_tipo:
+    periodoTipo,
+
+periodo_otro:
+    periodoOtro,		
 
     premio:
         premio,
