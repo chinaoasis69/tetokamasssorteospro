@@ -16717,7 +16717,20 @@ const seleccionOtroGuardado =
     String(
         datosPlantilla?.seleccion_otro ||
         ""
-    ).trim();		
+    ).trim();
+
+const entregaTipoGuardado =
+    String(
+        datosPlantilla?.entrega_tipo ||
+        ""
+    ).trim();
+
+
+const entregaOtroGuardado =
+    String(
+        datosPlantilla?.entrega_otro ||
+        ""
+    ).trim();	
 
 window.actualizarPeriodoPlantillaV2 = function () {
 
@@ -17051,6 +17064,74 @@ window.actualizarSeleccionPlantillaV2 = function () {
 
             texto += ".";
         }
+    }
+
+
+    if (tipo === "otro") {
+
+        texto =
+            String(
+                otroTexto?.value || ""
+            ).trim();
+    }
+
+
+    textarea.value =
+        texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarEntregaPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaEntrega"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const tipo =
+        String(
+            document.querySelector(
+                'input[name="reglasEntregaTipo"]:checked'
+            )?.value || ""
+        ).trim();
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasEntregaOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasEntregaOtroTexto"
+        );
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            tipo === "otro"
+                ? "block"
+                : "none";
+    }
+
+
+    let texto = "";
+
+
+    if (tipo === "organizador") {
+
+        texto =
+            "El ganador deberá comunicarse con " +
+            organizadorNombre +
+            " para coordinar la entrega o reclamación del premio.";
     }
 
 
@@ -18873,31 +18954,211 @@ if (textoPersonalizado) {
 </details>
 
 
-                <label>
-                    <strong>
-                        6. Entrega o reclamación del premio
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 6 — ENTREGA O RECLAMACIÓN DEL PREMIO
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonEntrega"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🎁 6. Entrega o reclamación del premio
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaEntrega"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona cómo se coordinará la entrega o reclamación del premio.
+            MASS puede utilizar automáticamente el nombre del organizador de esta dinámica.
+        </p>
+
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasEntregaTipo"
+                    value="organizador"
+                    ${entregaTipoGuardado === "organizador" ? "checked" : ""}
+                    onchange="actualizarEntregaPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "entrega_premio"
-                    )
-                )}</textarea>
+                >
+
+                <span>
+                    Coordinar directamente con:
+                    ${escaparHTML(
+                        organizadorNombre
+                    )}
+                </span>
+            </label>
 
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="radio"
+                    name="reglasEntregaTipo"
+                    value="otro"
+                    ${entregaTipoGuardado === "otro" ? "checked" : ""}
+                    onchange="actualizarEntregaPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otro método de entrega / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasEntregaOtroBox"
+            style="
+                display:${
+                    entregaTipoGuardado === "otro"
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasEntregaOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe las condiciones de entrega o reclamación
+            </label>
+
+            <textarea
+                id="reglasEntregaOtroTexto"
+                rows="3"
+                oninput="actualizarEntregaPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                entregaOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaEntrega"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Entrega o reclamación del premio
+        </label>
+
+        <textarea
+            id="reglasPlantillaEntrega"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "entrega_premio"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
 
                 <label>
@@ -19514,7 +19775,22 @@ const seleccionOtro =
         ? obtenerValorCampoReglasOficiales(
             "reglasSeleccionOtroTexto"
         )
-        : "";	
+        : "";
+
+const entregaTipo =
+    String(
+        document.querySelector(
+            'input[name="reglasEntregaTipo"]:checked'
+        )?.value || ""
+    ).trim();
+
+
+const entregaOtro =
+    entregaTipo === "otro"
+        ? obtenerValorCampoReglasOficiales(
+            "reglasEntregaOtroTexto"
+        )
+        : "";		
 
         if (
 			(
@@ -19537,7 +19813,13 @@ mecanicaOpciones.length === 0 ||
 (
     seleccionTipo === "otro" &&
     !seleccionOtro
-) ||			
+) ||
+
+!entregaTipo ||
+(
+    entregaTipo === "otro" &&
+    !entregaOtro
+) ||	
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
             !premio ||
@@ -19582,6 +19864,12 @@ mecanica_opciones:
 
 mecanica_otro:
     mecanicaOtro,
+
+entrega_tipo:
+    entregaTipo,
+
+entrega_otro:
+    entregaOtro,			
 
 seleccion_tipo:
     seleccionTipo,
