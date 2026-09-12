@@ -16730,6 +16730,23 @@ const entregaOtroGuardado =
     String(
         datosPlantilla?.entrega_otro ||
         ""
+    ).trim();
+
+const restriccionesOpcionesGuardadas =
+    Array.isArray(
+        datosPlantilla?.restricciones_opciones
+    )
+        ? datosPlantilla.restricciones_opciones.map(
+            (valor) =>
+                String(valor || "").trim()
+        )
+        : [];
+
+
+const restriccionesOtroGuardado =
+    String(
+        datosPlantilla?.restricciones_otro ||
+        ""
     ).trim();	
 
 window.actualizarPeriodoPlantillaV2 = function () {
@@ -17146,6 +17163,110 @@ window.actualizarEntregaPlantillaV2 = function () {
 
     textarea.value =
         texto;
+
+
+    actualizarVistaPreviaReglasOficiales();
+};
+
+window.actualizarRestriccionesPlantillaV2 = function () {
+
+    const textarea =
+        document.getElementById(
+            "reglasPlantillaRestricciones"
+        );
+
+    if (!textarea) {
+        return;
+    }
+
+
+    const seleccionadas =
+        Array.from(
+            document.querySelectorAll(
+                'input[name="reglasRestriccionesOpcion"]:checked'
+            )
+        )
+        .map(
+            (input) =>
+                String(input.value || "").trim()
+        );
+
+
+    const textos = {
+
+        incumplir_reglas:
+            "El incumplimiento de estas Reglas Oficiales podrá resultar en la descalificación de la persona participante.",
+
+        fraude:
+            "Cualquier intento de fraude, manipulación o alteración del funcionamiento de la dinámica será motivo de descalificación.",
+
+        datos_falsos:
+            "Proporcionar información falsa, incompleta o engañosa podrá resultar en descalificación.",
+
+        pagos_no_confirmados:
+            "Las participaciones asociadas con pagos rechazados, revertidos o no confirmados no serán válidas.",
+
+        cuentas_multiples:
+            "El uso de múltiples cuentas para obtener una ventaja indebida podrá resultar en descalificación."
+
+    };
+
+
+    const condiciones =
+        seleccionadas
+            .filter(
+                (valor) =>
+                    valor !== "otro" &&
+                    textos[valor]
+            )
+            .map(
+                (valor) =>
+                    textos[valor]
+            );
+
+
+    const otroBox =
+        document.getElementById(
+            "reglasRestriccionesOtroBox"
+        );
+
+    const otroTexto =
+        document.getElementById(
+            "reglasRestriccionesOtroTexto"
+        );
+
+
+    const incluyeOtro =
+        seleccionadas.includes("otro");
+
+
+    if (otroBox) {
+
+        otroBox.style.display =
+            incluyeOtro
+                ? "block"
+                : "none";
+    }
+
+
+    const textoPersonalizado =
+        incluyeOtro
+            ? String(
+                otroTexto?.value || ""
+            ).trim()
+            : "";
+
+
+    if (textoPersonalizado) {
+
+        condiciones.push(
+            textoPersonalizado
+        );
+    }
+
+
+    textarea.value =
+        condiciones.join(" ");
 
 
     actualizarVistaPreviaReglasOficiales();
@@ -19161,31 +19282,356 @@ if (textoPersonalizado) {
 </details>
 
 
-                <label>
-                    <strong>
-                        7. Restricciones / causas de descalificación
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 7 — RESTRICCIONES / CAUSAS DE DESCALIFICACIÓN
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonRestricciones"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        🚫 7. Restricciones / causas de descalificación
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaRestricciones"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Selecciona todas las restricciones que correspondan.
+            Puedes elegir más de una opción y MASS construirá automáticamente esta sección de las Reglas Oficiales.
+        </p>
+
+
+        <div
+            style="
+                display:flex;
+                flex-direction:column;
+                gap:8px;
+                margin-bottom:16px;
+            "
+        >
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="incumplir_reglas"
+                    ${restriccionesOpcionesGuardadas.includes("incumplir_reglas") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
                     style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
                     "
-                >${escaparHTML(
-                    valorDato(
-                        "restricciones"
-                    )
-                )}</textarea>
+                >
+
+                <span>
+                    Incumplimiento de las Reglas Oficiales
+                </span>
+            </label>
 
 
-                <br><br>
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="fraude"
+                    ${restriccionesOpcionesGuardadas.includes("fraude") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Fraude, manipulación o alteración de la dinámica
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="datos_falsos"
+                    ${restriccionesOpcionesGuardadas.includes("datos_falsos") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Información falsa, incompleta o engañosa
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="pagos_no_confirmados"
+                    ${restriccionesOpcionesGuardadas.includes("pagos_no_confirmados") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Pagos rechazados, revertidos o no confirmados
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="cuentas_multiples"
+                    ${restriccionesOpcionesGuardadas.includes("cuentas_multiples") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Uso de múltiples cuentas para obtener una ventaja indebida
+                </span>
+            </label>
+
+
+            <label
+                style="
+                    display:flex;
+                    align-items:center;
+                    gap:10px;
+                    width:100%;
+                    margin:0;
+                    padding:10px 12px;
+                    border:1px solid #334155;
+                    border-radius:9px;
+                    background:#111827;
+                    cursor:pointer;
+                    text-align:left;
+                    box-sizing:border-box;
+                "
+            >
+                <input
+                    type="checkbox"
+                    name="reglasRestriccionesOpcion"
+                    value="otro"
+                    ${restriccionesOpcionesGuardadas.includes("otro") ? "checked" : ""}
+                    onchange="actualizarRestriccionesPlantillaV2()"
+                    style="
+                        width:auto;
+                        max-width:none;
+                        margin:0;
+                        padding:0;
+                        flex:0 0 auto;
+                    "
+                >
+
+                <span>
+                    Otra restricción / Personalizar
+                </span>
+            </label>
+
+        </div>
+
+
+        <div
+            id="reglasRestriccionesOtroBox"
+            style="
+                display:${
+                    restriccionesOpcionesGuardadas.includes("otro")
+                        ? "block"
+                        : "none"
+                };
+                margin-bottom:16px;
+                padding:12px;
+                border:1px solid #334155;
+                border-radius:9px;
+                background:#111827;
+            "
+        >
+
+            <label
+                for="reglasRestriccionesOtroTexto"
+                style="
+                    display:block;
+                    margin-bottom:6px;
+                    font-weight:bold;
+                "
+            >
+                ✏️ Escribe la restricción personalizada
+            </label>
+
+            <textarea
+                id="reglasRestriccionesOtroTexto"
+                rows="3"
+                oninput="actualizarRestriccionesPlantillaV2()"
+                style="
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:10px;
+                "
+            >${escaparHTML(
+                restriccionesOtroGuardado
+            )}</textarea>
+
+        </div>
+
+
+        <label
+            for="reglasPlantillaRestricciones"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Restricciones / causas de descalificación
+        </label>
+
+        <textarea
+            id="reglasPlantillaRestricciones"
+            rows="5"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "restricciones"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
 
                 <label>
@@ -19790,6 +20236,26 @@ const entregaOtro =
         ? obtenerValorCampoReglasOficiales(
             "reglasEntregaOtroTexto"
         )
+        : "";
+
+const restriccionesOpciones =
+    Array.from(
+        document.querySelectorAll(
+            'input[name="reglasRestriccionesOpcion"]:checked'
+        )
+    )
+    .map(
+        (input) =>
+            String(input.value || "").trim()
+    )
+    .filter(Boolean);
+
+
+const restriccionesOtro =
+    restriccionesOpciones.includes("otro")
+        ? obtenerValorCampoReglasOficiales(
+            "reglasRestriccionesOtroTexto"
+        )
         : "";		
 
         if (
@@ -19819,7 +20285,13 @@ mecanicaOpciones.length === 0 ||
 (
     entregaTipo === "otro" &&
     !entregaOtro
-) ||	
+) ||
+
+restriccionesOpciones.length === 0 ||
+(
+    restriccionesOpciones.includes("otro") &&
+    !restriccionesOtro
+) ||			
 			elegibilidadOpciones.length === 0 ||
 			!tipoPremio ||
             !premio ||
@@ -19827,12 +20299,13 @@ mecanicaOpciones.length === 0 ||
             !periodo ||
             !mecanica ||
             !seleccion ||
-            !entrega
+			!entrega ||
+			!restricciones
         ) {
 
             alert(
                 "⚠️ Para guardar la Plantilla guiada MASS completa:\n\n" +
-                "Debes llenar los campos 1 al 6."
+                "Debes llenar los campos 1 al 7."
             );
 
             return;
@@ -19875,7 +20348,13 @@ seleccion_tipo:
     seleccionTipo,
 
 seleccion_otro:
-    seleccionOtro,	
+    seleccionOtro,
+
+restricciones_opciones:
+    restriccionesOpciones,
+
+restricciones_otro:
+    restriccionesOtro,			
 
     premio:
         premio,
