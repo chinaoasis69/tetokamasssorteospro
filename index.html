@@ -19634,28 +19634,79 @@ if (textoPersonalizado) {
 </details>
 
 
-                <label>
-                    <strong>
-                        8. Información adicional
-                    </strong>
-                </label>
+<!-- =========================================================
+     MASS REGLAS OFICIALES V2
+     ACORDEÓN 8 — INFORMACIÓN ADICIONAL
+========================================================= -->
 
-                <br><br>
+<details
+    id="reglasAcordeonAdicional"
+    style="
+        margin-bottom:14px;
+        border:1px solid #475569;
+        border-radius:10px;
+        overflow:hidden;
+        background:#0f172a;
+    "
+>
+    <summary
+        style="
+            cursor:pointer;
+            padding:14px;
+            font-weight:bold;
+            background:#1e293b;
+            color:white;
+        "
+    >
+        📝 8. Información adicional
+    </summary>
 
-                <textarea
-                    id="reglasPlantillaAdicional"
-                    rows="4"
-                    oninput="actualizarVistaPreviaReglasOficiales()"
-                    style="
-                        width:100%;
-                        box-sizing:border-box;
-                        padding:10px;
-                    "
-                >${escaparHTML(
-                    valorDato(
-                        "informacion_adicional"
-                    )
-                )}</textarea>
+    <div
+        style="
+            padding:14px;
+            text-align:left;
+        "
+    >
+
+        <p
+            style="
+                margin-top:0;
+                margin-bottom:12px;
+                color:#cbd5e1;
+            "
+        >
+            Este campo es opcional. Puedes agregar cualquier información
+            adicional que deba formar parte de las Reglas Oficiales de esta dinámica.
+        </p>
+
+        <label
+            for="reglasPlantillaAdicional"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Información adicional
+        </label>
+
+        <textarea
+            id="reglasPlantillaAdicional"
+            rows="4"
+            oninput="actualizarVistaPreviaReglasOficiales()"
+            style="
+                width:100%;
+                box-sizing:border-box;
+                padding:10px;
+            "
+        >${escaparHTML(
+            valorDato(
+                "informacion_adicional"
+            )
+        )}</textarea>
+
+    </div>
+</details>
 
             </div>
 
