@@ -57947,15 +57947,48 @@ canalRealtimeLuckySpin =
         }
       }
     )
-    .subscribe(
-      status => {
 
-        console.log(
-          "🎰 Realtime Lucky Spin:",
-          status
-        );
-      }
+	.subscribe(
+  async status => {
+
+    console.log(
+      "🎰 Realtime Lucky Spin:",
+      status
     );
+
+    /*
+      Si Realtime se reconecta después de una caída,
+      volver a consultar el estado oficial.
+
+      Así, aunque se haya perdido un INSERT / UPDATE /
+      DELETE durante CHANNEL_ERROR, la interfaz queda
+      nuevamente sincronizada sin refrescar la página.
+    */
+    if (status === "SUBSCRIBED") {
+
+      if (
+        String(RIFA_ID || "") !==
+        String(rifaRealtimeId)
+      ) {
+        return;
+      }
+
+      await actualizarVisibilidadLuckySpin();
+
+      const spinBox =
+        document.getElementById(
+          "spinBox"
+        );
+
+      if (
+        spinBox &&
+        spinBox.style.display !== "none"
+      ) {
+        await cargarBoletosDisponiblesLuckySpin();
+      }
+    }
+  }
+);
   }	
 
 // Realtime
