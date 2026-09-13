@@ -1287,6 +1287,7 @@ Selecciona una rifa
 <div
   id="spinBox"
   style="
+	display:none;
     position:relative;
     overflow:hidden;
     border:3px solid #39ff14;
@@ -50858,8 +50859,11 @@ document.getElementById("precioRifa").innerHTML =
 
 		console.log("unidadMass =", unidadMass);
         console.log("window.unidadMassActual =", window.unidadMassActual);
+		
 
-        window.rifaSeleccionada = rifa;
+      window.rifaSeleccionada = rifa;
+
+	await actualizarVisibilidadLuckySpin();	
 
 /*
   Cargar el historial público reciente
@@ -55399,6 +55403,49 @@ if (botonConfirmar) {
 
 await cargarBoletosDisponiblesLuckySpin();
 }
+
+async function actualizarVisibilidadLuckySpin() {
+  const spinBox = document.getElementById("spinBox");
+
+  if (!spinBox) {
+    return false;
+  }
+
+  const rifaId = String(RIFA_ID || "").trim();
+
+  // Sin dinámica seleccionada, Lucky Spin permanece oculto.
+  if (!rifaId) {
+    spinBox.style.display = "none";
+    return false;
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+    "rifa_tiene_lucky_spin_activo_seguro",
+    {
+      p_rifa_id: rifaId
+    }
+  );
+
+  if (error) {
+    console.error(
+      "ERROR VERIFICANDO LUCKY SPIN ACTIVO:",
+      error
+    );
+
+    // Ante cualquier error, ocultar por seguridad.
+    spinBox.style.display = "none";
+    return false;
+  }
+
+  const luckySpinActivo = data === true;
+
+  spinBox.style.display =
+    luckySpinActivo
+      ? "block"
+      : "none";
+
+  return luckySpinActivo;
+}	
 
 async function cargarBoletosDisponiblesLuckySpin() {
 
