@@ -57254,6 +57254,7 @@ window.MASS_BLOQUEAR_REALTIME_BOLETOS =
 
 let canalRealtimeBoletos = null;
 let canalRealtimeActividadSorteo = null;
+let canalRealtimeLuckySpin = null;	
 
 
 /*
@@ -57681,6 +57682,15 @@ function iniciarRealtime() {
       null;
   }
 
+if (canalRealtimeLuckySpin) {
+
+  supabaseClient.removeChannel(
+    canalRealtimeLuckySpin
+  );
+
+  canalRealtimeLuckySpin = null;
+}	
+
 
   const rifaRealtimeId =
     String(
@@ -57869,7 +57879,84 @@ function iniciarRealtime() {
           );
         }
       );
-}	
+}
+
+/*
+  =========================================================
+  CANAL 3:
+  ESTADO PÚBLICO MASS LUCKY SPIN
+
+  Este canal NO consulta lucky_spin_premios.
+  Solamente escucha el estado público mínimo:
+  rifa_id + activo + actualizado_en.
+  =========================================================
+*/
+
+canalRealtimeLuckySpin =
+  supabaseClient
+    .channel(
+      `realtime_lucky_spin_${rifaRealtimeId}`
+    )
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "lucky_spin_estado_publico",
+        filter:
+          `rifa_id=eq.${rifaRealtimeId}`
+      },
+      async (payload) => {
+
+        console.log(
+          "🎰 Realtime Lucky Spin público:",
+          payload
+        );
+
+        /*
+          Si el usuario ya cambió de dinámica
+          mientras llegaba el evento, ignorarlo.
+        */
+        if (
+          String(RIFA_ID || "") !==
+          String(rifaRealtimeId)
+        ) {
+          return;
+        }
+
+        /*
+          La RPC segura sigue siendo
+          la fuente oficial para decidir
+          si Lucky Spin debe mostrarse.
+        */
+        await actualizarVisibilidadLuckySpin();
+
+        /*
+          Si quedó visible, actualizar también
+          los boletos con giro disponible.
+        */
+        const spinBox =
+          document.getElementById(
+            "spinBox"
+          );
+
+        if (
+          spinBox &&
+          spinBox.style.display !== "none"
+        ) {
+          await cargarBoletosDisponiblesLuckySpin();
+        }
+      }
+    )
+    .subscribe(
+      status => {
+
+        console.log(
+          "🎰 Realtime Lucky Spin:",
+          status
+        );
+      }
+    );	
 
 // Realtime
 
