@@ -12989,19 +12989,528 @@ if(rifaPremiosAdminId){
 
 }
 
+// =========================================================
+// MASS - FORMULARIO PROFESIONAL DE PREMIOS LUCKY SPIN
+// Reutilizable para AGREGAR y EDITAR.
+// =========================================================
+
+function abrirFormularioPremioLucky({
+  modo = "crear",
+  nombre = "",
+  descripcion = "",
+  codigo = "",
+  cantidad = 1,
+  probabilidad = 0
+} = {}) {
+
+  return new Promise(resolve => {
+
+    let modal =
+      document.getElementById(
+        "modalFormularioPremioLucky"
+      );
+
+    if (!modal) {
+
+      modal = document.createElement("div");
+
+      modal.id =
+        "modalFormularioPremioLucky";
+
+      modal.style.cssText = `
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        background:rgba(0,0,0,.82);
+        align-items:center;
+        justify-content:center;
+        padding:18px;
+        overflow:auto;
+      `;
+
+      modal.innerHTML = `
+        <div
+          style="
+            width:min(94vw,620px);
+            max-height:92vh;
+            overflow:auto;
+            background:
+              linear-gradient(
+                145deg,
+                #090909,
+                #111
+              );
+            border:2px solid #39ff14;
+            border-radius:22px;
+            box-shadow:
+              0 0 30px rgba(57,255,20,.42);
+            padding:24px;
+            color:white;
+          "
+        >
+
+          <div
+            style="
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:12px;
+              margin-bottom:20px;
+            "
+          >
+            <h2
+              id="tituloFormularioPremioLucky"
+              style="
+                margin:0;
+                color:#7cff00;
+                font-size:24px;
+              "
+            >
+              🎁 Premio MASS Lucky Spin
+            </h2>
+
+            <button
+              type="button"
+              id="btnCerrarFormularioPremioLucky"
+              style="
+                border:1px solid #39ff14;
+                background:#111;
+                color:white;
+                border-radius:10px;
+                padding:8px 12px;
+                cursor:pointer;
+              "
+            >
+              ✕
+            </button>
+          </div>
+
+          <div
+            style="
+              padding:12px;
+              margin-bottom:18px;
+              border:1px solid rgba(57,255,20,.45);
+              border-radius:12px;
+              background:rgba(57,255,20,.06);
+              color:#ddd;
+              line-height:1.45;
+              font-size:14px;
+            "
+          >
+            Configura el premio promocional que podrá
+            obtenerse mediante MASS Lucky Spin.
+          </div>
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            🎁 Nombre del premio *
+          </label>
+
+          <input
+            id="premioLuckyNombre"
+            type="text"
+            maxlength="150"
+            autocomplete="off"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              margin-bottom:16px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+            "
+          >
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            📝 Descripción
+          </label>
+
+          <textarea
+            id="premioLuckyDescripcion"
+            rows="4"
+            maxlength="1000"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              margin-bottom:16px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+              resize:vertical;
+            "
+          ></textarea>
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            🔑 Código
+          </label>
+
+          <input
+            id="premioLuckyCodigo"
+            type="text"
+            maxlength="100"
+            autocomplete="off"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              margin-bottom:16px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+            "
+          >
+
+          <div
+            style="
+              display:grid;
+              grid-template-columns:
+                repeat(auto-fit,minmax(180px,1fr));
+              gap:14px;
+            "
+          >
+
+            <div>
+              <label
+                style="
+                  display:block;
+                  font-weight:bold;
+                  margin-bottom:6px;
+                "
+              >
+                📦 Cantidad disponible *
+              </label>
+
+              <input
+                id="premioLuckyCantidad"
+                type="number"
+                min="1"
+                step="1"
+                style="
+                  width:100%;
+                  box-sizing:border-box;
+                  padding:12px;
+                  border:1px solid #39ff14;
+                  border-radius:10px;
+                  background:#050505;
+                  color:white;
+                  font-size:16px;
+                "
+              >
+            </div>
+
+            <div>
+              <label
+                style="
+                  display:block;
+                  font-weight:bold;
+                  margin-bottom:6px;
+                "
+              >
+                🎯 Probabilidad % *
+              </label>
+
+              <input
+                id="premioLuckyProbabilidad"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                style="
+                  width:100%;
+                  box-sizing:border-box;
+                  padding:12px;
+                  border:1px solid #39ff14;
+                  border-radius:10px;
+                  background:#050505;
+                  color:white;
+                  font-size:16px;
+                "
+              >
+            </div>
+
+          </div>
+
+          <div
+            style="
+              margin-top:10px;
+              color:#aaa;
+              font-size:13px;
+              line-height:1.4;
+            "
+          >
+            La probabilidad debe estar entre 0% y 100%.
+          </div>
+
+          <div
+            id="errorFormularioPremioLucky"
+            style="
+              min-height:22px;
+              margin-top:14px;
+              color:#ff6b6b;
+              font-weight:bold;
+              text-align:center;
+            "
+          ></div>
+
+          <div
+            style="
+              display:flex;
+              flex-wrap:wrap;
+              justify-content:center;
+              gap:12px;
+              margin-top:16px;
+            "
+          >
+
+            <button
+              type="button"
+              id="btnCancelarFormularioPremioLucky"
+              style="
+                min-width:140px;
+                padding:12px 18px;
+                border:1px solid #aaa;
+                border-radius:12px;
+                background:#222;
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+              "
+            >
+              ✕ Cancelar
+            </button>
+
+            <button
+              type="button"
+              id="btnGuardarFormularioPremioLucky"
+              style="
+                min-width:170px;
+                padding:12px 18px;
+                border:2px solid #39ff14;
+                border-radius:12px;
+                background:#39ff14;
+                color:#050505;
+                font-weight:900;
+                cursor:pointer;
+                box-shadow:
+                  0 0 16px rgba(57,255,20,.42);
+              "
+            >
+              💾 Guardar premio
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+    }
+
+    const titulo =
+      document.getElementById(
+        "tituloFormularioPremioLucky"
+      );
+
+    const inputNombre =
+      document.getElementById(
+        "premioLuckyNombre"
+      );
+
+    const inputDescripcion =
+      document.getElementById(
+        "premioLuckyDescripcion"
+      );
+
+    const inputCodigo =
+      document.getElementById(
+        "premioLuckyCodigo"
+      );
+
+    const inputCantidad =
+      document.getElementById(
+        "premioLuckyCantidad"
+      );
+
+    const inputProbabilidad =
+      document.getElementById(
+        "premioLuckyProbabilidad"
+      );
+
+    const errorBox =
+      document.getElementById(
+        "errorFormularioPremioLucky"
+      );
+
+    const btnGuardar =
+      document.getElementById(
+        "btnGuardarFormularioPremioLucky"
+      );
+
+    const btnCancelar =
+      document.getElementById(
+        "btnCancelarFormularioPremioLucky"
+      );
+
+    const btnCerrar =
+      document.getElementById(
+        "btnCerrarFormularioPremioLucky"
+      );
+
+    titulo.textContent =
+      modo === "editar"
+        ? "✏️ Editar Premio MASS Lucky Spin"
+        : "🎁 Agregar Premio MASS Lucky Spin";
+
+    inputNombre.value =
+      String(nombre || "");
+
+    inputDescripcion.value =
+      String(descripcion || "");
+
+    inputCodigo.value =
+      String(codigo || "");
+
+    inputCantidad.value =
+      Number(cantidad || 1);
+
+    inputProbabilidad.value =
+      Number(probabilidad || 0);
+
+    errorBox.textContent = "";
+
+    modal.style.display = "flex";
+
+    setTimeout(() => {
+      inputNombre.focus();
+    }, 50);
+
+    const cerrar = resultado => {
+
+      modal.style.display = "none";
+
+      btnGuardar.onclick = null;
+      btnCancelar.onclick = null;
+      btnCerrar.onclick = null;
+
+      resolve(resultado);
+    };
+
+    btnCancelar.onclick =
+      () => cerrar(null);
+
+    btnCerrar.onclick =
+      () => cerrar(null);
+
+    btnGuardar.onclick = () => {
+
+      const nombreFinal =
+        String(inputNombre.value || "")
+          .trim();
+
+      const descripcionFinal =
+        String(inputDescripcion.value || "")
+          .trim();
+
+      const codigoFinal =
+        String(inputCodigo.value || "")
+          .trim();
+
+      const cantidadFinal =
+        Number(inputCantidad.value);
+
+      const probabilidadFinal =
+        Number(inputProbabilidad.value);
+
+      if (!nombreFinal) {
+        errorBox.textContent =
+          "El nombre del premio es obligatorio.";
+        inputNombre.focus();
+        return;
+      }
+
+      if (
+        !Number.isInteger(cantidadFinal) ||
+        cantidadFinal < 1
+      ) {
+        errorBox.textContent =
+          "La cantidad disponible debe ser un número entero mayor o igual a 1.";
+        inputCantidad.focus();
+        return;
+      }
+
+      if (
+        !Number.isFinite(probabilidadFinal) ||
+        probabilidadFinal < 0 ||
+        probabilidadFinal > 100
+      ) {
+        errorBox.textContent =
+          "La probabilidad debe estar entre 0% y 100%.";
+        inputProbabilidad.focus();
+        return;
+      }
+
+      cerrar({
+        nombre: nombreFinal,
+        descripcion: descripcionFinal,
+        codigo: codigoFinal,
+        cantidad: cantidadFinal,
+        probabilidad: probabilidadFinal
+      });
+    };
+  });
+}	
+
 async function nuevoPremioLucky(){
 
 	if(!rifaPremiosAdminId){
   alert("Primero selecciona una rifa para agregar premios Lucky Spin");
   return;
 }
-  const nombre = prompt("Nombre del premio:");
-  if(!nombre) return;
 
-  const descripcion = prompt("Descripción:") || "";
-  const codigo = prompt("Código:") || "";
-  const cantidad = Number(prompt("Cantidad disponible:") || 1);
-  const probabilidad = Number(prompt("Probabilidad %:") || 0);
+  const formulario =
+  await abrirFormularioPremioLucky({
+    modo: "crear",
+    cantidad: 1,
+    probabilidad: 0
+  });
+
+if (!formulario) {
+  return;
+}
+
+const {
+  nombre,
+  descripcion,
+  codigo,
+  cantidad,
+  probabilidad
+} = formulario;	
 
   const { error } = await supabaseClient
     .from("lucky_spin_premios")
@@ -13055,11 +13564,27 @@ if (adminRol === "organizador") {
     return;
   }
 
-  const nombre = prompt("Nombre:", p.nombre) || p.nombre;
-  const descripcion = prompt("Descripción:", p.descripcion || "") || "";
-  const codigo = prompt("Código:", p.codigo || "") || "";
-  const cantidad = Number(prompt("Cantidad:", p.cantidad || 1) || p.cantidad || 1);
-  const probabilidad = Number(prompt("Probabilidad %:", p.probabilidad || 0) || p.probabilidad || 0);
+  const formulario =
+  await abrirFormularioPremioLucky({
+    modo: "editar",
+    nombre: p.nombre || "",
+    descripcion: p.descripcion || "",
+    codigo: p.codigo || "",
+    cantidad: Number(p.cantidad ?? 1),
+    probabilidad: Number(p.probabilidad ?? 0)
+  });
+
+if (!formulario) {
+  return;
+}
+
+const {
+  nombre,
+  descripcion,
+  codigo,
+  cantidad,
+  probabilidad
+} = formulario;
 
   const { error: updateError } = await supabaseClient
     .from("lucky_spin_premios")
