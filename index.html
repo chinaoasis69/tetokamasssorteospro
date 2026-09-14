@@ -12961,17 +12961,48 @@ if(rifaPremiosAdminId){
 
                     <p>${p.descripcion || ""}</p>
 
-                    <p>
-                        Probabilidad: ${p.probabilidad || 0}
-                    </p>
+<p>
+  Tipo:
+  ${
+    p.tipo_premio === "producto_premio"
+      ? "Producto / Premio"
+      : p.tipo_premio === "promocion_cupon"
+        ? "Promoción / Cupón"
+        : p.tipo_premio === "boleto_gratis_mass"
+          ? "Boleto Gratis MASS"
+          : "Sin definir"
+  }
+</p>
 
-                    <p>
-                        Cantidad: ${p.cantidad || 0}
-                    </p>
+<p>
+  Aportado por:
+  ${
+    p.aportado_por === "patrocinador"
+      ? "Patrocinador"
+      : "Organizador"
+  }
+</p>
 
-                    <p>
-                        Entregados: ${p.entregados || 0}
-                    </p>
+<p>
+  Cantidad de premios:
+  ${Number(p.cantidad || 0)}
+</p>
+
+<p>
+  Entregados:
+  ${Number(p.entregados || 0)}
+</p>
+
+<p>
+  Disponibles:
+  ${
+    Math.max(
+      Number(p.cantidad || 0) -
+      Number(p.entregados || 0),
+      0
+    )
+  }
+</p>
 
                     <button onclick="editarPremioLucky('${p.id}')">
                         ✏️ Editar
@@ -12990,8 +13021,16 @@ if(rifaPremiosAdminId){
 }
 
 // =========================================================
-// MASS - FORMULARIO PROFESIONAL DE PREMIOS LUCKY SPIN
+// MASS - FORMULARIO PROFESIONAL DE PREMIOS LUCKY SPIN V2
 // Reutilizable para AGREGAR y EDITAR.
+//
+// ARQUITECTURA V2:
+// - Tipo de premio.
+// - Aportado por.
+// - Patrocinador dinámico.
+// - Código interno opcional.
+// - Cantidad de premios disponibles.
+// - SIN Probabilidad % manual.
 // =========================================================
 
 function abrirFormularioPremioLucky({
@@ -13000,7 +13039,10 @@ function abrirFormularioPremioLucky({
   descripcion = "",
   codigo = "",
   cantidad = 1,
-  probabilidad = 0
+  tipo_premio = "producto_premio",
+  aportado_por = "organizador",
+  patrocinador_id = null,
+  patrocinadores = []
 } = {}) {
 
   return new Promise(resolve => {
@@ -13010,9 +13052,14 @@ function abrirFormularioPremioLucky({
         "modalFormularioPremioLucky"
       );
 
+    // =======================================================
+    // 1. CREAR MODAL UNA SOLA VEZ
+    // =======================================================
+
     if (!modal) {
 
-      modal = document.createElement("div");
+      modal =
+        document.createElement("div");
 
       modal.id =
         "modalFormularioPremioLucky";
@@ -13032,7 +13079,7 @@ function abrirFormularioPremioLucky({
       modal.innerHTML = `
         <div
           style="
-            width:min(94vw,620px);
+            width:min(94vw,660px);
             max-height:92vh;
             overflow:auto;
             background:
@@ -13059,6 +13106,7 @@ function abrirFormularioPremioLucky({
               margin-bottom:20px;
             "
           >
+
             <h2
               id="tituloFormularioPremioLucky"
               style="
@@ -13084,7 +13132,9 @@ function abrirFormularioPremioLucky({
             >
               ✕
             </button>
+
           </div>
+
 
           <div
             style="
@@ -13098,9 +13148,16 @@ function abrirFormularioPremioLucky({
               font-size:14px;
             "
           >
-            Configura el premio promocional que podrá
-            obtenerse mediante MASS Lucky Spin.
+            MASS Lucky Spin distribuye los premios
+            automáticamente según el inventario real
+            disponible y las oportunidades de giro.
+            No se utilizan porcentajes manuales.
           </div>
+
+
+          <!-- ============================================= -->
+          <!-- NOMBRE                                        -->
+          <!-- ============================================= -->
 
           <label
             style="
@@ -13130,6 +13187,11 @@ function abrirFormularioPremioLucky({
             "
           >
 
+
+          <!-- ============================================= -->
+          <!-- DESCRIPCIÓN                                   -->
+          <!-- ============================================= -->
+
           <label
             style="
               display:block;
@@ -13158,6 +13220,11 @@ function abrirFormularioPremioLucky({
             "
           ></textarea>
 
+
+          <!-- ============================================= -->
+          <!-- TIPO DE PREMIO                                -->
+          <!-- ============================================= -->
+
           <label
             style="
               display:block;
@@ -13165,14 +13232,63 @@ function abrirFormularioPremioLucky({
               margin-bottom:6px;
             "
           >
-            🔑 Código
+            🏆 Tipo de premio *
           </label>
 
-          <input
-            id="premioLuckyCodigo"
-            type="text"
-            maxlength="100"
-            autocomplete="off"
+          <select
+            id="premioLuckyTipoPremio"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              margin-bottom:8px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+            "
+          >
+            <option value="producto_premio">
+              Producto / Premio
+            </option>
+
+            <option value="promocion_cupon">
+              Promoción / Cupón
+            </option>
+
+            <option value="boleto_gratis_mass">
+              Boleto Gratis MASS
+            </option>
+          </select>
+
+          <div
+            id="ayudaTipoPremioLucky"
+            style="
+              margin-bottom:16px;
+              color:#aaa;
+              font-size:13px;
+              line-height:1.45;
+            "
+          ></div>
+
+
+          <!-- ============================================= -->
+          <!-- APORTADO POR                                  -->
+          <!-- ============================================= -->
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            🤝 Aportado por *
+          </label>
+
+          <select
+            id="premioLuckyAportadoPor"
             style="
               width:100%;
               box-sizing:border-box;
@@ -13185,87 +13301,163 @@ function abrirFormularioPremioLucky({
               font-size:16px;
             "
           >
+            <option value="organizador">
+              Organizador
+            </option>
+
+            <option value="patrocinador">
+              Patrocinador
+            </option>
+          </select>
+
+
+          <!-- ============================================= -->
+          <!-- PATROCINADOR                                  -->
+          <!-- ============================================= -->
 
           <div
+            id="bloquePatrocinadorPremioLucky"
             style="
-              display:grid;
-              grid-template-columns:
-                repeat(auto-fit,minmax(180px,1fr));
-              gap:14px;
+              display:none;
+              margin-bottom:16px;
             "
           >
 
-            <div>
-              <label
-                style="
-                  display:block;
-                  font-weight:bold;
-                  margin-bottom:6px;
-                "
-              >
-                📦 Cantidad disponible *
-              </label>
+            <label
+              style="
+                display:block;
+                font-weight:bold;
+                margin-bottom:6px;
+              "
+            >
+              🏢 Patrocinador *
+            </label>
 
-              <input
-                id="premioLuckyCantidad"
-                type="number"
-                min="1"
-                step="1"
-                style="
-                  width:100%;
-                  box-sizing:border-box;
-                  padding:12px;
-                  border:1px solid #39ff14;
-                  border-radius:10px;
-                  background:#050505;
-                  color:white;
-                  font-size:16px;
-                "
-              >
-            </div>
-
-            <div>
-              <label
-                style="
-                  display:block;
-                  font-weight:bold;
-                  margin-bottom:6px;
-                "
-              >
-                🎯 Probabilidad % *
-              </label>
-
-              <input
-                id="premioLuckyProbabilidad"
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                style="
-                  width:100%;
-                  box-sizing:border-box;
-                  padding:12px;
-                  border:1px solid #39ff14;
-                  border-radius:10px;
-                  background:#050505;
-                  color:white;
-                  font-size:16px;
-                "
-              >
-            </div>
+            <select
+              id="premioLuckyPatrocinador"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                padding:12px;
+                border:1px solid #39ff14;
+                border-radius:10px;
+                background:#050505;
+                color:white;
+                font-size:16px;
+              "
+            >
+              <option value="">
+                Selecciona un patrocinador
+              </option>
+            </select>
 
           </div>
 
+
+          <!-- ============================================= -->
+          <!-- CÓDIGO INTERNO                                -->
+          <!-- ============================================= -->
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            🔑 Código interno del premio
+            <span
+              style="
+                font-weight:normal;
+                color:#aaa;
+              "
+            >
+              (opcional)
+            </span>
+          </label>
+
+          <input
+            id="premioLuckyCodigo"
+            type="text"
+            maxlength="100"
+            autocomplete="off"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              margin-bottom:8px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+            "
+          >
+
           <div
             style="
-              margin-top:10px;
+              margin-bottom:16px;
               color:#aaa;
               font-size:13px;
-              line-height:1.4;
+              line-height:1.45;
             "
           >
-            La probabilidad debe estar entre 0% y 100%.
+            Este código es únicamente administrativo.
+            No se comparte con el ganador y no sirve
+            para reclamar el premio.
           </div>
+
+
+          <!-- ============================================= -->
+          <!-- CANTIDAD                                      -->
+          <!-- ============================================= -->
+
+          <label
+            style="
+              display:block;
+              font-weight:bold;
+              margin-bottom:6px;
+            "
+          >
+            📦 Cantidad de premios disponibles *
+          </label>
+
+          <input
+            id="premioLuckyCantidad"
+            type="number"
+            min="1"
+            step="1"
+            inputmode="numeric"
+            style="
+              width:100%;
+              box-sizing:border-box;
+              padding:12px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+              background:#050505;
+              color:white;
+              font-size:16px;
+            "
+          >
+
+          <div
+            style="
+              margin-top:8px;
+              color:#aaa;
+              font-size:13px;
+              line-height:1.45;
+            "
+          >
+            MASS calculará automáticamente la
+            distribución usando esta cantidad,
+            las unidades ya entregadas y los
+            giros disponibles.
+          </div>
+
+
+          <!-- ============================================= -->
+          <!-- ERROR                                         -->
+          <!-- ============================================= -->
 
           <div
             id="errorFormularioPremioLucky"
@@ -13277,6 +13469,11 @@ function abrirFormularioPremioLucky({
               text-align:center;
             "
           ></div>
+
+
+          <!-- ============================================= -->
+          <!-- BOTONES                                       -->
+          <!-- ============================================= -->
 
           <div
             style="
@@ -13329,8 +13526,15 @@ function abrirFormularioPremioLucky({
         </div>
       `;
 
-      document.body.appendChild(modal);
+      document.body.appendChild(
+        modal
+      );
     }
+
+
+    // =======================================================
+    // 2. REFERENCIAS DEL FORMULARIO
+    // =======================================================
 
     const titulo =
       document.getElementById(
@@ -13347,6 +13551,31 @@ function abrirFormularioPremioLucky({
         "premioLuckyDescripcion"
       );
 
+    const inputTipoPremio =
+      document.getElementById(
+        "premioLuckyTipoPremio"
+      );
+
+    const ayudaTipoPremio =
+      document.getElementById(
+        "ayudaTipoPremioLucky"
+      );
+
+    const inputAportadoPor =
+      document.getElementById(
+        "premioLuckyAportadoPor"
+      );
+
+    const bloquePatrocinador =
+      document.getElementById(
+        "bloquePatrocinadorPremioLucky"
+      );
+
+    const inputPatrocinador =
+      document.getElementById(
+        "premioLuckyPatrocinador"
+      );
+
     const inputCodigo =
       document.getElementById(
         "premioLuckyCodigo"
@@ -13355,11 +13584,6 @@ function abrirFormularioPremioLucky({
     const inputCantidad =
       document.getElementById(
         "premioLuckyCantidad"
-      );
-
-    const inputProbabilidad =
-      document.getElementById(
-        "premioLuckyProbabilidad"
       );
 
     const errorBox =
@@ -13382,231 +13606,1365 @@ function abrirFormularioPremioLucky({
         "btnCerrarFormularioPremioLucky"
       );
 
+
+    // =======================================================
+    // 3. ESCAPE LOCAL PARA NOMBRES DE PATROCINADORES
+    // =======================================================
+
+    const escaparHTMLLucky =
+      valor => {
+
+        return String(
+          valor ?? ""
+        )
+          .replaceAll(
+            "&",
+            "&amp;"
+          )
+          .replaceAll(
+            "<",
+            "&lt;"
+          )
+          .replaceAll(
+            ">",
+            "&gt;"
+          )
+          .replaceAll(
+            '"',
+            "&quot;"
+          )
+          .replaceAll(
+            "'",
+            "&#039;"
+          );
+      };
+
+
+    // =======================================================
+    // 4. TIPOS PERMITIDOS
+    // =======================================================
+
+    const tiposPermitidos = [
+      "producto_premio",
+      "promocion_cupon",
+      "boleto_gratis_mass"
+    ];
+
+    const aportantesPermitidos = [
+      "organizador",
+      "patrocinador"
+    ];
+
+
+    const tipoInicial =
+      tiposPermitidos.includes(
+        String(tipo_premio || "")
+      )
+        ? String(tipo_premio)
+        : "producto_premio";
+
+
+    const aportanteInicial =
+      aportantesPermitidos.includes(
+        String(aportado_por || "")
+      )
+        ? String(aportado_por)
+        : "organizador";
+
+
+    // =======================================================
+    // 5. CARGAR PATROCINADORES RECIBIDOS
+    // =======================================================
+
+    const patrocinadoresValidos =
+      Array.isArray(
+        patrocinadores
+      )
+        ? patrocinadores.filter(
+            p =>
+              p &&
+              p.id
+          )
+        : [];
+
+
+    inputPatrocinador.innerHTML = `
+
+      <option value="">
+        Selecciona un patrocinador
+      </option>
+
+      ${patrocinadoresValidos
+        .map(
+          p => `
+
+            <option
+              value="${escaparHTMLLucky(
+                p.id
+              )}"
+            >
+              ${escaparHTMLLucky(
+                p.nombre ||
+                "Patrocinador MASS"
+              )}
+            </option>
+
+          `
+        )
+        .join("")}
+    `;
+
+
+    // =======================================================
+    // 6. VALORES INICIALES
+    // =======================================================
+
     titulo.textContent =
       modo === "editar"
         ? "✏️ Editar Premio MASS Lucky Spin"
         : "🎁 Agregar Premio MASS Lucky Spin";
 
+
     inputNombre.value =
-      String(nombre || "");
+      String(
+        nombre || ""
+      );
+
 
     inputDescripcion.value =
-      String(descripcion || "");
+      String(
+        descripcion || ""
+      );
+
+
+    inputTipoPremio.value =
+      tipoInicial;
+
+
+    inputAportadoPor.value =
+      aportanteInicial;
+
 
     inputCodigo.value =
-      String(codigo || "");
+      String(
+        codigo || ""
+      );
+
 
     inputCantidad.value =
-      Number(cantidad || 1);
+      Number(
+        cantidad || 1
+      );
 
-    inputProbabilidad.value =
-      Number(probabilidad || 0);
 
-    errorBox.textContent = "";
+    inputPatrocinador.value =
+      patrocinador_id
+        ? String(
+            patrocinador_id
+          )
+        : "";
 
-    modal.style.display = "flex";
 
-    setTimeout(() => {
-      inputNombre.focus();
-    }, 50);
+    errorBox.textContent =
+      "";
 
-    const cerrar = resultado => {
 
-      modal.style.display = "none";
+    // =======================================================
+    // 7. AYUDA DINÁMICA POR TIPO
+    // =======================================================
 
-      btnGuardar.onclick = null;
-      btnCancelar.onclick = null;
-      btnCerrar.onclick = null;
+    const actualizarAyudaTipo =
+      () => {
 
-      resolve(resultado);
-    };
+        switch (
+          inputTipoPremio.value
+        ) {
+
+          case "promocion_cupon":
+
+            ayudaTipoPremio.textContent =
+              "La promoción o cupón ganado utilizará un QR único de un solo uso.";
+
+            break;
+
+
+          case "boleto_gratis_mass":
+
+            ayudaTipoPremio.textContent =
+              "MASS asignará automáticamente una selección disponible. El boleto promocional tendrá valor 0 MASS, no generará otro giro y se identificará en azul.";
+
+            break;
+
+
+          default:
+
+            ayudaTipoPremio.textContent =
+              "Producto o premio físico/digital. El ganador recibirá posteriormente un QR único de un solo uso.";
+
+            break;
+        }
+      };
+
+
+    // =======================================================
+    // 8. MOSTRAR / OCULTAR PATROCINADOR
+    // =======================================================
+
+    const actualizarPatrocinador =
+      () => {
+
+        const usaPatrocinador =
+          inputAportadoPor.value ===
+          "patrocinador";
+
+
+        bloquePatrocinador.style.display =
+          usaPatrocinador
+            ? "block"
+            : "none";
+
+
+        inputPatrocinador.disabled =
+          !usaPatrocinador;
+
+
+        if (
+          !usaPatrocinador
+        ) {
+
+          inputPatrocinador.value =
+            "";
+
+        }
+      };
+
+
+    inputTipoPremio.onchange =
+      actualizarAyudaTipo;
+
+
+    inputAportadoPor.onchange =
+      actualizarPatrocinador;
+
+
+    actualizarAyudaTipo();
+
+    actualizarPatrocinador();
+
+
+    // =======================================================
+    // 9. ABRIR FORMULARIO
+    // =======================================================
+
+    modal.style.display =
+      "flex";
+
+
+    setTimeout(
+      () => {
+
+        inputNombre.focus();
+
+      },
+      50
+    );
+
+
+    // =======================================================
+    // 10. CERRAR
+    // =======================================================
+
+    const cerrar =
+      resultado => {
+
+        modal.style.display =
+          "none";
+
+
+        btnGuardar.onclick =
+          null;
+
+        btnCancelar.onclick =
+          null;
+
+        btnCerrar.onclick =
+          null;
+
+        inputTipoPremio.onchange =
+          null;
+
+        inputAportadoPor.onchange =
+          null;
+
+
+        resolve(
+          resultado
+        );
+      };
+
 
     btnCancelar.onclick =
-      () => cerrar(null);
+      () =>
+        cerrar(
+          null
+        );
+
 
     btnCerrar.onclick =
-      () => cerrar(null);
+      () =>
+        cerrar(
+          null
+        );
 
-    btnGuardar.onclick = () => {
 
-      const nombreFinal =
-        String(inputNombre.value || "")
-          .trim();
+    // =======================================================
+    // 11. GUARDAR Y VALIDAR
+    // =======================================================
 
-      const descripcionFinal =
-        String(inputDescripcion.value || "")
-          .trim();
+    btnGuardar.onclick =
+      () => {
 
-      const codigoFinal =
-        String(inputCodigo.value || "")
-          .trim();
 
-      const cantidadFinal =
-        Number(inputCantidad.value);
+        const nombreFinal =
+          String(
+            inputNombre.value || ""
+          ).trim();
 
-      const probabilidadFinal =
-        Number(inputProbabilidad.value);
 
-      if (!nombreFinal) {
-        errorBox.textContent =
-          "El nombre del premio es obligatorio.";
-        inputNombre.focus();
-        return;
-      }
+        const descripcionFinal =
+          String(
+            inputDescripcion.value || ""
+          ).trim();
 
-      if (
-        !Number.isInteger(cantidadFinal) ||
-        cantidadFinal < 1
-      ) {
-        errorBox.textContent =
-          "La cantidad disponible debe ser un número entero mayor o igual a 1.";
-        inputCantidad.focus();
-        return;
-      }
 
-      if (
-        !Number.isFinite(probabilidadFinal) ||
-        probabilidadFinal < 0 ||
-        probabilidadFinal > 100
-      ) {
-        errorBox.textContent =
-          "La probabilidad debe estar entre 0% y 100%.";
-        inputProbabilidad.focus();
-        return;
-      }
+        const tipoPremioFinal =
+          String(
+            inputTipoPremio.value || ""
+          ).trim();
 
-      cerrar({
-        nombre: nombreFinal,
-        descripcion: descripcionFinal,
-        codigo: codigoFinal,
-        cantidad: cantidadFinal,
-        probabilidad: probabilidadFinal
-      });
-    };
+
+        const aportadoPorFinal =
+          String(
+            inputAportadoPor.value || ""
+          ).trim();
+
+
+        const patrocinadorIdFinal =
+          aportadoPorFinal ===
+          "patrocinador"
+            ? String(
+                inputPatrocinador.value || ""
+              ).trim()
+            : null;
+
+
+        const codigoFinal =
+          String(
+            inputCodigo.value || ""
+          ).trim();
+
+
+        const cantidadFinal =
+          Number(
+            inputCantidad.value
+          );
+
+
+        // ---------------------------------------------------
+        // NOMBRE
+        // ---------------------------------------------------
+
+        if (
+          !nombreFinal
+        ) {
+
+          errorBox.textContent =
+            "El nombre del premio es obligatorio.";
+
+          inputNombre.focus();
+
+          return;
+        }
+
+
+        // ---------------------------------------------------
+        // TIPO
+        // ---------------------------------------------------
+
+        if (
+          !tiposPermitidos.includes(
+            tipoPremioFinal
+          )
+        ) {
+
+          errorBox.textContent =
+            "Selecciona un tipo de premio válido.";
+
+          inputTipoPremio.focus();
+
+          return;
+        }
+
+
+        // ---------------------------------------------------
+        // APORTADO POR
+        // ---------------------------------------------------
+
+        if (
+          !aportantesPermitidos.includes(
+            aportadoPorFinal
+          )
+        ) {
+
+          errorBox.textContent =
+            "Selecciona quién aporta el premio.";
+
+          inputAportadoPor.focus();
+
+          return;
+        }
+
+
+        // ---------------------------------------------------
+        // PATROCINADOR
+        // ---------------------------------------------------
+
+        if (
+          aportadoPorFinal ===
+          "patrocinador"
+        ) {
+
+          if (
+            !patrocinadorIdFinal
+          ) {
+
+            errorBox.textContent =
+              "Selecciona el patrocinador que aporta este premio.";
+
+            inputPatrocinador.focus();
+
+            return;
+          }
+
+
+          const patrocinadorExiste =
+            patrocinadoresValidos.some(
+              p =>
+                String(
+                  p.id
+                ) ===
+                patrocinadorIdFinal
+            );
+
+
+          if (
+            !patrocinadorExiste
+          ) {
+
+            errorBox.textContent =
+              "El patrocinador seleccionado no es válido.";
+
+            inputPatrocinador.focus();
+
+            return;
+          }
+        }
+
+
+        // ---------------------------------------------------
+        // CANTIDAD
+        // ---------------------------------------------------
+
+        if (
+          !Number.isInteger(
+            cantidadFinal
+          ) ||
+          cantidadFinal < 1
+        ) {
+
+          errorBox.textContent =
+            "La cantidad de premios disponibles debe ser un número entero mayor o igual a 1.";
+
+          inputCantidad.focus();
+
+          return;
+        }
+
+
+        // ===================================================
+        // 12. RESPUESTA LIMPIA DEL FORMULARIO
+        // ===================================================
+
+        cerrar({
+
+          nombre:
+            nombreFinal,
+
+          descripcion:
+            descripcionFinal,
+
+          codigo:
+            codigoFinal ||
+            null,
+
+          cantidad:
+            cantidadFinal,
+
+          tipo_premio:
+            tipoPremioFinal,
+
+          aportado_por:
+            aportadoPorFinal,
+
+          patrocinador_id:
+            patrocinadorIdFinal
+
+        });
+
+      };
+
   });
 }	
 
 async function nuevoPremioLucky(){
 
-	if(!rifaPremiosAdminId){
-  alert("Primero selecciona una rifa para agregar premios Lucky Spin");
-  return;
-}
+  // =========================================================
+  // 1. DEBE EXISTIR UNA RIFA ACTIVA SELECCIONADA
+  // =========================================================
 
-  const formulario =
-  await abrirFormularioPremioLucky({
-    modo: "crear",
-    cantidad: 1,
-    probabilidad: 0
-  });
+  if (!rifaPremiosAdminId) {
 
-if (!formulario) {
-  return;
-}
+    alert(
+      "Primero selecciona una rifa activa para agregar premios MASS Lucky Spin."
+    );
 
-const {
-  nombre,
-  descripcion,
-  codigo,
-  cantidad,
-  probabilidad
-} = formulario;	
-
-  const { error } = await supabaseClient
-    .from("lucky_spin_premios")
-    .insert({
-	rifa_id: rifaPremiosAdminId,	
-      nombre,
-      descripcion,
-      codigo,
-      cantidad,
-      entregados: 0,
-      probabilidad,
-      activo: true
-    });
-
-  if(error){
-    alert("Error agregando premio");
-    console.error(error);
     return;
   }
 
-  alert("Premio agregado ✅");
-  mostrarPremiosAdmin();
-}
 
+  // =========================================================
+  // 2. CARGAR PATROCINADORES ACTIVOS DE ESTA MISMA RIFA
+  //
+  // Esto permite que:
+  // - Organizador aporte directamente.
+  // - Patrocinador aporte uno o varios premios.
+  // - Nunca se mezcle un patrocinador de otra rifa.
+  // =========================================================
+
+  const {
+    data: patrocinadoresData,
+    error: errorPatrocinadores
+  } = await supabaseClient
+    .from("patrocinadores")
+    .select(`
+      id,
+      nombre,
+      activo,
+      rifa_id
+    `)
+    .eq(
+      "rifa_id",
+      rifaPremiosAdminId
+    )
+    .eq(
+      "activo",
+      true
+    )
+    .order(
+      "nombre",
+      {
+        ascending: true
+      }
+    );
+
+
+  if (errorPatrocinadores) {
+
+    console.error(
+      "Error cargando patrocinadores para MASS Lucky Spin:",
+      errorPatrocinadores
+    );
+
+    alert(
+      "No se pudieron cargar los patrocinadores de esta rifa."
+    );
+
+    return;
+  }
+
+
+  const patrocinadores =
+    Array.isArray(
+      patrocinadoresData
+    )
+      ? patrocinadoresData
+      : [];
+
+
+  // =========================================================
+  // 3. ABRIR FORMULARIO V2
+  //
+  // YA NO EXISTE PROBABILIDAD MANUAL.
+  // =========================================================
+
+  const formulario =
+    await abrirFormularioPremioLucky({
+
+      modo:
+        "crear",
+
+      cantidad:
+        1,
+
+      tipo_premio:
+        "producto_premio",
+
+      aportado_por:
+        "organizador",
+
+      patrocinador_id:
+        null,
+
+      patrocinadores:
+        patrocinadores
+
+    });
+
+
+  if (!formulario) {
+
+    return;
+  }
+
+
+  // =========================================================
+  // 4. DATOS VALIDADOS POR EL FORMULARIO
+  // =========================================================
+
+  const {
+
+    nombre,
+
+    descripcion,
+
+    codigo,
+
+    cantidad,
+
+    tipo_premio,
+
+    aportado_por,
+
+    patrocinador_id
+
+  } = formulario;
+
+
+  // =========================================================
+  // 5. SEGUNDA VALIDACIÓN ANTES DE ENVIAR A SUPABASE
+  // =========================================================
+
+  const tiposPermitidos = [
+    "producto_premio",
+    "promocion_cupon",
+    "boleto_gratis_mass"
+  ];
+
+
+  if (
+    !tiposPermitidos.includes(
+      tipo_premio
+    )
+  ) {
+
+    alert(
+      "El tipo de premio seleccionado no es válido."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por !== "organizador" &&
+    aportado_por !== "patrocinador"
+  ) {
+
+    alert(
+      "Debes indicar correctamente quién aporta el premio."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por === "organizador" &&
+    patrocinador_id !== null
+  ) {
+
+    alert(
+      "Un premio aportado por el organizador no debe tener patrocinador."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por === "patrocinador"
+  ) {
+
+    if (!patrocinador_id) {
+
+      alert(
+        "Selecciona el patrocinador que aporta este premio."
+      );
+
+      return;
+    }
+
+
+    const patrocinadorValido =
+      patrocinadores.some(
+        patrocinador =>
+          String(
+            patrocinador.id
+          ) ===
+          String(
+            patrocinador_id
+          )
+      );
+
+
+    if (!patrocinadorValido) {
+
+      alert(
+        "El patrocinador seleccionado no pertenece a esta rifa."
+      );
+
+      return;
+    }
+  }
+
+
+  // =========================================================
+  // 6. CREAR PREMIO MASS LUCKY SPIN V2
+  //
+  // IMPORTANTE:
+  // - NO enviamos probabilidad.
+  // - entregados comienza en 0.
+  // - codigo es únicamente interno.
+  // =========================================================
+
+  const {
+    error
+  } = await supabaseClient
+    .from(
+      "lucky_spin_premios"
+    )
+    .insert({
+
+      rifa_id:
+        rifaPremiosAdminId,
+
+      nombre:
+        nombre,
+
+      descripcion:
+        descripcion || null,
+
+      codigo:
+        codigo || null,
+
+      cantidad:
+        cantidad,
+
+      entregados:
+        0,
+
+      tipo_premio:
+        tipo_premio,
+
+      aportado_por:
+        aportado_por,
+
+      patrocinador_id:
+        aportado_por === "patrocinador"
+          ? patrocinador_id
+          : null,
+
+      activo:
+        true
+
+    });
+
+
+  // =========================================================
+  // 7. ERROR DE SUPABASE
+  // =========================================================
+
+  if (error) {
+
+    console.error(
+      "Error agregando Premio MASS Lucky Spin:",
+      error
+    );
+
+    alert(
+      "No fue posible agregar el premio MASS Lucky Spin."
+    );
+
+    return;
+  }
+
+
+  // =========================================================
+  // 8. ÉXITO
+  // =========================================================
+
+  alert(
+    "Premio MASS Lucky Spin agregado correctamente ✅"
+  );
+
+
+  await mostrarPremiosAdmin();
+
+}
+	
 async function editarPremioLucky(id){
-  const { data: p, error } = await supabaseClient
+
+  // =========================================================
+  // 1. OBTENER EL PREMIO ACTUAL
+  // =========================================================
+
+  const {
+    data: p,
+    error
+  } = await supabaseClient
     .from("lucky_spin_premios")
     .select("*")
     .eq("id", id)
     .single();
 
-  if(error || !p){
 
-	const adminRol = localStorage.getItem("admin_rol");
-const adminOrgId = localStorage.getItem("admin_organizador_id");
+  if (error || !p) {
 
-if (adminRol === "organizador") {
-    const { data: rifaCheck } = await supabaseClient
-        .from("rifas")
-        .select("id")
-        .eq("id", p.rifa_id)
-        .eq("organizador_id", adminOrgId)
-        .maybeSingle();
+    console.error(
+      "Error cargando Premio MASS Lucky Spin:",
+      error
+    );
+
+    alert(
+      "No se encontró el premio MASS Lucky Spin."
+    );
+
+    return;
+  }
+
+
+  // =========================================================
+  // 2. VALIDAR QUE EL ORGANIZADOR PUEDA EDITAR ESTA RIFA
+  // =========================================================
+
+  const adminRol =
+    localStorage.getItem(
+      "admin_rol"
+    );
+
+  const adminOrgId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+
+  if (
+    adminRol === "organizador"
+  ) {
+
+    const {
+      data: rifaCheck,
+      error: rifaCheckError
+    } = await supabaseClient
+      .from("rifas")
+      .select("id")
+      .eq(
+        "id",
+        p.rifa_id
+      )
+      .eq(
+        "organizador_id",
+        adminOrgId
+      )
+      .maybeSingle();
+
+
+    if (rifaCheckError) {
+
+      console.error(
+        "Error validando la rifa del premio:",
+        rifaCheckError
+      );
+
+      alert(
+        "No fue posible validar el acceso a esta rifa."
+      );
+
+      return;
+    }
+
 
     if (!rifaCheck) {
-        alert("No puedes editar premios de otro organizador");
-        return;
+
+      alert(
+        "No puedes editar premios de otro organizador."
+      );
+
+      return;
     }
-}  
-    alert("No se encontró el premio");
+  }
+
+
+  // =========================================================
+  // 3. CARGAR PATROCINADORES DE ESTA MISMA RIFA
+  //
+  // Se incluyen:
+  // - patrocinadores activos;
+  // - y, si corresponde, el patrocinador actual aunque
+  //   posteriormente haya sido desactivado.
+  //
+  // Esto evita perder una relación histórica existente.
+  // =========================================================
+
+  const {
+    data: patrocinadoresData,
+    error: errorPatrocinadores
+  } = await supabaseClient
+    .from("patrocinadores")
+    .select(`
+      id,
+      nombre,
+      activo,
+      rifa_id
+    `)
+    .eq(
+      "rifa_id",
+      p.rifa_id
+    )
+    .order(
+      "nombre",
+      {
+        ascending: true
+      }
+    );
+
+
+  if (errorPatrocinadores) {
+
+    console.error(
+      "Error cargando patrocinadores para editar Premio MASS Lucky Spin:",
+      errorPatrocinadores
+    );
+
+    alert(
+      "No se pudieron cargar los patrocinadores de esta rifa."
+    );
+
     return;
   }
+
+
+  const patrocinadores =
+    Array.isArray(
+      patrocinadoresData
+    )
+      ? patrocinadoresData
+          .filter(
+            patrocinador =>
+
+              patrocinador?.activo === true
+
+              ||
+
+              (
+                p.patrocinador_id &&
+                String(
+                  patrocinador?.id
+                ) ===
+                String(
+                  p.patrocinador_id
+                )
+              )
+          )
+          .map(
+            patrocinador => ({
+
+              ...patrocinador,
+
+              nombre:
+                patrocinador.activo === true
+                  ? patrocinador.nombre
+                  : `${patrocinador.nombre} (inactivo)`
+
+            })
+          )
+      : [];
+
+
+  // =========================================================
+  // 4. NORMALIZAR DATOS V2
+  //
+  // Los valores alternos solamente protegen posibles
+  // registros antiguos que todavía no tengan los campos V2.
+  // =========================================================
+
+  const tiposPermitidos = [
+    "producto_premio",
+    "promocion_cupon",
+    "boleto_gratis_mass"
+  ];
+
+
+  const tipoPremioActual =
+    tiposPermitidos.includes(
+      String(
+        p.tipo_premio || ""
+      )
+    )
+      ? String(
+          p.tipo_premio
+        )
+      : "producto_premio";
+
+
+  const aportadoPorActual =
+    (
+      p.aportado_por === "organizador" ||
+      p.aportado_por === "patrocinador"
+    )
+      ? p.aportado_por
+
+      : (
+          p.patrocinador_id
+            ? "patrocinador"
+            : "organizador"
+        );
+
+
+  // =========================================================
+  // 5. ABRIR FORMULARIO V2
+  //
+  // YA NO EXISTE PROBABILIDAD % MANUAL.
+  // =========================================================
 
   const formulario =
-  await abrirFormularioPremioLucky({
-    modo: "editar",
-    nombre: p.nombre || "",
-    descripcion: p.descripcion || "",
-    codigo: p.codigo || "",
-    cantidad: Number(p.cantidad ?? 1),
-    probabilidad: Number(p.probabilidad ?? 0)
-  });
+    await abrirFormularioPremioLucky({
 
-if (!formulario) {
-  return;
-}
+      modo:
+        "editar",
 
-const {
-  nombre,
-  descripcion,
-  codigo,
-  cantidad,
-  probabilidad
-} = formulario;
+      nombre:
+        p.nombre || "",
 
-  const { error: updateError } = await supabaseClient
-    .from("lucky_spin_premios")
-    .update({
-      nombre,
-      descripcion,
-      codigo,
-      cantidad,
-      probabilidad
-    })
-    .eq("id", id);
+      descripcion:
+        p.descripcion || "",
 
-  if(updateError){
-    alert("Error editando premio");
-    console.error(updateError);
+      codigo:
+        p.codigo || "",
+
+      cantidad:
+        Number(
+          p.cantidad ?? 1
+        ),
+
+      tipo_premio:
+        tipoPremioActual,
+
+      aportado_por:
+        aportadoPorActual,
+
+      patrocinador_id:
+        p.patrocinador_id || null,
+
+      patrocinadores:
+        patrocinadores
+
+    });
+
+
+  if (!formulario) {
+
     return;
   }
 
-  alert("Premio actualizado ✅");
-  mostrarPremiosAdmin();
-}
 
+  // =========================================================
+  // 6. DATOS VALIDADOS DEL FORMULARIO
+  // =========================================================
+
+  const {
+
+    nombre,
+
+    descripcion,
+
+    codigo,
+
+    cantidad,
+
+    tipo_premio,
+
+    aportado_por,
+
+    patrocinador_id
+
+  } = formulario;
+
+
+  // =========================================================
+  // 7. VALIDACIÓN ADICIONAL DE INVENTARIO
+  //
+  // Nunca podemos dejar cantidad por debajo de los premios
+  // que MASS ya haya entregado.
+  // =========================================================
+
+  const entregadosActuales =
+    Number(
+      p.entregados ?? 0
+    );
+
+
+  if (
+    !Number.isInteger(
+      cantidad
+    ) ||
+    cantidad < 1
+  ) {
+
+    alert(
+      "La cantidad de premios disponibles no es válida."
+    );
+
+    return;
+  }
+
+
+  if (
+    Number.isFinite(
+      entregadosActuales
+    ) &&
+    cantidad <
+      entregadosActuales
+  ) {
+
+    alert(
+      `No puedes establecer ${cantidad} premios porque MASS ya ha entregado ${entregadosActuales}.`
+    );
+
+    return;
+  }
+
+
+  // =========================================================
+  // 8. VALIDAR TIPO Y APORTANTE
+  // =========================================================
+
+  if (
+    !tiposPermitidos.includes(
+      tipo_premio
+    )
+  ) {
+
+    alert(
+      "El tipo de premio seleccionado no es válido."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por !== "organizador" &&
+    aportado_por !== "patrocinador"
+  ) {
+
+    alert(
+      "Debes indicar correctamente quién aporta el premio."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por === "organizador" &&
+    patrocinador_id !== null
+  ) {
+
+    alert(
+      "Un premio aportado por el organizador no debe tener patrocinador."
+    );
+
+    return;
+  }
+
+
+  if (
+    aportado_por === "patrocinador"
+  ) {
+
+    if (!patrocinador_id) {
+
+      alert(
+        "Selecciona el patrocinador que aporta este premio."
+      );
+
+      return;
+    }
+
+
+    const patrocinadorValido =
+      patrocinadores.some(
+        patrocinador =>
+          String(
+            patrocinador.id
+          ) ===
+          String(
+            patrocinador_id
+          )
+      );
+
+
+    if (!patrocinadorValido) {
+
+      alert(
+        "El patrocinador seleccionado no pertenece a esta rifa."
+      );
+
+      return;
+    }
+  }
+
+
+  // =========================================================
+  // 9. ACTUALIZAR PREMIO V2
+  //
+  // IMPORTANTE:
+  // - NO enviamos probabilidad.
+  // - NO modificamos entregados.
+  // - NO modificamos inventario consumido.
+  //
+  // Supabase también protege premios con historial:
+  // una vez ganado, su identidad histórica no puede cambiar.
+  // =========================================================
+
+  const {
+    error: updateError
+  } = await supabaseClient
+    .from("lucky_spin_premios")
+    .update({
+
+      nombre:
+        nombre,
+
+      descripcion:
+        descripcion || null,
+
+      codigo:
+        codigo || null,
+
+      cantidad:
+        cantidad,
+
+      tipo_premio:
+        tipo_premio,
+
+      aportado_por:
+        aportado_por,
+
+      patrocinador_id:
+        aportado_por === "patrocinador"
+          ? patrocinador_id
+          : null
+
+    })
+    .eq(
+      "id",
+      id
+    );
+
+
+  // =========================================================
+  // 10. MANEJAR PROTECCIÓN HISTÓRICA / ERRORES
+  // =========================================================
+
+  if (updateError) {
+
+    console.error(
+      "Error editando Premio MASS Lucky Spin:",
+      updateError
+    );
+
+
+    const mensajeError =
+      String(
+        updateError.message || ""
+      );
+
+
+    if (
+      mensajeError
+        .toLowerCase()
+        .includes(
+          "inmutable"
+        )
+    ) {
+
+      alert(
+        "Este premio ya tiene historial de ganadores. Su definición histórica no puede modificarse."
+      );
+
+      return;
+    }
+
+
+    if (
+      mensajeError
+        .toLowerCase()
+        .includes(
+          "reducirse"
+        )
+    ) {
+
+      alert(
+        "No puedes reducir la cantidad de un premio después de existir ganadores."
+      );
+
+      return;
+    }
+
+
+    alert(
+      "No fue posible actualizar el Premio MASS Lucky Spin."
+    );
+
+    return;
+  }
+
+
+  // =========================================================
+  // 11. ÉXITO
+  // =========================================================
+
+  alert(
+    "Premio MASS Lucky Spin actualizado correctamente ✅"
+  );
+
+
+  await mostrarPremiosAdmin();
+
+}
+	
 async function eliminarPremioLucky(id){
   if(!confirm("¿Eliminar este premio?")) return;
 
