@@ -12861,15 +12861,58 @@ const adminOrgId = localStorage.getItem("admin_organizador_id");
 
 let queryRifas = supabaseClient
   .from("rifas")
-  .select("id,titulo,estado,activo")
-  .or("activo.eq.true,estado.eq.activa,estado.eq.activo")
-  .order("created_at", { ascending:false });
+  .select("id,titulo,estado")
+  .eq("estado", "activa")
+  .order("created_at", { ascending: false });
 
-if (adminRol === "organizador" && adminOrgId) {
-  queryRifas = queryRifas.eq("organizador_id", adminOrgId);
+if (
+  adminRol === "organizador" &&
+  adminOrgId
+) {
+  queryRifas =
+    queryRifas.eq(
+      "organizador_id",
+      adminOrgId
+    );
 }
 
-const { data: rifas } = await queryRifas;
+const {
+  data: rifasData,
+  error: errorRifas
+} = await queryRifas;
+
+if (errorRifas) {
+  console.error(
+    "Error cargando rifas activas para Lucky Spin:",
+    errorRifas
+  );
+
+  alert(
+    "No se pudieron cargar las rifas activas."
+  );
+
+  return;
+}
+
+const rifas =
+  Array.isArray(rifasData)
+    ? rifasData
+    : [];
+
+/*
+  Si anteriormente quedó seleccionada una rifa
+  que ya no está activa, limpiar esa selección.
+*/
+if (
+  rifaPremiosAdminId &&
+  !rifas.some(
+    r =>
+      String(r.id) ===
+      String(rifaPremiosAdminId)
+  )
+) {
+  rifaPremiosAdminId = null;
+}
 
     let data = [];
 let error = null;
