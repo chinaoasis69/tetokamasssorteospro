@@ -15484,44 +15484,592 @@ async function guardarFormularioPatrocinador() {
   }
 }	
 
-function nuevoPatrocinador() {
+async function nuevoPatrocinador() {
+
+  // =========================================================
+  // 1. IDENTIFICAR EL ORGANIZADOR
+  // =========================================================
 
   const adminRol =
     localStorage.getItem(
       "admin_rol"
     );
 
+
   const organizadorId =
     adminRol === "super_admin"
+
       ? sessionStorage.getItem(
           "patrocinador_organizador_id"
         )
+
       : (
           localStorage.getItem(
             "admin_organizador_id"
-          ) ||
+          )
+          ||
           clienteActual?.id
         );
 
+
   if (!organizadorId) {
+
     alert(
       "❌ No se encontró el Organizador seleccionado."
     );
+
     return;
   }
 
-  abrirFormularioPatrocinador({
-    organizadorId:
-      organizadorId,
 
-    rifaId:
-      null,
+  // =========================================================
+  // 2. CARGAR SORTEOS ACTIVOS DEL MISMO ORGANIZADOR
+  // =========================================================
 
-    destinoTexto:
-      "Este patrocinador será general del Organizador."
-  });
+  const {
+    data: rifasData,
+    error: errorRifas
+  } = await supabaseClient
+    .from("rifas")
+    .select(`
+      id,
+      titulo,
+      premio,
+      estado,
+      organizador_id
+    `)
+    .eq(
+      "organizador_id",
+      organizadorId
+    )
+    .eq(
+      "estado",
+      "activa"
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false
+      }
+    );
+
+
+  if (errorRifas) {
+
+    console.error(
+      "Error cargando sorteos activos para patrocinador:",
+      errorRifas
+    );
+
+    alert(
+      "❌ No fue posible cargar los sorteos activos."
+    );
+
+    return;
+  }
+
+
+  const rifas =
+    Array.isArray(
+      rifasData
+    )
+      ? rifasData
+      : [];
+
+
+  // =========================================================
+  // 3. CREAR SELECTOR DE DESTINO
+  // =========================================================
+
+  let modal =
+    document.getElementById(
+      "modalDestinoPatrocinador"
+    );
+
+
+  if (!modal) {
+
+    modal =
+      document.createElement("div");
+
+
+    modal.id =
+      "modalDestinoPatrocinador";
+
+
+    modal.style.cssText = `
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:999999;
+      background:rgba(0,0,0,.82);
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      overflow:auto;
+    `;
+
+
+    document.body.appendChild(
+      modal
+    );
+  }
+
+
+  // =========================================================
+  // 4. CONSTRUIR OPCIONES DE SORTEOS
+  // =========================================================
+
+  const escaparPatrocinador =
+    valor => {
+
+      return String(
+        valor ?? ""
+      )
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
+    };
+
+
+  const opcionesRifas =
+    rifas
+      .map(
+        rifa => {
+
+          const nombreRifa =
+            rifa.titulo
+            ||
+            rifa.premio
+            ||
+            "Sorteo sin título";
+
+
+          return `
+            <option
+              value="${escaparPatrocinador(
+                rifa.id
+              )}"
+            >
+              ${escaparPatrocinador(
+                nombreRifa
+              )}
+            </option>
+          `;
+        }
+      )
+      .join("");
+
+
+  // =========================================================
+  // 5. CONTENIDO DEL MODAL
+  // =========================================================
+
+  modal.innerHTML = `
+    <div
+      style="
+        width:min(94vw,620px);
+        background:
+          linear-gradient(
+            145deg,
+            #090909,
+            #111
+          );
+        border:2px solid #39ff14;
+        border-radius:22px;
+        box-shadow:
+          0 0 30px rgba(57,255,20,.42);
+        padding:24px;
+        color:white;
+      "
+    >
+
+      <h2
+        style="
+          margin-top:0;
+          color:#7cff00;
+          text-align:center;
+        "
+      >
+        🤝 Asignar patrocinador
+      </h2>
+
+
+      <p
+        style="
+          text-align:center;
+          color:#ddd;
+          line-height:1.5;
+          margin-bottom:20px;
+        "
+      >
+        Selecciona dónde deseas registrar
+        este patrocinador.
+      </p>
+
+
+      <label
+        style="
+          display:block;
+          font-weight:bold;
+          margin-bottom:7px;
+        "
+      >
+        Asignar patrocinador a *
+      </label>
+
+
+      <select
+        id="destinoNuevoPatrocinador"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:12px;
+          margin-bottom:16px;
+          border:1px solid #39ff14;
+          border-radius:10px;
+          background:#050505;
+          color:white;
+          font-size:16px;
+        "
+      >
+
+        <option value="general">
+          General del Organizador
+        </option>
+
+        <option value="rifa">
+          Sorteo específico
+        </option>
+
+      </select>
+
+
+      <div
+        id="bloqueRifaNuevoPatrocinador"
+        style="
+          display:none;
+          margin-bottom:16px;
+        "
+      >
+
+        <label
+          style="
+            display:block;
+            font-weight:bold;
+            margin-bottom:7px;
+          "
+        >
+          🎯 Seleccionar sorteo *
+        </label>
+
+
+        <select
+          id="rifaNuevoPatrocinador"
+          style="
+            width:100%;
+            box-sizing:border-box;
+            padding:12px;
+            border:1px solid #39ff14;
+            border-radius:10px;
+            background:#050505;
+            color:white;
+            font-size:16px;
+          "
+        >
+
+          <option value="">
+            Selecciona un sorteo
+          </option>
+
+          ${opcionesRifas}
+
+        </select>
+
+
+        ${
+          rifas.length === 0
+            ? `
+              <div
+                style="
+                  margin-top:10px;
+                  color:#ffb347;
+                  font-size:13px;
+                  text-align:center;
+                "
+              >
+                Este Organizador no tiene sorteos activos.
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+
+
+      <div
+        id="errorDestinoPatrocinador"
+        style="
+          min-height:22px;
+          margin-top:8px;
+          color:#ff6b6b;
+          font-weight:bold;
+          text-align:center;
+        "
+      ></div>
+
+
+      <div
+        style="
+          display:flex;
+          flex-wrap:wrap;
+          gap:12px;
+          justify-content:center;
+          margin-top:18px;
+        "
+      >
+
+        <button
+          type="button"
+          id="cancelarDestinoPatrocinador"
+          style="
+            padding:12px 18px;
+            border:1px solid #aaa;
+            border-radius:12px;
+            background:#222;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+          "
+        >
+          ✕ Cancelar
+        </button>
+
+
+        <button
+          type="button"
+          id="continuarDestinoPatrocinador"
+          style="
+            padding:12px 18px;
+            border:2px solid #39ff14;
+            border-radius:12px;
+            background:#39ff14;
+            color:#050505;
+            font-weight:900;
+            cursor:pointer;
+          "
+        >
+          Continuar
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+
+  // =========================================================
+  // 6. REFERENCIAS
+  // =========================================================
+
+  const destinoSelect =
+    document.getElementById(
+      "destinoNuevoPatrocinador"
+    );
+
+
+  const bloqueRifa =
+    document.getElementById(
+      "bloqueRifaNuevoPatrocinador"
+    );
+
+
+  const rifaSelect =
+    document.getElementById(
+      "rifaNuevoPatrocinador"
+    );
+
+
+  const errorBox =
+    document.getElementById(
+      "errorDestinoPatrocinador"
+    );
+
+
+  const btnCancelar =
+    document.getElementById(
+      "cancelarDestinoPatrocinador"
+    );
+
+
+  const btnContinuar =
+    document.getElementById(
+      "continuarDestinoPatrocinador"
+    );
+
+
+  // =========================================================
+  // 7. MOSTRAR / OCULTAR SELECTOR DE RIFA
+  // =========================================================
+
+  const actualizarDestino =
+    () => {
+
+      bloqueRifa.style.display =
+        destinoSelect.value === "rifa"
+          ? "block"
+          : "none";
+
+
+      errorBox.textContent =
+        "";
+    };
+
+
+  destinoSelect.onchange =
+    actualizarDestino;
+
+
+  actualizarDestino();
+
+
+  // =========================================================
+  // 8. ABRIR MODAL
+  // =========================================================
+
+  modal.style.display =
+    "flex";
+
+
+  document.body.style.overflow =
+    "hidden";
+
+
+  // =========================================================
+  // 9. CERRAR SELECTOR
+  // =========================================================
+
+  const cerrarSelector =
+    () => {
+
+      modal.style.display =
+        "none";
+
+
+      document.body.style.overflow =
+        "";
+
+
+      destinoSelect.onchange =
+        null;
+
+      btnCancelar.onclick =
+        null;
+
+      btnContinuar.onclick =
+        null;
+    };
+
+
+  btnCancelar.onclick =
+    cerrarSelector;
+
+
+  // =========================================================
+  // 10. CONTINUAR
+  // =========================================================
+
+  btnContinuar.onclick =
+    () => {
+
+
+      // -----------------------------------------------------
+      // GENERAL DEL ORGANIZADOR
+      // -----------------------------------------------------
+
+      if (
+        destinoSelect.value ===
+        "general"
+      ) {
+
+        cerrarSelector();
+
+
+        abrirFormularioPatrocinador({
+
+          organizadorId:
+            organizadorId,
+
+          rifaId:
+            null,
+
+          destinoTexto:
+            "Este patrocinador será general del Organizador."
+
+        });
+
+
+        return;
+      }
+
+
+      // -----------------------------------------------------
+      // SORTEO ESPECÍFICO
+      // -----------------------------------------------------
+
+      const rifaId =
+        String(
+          rifaSelect.value || ""
+        ).trim();
+
+
+      if (!rifaId) {
+
+        errorBox.textContent =
+          rifas.length === 0
+            ? "Este Organizador no tiene sorteos activos."
+            : "Selecciona el sorteo al que pertenece este patrocinador.";
+
+        return;
+      }
+
+
+      cerrarSelector();
+
+
+      /*
+        Reutilizamos la función que YA EXISTE
+        y que valida:
+        - que la rifa exista;
+        - que pertenezca al Organizador;
+        - y abre abrirFormularioPatrocinador()
+          con rifaId real.
+      */
+
+      nuevoPatrocinadorRifa(
+        rifaId
+      );
+
+    };
+
 }
-
 	function puedeEditarPatrocinador(p){
 
   const adminRol = localStorage.getItem("admin_rol");
