@@ -2252,7 +2252,7 @@ Cargando historial...
 </button>
 
 <button onclick="mostrarPremiosAdmin()">
-  🎁 Premios
+  🎁 Premios MASS Lucky Spin
 </button>
 
 <button onclick="mostrarSorteosAdmin()">
@@ -12861,7 +12861,8 @@ const adminOrgId = localStorage.getItem("admin_organizador_id");
 
 let queryRifas = supabaseClient
   .from("rifas")
-  .select("id,titulo")
+  .select("id,titulo,estado,activo")
+  .or("activo.eq.true,estado.eq.activa,estado.eq.activo")
   .order("created_at", { ascending:false });
 
 if (adminRol === "organizador" && adminOrgId) {
@@ -12891,10 +12892,10 @@ if(rifaPremiosAdminId){
     }
 
     cont.innerHTML = `
-        <h3>🎁 Premios Lucky Spin</h3>
+        <h3>🎁 Premios MASS Lucky Spin</h3>
 
-	<select onchange="rifaPremiosAdminId = this.value; mostrarPremiosAdmin();">
-  <option value="">Selecciona una rifa</option>
+  <select onchange="rifaPremiosAdminId = this.value; mostrarPremiosAdmin();">
+  <option value="">Selecciona una rifa activa</option>
   ${rifas.map(r => `
     <option value="${r.id}" ${r.id === rifaPremiosAdminId ? "selected" : ""}>
       ${r.titulo}
