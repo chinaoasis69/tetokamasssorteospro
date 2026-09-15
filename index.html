@@ -57689,6 +57689,9 @@ async function pagarReservadoConMass(numero, rifaId) {
   await cargarBoletos();
 
   await cargarMisBoletos();
+
+ await cargarActividadPublicaRifa(rifaId);
+	
 }	
 
 async function abrirModalBeneficios() {
