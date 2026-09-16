@@ -58824,10 +58824,25 @@ setTimeout(
 );
 
 setTimeout(
-    () => {
+    async () => {
 
         window.MASS_BLOQUEAR_REALTIME_BOLETOS =
             false;
+
+        try {
+
+            await cargarBoletosDisponiblesLuckySpin();
+
+            conservarPosicionLuckySpin();
+
+        } catch (error) {
+
+            console.error(
+                "ERROR RECARGANDO BOLETOS LUCKY SPIN DESPUÉS DEL GIRO:",
+                error
+            );
+
+        }
 
     },
     500
