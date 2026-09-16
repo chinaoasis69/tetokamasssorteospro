@@ -59176,6 +59176,14 @@ if (!session?.user?.id) {
     return;
 }
 
+   const escaparHtmlPremios = valor =>
+    String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
     const tel = (localStorage.getItem("mass_telefono") || userActual || "").trim();
 
     const { data, error } = await supabaseClient
@@ -59228,6 +59236,28 @@ const premiosPreSorteosSeguros =
         ? []
         : (premiosPreSorteos || []);
 
+	const {
+  data: premiosLuckySpin,
+  error: errorPremiosLuckySpin
+} = await supabaseClient.rpc(
+  "listar_mis_premios_lucky_spin_seguro"
+);
+
+console.log(
+  "PREMIOS MASS LUCKY SPIN:",
+  premiosLuckySpin
+);
+
+console.log(
+  "ERROR PREMIOS MASS LUCKY SPIN:",
+  errorPremiosLuckySpin
+);
+
+const premiosLuckySpinSeguros =
+  errorPremiosLuckySpin
+    ? []
+    : (premiosLuckySpin || []);
+
     if(error){
         console.error(error);
         return;
@@ -59236,9 +59266,10 @@ const premiosPreSorteosSeguros =
     const premiosActuales = data || [];
 
 if (
-    premiosActuales.length === 0 &&
-    premiosSorteosPrincipalesSeguros.length === 0 &&
-    premiosPreSorteosSeguros.length === 0
+  premiosActuales.length === 0 &&
+  premiosSorteosPrincipalesSeguros.length === 0 &&
+  premiosPreSorteosSeguros.length === 0 &&
+  premiosLuckySpinSeguros.length === 0
 ) {
 	
     const contador =
@@ -59260,9 +59291,10 @@ if (
 
 if (contador) {
     contador.innerText =
-        premiosActuales.length +
-        premiosSorteosPrincipalesSeguros.length +
-        premiosPreSorteosSeguros.length;
+  premiosActuales.length +
+  premiosSorteosPrincipalesSeguros.length +
+  premiosPreSorteosSeguros.length +
+  premiosLuckySpinSeguros.length;
 }
 
  const premiosCombinados = [
@@ -59285,7 +59317,13 @@ if (contador) {
             p.seleccionado_en ||
             null,
         datos: p
-    }))
+    })),
+
+	 ...premiosLuckySpinSeguros.map(p => ({
+  tipo: "lucky_spin",
+  fechaOrden: p.creado_en || null,
+  datos: p
+}))
 ].sort(
     (a, b) =>
         new Date(b.fechaOrden || 0).getTime() -
@@ -59297,6 +59335,145 @@ document
     .innerHTML =
         premiosCombinados.map(item => {
             const p = item.datos;
+
+if (item.tipo === "lucky_spin") {
+
+  const nombrePremio =
+    escaparHtmlPremios(
+      p.premio_nombre || "Premio MASS Lucky Spin"
+    );
+
+  const descripcionPremio =
+    escaparHtmlPremios(
+      p.premio_descripcion || ""
+    );
+
+  const numeroBoleto =
+    escaparHtmlPremios(
+      p.numero_boleto || ""
+    );
+
+  const patrocinadorNombre =
+    escaparHtmlPremios(
+      p.patrocinador_nombre || ""
+    );
+
+  const massId =
+    escaparHtmlPremios(
+      p.mass_id || ""
+    );
+
+  const estadoCanje =
+    String(
+      p.estado_canje || ""
+    ).trim().toLowerCase();
+
+  const tipoPremio =
+    String(
+      p.tipo_premio || ""
+    ).trim().toLowerCase();
+
+  const qrToken =
+    String(
+      p.qr_token || ""
+    ).trim();
+
+  const fechaPremio =
+    p.creado_en
+      ? new Date(p.creado_en).toLocaleString()
+      : "Sin fecha";
+
+  const esBoletoGratis =
+    tipoPremio === "boleto_gratis_mass";
+
+  const estaCanjeado =
+    estadoCanje === "canjeado";
+
+  return `
+    <div style="
+      border:1px solid #39ff14;
+      padding:14px;
+      margin:10px 0;
+      border-radius:12px;
+      box-shadow:0 0 12px rgba(57,255,20,.25);
+    ">
+
+      <b>🎰 Premio MASS Lucky Spin</b>
+      <br><br>
+
+      🎁 Premio:
+      <b>${nombrePremio}</b>
+      <br>
+
+      ${
+        descripcionPremio
+          ? `📝 ${descripcionPremio}<br>`
+          : ""
+      }
+
+      🎟️ Boleto:
+      <b>${numeroBoleto || "—"}</b>
+      <br>
+
+      🪪 MASS ID:
+      <b>${massId || "—"}</b>
+      <br>
+
+      ${
+        patrocinadorNombre
+          ? `🤝 Patrocinador: <b>${patrocinadorNombre}</b><br>`
+          : ""
+      }
+
+      📅 ${fechaPremio}
+      <br><br>
+
+      ${
+        esBoletoGratis
+          ? `
+              ✅ <b>Boleto Gratis MASS entregado automáticamente</b>
+            `
+          : estaCanjeado
+            ? `
+                ✅ <b>Premio canjeado</b>
+                ${
+                  p.canjeado_at
+                    ? `<br>📅 ${new Date(
+                        p.canjeado_at
+                      ).toLocaleString()}`
+                    : ""
+                }
+              `
+            : qrToken
+              ? `
+                  🟡 <b>Premio pendiente de canje</b>
+                  <br><br>
+
+                  <div
+                    class="qrLuckySpinPremio"
+                    data-qr-token="${escaparHtmlPremios(qrToken)}"
+                    style="
+                      width:180px;
+                      min-height:180px;
+                      margin:12px auto;
+                      background:white;
+                      padding:8px;
+                      border-radius:10px;
+                    "
+                  ></div>
+
+                  <small>
+                    Presenta este QR al organizador para recibir tu premio.
+                  </small>
+                `
+              : `
+                  ⚠️ <b>QR de premio no disponible</b>
+                `
+      }
+
+    </div>
+  `;
+}
 
 			if (item.tipo === "sorteo_principal") {
 
@@ -59430,7 +59607,58 @@ document
                     }
                 </div>
             `;
-        }).join("");   
+        }).join("");
+
+	document
+  .querySelectorAll(".qrLuckySpinPremio")
+  .forEach(contenedor => {
+
+    const qrToken =
+      String(
+        contenedor.dataset.qrToken || ""
+      ).trim();
+
+    if (!qrToken) {
+      return;
+    }
+
+    contenedor.innerHTML = "";
+
+    try {
+
+      if (typeof QRCode === "function") {
+
+        new QRCode(
+          contenedor,
+          {
+            text: qrToken,
+            width: 180,
+            height: 180,
+            correctLevel:
+              QRCode.CorrectLevel.M
+          }
+        );
+
+      } else {
+
+        contenedor.innerHTML =
+          "<small>QR no disponible.</small>";
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        "ERROR GENERANDO QR LUCKY SPIN:",
+        error
+      );
+
+      contenedor.innerHTML =
+        "<small>QR no disponible.</small>";
+
+    }
+
+  });
 }	
 
 	function abrirModalPremios(){
