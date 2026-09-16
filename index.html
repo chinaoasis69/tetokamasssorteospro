@@ -59280,8 +59280,39 @@ const premiosLuckySpinSeguros =
 
     const premiosActuales = data || [];
 
+// ========================================================
+// MASS — EVITAR DUPLICAR PREMIOS LUCKY SPIN
+//
+// Un Producto/Premio Lucky Spin también posee su registro
+// oficial en historial_premios. Si ese historial ya viene
+// representado por listar_mis_premios_lucky_spin_seguro(),
+// no debe mostrarse nuevamente como premio tradicional.
+// ========================================================
+
+const historialLuckySpinIds = new Set(
+    premiosLuckySpinSeguros
+        .map(p => p?.historial_premio_id)
+        .filter(id => id !== null && id !== undefined)
+        .map(id => String(id))
+);
+
+const premiosActualesSinLuckyDuplicados =
+    premiosActuales.filter(p => {
+
+        if (
+            p?.id === null ||
+            p?.id === undefined
+        ) {
+            return true;
+        }
+
+        return !historialLuckySpinIds.has(
+            String(p.id)
+        );
+    });
+
 if (
-  premiosActuales.length === 0 &&
+  premiosActualesSinLuckyDuplicados.length === 0 &&
   premiosSorteosPrincipalesSeguros.length === 0 &&
   premiosPreSorteosSeguros.length === 0 &&
   premiosLuckySpinSeguros.length === 0
@@ -59306,14 +59337,14 @@ if (
 
 if (contador) {
     contador.innerText =
-  premiosActuales.length +
+  premiosActualesSinLuckyDuplicados.length +
   premiosSorteosPrincipalesSeguros.length +
   premiosPreSorteosSeguros.length +
   premiosLuckySpinSeguros.length;
 }
 
  const premiosCombinados = [
-    ...premiosActuales.map(p => ({
+    ...premiosActualesSinLuckyDuplicados.map(p => ({
         tipo: "tradicional",
         fechaOrden: p.fecha || null,
         datos: p
