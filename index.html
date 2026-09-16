@@ -906,6 +906,11 @@ input{
 <script
   src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
   defer
+></script>
+
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.7/html5-qrcode.min.js"
+  defer
 ></script>	
 	
 </head>
@@ -2254,6 +2259,13 @@ Cargando historial...
 <button onclick="mostrarPremiosAdmin()">
   🎁 Premios MASS Lucky Spin
 </button>
+
+<button
+  type="button"
+  onclick="mostrarCanjeLuckySpinAdmin()"
+>
+  📷 Canjear QR MASS Lucky Spin
+</button>	
 
 <button onclick="mostrarSorteosAdmin()">
   🎯 Sorteos
@@ -13019,6 +13031,894 @@ if(rifaPremiosAdminId){
     `;
 
 }
+
+// ========================================================
+// MASS — CANJE QR MASS LUCKY SPIN — ADMIN
+//
+// Flujo:
+// 1. Escanear QR.
+// 2. Consultar expediente SIN canjear.
+// 3. Mostrar premio y ganador.
+// 4. Operador confirma entrega.
+// 5. Solamente entonces se ejecuta el canje.
+// ========================================================
+
+let lectorCanjeLuckySpinAdmin = null;
+let lectorCanjeLuckySpinAdminActivo = false;
+let tokenCanjeLuckySpinAdminActual = null;
+
+
+async function mostrarCanjeLuckySpinAdmin() {
+
+    const cont =
+        document.getElementById("adminContenido");
+
+    if (!cont) {
+
+        console.error(
+            "No existe adminContenido para Canje Lucky Spin."
+        );
+
+        return;
+    }
+
+
+    lectorCanjeLuckySpinAdmin = null;
+    lectorCanjeLuckySpinAdminActivo = false;
+    tokenCanjeLuckySpinAdminActual = null;
+
+
+    cont.innerHTML = `
+        <h3>
+            📷 Canjear QR MASS Lucky Spin
+        </h3>
+
+        <p>
+            Escanea el QR presentado por el ganador.
+        </p>
+
+        <div
+            style="
+                padding:12px;
+                margin:12px 0;
+                border:1px solid #39ff14;
+                border-radius:10px;
+            "
+        >
+            🔐 <b>Validación segura</b><br>
+            Escanear o consultar el QR
+            <b>NO entrega el premio automáticamente.</b><br>
+            Primero se mostrará el expediente
+            para confirmar la entrega.
+        </div>
+
+
+        <div
+            id="estadoCanjeLuckySpinAdmin"
+            style="margin:12px 0;"
+        >
+            Esperando QR...
+        </div>
+
+
+        <div
+            id="lectorQrLuckySpinAdmin"
+            style="
+                width:100%;
+                max-width:420px;
+                margin:14px auto;
+            "
+        ></div>
+
+
+        <button
+            type="button"
+            onclick="iniciarLectorCanjeLuckySpinAdmin()"
+        >
+            📷 Iniciar cámara
+        </button>
+
+        <button
+            type="button"
+            onclick="detenerLectorCanjeLuckySpinAdmin()"
+        >
+            ⏹️ Detener cámara
+        </button>
+
+
+        <hr style="margin:20px 0;">
+
+
+        <p>
+            También puedes introducir manualmente
+            el token del QR:
+        </p>
+
+        <input
+            id="tokenQrLuckySpinAdmin"
+            type="text"
+            autocomplete="off"
+            placeholder="UUID del QR MASS Lucky Spin"
+            style="
+                width:100%;
+                max-width:520px;
+                padding:12px;
+                margin-bottom:10px;
+            "
+        >
+
+        <br>
+
+        <button
+            type="button"
+            onclick="consultarQrLuckySpinAdminManual()"
+        >
+            🔎 Consultar QR
+        </button>
+
+
+        <div
+            id="resultadoCanjeLuckySpinAdmin"
+            style="margin-top:18px;"
+        ></div>
+    `;
+}
+
+// ========================================================
+// MASS — CONSULTAR QR LUCKY SPIN SIN CANJEAR
+// ========================================================
+
+function escaparHtmlCanjeLuckySpinAdmin(valor) {
+
+    return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+async function consultarQrLuckySpinAdminManual() {
+
+    const input =
+        document.getElementById(
+            "tokenQrLuckySpinAdmin"
+        );
+
+    const token =
+        String(
+            input?.value || ""
+        ).trim();
+
+
+    if (!token) {
+
+        alert(
+            "Ingresa el token del QR MASS Lucky Spin."
+        );
+
+        return;
+    }
+
+
+    await consultarQrLuckySpinAdmin(
+        token
+    );
+}
+
+
+async function consultarQrLuckySpinAdmin(token) {
+
+    const estado =
+        document.getElementById(
+            "estadoCanjeLuckySpinAdmin"
+        );
+
+    const resultado =
+        document.getElementById(
+            "resultadoCanjeLuckySpinAdmin"
+        );
+
+
+    if (!resultado) {
+
+        console.error(
+            "No existe resultadoCanjeLuckySpinAdmin."
+        );
+
+        return;
+    }
+
+
+    tokenCanjeLuckySpinAdminActual = null;
+
+    resultado.innerHTML = "";
+
+    if (estado) {
+
+        estado.innerHTML =
+            "🔎 Consultando QR...";
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "consultar_premio_lucky_spin_qr_seguro",
+        {
+            p_qr_token: token
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CONSULTANDO QR LUCKY SPIN:",
+            error
+        );
+
+        if (estado) {
+
+            estado.innerHTML =
+                "❌ QR no validado.";
+        }
+
+
+        resultado.innerHTML = `
+            <div
+                style="
+                    border:1px solid #ff4d4d;
+                    padding:14px;
+                    border-radius:12px;
+                    margin-top:12px;
+                "
+            >
+                ❌ <b>No fue posible validar el QR.</b>
+                <br><br>
+                ${
+                    escaparHtmlCanjeLuckySpinAdmin(
+                        error.message ||
+                        "Error desconocido."
+                    )
+                }
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const expediente =
+        Array.isArray(data)
+            ? data[0]
+            : null;
+
+
+    if (!expediente) {
+
+        if (estado) {
+
+            estado.innerHTML =
+                "❌ QR sin expediente.";
+        }
+
+        resultado.innerHTML =
+            "No se encontró información del premio.";
+
+        return;
+    }
+
+
+    const puedeCanjear =
+    expediente.puede_canjear === true;
+
+
+tokenCanjeLuckySpinAdminActual =
+    puedeCanjear
+        ? token
+        : null;
+
+
+    const estadoCanje =
+        String(
+            expediente.estado_canje || ""
+        ).trim();
+
+
+    if (estado) {
+
+        estado.innerHTML =
+            puedeCanjear
+                ? "✅ QR válido — pendiente de confirmación."
+                : "⚠️ QR válido — no disponible para canje.";
+    }
+
+
+    resultado.innerHTML = `
+        <div
+            style="
+                border:1px solid #39ff14;
+                padding:16px;
+                border-radius:12px;
+                margin-top:14px;
+            "
+        >
+            <h3>
+                🎰 Premio MASS Lucky Spin
+            </h3>
+
+            🎁 <b>Premio:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    expediente.premio_nombre ||
+                    "Premio MASS"
+                )
+            }
+            <br><br>
+
+            🎟️ <b>Boleto:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    expediente.numero_boleto ||
+                    "-"
+                )
+            }
+            <br>
+
+            🪪 <b>MASS ID:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    expediente.mass_id ||
+                    "-"
+                )
+            }
+            <br>
+
+            🤝 <b>Patrocinador:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    expediente.patrocinador_nombre ||
+                    "Sin patrocinador"
+                )
+            }
+            <br>
+
+            🏷️ <b>Tipo:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    expediente.tipo_premio ||
+                    "-"
+                )
+            }
+            <br>
+
+            📦 <b>Estado:</b>
+            ${
+                escaparHtmlCanjeLuckySpinAdmin(
+                    estadoCanje ||
+                    "-"
+                )
+            }
+            <br><br>
+
+            ${
+                puedeCanjear
+                    ? `
+                        <button
+                            type="button"
+                            onclick="confirmarCanjeLuckySpinAdmin()"
+                        >
+                            ✅ Confirmar entrega del premio
+                        </button>
+                    `
+                    : `
+                        <b>
+                            ⚠️ Este premio no está disponible
+                            para un nuevo canje.
+                        </b>
+                    `
+            }
+        </div>
+    `;
+}
+
+// ========================================================
+// MASS — CONFIRMAR ENTREGA Y CANJEAR QR LUCKY SPIN
+// ========================================================
+
+let canjeLuckySpinAdminProcesando = false;
+
+
+async function confirmarCanjeLuckySpinAdmin() {
+
+    if (canjeLuckySpinAdminProcesando) {
+        return;
+    }
+
+
+    const token =
+        String(
+            tokenCanjeLuckySpinAdminActual || ""
+        ).trim();
+
+
+    if (!token) {
+
+        alert(
+            "Primero consulta un QR MASS Lucky Spin pendiente."
+        );
+
+        return;
+    }
+
+
+    const confirmar =
+        window.confirm(
+            "¿Confirmas que el premio será entregado al ganador?\n\n" +
+            "Al continuar, el QR quedará CANJEADO y no podrá utilizarse nuevamente."
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const estado =
+        document.getElementById(
+            "estadoCanjeLuckySpinAdmin"
+        );
+
+    const resultado =
+        document.getElementById(
+            "resultadoCanjeLuckySpinAdmin"
+        );
+
+
+    canjeLuckySpinAdminProcesando = true;
+
+
+    try {
+
+        if (estado) {
+
+            estado.innerHTML =
+                "⏳ Confirmando entrega del premio...";
+        }
+
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "canjear_premio_lucky_spin_qr_seguro",
+            {
+                p_qr_token: token
+            }
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        const canje =
+            Array.isArray(data)
+                ? data[0]
+                : null;
+
+
+        if (!canje) {
+
+            throw new Error(
+                "El servidor no devolvió la confirmación oficial del canje."
+            );
+        }
+
+
+        tokenCanjeLuckySpinAdminActual =
+            null;
+
+
+        const input =
+            document.getElementById(
+                "tokenQrLuckySpinAdmin"
+            );
+
+
+        if (input) {
+            input.value = "";
+        }
+
+
+        if (estado) {
+
+            estado.innerHTML =
+                "✅ Premio entregado — QR canjeado.";
+        }
+
+
+        const fechaCanje =
+            canje.canjeado_at
+                ? new Date(
+                    canje.canjeado_at
+                ).toLocaleString()
+                : "Sin fecha";
+
+
+        if (resultado) {
+
+            resultado.innerHTML = `
+                <div
+                    style="
+                        border:1px solid #39ff14;
+                        padding:16px;
+                        border-radius:12px;
+                        margin-top:14px;
+                    "
+                >
+                    <h3>
+                        ✅ Premio MASS Lucky Spin entregado
+                    </h3>
+
+                    🎁 <b>Premio:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            canje.premio_nombre ||
+                            "Premio MASS"
+                        )
+                    }
+                    <br><br>
+
+                    🪪 <b>MASS ID:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            canje.mass_id ||
+                            "-"
+                        )
+                    }
+                    <br>
+
+                    🤝 <b>Patrocinador:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            canje.patrocinador_nombre ||
+                            "Sin patrocinador"
+                        )
+                    }
+                    <br>
+
+                    🏷️ <b>Tipo:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            canje.tipo_premio ||
+                            "-"
+                        )
+                    }
+                    <br>
+
+                    📦 <b>Estado:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            canje.estado_canje ||
+                            "canjeado"
+                        )
+                    }
+                    <br>
+
+                    🗓️ <b>Canjeado:</b>
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            fechaCanje
+                        )
+                    }
+                    <br><br>
+
+                    🔒 <b>
+                        Este QR ya no puede utilizarse nuevamente.
+                    </b>
+                </div>
+            `;
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CANJEANDO QR LUCKY SPIN:",
+            error
+        );
+
+
+        if (estado) {
+
+            estado.innerHTML =
+                "❌ No fue posible completar el canje.";
+        }
+
+
+        if (resultado) {
+
+            resultado.innerHTML = `
+                <div
+                    style="
+                        border:1px solid #ff4d4d;
+                        padding:14px;
+                        border-radius:12px;
+                        margin-top:12px;
+                    "
+                >
+                    ❌ <b>Canje rechazado.</b>
+                    <br><br>
+
+                    ${
+                        escaparHtmlCanjeLuckySpinAdmin(
+                            error?.message ||
+                            "Error desconocido."
+                        )
+                    }
+                </div>
+            `;
+        }
+
+    } finally {
+
+        canjeLuckySpinAdminProcesando =
+            false;
+    }
+}
+
+// ========================================================
+// MASS — LECTOR DE CÁMARA QR LUCKY SPIN
+// ========================================================
+
+let lecturaQrLuckySpinAdminEnProceso = false;
+
+
+async function iniciarLectorCanjeLuckySpinAdmin() {
+
+    const estado =
+        document.getElementById(
+            "estadoCanjeLuckySpinAdmin"
+        );
+
+    const lectorContenedor =
+        document.getElementById(
+            "lectorQrLuckySpinAdmin"
+        );
+
+
+    if (!lectorContenedor) {
+
+        console.error(
+            "No existe lectorQrLuckySpinAdmin."
+        );
+
+        return;
+    }
+
+
+    if (
+        typeof Html5Qrcode ===
+        "undefined"
+    ) {
+
+        alert(
+            "El lector QR todavía no está disponible. Recarga la página e inténtalo nuevamente."
+        );
+
+        return;
+    }
+
+
+    if (lectorCanjeLuckySpinAdminActivo) {
+
+        if (estado) {
+
+            estado.innerHTML =
+                "📷 La cámara ya está activa.";
+        }
+
+        return;
+    }
+
+
+    try {
+
+        tokenCanjeLuckySpinAdminActual =
+            null;
+
+        lecturaQrLuckySpinAdminEnProceso =
+            false;
+
+
+        lectorCanjeLuckySpinAdmin =
+            new Html5Qrcode(
+                "lectorQrLuckySpinAdmin"
+            );
+
+
+        if (estado) {
+
+            estado.innerHTML =
+                "📷 Iniciando cámara...";
+        }
+
+
+        await lectorCanjeLuckySpinAdmin.start(
+
+            {
+                facingMode: "environment"
+            },
+
+            {
+                fps: 10,
+
+                qrbox: {
+                    width: 250,
+                    height: 250
+                }
+            },
+
+            async (decodedText) => {
+
+                if (
+                    lecturaQrLuckySpinAdminEnProceso
+                ) {
+                    return;
+                }
+
+
+                lecturaQrLuckySpinAdminEnProceso =
+                    true;
+
+
+                const token =
+                    String(
+                        decodedText || ""
+                    ).trim();
+
+
+                if (!token) {
+
+                    lecturaQrLuckySpinAdminEnProceso =
+                        false;
+
+                    return;
+                }
+
+
+                const input =
+                    document.getElementById(
+                        "tokenQrLuckySpinAdmin"
+                    );
+
+
+                if (input) {
+                    input.value = token;
+                }
+
+
+                await detenerLectorCanjeLuckySpinAdmin();
+
+
+                await consultarQrLuckySpinAdmin(
+                    token
+                );
+
+
+                lecturaQrLuckySpinAdminEnProceso =
+                    false;
+            },
+
+            () => {
+
+                // Los frames sin QR son normales.
+                // No mostrar error al operador.
+            }
+        );
+
+
+        lectorCanjeLuckySpinAdminActivo =
+            true;
+
+
+        if (estado) {
+
+            estado.innerHTML =
+                "📷 Cámara activa — apunta al QR MASS Lucky Spin.";
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR INICIANDO CÁMARA QR LUCKY SPIN:",
+            error
+        );
+
+
+        lectorCanjeLuckySpinAdmin =
+            null;
+
+        lectorCanjeLuckySpinAdminActivo =
+            false;
+
+        lecturaQrLuckySpinAdminEnProceso =
+            false;
+
+
+        if (estado) {
+
+            estado.innerHTML =
+                "❌ No fue posible iniciar la cámara.";
+        }
+
+
+        alert(
+            error?.message ||
+            "No fue posible abrir la cámara."
+        );
+    }
+}
+
+
+async function detenerLectorCanjeLuckySpinAdmin() {
+
+    const lector =
+        lectorCanjeLuckySpinAdmin;
+
+
+    if (!lector) {
+
+        lectorCanjeLuckySpinAdminActivo =
+            false;
+
+        return;
+    }
+
+
+    try {
+
+        if (lectorCanjeLuckySpinAdminActivo) {
+
+            await lector.stop();
+        }
+
+
+        try {
+
+            await lector.clear();
+
+        } catch (errorClear) {
+
+            console.log(
+                "Lector QR ya estaba limpio.",
+                errorClear
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR DETENIENDO CÁMARA QR LUCKY SPIN:",
+            error
+        );
+
+    } finally {
+
+        lectorCanjeLuckySpinAdmin =
+            null;
+
+        lectorCanjeLuckySpinAdminActivo =
+            false;
+    }
+}	
 
 // =========================================================
 // MASS - FORMULARIO PROFESIONAL DE PREMIOS LUCKY SPIN V2
