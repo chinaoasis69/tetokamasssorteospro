@@ -13869,17 +13869,28 @@ async function iniciarLectorCanjeLuckySpinAdmin() {
 
 async function detenerLectorCanjeLuckySpinAdmin() {
 
+	const estado =
+    document.getElementById(
+        "estadoCanjeLuckySpinAdmin"
+    );
+
     const lector =
         lectorCanjeLuckySpinAdmin;
 
 
-    if (!lector) {
+if (!lector) {
 
-        lectorCanjeLuckySpinAdminActivo =
-            false;
+    lectorCanjeLuckySpinAdminActivo =
+        false;
 
-        return;
+    if (estado) {
+
+        estado.innerHTML =
+            "⏹️ Cámara detenida — esperando QR.";
     }
+
+    return;
+}    
 
 
     try {
@@ -13917,6 +13928,12 @@ async function detenerLectorCanjeLuckySpinAdmin() {
 
         lectorCanjeLuckySpinAdminActivo =
             false;
+
+if (estado) {
+
+    estado.innerHTML =
+        "⏹️ Cámara detenida — esperando QR.";
+}	
     }
 }	
 
