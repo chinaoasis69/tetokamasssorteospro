@@ -54750,11 +54750,11 @@ async function cargarBoletos() {
     supabaseClient
       .from("boletos")
       .select(
-        "id, rifa_id, numero, estado",
-        {
-          count: "exact"
-        }
-      )
+    "id, rifa_id, numero, estado, origen_boleto",
+    {
+        count: "exact"
+    }
+)
       .eq(
         "rifa_id",
         RIFA_ID
@@ -55065,7 +55065,13 @@ function renderBoletos(
 ) {
 
   btn.style.background =
-    "#444";
+    String(
+        boleto.origen_boleto || ""
+    )
+        .trim()
+        .toLowerCase() === "lucky_spin"
+        ? "#0d6efd"
+        : "#444";
 
   btn.style.color =
     "#fff";
