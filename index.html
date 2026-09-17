@@ -13148,35 +13148,6 @@ function escaparHtmlCanjeLuckySpinAdmin(valor) {
 }
 
 
-async function consultarQrLuckySpinAdminManual() {
-
-    const input =
-        document.getElementById(
-            "tokenQrLuckySpinAdmin"
-        );
-
-    const token =
-        String(
-            input?.value || ""
-        ).trim();
-
-
-    if (!token) {
-
-        alert(
-            "Ingresa el token del QR MASS Lucky Spin."
-        );
-
-        return;
-    }
-
-
-    await consultarQrLuckySpinAdmin(
-        token
-    );
-}
-
-
 async function consultarQrLuckySpinAdmin(token) {
 
     const estado =
@@ -13493,17 +13464,6 @@ async function confirmarCanjeLuckySpinAdmin() {
             null;
 
 
-        const input =
-            document.getElementById(
-                "tokenQrLuckySpinAdmin"
-            );
-
-
-        if (input) {
-            input.value = "";
-        }
-
-
         if (estado) {
 
             estado.innerHTML =
@@ -13758,17 +13718,6 @@ async function iniciarLectorCanjeLuckySpinAdmin() {
                         false;
 
                     return;
-                }
-
-
-                const input =
-                    document.getElementById(
-                        "tokenQrLuckySpinAdmin"
-                    );
-
-
-                if (input) {
-                    input.value = token;
                 }
 
 
