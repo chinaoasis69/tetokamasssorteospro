@@ -57880,7 +57880,9 @@ if (spinResult) {
     );
   }
 }
-
+	  
+let promesaCierrePremioLuckySpin = null;
+let resolverCierrePremioLuckySpin = null;
 
     if (ganoPremio) {
 
@@ -57911,6 +57913,40 @@ if (spinResult) {
 
         6500
       );
+
+promesaCierrePremioLuckySpin = new Promise((resolve) => {
+    resolverCierrePremioLuckySpin = resolve;
+});
+
+if (spinResult) {
+    const botonCerrarPremioLuckySpin =
+        document.createElement("button");
+
+    botonCerrarPremioLuckySpin.type = "button";
+    botonCerrarPremioLuckySpin.textContent = "❌ Cerrar";
+
+    botonCerrarPremioLuckySpin.style.cssText = `
+        display:block;
+        margin:18px auto 4px;
+        padding:12px 22px;
+        border-radius:12px;
+        border:1px solid #39ff14;
+        font-weight:bold;
+        cursor:pointer;
+    `;
+
+    botonCerrarPremioLuckySpin.onclick = () => {
+        botonCerrarPremioLuckySpin.disabled = true;
+
+        if (resolverCierrePremioLuckySpin) {
+            resolverCierrePremioLuckySpin();
+        }
+    };
+
+    spinResult.appendChild(
+        botonCerrarPremioLuckySpin
+    );
+}		
 
     } else {
 
@@ -59561,13 +59597,19 @@ mostrarNotificacion(
   tres segundos completos.
 */
 
-await new Promise(resolve => {
-
-    setTimeout(
-        resolve,
-        3000
-    );
-});
+if (
+    ganoPremio &&
+    promesaCierrePremioLuckySpin
+) {
+    await promesaCierrePremioLuckySpin;
+} else {
+    await new Promise(resolve => {
+        setTimeout(
+            resolve,
+            3000
+        );
+    });
+}
 
 
 const evento =
@@ -59720,11 +59762,26 @@ setTimeout(
 
         try {
 
-            await cargarBoletosDisponiblesLuckySpin();
+    conservarPosicionLuckySpin();
 
-            conservarPosicionLuckySpin();
+    await cargarBoletos();
+    conservarPosicionLuckySpin();
 
-        } catch (error) {
+    await cargarMisBoletos();
+    conservarPosicionLuckySpin();
+
+    await cargarHistorialPremios();
+    conservarPosicionLuckySpin();
+
+    await cargarBoletosDisponiblesLuckySpin();
+    conservarPosicionLuckySpin();
+
+    setTimeout(
+        conservarPosicionLuckySpin,
+        80
+    );
+
+} catch (error) {
 
             console.error(
                 "ERROR RECARGANDO BOLETOS LUCKY SPIN DESPUÉS DEL GIRO:",
