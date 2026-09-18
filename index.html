@@ -41703,6 +41703,15 @@ async function comprarConSaldo() {
 
     await cargarMisBoletos();
 
+	try {
+    await cargarBoletosDisponiblesLuckySpin();
+} catch (errorActualizacionLuckySpin) {
+    console.error(
+        "ERROR ACTUALIZANDO LUCKY SPIN DESPUÉS DE COMPRA:",
+        errorActualizacionLuckySpin
+    );
+}
+
 
   } catch (errorInesperado) {
 
@@ -58376,7 +58385,7 @@ const saltoNumeros =
         ? `
             ✅ Entregado automáticamente<br>
             <span style="color:#ccc;font-size:13px;">
-                🚫 No genera Lucky Spin
+                🚫 No genera MASS Lucky Spin
             </span>
           `
 
