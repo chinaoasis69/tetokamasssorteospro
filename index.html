@@ -58795,14 +58795,16 @@ if (botonConfirmar) {
         resultado.innerHTML = "";
     }
 
-
-    spinBox.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-    });
-
-
 await cargarBoletosDisponiblesLuckySpin();
+
+requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        contenedorBoletos.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    });
+});	
 }
 
 async function actualizarVisibilidadLuckySpin() {
@@ -59344,8 +59346,16 @@ async function cargarBoletosDisponiblesLuckySpin() {
 
             botonConfirmar.textContent =
                 `🎰 GIRAR AHORA — BOLETO ${numeroBoleto}`;
-        }
-    };
+
+	requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+        botonConfirmar.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+       });
+    });
+  }
 
 
                 contenedor.appendChild(
@@ -59440,7 +59450,10 @@ async function confirmarGiroLuckySpinSeleccionado() {
     document.getElementById(
         "spinBox"
     );
-
+	
+if (spinBox) {
+    spinBox.style.overflowAnchor = "none";
+}
 
 const posicionVisualSpinBox =
     spinBox
@@ -59486,6 +59499,8 @@ const conservarPosicionLuckySpin =
 	
 window.MASS_BLOQUEAR_REALTIME_BOLETOS =
     true;
+
+conservarPosicionLuckySpin();	
 
 await girarLuckySpinConBoleto(
   seleccion.numero,
@@ -59806,10 +59821,18 @@ setTimeout(
     await cargarBoletosDisponiblesLuckySpin();
     conservarPosicionLuckySpin();
 
-    setTimeout(
-        conservarPosicionLuckySpin,
-        80
-    );
+   setTimeout(() => {
+
+    conservarPosicionLuckySpin();
+
+    if (spinBox) {
+        spinBox.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+}, 120); 
 
 } catch (error) {
 
