@@ -58225,7 +58225,7 @@ async function cargarMisBoletos(){
     data,
     error
   } = await supabaseClient.rpc(
-    "listar_mis_boletos_seguro",
+   "listar_mis_boletos_seguro_v2",
     {
       p_solo_giros_disponibles:
         false
@@ -58349,9 +58349,14 @@ const saltoNumeros =
       <div id="${idBox}" style="display:none;margin-top:10px;">
         ${lista.map(t => `
           <div style="margin:8px 0;">
-            ${t.estado === "apartado"
- ? "🟡 Reservado: <b>" + t.numero + "</b><br>"
- : "🎟️ Comprado: <b>" + t.numero + "</b><br>"}
+           ${t.estado === "apartado"
+    ? "🟡 Reservado: <b>" + t.numero + "</b><br>"
+    : String(t.origen_boleto || "")
+        .trim()
+        .toLowerCase() === "lucky_spin"
+        ? "🎁 Boleto Gratis MASS: <b>" + t.numero + "</b><br>"
+        : "🎟 Comprado: <b>" + t.numero + "</b><br>"
+} 
          ${t.estado === "apartado"
 ? (
     Number(t.numero) < saltoNumeros
@@ -58364,7 +58369,37 @@ const saltoNumeros =
       : `
           🎟️ Incluido en el paquete<br>
         `
-  )  
+  )
+
+  : (
+    String(t.origen_boleto || "")
+        .trim()
+        .toLowerCase() === "lucky_spin"
+
+        ? `
+            ✅ Entregado automáticamente<br>
+            <span style="color:#ccc;font-size:13px;">
+                🚫 No genera Lucky Spin
+            </span>
+          `
+
+        : Number(t.numero) < saltoNumeros
+
+            ? (
+                t.giro_usado
+                    ? "❌ Giro usado"
+                    : rifaActiva
+                        ? `
+                            ⚙️ Giro disponible<br>
+                            <span style="color:#ccc;font-size:13px;">
+                                Usa MASS LUCKY SPIN para realizar tu giro
+                            </span>
+                          `
+                        : "🏁 Rifa finalizada"
+              )
+
+            : "🎟 Incluido en el paquete<br>"
+)		   
   : (
     Number(t.numero) < saltoNumeros
 
