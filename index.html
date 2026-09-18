@@ -59770,6 +59770,34 @@ if (resumen) {
         "🎟️ Aquí aparecerán únicamente tus boletos con giro disponible.";
 }
 
+/*
+  Restaurar completamente el tamaño visual
+  normal de MASS Lucky Spin después del giro.
+*/
+
+if (evento) {
+    evento.style.display = "none";
+    evento.style.height = "";
+    evento.style.minHeight = "";
+    evento.style.maxHeight = "";
+}
+
+if (resumen) {
+    resumen.style.display = "block";
+}
+
+if (spinBox) {
+    spinBox.style.height = "auto";
+    spinBox.style.minHeight = "";
+    spinBox.style.maxHeight = "";
+
+    /*
+      Forzar al navegador a recalcular inmediatamente
+      la altura real de la tarjeta.
+    */
+    void spinBox.offsetHeight;
+}	
+
 
 boletoLuckySpinSeleccionado =
     null;
