@@ -55059,34 +55059,45 @@ function renderBoletos(
       }
 
 
-      if (
+if (
   estado ===
   "vendido"
 ) {
-
-  btn.style.background =
+  const esBoletoLuckySpin =
     String(
-        boleto.origen_boleto || ""
+      boleto.origen_boleto || ""
     )
-        .trim()
-        .toLowerCase() === "lucky_spin"
-        ? "#0d6efd"
-        : "#444";
+      .trim()
+      .toLowerCase() === "lucky_spin";
 
-  btn.style.color =
-    "#fff";
+  btn.style.position = "relative";
+  btn.disabled = false;
+  btn.style.cursor = "pointer";
 
-  // Se mantiene gris, pero permite tocarlo
-  // para informar por qué no puede seleccionarse.
-  btn.disabled =
-    false;
+  if (esBoletoLuckySpin) {
+    btn.style.background = "#0d6efd";
+    btn.style.color = "#fff";
+    btn.style.border = "2px solid #8ec5ff";
+    btn.title =
+      "Boleto gratis ganado en MASS Lucky Spin";
 
-  btn.style.cursor =
-    "pointer";
+    const insigniaRegalo =
+      document.createElement("span");
 
-  btn.title =
-    "Este número ya fue vendido";
+    insigniaRegalo.textContent = "🎁";
+    insigniaRegalo.style.position = "absolute";
+    insigniaRegalo.style.top = "4px";
+    insigniaRegalo.style.right = "6px";
+    insigniaRegalo.style.fontSize = "11px";
+    insigniaRegalo.style.lineHeight = "1";
+    insigniaRegalo.style.pointerEvents = "none";
 
+    btn.appendChild(insigniaRegalo);
+  } else {
+    btn.style.background = "#444";
+    btn.style.color = "#fff";
+    btn.title = "Este número ya fue vendido";
+  }
 }
 
 
@@ -55432,17 +55443,37 @@ async function irPaginaBoletos() {
   if (
     estadoBoleto ===
     "vendido"
-  ) {
+) {
 
-    mostrarNotificacion(
-      "warning",
-      "Número vendido",
-      `El número ${b.numero} ya fue comprado. Selecciona otro número disponible.`,
-      3500
-    );
+    const esBoletoLuckySpin =
+        String(
+            b?.origen_boleto || ""
+        )
+            .trim()
+            .toLowerCase() === "lucky_spin";
+
+    if (esBoletoLuckySpin) {
+
+        mostrarNotificacion(
+            "success",
+            "🎁 Boleto Gratis MASS",
+            `El número ${b.numero} fue asignado automáticamente por MASS Lucky Spin como premio. Tiene valor 0 MASS y no está disponible para compra.`,
+            4500
+        );
+
+    } else {
+
+        mostrarNotificacion(
+            "warning",
+            "Número vendido",
+            `El número ${b.numero} ya fue comprado. Selecciona otro número disponible.`,
+            3500
+        );
+
+    }
 
     return;
-  }
+}
 
 
   if (
