@@ -57922,6 +57922,9 @@ if (spinResult) {
     const botonCerrarPremioLuckySpin =
         document.createElement("button");
 
+	botonCerrarPremioLuckySpin.id =
+    "botonCerrarPremioLuckySpin";
+
     botonCerrarPremioLuckySpin.type = "button";
     botonCerrarPremioLuckySpin.textContent = "❌ Cerrar";
 
@@ -59597,18 +59600,45 @@ mostrarNotificacion(
   tres segundos completos.
 */
 
-if (
-    ganoPremio &&
-    promesaCierrePremioLuckySpin
-) {
-    await promesaCierrePremioLuckySpin;
+if (botonConfirmar) {
+    botonConfirmar.style.display = "none";
+}
+
+const animacionResultadoLuckySpin =
+    document.getElementById("luckySpinAnimacion");
+
+if (animacionResultadoLuckySpin) {
+    animacionResultadoLuckySpin.style.display = "none";
+}
+
+const botonCerrarPremioActual =
+    document.getElementById("botonCerrarPremioLuckySpin");
+
+if (botonCerrarPremioActual) {
+
+    if (!botonCerrarPremioActual.disabled) {
+
+        await new Promise(resolve => {
+
+            botonCerrarPremioActual.addEventListener(
+                "click",
+                resolve,
+                { once: true }
+            );
+
+        });
+
+    }
+
 } else {
+
     await new Promise(resolve => {
         setTimeout(
             resolve,
-            3000
+            5000
         );
     });
+
 }
 
 
