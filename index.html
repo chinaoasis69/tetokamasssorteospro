@@ -60145,6 +60145,83 @@ const premiosLuckySpinSeguros =
     ? []
     : (premiosLuckySpin || []);
 
+// ========================================================
+// MASS - RESOLVER NÚMEROS DE BOLETOS GRATIS LUCKY SPIN
+// ========================================================
+
+const idsBoletosGratisLuckySpin =
+    [
+        ...new Set(
+            premiosLuckySpinSeguros
+                .filter(
+                    p =>
+                        String(
+                            p?.tipo_premio || ""
+                        )
+                            .trim()
+                            .toLowerCase() ===
+                        "boleto_gratis_mass"
+                )
+                .map(
+                    p =>
+                        p?.boleto_premio_id
+                )
+                .filter(Boolean)
+                .map(String)
+        )
+    ];
+
+const numeroBoletoGratisPorId =
+    new Map();
+
+if (
+    idsBoletosGratisLuckySpin.length > 0
+) {
+
+    const {
+        data: boletosGratisLuckySpin,
+        error: errorBoletosGratisLuckySpin
+    } =
+        await supabaseClient
+            .from("boletos")
+            .select("id, numero")
+            .in(
+                "id",
+                idsBoletosGratisLuckySpin
+            );
+
+    if (
+        errorBoletosGratisLuckySpin
+    ) {
+
+        console.error(
+            "ERROR BOLETOS GRATIS LUCKY SPIN:",
+            errorBoletosGratisLuckySpin
+        );
+
+    } else {
+
+        (
+            boletosGratisLuckySpin || []
+        ).forEach(
+            boletoGratis => {
+
+                numeroBoletoGratisPorId.set(
+                    String(
+                        boletoGratis.id
+                    ),
+                    String(
+                        boletoGratis.numero ?? ""
+                    )
+                );
+
+            }
+        );
+
+    }
+
+}	
+
     if(error){
         console.error(error);
         return;
@@ -60304,6 +60381,18 @@ if (item.tipo === "lucky_spin") {
   const esBoletoGratis =
     tipoPremio === "boleto_gratis_mass";
 
+  const numeroBoletoGratisRecibido =
+    esBoletoGratis &&
+    p?.boleto_premio_id
+        ? escaparHtmlPremios(
+            numeroBoletoGratisPorId.get(
+                String(
+                    p.boleto_premio_id
+                )
+            ) || ""
+        )
+        : "";
+
   const estaCanjeado =
     estadoCanje === "canjeado";
 
@@ -60329,9 +60418,23 @@ if (item.tipo === "lucky_spin") {
           : ""
       }
 
-      🎟️ Boleto:
-      <b>${numeroBoleto || "—"}</b>
-      <br>
+     ${
+    esBoletoGratis
+        ? `
+            🎟️ Boleto que generó el premio:
+            <b>${numeroBoleto || "-"}</b>
+            <br>
+
+            🎁 Boleto Gratis MASS recibido:
+            <b>${numeroBoletoGratisRecibido || "-"}</b>
+            <br>
+        `
+        : `
+            🎟️ Boleto:
+            <b>${numeroBoleto || "-"}</b>
+            <br>
+        `
+} 
 
       🪪 MASS ID:
       <b>${massId || "—"}</b>
