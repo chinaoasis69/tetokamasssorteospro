@@ -59855,6 +59855,8 @@ setTimeout(
     conservarPosicionLuckySpin();
 
     if (spinBox) {
+	  spinBox.scrollTop = 0;
+		
         spinBox.scrollIntoView({
             behavior: "smooth",
             block: "center"
