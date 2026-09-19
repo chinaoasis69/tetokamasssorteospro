@@ -58780,22 +58780,47 @@ if (botonConfirmar) {
 
     // Limpiar el evento anterior.
 
-    evento.style.display = "block";
+estado.textContent =
+    "🎟️ Buscando tus boletos con giro disponible...";
 
-    estado.textContent =
-        "🎟️ Buscando tus boletos con giro disponible...";
+contenedorBoletos.innerHTML = "";
 
-    contenedorBoletos.innerHTML = "";
+if (animacion) {
+    animacion.style.display = "none";
+}
 
-    if (animacion) {
-        animacion.style.display = "none";
-    }
+if (resultado) {
+    resultado.innerHTML = "";
+}
 
-    if (resultado) {
-        resultado.innerHTML = "";
-    }
+const hayBoletosDisponibles =
+    await cargarBoletosDisponiblesLuckySpin();
 
-await cargarBoletosDisponiblesLuckySpin();
+
+if (hayBoletosDisponibles === false) {
+
+    evento.style.display = "none";
+
+    spinBox.scrollTop = 0;
+
+    mostrarNotificacion(
+        "info",
+        "🎟️ Sin boletos disponibles",
+        "No tienes boletos con giro disponible para usar en MASS Lucky Spin.",
+        2500
+    );
+
+    return;
+}
+
+
+evento.style.display = "block";
+
+
+if (hayBoletosDisponibles !== true) {
+    return;
+}
+
 
 requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -58998,7 +59023,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
                     "🎟️ No tienes boletos listos para girar.";
             }
 
-            return;
+            return false;
         }
 
 
@@ -59127,7 +59152,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
                     "🏁 No tienes giros activos disponibles.";
             }
 
-            return;
+            return false;
         }
 
 
@@ -59364,7 +59389,8 @@ async function cargarBoletosDisponiblesLuckySpin() {
                 );
             }
         );
-
+		
+   return true; 
 
     } catch (error) {
 
