@@ -41074,6 +41074,2148 @@ async function guardarActividadSorteo(accion, listaBoletos) {
 
 let comprando = false;
 
+// ============================================================
+// MASS SORTEOS PRO
+// FRONTEND LEGAL PROGRESIVO
+//
+// Consulta centralizada del estado jurídico del usuario.
+//
+// IMPORTANTE:
+// - NO escribe directamente en tablas legales.
+// - NO acepta documentos.
+// - NO acepta reglas.
+// - NO registra consentimientos.
+// - Sólo consulta mediante RPC segura.
+// ============================================================
+
+const MASS_LEGAL_MODULO_SORTEOS = "mass_sorteos_pro";
+
+const MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION = Object.freeze([
+  "edad_elegibilidad_sorteos_pro"
+]);
+
+
+async function obtenerEstadoLegalParticipacionSeguro({
+  rifaId = null,
+  organizadorId = null,
+  consentimientoClaves = MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION,
+  idiomaCodigo = "es"
+} = {}) {
+
+  try {
+
+    const clavesNormalizadas =
+      Array.isArray(consentimientoClaves)
+        ? consentimientoClaves
+            .map(clave =>
+              String(clave || "")
+                .trim()
+                .toLowerCase()
+            )
+            .filter(Boolean)
+        : [];
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "obtener_estado_legal_usuario_seguro",
+      {
+        p_organizador_id:
+          organizadorId || null,
+
+        p_rifa_id:
+          rifaId || null,
+
+        p_modulo_codigo:
+          MASS_LEGAL_MODULO_SORTEOS,
+
+        p_idioma_codigo:
+          idiomaCodigo || "es",
+
+        p_consentimiento_claves:
+          clavesNormalizadas
+      }
+    );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CONSULTANDO ESTADO LEGAL MASS:",
+        error
+      );
+
+      return {
+        ok: false,
+        estado: null,
+        error
+      };
+    }
+
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      data.ok !== true
+    ) {
+
+      console.error(
+        "RESPUESTA LEGAL MASS INVÁLIDA:",
+        data
+      );
+
+      return {
+        ok: false,
+        estado: data || null,
+        error: new Error(
+          "No se recibió un estado legal válido."
+        )
+      };
+    }
+
+
+    return {
+      ok: true,
+      estado: data,
+      error: null
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO CONSULTANDO ESTADO LEGAL MASS:",
+      error
+    );
+
+
+    return {
+      ok: false,
+      estado: null,
+      error
+    };
+  }
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// FRONTEND LEGAL PROGRESIVO
+//
+// Obtiene desde servidor el TEXTO JURÍDICO EXACTO
+// del requisito que el usuario debe revisar.
+// ============================================================
+
+async function obtenerContenidoLegalUsuarioSeguro(
+  fuenteTipo,
+  recursoId
+) {
+
+  try {
+
+    const fuente =
+      String(fuenteTipo || "")
+        .trim()
+        .toLowerCase();
+
+    const id =
+      String(recursoId || "")
+        .trim();
+
+
+    if (
+      ![
+        "documento_legal",
+        "consentimiento_especifico",
+        "reglas_oficiales"
+      ].includes(fuente)
+    ) {
+
+      console.error(
+        "FUENTE LEGAL FRONTEND INVÁLIDA:",
+        fuenteTipo
+      );
+
+      return {
+        ok: false,
+        contenido: null,
+        error: new Error(
+          "El tipo de requisito legal no es válido."
+        )
+      };
+    }
+
+
+    if (!id) {
+
+      console.error(
+        "RECURSO LEGAL FRONTEND VACÍO:",
+        recursoId
+      );
+
+      return {
+        ok: false,
+        contenido: null,
+        error: new Error(
+          "No se recibió el identificador del requisito legal."
+        )
+      };
+    }
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      "obtener_contenido_legal_usuario_seguro",
+      {
+        p_fuente_tipo: fuente,
+        p_recurso_id: id
+      }
+    );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR OBTENIENDO CONTENIDO LEGAL MASS:",
+        error
+      );
+
+      return {
+        ok: false,
+        contenido: null,
+        error
+      };
+    }
+
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      data.ok !== true ||
+      !data.contenido
+    ) {
+
+      console.error(
+        "CONTENIDO LEGAL MASS INVÁLIDO:",
+        data
+      );
+
+      return {
+        ok: false,
+        contenido: data || null,
+        error: new Error(
+          "No se recibió contenido jurídico válido."
+        )
+      };
+    }
+
+
+    return {
+      ok: true,
+      contenido: data,
+      error: null
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO OBTENIENDO CONTENIDO LEGAL MASS:",
+      error
+    );
+
+
+    return {
+      ok: false,
+      contenido: null,
+      error
+    };
+  }
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// FRONTEND LEGAL PROGRESIVO
+//
+// Modal de un solo requisito jurídico.
+//
+// IMPORTANTE:
+// - NO registra ninguna acción jurídica.
+// - NO llama RPCs de aceptación.
+// - NO modifica tablas.
+// - Muestra exactamente el texto recibido del servidor.
+// - Devuelve true solamente si el usuario marca la casilla
+//   y presiona el botón de continuar.
+// ============================================================
+
+function mostrarModalLegalProgresivo(contenidoLegal) {
+
+  return new Promise(resolve => {
+
+    if (
+      !contenidoLegal ||
+      typeof contenidoLegal !== "object" ||
+      !String(contenidoLegal.contenido || "").trim()
+    ) {
+
+      console.error(
+        "CONTENIDO LEGAL NO VÁLIDO PARA MOSTRAR:",
+        contenidoLegal
+      );
+
+      resolve(false);
+      return;
+    }
+
+
+    // --------------------------------------------------------
+    // Evitar modales duplicados por alguna llamada accidental.
+    // --------------------------------------------------------
+
+    const modalAnterior =
+      document.getElementById(
+        "massLegalModalOverlay"
+      );
+
+    if (modalAnterior) {
+      modalAnterior.remove();
+    }
+
+
+    const fuenteTipo =
+      String(
+        contenidoLegal.fuente_tipo || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const accionRequerida =
+      String(
+        contenidoLegal.accion_requerida || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const consentimientoClave =
+      String(
+        contenidoLegal.consentimiento_clave || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    // --------------------------------------------------------
+    // Texto del checkbox según la semántica jurídica.
+    // --------------------------------------------------------
+
+    let textoCasilla =
+      "He leído y acepto lo anterior.";
+
+    let textoBoton =
+      "Aceptar y continuar";
+
+
+    if (
+      fuenteTipo === "consentimiento_especifico" ||
+      accionRequerida === "consentimiento"
+    ) {
+
+      if (
+        consentimientoClave ===
+        "edad_elegibilidad_sorteos_pro"
+      ) {
+
+        textoCasilla =
+          "Confirmo esta declaración de elegibilidad y deseo continuar.";
+
+      } else {
+
+        textoCasilla =
+          "Doy mi consentimiento para lo indicado anteriormente.";
+      }
+
+      textoBoton =
+        "Confirmar y continuar";
+
+
+    } else if (
+      accionRequerida === "reconocimiento"
+    ) {
+
+      textoCasilla =
+        "Confirmo que he leído y recibido este aviso.";
+
+      textoBoton =
+        "Reconocer y continuar";
+
+
+    } else if (
+      fuenteTipo === "reglas_oficiales"
+    ) {
+
+      textoCasilla =
+        "He leído y acepto estas Reglas Oficiales.";
+
+      textoBoton =
+        "Aceptar y continuar";
+    }
+
+
+    // --------------------------------------------------------
+    // Título seguro.
+    // --------------------------------------------------------
+
+    let titulo =
+      String(
+        contenidoLegal.titulo || ""
+      ).trim();
+
+
+    if (!titulo) {
+
+      if (
+        fuenteTipo ===
+        "reglas_oficiales"
+      ) {
+
+        titulo =
+          "Reglas Oficiales";
+
+      } else if (
+        fuenteTipo ===
+        "consentimiento_especifico"
+      ) {
+
+        titulo =
+          "Confirmación requerida";
+
+      } else {
+
+        titulo =
+          "Información legal";
+      }
+    }
+
+
+    const version =
+      String(
+        contenidoLegal.version || ""
+      ).trim();
+
+
+    // --------------------------------------------------------
+    // Crear overlay.
+    // --------------------------------------------------------
+
+    const overlay =
+      document.createElement("div");
+
+
+    overlay.id =
+      "massLegalModalOverlay";
+
+
+    overlay.setAttribute(
+      "role",
+      "presentation"
+    );
+
+
+    Object.assign(
+      overlay.style,
+      {
+        position: "fixed",
+        inset: "0",
+        zIndex: "100000",
+        background:
+          "rgba(0, 0, 0, 0.82)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "16px"
+      }
+    );
+
+
+    // --------------------------------------------------------
+    // Tarjeta.
+    // --------------------------------------------------------
+
+    const tarjeta =
+      document.createElement("div");
+
+
+    tarjeta.setAttribute(
+      "role",
+      "dialog"
+    );
+
+
+    tarjeta.setAttribute(
+      "aria-modal",
+      "true"
+    );
+
+
+    tarjeta.setAttribute(
+      "aria-labelledby",
+      "massLegalModalTitulo"
+    );
+
+
+    Object.assign(
+      tarjeta.style,
+      {
+        width: "100%",
+        maxWidth: "620px",
+        maxHeight: "90vh",
+        overflow: "hidden",
+        background: "#111827",
+        color: "#ffffff",
+        border:
+          "1px solid #374151",
+        borderRadius: "16px",
+        boxShadow:
+          "0 20px 60px rgba(0,0,0,.65)",
+        display: "flex",
+        flexDirection: "column",
+        textAlign: "left"
+      }
+    );
+
+
+    // --------------------------------------------------------
+    // Encabezado.
+    // --------------------------------------------------------
+
+    const encabezado =
+      document.createElement("div");
+
+
+    Object.assign(
+      encabezado.style,
+      {
+        padding:
+          "20px 20px 14px",
+        borderBottom:
+          "1px solid #374151"
+      }
+    );
+
+
+    const tituloElemento =
+      document.createElement("h3");
+
+
+    tituloElemento.id =
+      "massLegalModalTitulo";
+
+
+    tituloElemento.textContent =
+      titulo;
+
+
+    Object.assign(
+      tituloElemento.style,
+      {
+        margin: "0",
+        fontSize: "20px",
+        lineHeight: "1.3",
+        color: "#ffffff"
+      }
+    );
+
+
+    encabezado.appendChild(
+      tituloElemento
+    );
+
+
+    if (version) {
+
+      const versionElemento =
+        document.createElement("div");
+
+
+      versionElemento.textContent =
+        `Versión ${version}`;
+
+
+      Object.assign(
+        versionElemento.style,
+        {
+          marginTop: "6px",
+          fontSize: "13px",
+          color: "#9ca3af"
+        }
+      );
+
+
+      encabezado.appendChild(
+        versionElemento
+      );
+    }
+
+
+    // --------------------------------------------------------
+    // Texto jurídico exacto.
+    // --------------------------------------------------------
+
+    const cuerpo =
+      document.createElement("div");
+
+
+    Object.assign(
+      cuerpo.style,
+      {
+        padding: "18px 20px",
+        overflowY: "auto",
+        flex: "1",
+        minHeight: "120px"
+      }
+    );
+
+
+    const texto =
+      document.createElement("div");
+
+
+    texto.textContent =
+      String(
+        contenidoLegal.contenido
+      );
+
+
+    Object.assign(
+      texto.style,
+      {
+        whiteSpace: "pre-wrap",
+        overflowWrap: "anywhere",
+        fontSize: "15px",
+        lineHeight: "1.55",
+        color: "#e5e7eb"
+      }
+    );
+
+
+    cuerpo.appendChild(
+      texto
+    );
+
+
+    // --------------------------------------------------------
+    // Zona de confirmación.
+    // --------------------------------------------------------
+
+    const pie =
+      document.createElement("div");
+
+
+    Object.assign(
+      pie.style,
+      {
+        padding: "16px 20px 20px",
+        borderTop:
+          "1px solid #374151",
+        background: "#0f172a"
+      }
+    );
+
+
+    const filaCasilla =
+      document.createElement("label");
+
+
+    Object.assign(
+      filaCasilla.style,
+      {
+        display: "flex",
+        alignItems: "flex-start",
+        gap: "10px",
+        cursor: "pointer",
+        fontSize: "14px",
+        lineHeight: "1.4",
+        color: "#f3f4f6"
+      }
+    );
+
+
+    const casilla =
+      document.createElement("input");
+
+
+    casilla.type =
+      "checkbox";
+
+
+    casilla.id =
+      "massLegalConfirmacion";
+
+
+    Object.assign(
+      casilla.style,
+      {
+        marginTop: "2px",
+        width: "20px",
+        height: "20px",
+        flex: "0 0 auto"
+      }
+    );
+
+
+    const textoCasillaElemento =
+      document.createElement("span");
+
+
+    textoCasillaElemento.textContent =
+      textoCasilla;
+
+
+    filaCasilla.appendChild(
+      casilla
+    );
+
+
+    filaCasilla.appendChild(
+      textoCasillaElemento
+    );
+
+
+    pie.appendChild(
+      filaCasilla
+    );
+
+
+    // --------------------------------------------------------
+    // Botones.
+    // --------------------------------------------------------
+
+    const botones =
+      document.createElement("div");
+
+
+    Object.assign(
+      botones.style,
+      {
+        display: "flex",
+        gap: "10px",
+        justifyContent: "flex-end",
+        marginTop: "18px",
+        flexWrap: "wrap"
+      }
+    );
+
+
+    const botonCancelar =
+      document.createElement("button");
+
+
+    botonCancelar.type =
+      "button";
+
+
+    botonCancelar.textContent =
+      "Cancelar";
+
+
+    Object.assign(
+      botonCancelar.style,
+      {
+        border:
+          "1px solid #4b5563",
+        background: "#1f2937",
+        color: "#ffffff",
+        borderRadius: "10px",
+        padding: "11px 16px",
+        fontSize: "14px",
+        cursor: "pointer"
+      }
+    );
+
+
+    const botonContinuar =
+      document.createElement("button");
+
+
+    botonContinuar.type =
+      "button";
+
+
+    botonContinuar.textContent =
+      textoBoton;
+
+
+    botonContinuar.disabled =
+      true;
+
+
+    Object.assign(
+      botonContinuar.style,
+      {
+        border: "none",
+        background: "#39ff14",
+        color: "#050505",
+        borderRadius: "10px",
+        padding: "11px 16px",
+        fontSize: "14px",
+        fontWeight: "700",
+        cursor: "not-allowed",
+        opacity: "0.45"
+      }
+    );
+
+
+    botones.appendChild(
+      botonCancelar
+    );
+
+
+    botones.appendChild(
+      botonContinuar
+    );
+
+
+    pie.appendChild(
+      botones
+    );
+
+
+    tarjeta.appendChild(
+      encabezado
+    );
+
+
+    tarjeta.appendChild(
+      cuerpo
+    );
+
+
+    tarjeta.appendChild(
+      pie
+    );
+
+
+    overlay.appendChild(
+      tarjeta
+    );
+
+
+    // --------------------------------------------------------
+    // Bloquear scroll del fondo.
+    // --------------------------------------------------------
+
+    const overflowAnterior =
+      document.body.style.overflow;
+
+
+    document.body.style.overflow =
+      "hidden";
+
+
+    let terminado =
+      false;
+
+
+    const limpiar =
+      resultado => {
+
+        if (terminado) {
+          return;
+        }
+
+
+        terminado =
+          true;
+
+
+        document.removeEventListener(
+          "keydown",
+          manejarTeclado
+        );
+
+
+        if (
+          overlay.parentNode
+        ) {
+
+          overlay.remove();
+        }
+
+
+        document.body.style.overflow =
+          overflowAnterior;
+
+
+        resolve(
+          resultado === true
+        );
+      };
+
+
+    const manejarTeclado =
+      evento => {
+
+        if (
+          evento.key ===
+          "Escape"
+        ) {
+
+          evento.preventDefault();
+
+          limpiar(false);
+        }
+      };
+
+
+    // --------------------------------------------------------
+    // Activar botón sólo después de marcar.
+    // --------------------------------------------------------
+
+    casilla.addEventListener(
+      "change",
+      () => {
+
+        const activo =
+          casilla.checked === true;
+
+
+        botonContinuar.disabled =
+          !activo;
+
+
+        botonContinuar.style.opacity =
+          activo
+            ? "1"
+            : "0.45";
+
+
+        botonContinuar.style.cursor =
+          activo
+            ? "pointer"
+            : "not-allowed";
+      }
+    );
+
+
+    botonCancelar.addEventListener(
+      "click",
+      () => {
+        limpiar(false);
+      }
+    );
+
+
+    botonContinuar.addEventListener(
+      "click",
+      () => {
+
+        if (
+          casilla.checked !==
+          true
+        ) {
+
+          return;
+        }
+
+
+        limpiar(true);
+      }
+    );
+
+
+    overlay.addEventListener(
+      "click",
+      evento => {
+
+        if (
+          evento.target ===
+          overlay
+        ) {
+
+          limpiar(false);
+        }
+      }
+    );
+
+
+    document.addEventListener(
+      "keydown",
+      manejarTeclado
+    );
+
+
+    document.body.appendChild(
+      overlay
+    );
+
+
+    casilla.focus();
+  });
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// FRONTEND LEGAL PROGRESIVO
+//
+// Registra mediante RPC segura la acción jurídica que
+// corresponde al contenido EXACTO mostrado al usuario.
+//
+// IMPORTANTE:
+// - El navegador NO construye snapshots jurídicos.
+// - El navegador NO escribe tablas legales.
+// - PostgreSQL vuelve a resolver y validar todo.
+// - Después de registrar se compara ID + versión + SHA-256
+//   contra el contenido que acababa de ver el usuario.
+// ============================================================
+
+async function registrarAccionLegalUsuarioSeguro(
+  contenidoLegal
+) {
+
+  try {
+
+    if (
+      !contenidoLegal ||
+      typeof contenidoLegal !== "object"
+    ) {
+
+      return {
+        ok: false,
+        data: null,
+        error: new Error(
+          "No se recibió el requisito jurídico."
+        )
+      };
+    }
+
+
+    const fuenteTipo =
+      String(
+        contenidoLegal.fuente_tipo || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const hashEsperado =
+      String(
+        contenidoLegal.contenido_hash || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const versionEsperada =
+      String(
+        contenidoLegal.version ?? ""
+      )
+        .trim();
+
+
+    if (
+      !/^[0-9a-f]{64}$/.test(
+        hashEsperado
+      )
+    ) {
+
+      console.error(
+        "HASH LEGAL FRONTEND INVÁLIDO:",
+        contenidoLegal
+      );
+
+      return {
+        ok: false,
+        data: null,
+        error: new Error(
+          "No fue posible verificar la versión jurídica mostrada."
+        )
+      };
+    }
+
+
+    let rpcNombre = "";
+    let rpcParametros = {};
+    let recursoEsperado = "";
+    let campoIdRespuesta = "";
+
+
+    // ========================================================
+    // DOCUMENTO LEGAL
+    // ========================================================
+
+    if (
+      fuenteTipo ===
+      "documento_legal"
+    ) {
+
+      recursoEsperado =
+        String(
+          contenidoLegal.documento_legal_id ||
+          contenidoLegal.recurso_id ||
+          ""
+        ).trim();
+
+
+      if (!recursoEsperado) {
+
+        return {
+          ok: false,
+          data: null,
+          error: new Error(
+            "El documento legal no tiene un identificador válido."
+          )
+        };
+      }
+
+
+      rpcNombre =
+        "registrar_accion_documento_legal_segura";
+
+
+      rpcParametros = {
+        p_documento_legal_id:
+          recursoEsperado
+      };
+
+
+      campoIdRespuesta =
+        "documento_legal_id";
+
+
+    // ========================================================
+    // CONSENTIMIENTO ESPECÍFICO / DECLARACIÓN
+    // ========================================================
+
+    } else if (
+      fuenteTipo ===
+      "consentimiento_especifico"
+    ) {
+
+      recursoEsperado =
+        String(
+          contenidoLegal.consentimiento_definicion_id ||
+          contenidoLegal.recurso_id ||
+          ""
+        ).trim();
+
+
+      if (!recursoEsperado) {
+
+        return {
+          ok: false,
+          data: null,
+          error: new Error(
+            "La definición jurídica no tiene un identificador válido."
+          )
+        };
+      }
+
+
+      rpcNombre =
+        "registrar_consentimiento_especifico_seguro";
+
+
+      rpcParametros = {
+        p_consentimiento_definicion_id:
+          recursoEsperado
+      };
+
+
+      campoIdRespuesta =
+        "consentimiento_definicion_id";
+
+
+    // ========================================================
+    // REGLAS OFICIALES
+    // ========================================================
+
+    } else if (
+      fuenteTipo ===
+      "reglas_oficiales"
+    ) {
+
+      recursoEsperado =
+        String(
+          contenidoLegal.regla_oficial_id ||
+          contenidoLegal.recurso_id ||
+          ""
+        ).trim();
+
+
+      if (!recursoEsperado) {
+
+        return {
+          ok: false,
+          data: null,
+          error: new Error(
+            "Las Reglas Oficiales no tienen un identificador válido."
+          )
+        };
+      }
+
+
+      rpcNombre =
+        "registrar_aceptacion_reglas_oficiales_segura";
+
+
+      rpcParametros = {
+        p_regla_oficial_id:
+          recursoEsperado
+      };
+
+
+      campoIdRespuesta =
+        "regla_oficial_id";
+
+
+    } else {
+
+      console.error(
+        "FUENTE LEGAL NO SOPORTADA PARA REGISTRO:",
+        fuenteTipo
+      );
+
+      return {
+        ok: false,
+        data: null,
+        error: new Error(
+          "El tipo de requisito jurídico no puede registrarse."
+        )
+      };
+    }
+
+
+    // ========================================================
+    // EJECUTAR RPC SEGURA
+    // ========================================================
+
+    const {
+      data,
+      error
+    } = await supabaseClient.rpc(
+      rpcNombre,
+      rpcParametros
+    );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR REGISTRANDO ACCIÓN LEGAL MASS:",
+        {
+          rpcNombre,
+          error
+        }
+      );
+
+
+      return {
+        ok: false,
+        data: null,
+        error
+      };
+    }
+
+
+    if (
+      !data ||
+      typeof data !== "object" ||
+      data.ok !== true
+    ) {
+
+      console.error(
+        "RESPUESTA DE REGISTRO LEGAL INVÁLIDA:",
+        {
+          rpcNombre,
+          data
+        }
+      );
+
+
+      return {
+        ok: false,
+        data: data || null,
+        error: new Error(
+          "No se recibió confirmación jurídica válida."
+        )
+      };
+    }
+
+
+    // ========================================================
+    // VERIFICAR MISMO RECURSO
+    // ========================================================
+
+    const recursoRegistrado =
+      String(
+        data[campoIdRespuesta] || ""
+      ).trim();
+
+
+    if (
+      recursoRegistrado !==
+      recursoEsperado
+    ) {
+
+      console.error(
+        "ID LEGAL REGISTRADO NO COINCIDE:",
+        {
+          esperado:
+            recursoEsperado,
+
+          recibido:
+            recursoRegistrado,
+
+          rpcNombre
+        }
+      );
+
+
+      return {
+        ok: false,
+        data,
+        error: new Error(
+          "La evidencia registrada no coincide con el requisito mostrado."
+        )
+      };
+    }
+
+
+    // ========================================================
+    // VERIFICAR MISMO SHA-256
+    // ========================================================
+
+    const hashRegistrado =
+      String(
+        data.contenido_hash || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      hashRegistrado !==
+      hashEsperado
+    ) {
+
+      console.error(
+        "SHA-256 LEGAL REGISTRADO NO COINCIDE:",
+        {
+          esperado:
+            hashEsperado,
+
+          recibido:
+            hashRegistrado,
+
+          rpcNombre
+        }
+      );
+
+
+      return {
+        ok: false,
+        data,
+        error: new Error(
+          "La versión jurídica cambió antes de completar la confirmación."
+        )
+      };
+    }
+
+
+    // ========================================================
+    // VERIFICAR MISMA VERSIÓN
+    // ========================================================
+
+    const versionRegistrada =
+      String(
+        data.version ?? ""
+      ).trim();
+
+
+    if (
+      versionEsperada &&
+      versionRegistrada !==
+      versionEsperada
+    ) {
+
+      console.error(
+        "VERSIÓN LEGAL REGISTRADA NO COINCIDE:",
+        {
+          esperada:
+            versionEsperada,
+
+          recibida:
+            versionRegistrada,
+
+          rpcNombre
+        }
+      );
+
+
+      return {
+        ok: false,
+        data,
+        error: new Error(
+          "La versión jurídica registrada no coincide con la versión mostrada."
+        )
+      };
+    }
+
+
+    return {
+      ok: true,
+      data,
+      error: null
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO REGISTRANDO ACCIÓN LEGAL MASS:",
+      error
+    );
+
+
+    return {
+      ok: false,
+      data: null,
+      error
+    };
+  }
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// FRONTEND LEGAL PROGRESIVO
+//
+// Orquestador central.
+//
+// Procesa UN SOLO requisito jurídico a la vez y vuelve
+// a consultar al servidor después de cada confirmación.
+// ============================================================
+
+async function cumplirRequisitosLegalesParticipacionSeguro({
+  rifaId,
+  organizadorId = null,
+  idiomaCodigo = "es",
+  consentimientoClaves =
+    MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION
+} = {}) {
+
+  const MAX_PASOS_LEGALES = 12;
+
+
+  const notificarLegal = (
+    tipo,
+    titulo,
+    mensaje,
+    duracion = 5000
+  ) => {
+
+    if (
+      typeof mostrarNotificacion ===
+      "function"
+    ) {
+
+      mostrarNotificacion(
+        tipo,
+        titulo,
+        mensaje,
+        duracion
+      );
+
+      return;
+    }
+
+
+    alert(
+      `${titulo}\n\n${mensaje}`
+    );
+  };
+
+
+  const compararContenidoConEstado = (
+    pendiente,
+    contenido
+  ) => {
+
+    if (
+      !pendiente ||
+      !contenido
+    ) {
+      return false;
+    }
+
+
+    const idEsperado =
+      String(
+        pendiente.recursoId || ""
+      ).trim();
+
+
+    const idRecibido =
+      String(
+        contenido.documento_legal_id ||
+        contenido.consentimiento_definicion_id ||
+        contenido.regla_oficial_id ||
+        contenido.recurso_id ||
+        ""
+      ).trim();
+
+
+    if (
+      !idEsperado ||
+      idRecibido !== idEsperado
+    ) {
+
+      console.error(
+        "ID LEGAL MOSTRADO NO COINCIDE:",
+        {
+          esperado: idEsperado,
+          recibido: idRecibido
+        }
+      );
+
+      return false;
+    }
+
+
+    const versionEsperada =
+      String(
+        pendiente.item?.version ?? ""
+      ).trim();
+
+
+    const versionRecibida =
+      String(
+        contenido.version ?? ""
+      ).trim();
+
+
+    if (
+      versionEsperada &&
+      versionRecibida !==
+      versionEsperada
+    ) {
+
+      console.error(
+        "VERSIÓN LEGAL MOSTRADA NO COINCIDE:",
+        {
+          esperada:
+            versionEsperada,
+
+          recibida:
+            versionRecibida
+        }
+      );
+
+      return false;
+    }
+
+
+    const hashEsperado =
+      String(
+        pendiente.item?.contenido_hash || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const hashRecibido =
+      String(
+        contenido.contenido_hash || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      hashEsperado &&
+      hashRecibido !==
+      hashEsperado
+    ) {
+
+      console.error(
+        "HASH LEGAL MOSTRADO NO COINCIDE:",
+        {
+          esperado:
+            hashEsperado,
+
+          recibido:
+            hashRecibido
+        }
+      );
+
+      return false;
+    }
+
+
+    return true;
+  };
+
+
+  try {
+
+    const rifaIdSeguro =
+      String(
+        rifaId || ""
+      ).trim();
+
+
+    if (!rifaIdSeguro) {
+
+      notificarLegal(
+        "error",
+        "Sorteo no disponible",
+        "No fue posible identificar la dinámica para verificar los requisitos legales."
+      );
+
+      return {
+        ok: false,
+        cancelado: false,
+        error: new Error(
+          "RIFA_ID legal vacío."
+        )
+      };
+    }
+
+
+    for (
+      let paso = 0;
+      paso < MAX_PASOS_LEGALES;
+      paso += 1
+    ) {
+
+      // ======================================================
+      // 1. CONSULTAR ESTADO ACTUAL
+      // ======================================================
+
+      const consulta =
+        await obtenerEstadoLegalParticipacionSeguro({
+          rifaId:
+            rifaIdSeguro,
+
+          organizadorId,
+
+          consentimientoClaves,
+
+          idiomaCodigo
+        });
+
+
+      if (
+        !consulta.ok ||
+        !consulta.estado
+      ) {
+
+        notificarLegal(
+          "error",
+          "No fue posible verificar",
+          "No pudimos comprobar tus requisitos legales. Intenta nuevamente."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          error:
+            consulta.error ||
+            new Error(
+              "Estado legal no disponible."
+            )
+        };
+      }
+
+
+      const estado =
+        consulta.estado;
+
+
+      // ======================================================
+      // 2. TODO CUMPLIDO
+      // ======================================================
+
+      if (
+        estado.puede_continuar ===
+        true
+      ) {
+
+        return {
+          ok: true,
+          cancelado: false,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 3. CONFIGURACIÓN JURÍDICA FALTANTE
+      //
+      // Si el frontend exige una clave y todavía no existe
+      // definición vigente, se BLOQUEA.
+      // ======================================================
+
+      const clavesFaltantes =
+        Array.isArray(
+          estado
+            ?.configuracion_faltante
+            ?.consentimientos_claves
+        )
+          ? estado
+              .configuracion_faltante
+              .consentimientos_claves
+          : [];
+
+
+      if (
+        clavesFaltantes.length > 0
+      ) {
+
+        console.error(
+          "CONFIGURACIÓN LEGAL FALTANTE:",
+          clavesFaltantes
+        );
+
+
+        notificarLegal(
+          "error",
+          "Requisito legal no disponible",
+          "Esta acción requiere una configuración legal que todavía no está disponible. Intenta más tarde."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Configuración jurídica faltante."
+          )
+        };
+      }
+
+
+      const documentos =
+        Array.isArray(
+          estado.documentos
+        )
+          ? estado.documentos
+          : [];
+
+
+      const consentimientos =
+        Array.isArray(
+          estado.consentimientos
+        )
+          ? estado.consentimientos
+          : [];
+
+
+      const reglas =
+        (
+          estado.reglas_oficiales &&
+          typeof estado.reglas_oficiales ===
+            "object"
+        )
+          ? estado.reglas_oficiales
+          : {};
+
+
+      let pendiente = null;
+
+
+      // ======================================================
+      // 4. PRIORIDAD 1
+      //    EDAD / ELEGIBILIDAD
+      // ======================================================
+
+      const edadPendiente =
+        consentimientos.find(
+          item =>
+            item &&
+            item.cumplido !== true &&
+            String(
+              item.consentimiento_clave ||
+              ""
+            )
+              .trim()
+              .toLowerCase() ===
+              "edad_elegibilidad_sorteos_pro"
+        );
+
+
+      if (edadPendiente) {
+
+        pendiente = {
+          fuenteTipo:
+            "consentimiento_especifico",
+
+          recursoId:
+            edadPendiente
+              .consentimiento_definicion_id,
+
+          item:
+            edadPendiente
+        };
+      }
+
+
+      // ======================================================
+      // 5. PRIORIDAD 2
+      //    DOCUMENTOS LEGALES
+      // ======================================================
+
+      if (!pendiente) {
+
+        const documentoPendiente =
+          documentos.find(
+            item =>
+              item &&
+              item.cumplido !== true &&
+              String(
+                item.accion_requerida ||
+                ""
+              )
+                .trim()
+                .toLowerCase() !==
+                "ninguna"
+          );
+
+
+        if (documentoPendiente) {
+
+          pendiente = {
+            fuenteTipo:
+              "documento_legal",
+
+            recursoId:
+              documentoPendiente
+                .documento_legal_id,
+
+            item:
+              documentoPendiente
+          };
+        }
+      }
+
+
+      // ======================================================
+      // 6. PRIORIDAD 3
+      //    OTROS CONSENTIMIENTOS ESPECÍFICOS
+      // ======================================================
+
+      if (!pendiente) {
+
+        const consentimientoPendiente =
+          consentimientos.find(
+            item =>
+              item &&
+              item.cumplido !== true
+          );
+
+
+        if (consentimientoPendiente) {
+
+          pendiente = {
+            fuenteTipo:
+              "consentimiento_especifico",
+
+            recursoId:
+              consentimientoPendiente
+                .consentimiento_definicion_id,
+
+            item:
+              consentimientoPendiente
+          };
+        }
+      }
+
+
+      // ======================================================
+      // 7. REGLAS OFICIALES NO CONFIGURADAS
+      // ======================================================
+
+      if (
+        !pendiente &&
+        reglas.aplica === true &&
+        reglas.configurado !== true &&
+        reglas.cumplido !== true
+      ) {
+
+        console.error(
+          "REGLAS OFICIALES NO CONFIGURADAS:",
+          reglas
+        );
+
+
+        notificarLegal(
+          "error",
+          "Reglas Oficiales no disponibles",
+          "Esta dinámica todavía no tiene una versión publicada de sus Reglas Oficiales."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Reglas Oficiales no publicadas."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 8. PRIORIDAD 4
+      //    REGLAS OFICIALES
+      // ======================================================
+
+      if (
+        !pendiente &&
+        reglas.aplica === true &&
+        reglas.configurado === true &&
+        reglas.cumplido !== true
+      ) {
+
+        pendiente = {
+          fuenteTipo:
+            "reglas_oficiales",
+
+          recursoId:
+            reglas.regla_oficial_id,
+
+          item:
+            reglas
+        };
+      }
+
+
+      // ======================================================
+      // 9. ESTADO INCOHERENTE
+      // ======================================================
+
+      if (
+        !pendiente ||
+        !pendiente.recursoId
+      ) {
+
+        console.error(
+          "ESTADO LEGAL PENDIENTE SIN RECURSO IDENTIFICABLE:",
+          estado
+        );
+
+
+        notificarLegal(
+          "error",
+          "No fue posible continuar",
+          "Detectamos un requisito legal pendiente que no pudo resolverse correctamente."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Estado legal pendiente incoherente."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 10. OBTENER TEXTO EXACTO
+      // ======================================================
+
+      const lectura =
+        await obtenerContenidoLegalUsuarioSeguro(
+          pendiente.fuenteTipo,
+          pendiente.recursoId
+        );
+
+
+      if (
+        !lectura.ok ||
+        !lectura.contenido
+      ) {
+
+        notificarLegal(
+          "error",
+          "No fue posible cargar",
+          "No pudimos cargar el contenido legal que necesitas revisar."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            lectura.error ||
+            new Error(
+              "Contenido legal no disponible."
+            )
+        };
+      }
+
+
+      const contenidoLegal =
+        lectura.contenido;
+
+
+      // ======================================================
+      // 11. VERIFICAR QUE EL CONTENIDO RECIBIDO CORRESPONDE
+      //     AL MISMO REQUISITO QUE MARCÓ EL ESTADO LEGAL
+      // ======================================================
+
+      if (
+        !compararContenidoConEstado(
+          pendiente,
+          contenidoLegal
+        )
+      ) {
+
+        notificarLegal(
+          "error",
+          "La versión cambió",
+          "El requisito legal cambió mientras se cargaba. Intenta nuevamente."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Contenido jurídico no coincide con estado legal."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 12. MOSTRAR UNA SOLA CASILLA
+      // ======================================================
+
+      const confirmado =
+        await mostrarModalLegalProgresivo(
+          contenidoLegal
+        );
+
+
+      if (
+        confirmado !== true
+      ) {
+
+        return {
+          ok: false,
+          cancelado: true,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 13. REGISTRAR ACCIÓN
+      // ======================================================
+
+      const registro =
+        await registrarAccionLegalUsuarioSeguro(
+          contenidoLegal
+        );
+
+
+      if (
+        !registro.ok
+      ) {
+
+        notificarLegal(
+          "error",
+          "No fue posible confirmar",
+          registro.error?.message ||
+          "No pudimos registrar tu confirmación legal."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            registro.error ||
+            new Error(
+              "Registro jurídico fallido."
+            )
+        };
+      }
+
+
+      // ------------------------------------------------------
+      // NO continuamos directamente con Reserva/Compra.
+      //
+      // Regresamos arriba del FOR y volvemos a consultar
+      // al servidor. Así el servidor decide qué falta después.
+      // ------------------------------------------------------
+    }
+
+
+    // ========================================================
+    // 14. DEFENSA CONTRA CICLO INESPERADO
+    // ========================================================
+
+    console.error(
+      "SE ALCANZÓ EL MÁXIMO DE PASOS LEGALES."
+    );
+
+
+    notificarLegal(
+      "error",
+      "No fue posible completar",
+      "No pudimos finalizar la verificación legal. Intenta nuevamente."
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      error: new Error(
+        "Máximo de pasos legales alcanzado."
+      )
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EN FLUJO LEGAL PROGRESIVO:",
+      error
+    );
+
+
+    notificarLegal(
+      "error",
+      "Error de verificación",
+      "Ocurrió un problema al comprobar los requisitos legales."
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      error
+    };
+  }
+}	
+
 async function apartarBoletosInterno() {
 
   if (
@@ -41087,6 +43229,73 @@ async function apartarBoletosInterno() {
 
   const cantidadSelecciones =
     boletosSeleccionados.length;
+
+  // ==========================================================
+  // GUARDIÁN LEGAL PROGRESIVO
+  //
+  // Antes de confirmar o reservar:
+  // - edad/elegibilidad
+  // - documentos aplicables
+  // - consentimientos requeridos
+  // - Reglas Oficiales de esta dinámica
+  //
+  // Se procesa un solo requisito a la vez.
+  // ==========================================================
+
+  if (!RIFA_ID) {
+
+    console.error(
+      "RESERVA SIN RIFA_ID PARA VERIFICACIÓN LEGAL."
+    );
+
+    alert(
+      "No fue posible identificar el sorteo activo."
+    );
+
+    return;
+  }
+
+
+  const verificacionLegal =
+    await cumplirRequisitosLegalesParticipacionSeguro({
+      rifaId: RIFA_ID,
+
+      organizadorId: null,
+
+      idiomaCodigo: "es",
+
+      consentimientoClaves:
+        MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION
+    });
+
+
+  if (
+    !verificacionLegal ||
+    verificacionLegal.ok !== true
+  ) {
+
+    if (
+      verificacionLegal?.cancelado ===
+      true
+    ) {
+
+      // El usuario simplemente cerró/canceló
+      // el requisito jurídico.
+      return;
+    }
+
+
+    console.error(
+      "RESERVA BLOQUEADA POR VERIFICACIÓN LEGAL:",
+      verificacionLegal?.error ||
+      verificacionLegal
+    );
+
+
+    // El orquestador ya mostró al usuario
+    // el mensaje correspondiente.
+    return;
+  }	
 
 
   if (
@@ -41504,7 +43713,67 @@ async function comprarConSaldo() {
 
     return;
   }
+	
+  // ==========================================================
+  // GUARDIÁN LEGAL PROGRESIVO — COMPRA MASS
+  //
+  // No se inicia la compra hasta que el servidor confirme
+  // que todos los requisitos jurídicos están cumplidos.
+  // ==========================================================
 
+  if (!RIFA_ID) {
+
+    console.error(
+      "COMPRA MASS SIN RIFA_ID PARA VERIFICACIÓN LEGAL."
+    );
+
+    mostrarNotificacion(
+      "error",
+      "Sorteo no encontrado",
+      "No fue posible identificar el sorteo activo.",
+      3500
+    );
+
+    return;
+  }
+
+
+  const verificacionLegalCompra =
+    await cumplirRequisitosLegalesParticipacionSeguro({
+      rifaId: RIFA_ID,
+
+      organizadorId: null,
+
+      idiomaCodigo: "es",
+
+      consentimientoClaves:
+        MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION
+    });
+
+
+  if (
+    !verificacionLegalCompra ||
+    verificacionLegalCompra.ok !== true
+  ) {
+
+    if (
+      verificacionLegalCompra?.cancelado === true
+    ) {
+
+      return;
+    }
+
+
+    console.error(
+      "COMPRA MASS BLOQUEADA POR VERIFICACIÓN LEGAL:",
+      verificacionLegalCompra?.error ||
+      verificacionLegalCompra
+    );
+
+
+    // El orquestador ya mostró el mensaje al usuario.
+    return;
+  }
 
   comprando = true;
 
