@@ -71047,25 +71047,25 @@ async function crearCuentaMassId() {
   // 1. VALIDACIONES DEL REGISTRO
   // ==========================================================
 
-  if (!nombre) {
-    alert(
-      "❌ Ingresa tu nombre completo."
-    );
-    return;
-  }
+  if (
+  !nombre ||
+  !telefono ||
+  !email ||
+  !password ||
+  !confirmarPassword
+) {
+
+  alert(
+    "❌ Completa todos los campos para continuar."
+  );
+
+  return;
+}
 
 
   if (nombre.length < 3) {
     alert(
       "❌ El nombre debe tener al menos 3 caracteres."
-    );
-    return;
-  }
-
-
-  if (!telefono) {
-    alert(
-      "❌ Ingresa tu número de teléfono."
     );
     return;
   }
@@ -71082,14 +71082,6 @@ async function crearCuentaMassId() {
   }
 
 
-  if (!email) {
-    alert(
-      "❌ Ingresa tu correo electrónico."
-    );
-    return;
-  }
-
-
   const formatoEmail =
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -71097,14 +71089,6 @@ async function crearCuentaMassId() {
   if (!formatoEmail.test(email)) {
     alert(
       "❌ Ingresa un correo electrónico válido."
-    );
-    return;
-  }
-
-
-  if (!password) {
-    alert(
-      "❌ Crea una contraseña."
     );
     return;
   }
