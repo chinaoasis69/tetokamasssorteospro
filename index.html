@@ -42491,6 +42491,1158 @@ async function registrarAccionLegalUsuarioSeguro(
 }
 
 // ============================================================
+// MASS ID
+// ONBOARDING LEGAL DEL ECOSISTEMA
+//
+// Verifica y procesa únicamente los documentos legales
+// generales de MASS ID.
+//
+// IMPORTANTE:
+// - NO solicita edad de MASS Sorteos Pro.
+// - NO solicita T&C de organizadores.
+// - NO solicita Reglas Oficiales.
+// - NO escribe directamente tablas legales.
+// - Cada acción se registra mediante RPC segura.
+// - Después de cada acción vuelve a consultar al servidor.
+// ============================================================
+
+async function cumplirRequisitosLegalesMassIdSeguro({
+  idiomaCodigo = "es"
+} = {}) {
+
+  const MAX_PASOS_LEGALES_MASS_ID = 6;
+
+
+  const notificarLegalMassId = (
+    tipo,
+    titulo,
+    mensaje,
+    duracion = 5000
+  ) => {
+
+    if (
+      typeof mostrarNotificacion ===
+      "function"
+    ) {
+
+      mostrarNotificacion(
+        tipo,
+        titulo,
+        mensaje,
+        duracion
+      );
+
+      return;
+    }
+
+
+    alert(
+      `${titulo}\n\n${mensaje}`
+    );
+  };
+
+
+  try {
+
+    for (
+      let paso = 0;
+      paso < MAX_PASOS_LEGALES_MASS_ID;
+      paso += 1
+    ) {
+
+      // ======================================================
+      // 1. CONSULTAR ESTADO LEGAL DEL ECOSISTEMA
+      // ======================================================
+
+      const {
+        data: estado,
+        error
+      } = await supabaseClient.rpc(
+        "obtener_estado_legal_usuario_seguro",
+        {
+          p_organizador_id: null,
+          p_rifa_id: null,
+          p_modulo_codigo: null,
+          p_idioma_codigo:
+            idiomaCodigo || "es",
+          p_consentimiento_claves: []
+        }
+      );
+
+
+      if (
+        error ||
+        !estado ||
+        typeof estado !== "object" ||
+        estado.ok !== true
+      ) {
+
+        console.error(
+          "ERROR CONSULTANDO ONBOARDING LEGAL MASS ID:",
+          error || estado
+        );
+
+
+        notificarLegalMassId(
+          "error",
+          "No fue posible verificar",
+          "No pudimos comprobar los documentos legales de tu MASS ID. Intenta nuevamente."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado:
+            estado || null,
+          error:
+            error ||
+            new Error(
+              "Estado legal MASS ID no válido."
+            )
+        };
+      }
+
+
+      // ======================================================
+      // 2. TODO CUMPLIDO
+      // ======================================================
+
+      if (
+        estado.puede_continuar === true
+      ) {
+
+        return {
+          ok: true,
+          cancelado: false,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 3. MASS ID NO DEBE RECIBIR CONSENTIMIENTOS DE MÓDULO
+      //    NI REGLAS OFICIALES EN ESTE CONTEXTO
+      // ======================================================
+
+      const consentimientos =
+        Array.isArray(
+          estado.consentimientos
+        )
+          ? estado.consentimientos
+          : [];
+
+
+      const reglas =
+        (
+          estado.reglas_oficiales &&
+          typeof estado.reglas_oficiales ===
+            "object"
+        )
+          ? estado.reglas_oficiales
+          : {};
+
+
+      const consentimientosPendientes =
+        consentimientos.filter(
+          item =>
+            item &&
+            item.cumplido !== true
+        );
+
+
+      if (
+        consentimientosPendientes.length > 0 ||
+        reglas.aplica === true
+      ) {
+
+        console.error(
+          "CONTEXTO LEGAL MASS ID INESPERADO:",
+          {
+            consentimientosPendientes,
+            reglas
+          }
+        );
+
+
+        notificarLegalMassId(
+          "error",
+          "Configuración legal inesperada",
+          "Detectamos un requisito que no corresponde al proceso general de MASS ID."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "El onboarding MASS ID recibió requisitos de otro contexto."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 4. LOCALIZAR EL SIGUIENTE DOCUMENTO PENDIENTE
+      // ======================================================
+
+      const documentos =
+        Array.isArray(
+          estado.documentos
+        )
+          ? estado.documentos
+          : [];
+
+
+      const documentoPendiente =
+        documentos.find(
+          item =>
+            item &&
+            item.cumplido !== true &&
+            String(
+              item.accion_requerida ||
+              ""
+            )
+              .trim()
+              .toLowerCase() !==
+              "ninguna"
+        );
+
+
+      if (
+        !documentoPendiente ||
+        !documentoPendiente
+          .documento_legal_id
+      ) {
+
+        console.error(
+          "MASS ID PENDIENTE SIN DOCUMENTO IDENTIFICABLE:",
+          estado
+        );
+
+
+        notificarLegalMassId(
+          "error",
+          "No fue posible continuar",
+          "Existe un requisito legal pendiente que no pudo identificarse correctamente."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Estado legal MASS ID incoherente."
+          )
+        };
+      }
+
+
+      const documentoId =
+        String(
+          documentoPendiente
+            .documento_legal_id
+        ).trim();
+
+
+      // ======================================================
+      // 5. OBTENER EL TEXTO EXACTO DESDE SUPABASE
+      // ======================================================
+
+      const lectura =
+        await obtenerContenidoLegalUsuarioSeguro(
+          "documento_legal",
+          documentoId
+        );
+
+
+      if (
+        !lectura.ok ||
+        !lectura.contenido
+      ) {
+
+        notificarLegalMassId(
+          "error",
+          "No fue posible cargar",
+          "No pudimos cargar el documento legal que necesitas revisar."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            lectura.error ||
+            new Error(
+              "Documento MASS ID no disponible."
+            )
+        };
+      }
+
+
+      const contenidoLegal =
+        lectura.contenido;
+
+
+      // ======================================================
+      // 6. VERIFICAR ID
+      // ======================================================
+
+      const documentoIdRecibido =
+        String(
+          contenidoLegal
+            .documento_legal_id ||
+          contenidoLegal
+            .recurso_id ||
+          ""
+        ).trim();
+
+
+      if (
+        documentoIdRecibido !==
+        documentoId
+      ) {
+
+        console.error(
+          "DOCUMENTO MASS ID NO COINCIDE:",
+          {
+            esperado:
+              documentoId,
+            recibido:
+              documentoIdRecibido
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "El documento recibido no coincide con el requisito pendiente."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 7. VERIFICAR VERSIÓN
+      // ======================================================
+
+      const versionEsperada =
+        String(
+          documentoPendiente
+            .version ?? ""
+        ).trim();
+
+
+      const versionRecibida =
+        String(
+          contenidoLegal
+            .version ?? ""
+        ).trim();
+
+
+      if (
+        versionEsperada &&
+        versionRecibida !==
+        versionEsperada
+      ) {
+
+        console.error(
+          "VERSIÓN MASS ID NO COINCIDE:",
+          {
+            esperada:
+              versionEsperada,
+            recibida:
+              versionRecibida
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "La versión del documento cambió mientras se cargaba."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 8. VERIFICAR SHA-256
+      // ======================================================
+
+      const hashEsperado =
+        String(
+          documentoPendiente
+            .contenido_hash ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const hashRecibido =
+        String(
+          contenidoLegal
+            .contenido_hash ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !/^[0-9a-f]{64}$/.test(
+          hashEsperado
+        ) ||
+        hashRecibido !==
+          hashEsperado
+      ) {
+
+        console.error(
+          "HASH MASS ID NO COINCIDE:",
+          {
+            esperado:
+              hashEsperado,
+            recibido:
+              hashRecibido
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "No fue posible verificar la integridad del documento."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 9. MOSTRAR DOCUMENTO
+      // ======================================================
+
+      const confirmado =
+        await mostrarModalLegalProgresivo(
+          contenidoLegal
+        );
+
+
+      if (
+        confirmado !== true
+      ) {
+
+        return {
+          ok: false,
+          cancelado: true,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 10. REGISTRAR MEDIANTE RPC SEGURA
+      // ======================================================
+
+      const registro =
+        await registrarAccionLegalUsuarioSeguro(
+          contenidoLegal
+        );
+
+
+      if (
+        !registro.ok
+      ) {
+
+        notificarLegalMassId(
+          "error",
+          "No fue posible confirmar",
+          registro.error?.message ||
+          "No pudimos registrar tu confirmación legal."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            registro.error ||
+            new Error(
+              "Registro jurídico MASS ID fallido."
+            )
+        };
+      }
+
+
+      // ======================================================
+      // 11. VOLVER A CONSULTAR
+      //
+      // El FOR regresa al servidor.
+      // El navegador nunca decide qué documento sigue.
+      // ======================================================
+
+    }
+
+
+    // ========================================================
+    // 12. DEFENSA CONTRA CICLOS
+    // ========================================================
+
+    notificarLegalMassId(
+      "error",
+      "No fue posible completar",
+      "No pudimos finalizar la configuración legal de tu MASS ID. Intenta nuevamente."
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      estado: null,
+      error: new Error(
+        "Máximo de pasos legales MASS ID alcanzado."
+      )
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EN ONBOARDING LEGAL MASS ID:",
+      error
+    );
+
+
+    notificarLegalMassId(
+      "error",
+      "Error de verificación",
+      "Ocurrió un error al comprobar los documentos legales de tu MASS ID."
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      estado: null,
+      error
+    };
+  }
+}
+
+// ============================================================
+// MASS SORTEOS PRO
+// ELEGIBILIDAD LEGAL DE PRIMER ACCESO
+//
+// Procesa exclusivamente:
+// - Declaración de elegibilidad por edad 18+
+//
+// NO procesa:
+// - MASS-LC-002
+// - MASS-LC-003
+// - T&C de organizadores
+// - Reglas Oficiales
+//
+// El servidor decide si la declaración ya fue cumplida.
+// ============================================================
+
+async function cumplirElegibilidadMassSorteosProSeguro({
+  idiomaCodigo = "es"
+} = {}) {
+
+  const MAX_PASOS_ELEGIBILIDAD = 4;
+
+
+  const notificarElegibilidad = (
+    tipo,
+    titulo,
+    mensaje,
+    duracion = 5000
+  ) => {
+
+    if (
+      typeof mostrarNotificacion ===
+      "function"
+    ) {
+
+      mostrarNotificacion(
+        tipo,
+        titulo,
+        mensaje,
+        duracion
+      );
+
+      return;
+    }
+
+
+    alert(
+      `${titulo}\n\n${mensaje}`
+    );
+  };
+
+
+  try {
+
+    for (
+      let paso = 0;
+      paso < MAX_PASOS_ELEGIBILIDAD;
+      paso += 1
+    ) {
+
+      // ======================================================
+      // 1. CONSULTAR ÚNICAMENTE CONTEXTO MASS SORTEOS PRO
+      // ======================================================
+
+      const {
+        data: estado,
+        error
+      } = await supabaseClient.rpc(
+        "obtener_estado_legal_usuario_seguro",
+        {
+          p_organizador_id: null,
+          p_rifa_id: null,
+          p_modulo_codigo:
+            "mass_sorteos_pro",
+          p_idioma_codigo:
+            idiomaCodigo || "es",
+          p_consentimiento_claves: [
+            "edad_elegibilidad_sorteos_pro"
+          ]
+        }
+      );
+
+
+      if (
+        error ||
+        !estado ||
+        typeof estado !== "object" ||
+        estado.ok !== true
+      ) {
+
+        console.error(
+          "ERROR CONSULTANDO ELEGIBILIDAD MASS SORTEOS PRO:",
+          error || estado
+        );
+
+
+        notificarElegibilidad(
+          "error",
+          "No fue posible verificar",
+          "No pudimos comprobar tu elegibilidad para MASS Sorteos Pro."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado:
+            estado || null,
+          error:
+            error ||
+            new Error(
+              "Estado de elegibilidad no válido."
+            )
+        };
+      }
+
+
+      // ======================================================
+      // 2. LOS DOCUMENTOS MASS ID DEBEN ESTAR CUMPLIDOS
+      // ======================================================
+
+      const documentos =
+        Array.isArray(
+          estado.documentos
+        )
+          ? estado.documentos
+          : [];
+
+
+      const documentosPendientes =
+        documentos.filter(
+          item =>
+            item &&
+            item.cumplido !== true &&
+            String(
+              item.accion_requerida ||
+              ""
+            )
+              .trim()
+              .toLowerCase() !==
+              "ninguna"
+        );
+
+
+      if (
+        documentosPendientes.length > 0
+      ) {
+
+        console.error(
+          "ELEGIBILIDAD SOLICITADA CON DOCUMENTOS MASS ID PENDIENTES:",
+          documentosPendientes
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Primero deben completarse los documentos legales de MASS ID."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 3. AQUÍ NO DEBEN APLICAR REGLAS OFICIALES
+      // ======================================================
+
+      const reglas =
+        (
+          estado.reglas_oficiales &&
+          typeof estado.reglas_oficiales ===
+            "object"
+        )
+          ? estado.reglas_oficiales
+          : {};
+
+
+      if (
+        reglas.aplica === true
+      ) {
+
+        console.error(
+          "REGLAS OFICIALES INESPERADAS EN PRIMER ACCESO:",
+          reglas
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "El contexto de primer acceso recibió Reglas Oficiales inesperadas."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 4. TODO CUMPLIDO
+      // ======================================================
+
+      if (
+        estado.puede_continuar === true
+      ) {
+
+        return {
+          ok: true,
+          cancelado: false,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 5. VERIFICAR CONFIGURACIÓN
+      // ======================================================
+
+      const clavesFaltantes =
+        Array.isArray(
+          estado
+            ?.configuracion_faltante
+            ?.consentimientos_claves
+        )
+          ? estado
+              .configuracion_faltante
+              .consentimientos_claves
+          : [];
+
+
+      if (
+        clavesFaltantes.includes(
+          "edad_elegibilidad_sorteos_pro"
+        )
+      ) {
+
+        console.error(
+          "DECLARACIÓN DE EDAD NO CONFIGURADA:",
+          clavesFaltantes
+        );
+
+
+        notificarElegibilidad(
+          "error",
+          "Requisito legal no disponible",
+          "La declaración de elegibilidad todavía no está disponible."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "Definición de elegibilidad no disponible."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 6. LOCALIZAR DECLARACIÓN DE EDAD
+      // ======================================================
+
+      const consentimientos =
+        Array.isArray(
+          estado.consentimientos
+        )
+          ? estado.consentimientos
+          : [];
+
+
+      const edadPendiente =
+        consentimientos.find(
+          item =>
+            item &&
+            item.cumplido !== true &&
+            String(
+              item.consentimiento_clave ||
+              ""
+            )
+              .trim()
+              .toLowerCase() ===
+              "edad_elegibilidad_sorteos_pro"
+        );
+
+
+      if (
+        !edadPendiente ||
+        !edadPendiente
+          .consentimiento_definicion_id
+      ) {
+
+        console.error(
+          "ESTADO DE ELEGIBILIDAD PENDIENTE SIN DEFINICIÓN:",
+          estado
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "No pudo identificarse la declaración de elegibilidad pendiente."
+          )
+        };
+      }
+
+
+      const definicionId =
+        String(
+          edadPendiente
+            .consentimiento_definicion_id
+        ).trim();
+
+
+      // ======================================================
+      // 7. OBTENER TEXTO JURÍDICO EXACTO
+      // ======================================================
+
+      const lectura =
+        await obtenerContenidoLegalUsuarioSeguro(
+          "consentimiento_especifico",
+          definicionId
+        );
+
+
+      if (
+        !lectura.ok ||
+        !lectura.contenido
+      ) {
+
+        notificarElegibilidad(
+          "error",
+          "No fue posible cargar",
+          "No pudimos cargar la declaración de elegibilidad."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            lectura.error ||
+            new Error(
+              "Declaración de elegibilidad no disponible."
+            )
+        };
+      }
+
+
+      const contenidoLegal =
+        lectura.contenido;
+
+
+      // ======================================================
+      // 8. VERIFICAR IDENTIDAD DEL REQUISITO
+      // ======================================================
+
+      const definicionRecibida =
+        String(
+          contenidoLegal
+            .consentimiento_definicion_id ||
+          contenidoLegal
+            .recurso_id ||
+          ""
+        ).trim();
+
+
+      if (
+        definicionRecibida !==
+        definicionId
+      ) {
+
+        console.error(
+          "DEFINICIÓN DE EDAD NO COINCIDE:",
+          {
+            esperada:
+              definicionId,
+            recibida:
+              definicionRecibida
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "La declaración recibida no coincide con el requisito pendiente."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 9. VERIFICAR VERSIÓN
+      // ======================================================
+
+      const versionEsperada =
+        String(
+          edadPendiente.version ?? ""
+        ).trim();
+
+
+      const versionRecibida =
+        String(
+          contenidoLegal.version ?? ""
+        ).trim();
+
+
+      if (
+        versionEsperada &&
+        versionRecibida !==
+        versionEsperada
+      ) {
+
+        console.error(
+          "VERSIÓN DE ELEGIBILIDAD NO COINCIDE:",
+          {
+            esperada:
+              versionEsperada,
+            recibida:
+              versionRecibida
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "La versión de la declaración cambió mientras se cargaba."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 10. VERIFICAR SHA-256
+      // ======================================================
+
+      const hashEsperado =
+        String(
+          edadPendiente
+            .contenido_hash ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const hashRecibido =
+        String(
+          contenidoLegal
+            .contenido_hash ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (
+        !/^[0-9a-f]{64}$/.test(
+          hashEsperado
+        ) ||
+        hashRecibido !==
+          hashEsperado
+      ) {
+
+        console.error(
+          "HASH DE ELEGIBILIDAD NO COINCIDE:",
+          {
+            esperado:
+              hashEsperado,
+            recibido:
+              hashRecibido
+          }
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error: new Error(
+            "No fue posible verificar la integridad de la declaración."
+          )
+        };
+      }
+
+
+      // ======================================================
+      // 11. MOSTRAR DECLARACIÓN
+      // ======================================================
+
+      const confirmado =
+        await mostrarModalLegalProgresivo(
+          contenidoLegal
+        );
+
+
+      if (
+        confirmado !== true
+      ) {
+
+        return {
+          ok: false,
+          cancelado: true,
+          estado,
+          error: null
+        };
+      }
+
+
+      // ======================================================
+      // 12. REGISTRAR MEDIANTE RPC SEGURA
+      // ======================================================
+
+      const registro =
+        await registrarAccionLegalUsuarioSeguro(
+          contenidoLegal
+        );
+
+
+      if (
+        !registro.ok
+      ) {
+
+        notificarElegibilidad(
+          "error",
+          "No fue posible confirmar",
+          registro.error?.message ||
+          "No pudimos registrar tu declaración de elegibilidad."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          estado,
+          error:
+            registro.error ||
+            new Error(
+              "Registro de elegibilidad fallido."
+            )
+        };
+      }
+
+
+      // Volvemos al inicio del FOR.
+      // El servidor debe confirmar que ya quedó cumplida.
+    }
+
+
+    // ========================================================
+    // 13. DEFENSA CONTRA CICLOS
+    // ========================================================
+
+    return {
+      ok: false,
+      cancelado: false,
+      estado: null,
+      error: new Error(
+        "Máximo de pasos de elegibilidad alcanzado."
+      )
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EN ELEGIBILIDAD MASS SORTEOS PRO:",
+      error
+    );
+
+
+    notificarElegibilidad(
+      "error",
+      "Error de verificación",
+      "Ocurrió un error al comprobar tu elegibilidad para MASS Sorteos Pro."
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      estado: null,
+      error
+    };
+  }
+}	
+
+// ============================================================
 // MASS SORTEOS PRO
 // FRONTEND LEGAL PROGRESIVO
 //
@@ -64306,6 +65458,173 @@ if (btnMensajesClientesOrganizador) {
 
     // Existe una sesión activa:
     // restaurar las tarjetas Sesión activa y Mi MASS ID
+
+// ==========================================================
+// MASS ID — VERIFICACIÓN LEGAL AL RESTAURAR SESIÓN
+//
+// Evita que una sesión guardada en el navegador pueda
+// saltarse MASS-LC-002 o MASS-LC-003.
+//
+// Los accesos administrativos conservan su flujo propio.
+// Si no existe un modo explícito administrativo,
+// la sesión se trata como usuario MASS ID.
+// ==========================================================
+
+const modoAccesoRestaurado =
+  String(
+    localStorage.getItem(
+      "mass_modo_acceso"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();
+
+
+const restauracionEsUsuarioMassId =
+  ![
+    "organizador",
+    "super_admin"
+  ].includes(
+    modoAccesoRestaurado
+  );
+
+
+if (
+  restauracionEsUsuarioMassId
+) {
+
+  const onboardingLegalRestaurado =
+    await cumplirRequisitosLegalesMassIdSeguro({
+      idiomaCodigo: "es"
+    });
+
+
+  if (
+    !onboardingLegalRestaurado ||
+    onboardingLegalRestaurado.ok !== true
+  ) {
+
+    if (
+      onboardingLegalRestaurado?.cancelado ===
+      true
+    ) {
+
+      alert(
+        "Tu cuenta MASS ID quedó pendiente de completar " +
+        "los documentos legales.\n\n" +
+        "Puedes volver a iniciar sesión para continuar."
+      );
+
+    } else {
+
+      console.error(
+        "SESIÓN MASS ID RESTAURADA BLOQUEADA POR VERIFICACIÓN LEGAL:",
+        onboardingLegalRestaurado?.error ||
+        onboardingLegalRestaurado
+      );
+    }
+
+
+    localStorage.removeItem(
+      "mass_user"
+    );
+
+    localStorage.removeItem(
+      "mass_telefono"
+    );
+
+    localStorage.removeItem(
+      "mass_auth_user_id"
+    );
+
+    localStorage.removeItem(
+      "mass_email"
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+	
+// ==========================================================
+// MASS SORTEOS PRO — ELEGIBILIDAD AL RESTAURAR SESIÓN
+//
+// Los documentos generales de MASS ID ya fueron comprobados.
+// Una sesión persistente tampoco puede saltarse la
+// declaración de elegibilidad 18+ de MASS Sorteos Pro.
+// ==========================================================
+
+const elegibilidadMassSorteosProRestaurada =
+  await cumplirElegibilidadMassSorteosProSeguro({
+    idiomaCodigo: "es"
+  });
+
+
+if (
+  !elegibilidadMassSorteosProRestaurada ||
+  elegibilidadMassSorteosProRestaurada.ok !== true
+) {
+
+  if (
+    elegibilidadMassSorteosProRestaurada?.cancelado ===
+    true
+  ) {
+
+    alert(
+      "Tu MASS ID permanece activo.\n\n" +
+      "Para acceder a MASS Sorteos Pro debes completar " +
+      "la declaración de elegibilidad requerida."
+    );
+
+  } else {
+
+    console.error(
+      "SESIÓN RESTAURADA BLOQUEADA POR ELEGIBILIDAD MASS SORTEOS PRO:",
+      elegibilidadMassSorteosProRestaurada?.error ||
+      elegibilidadMassSorteosProRestaurada
+    );
+  }
+
+
+  localStorage.removeItem(
+    "mass_user"
+  );
+
+  localStorage.removeItem(
+    "mass_telefono"
+  );
+
+  localStorage.removeItem(
+    "mass_auth_user_id"
+  );
+
+  localStorage.removeItem(
+    "mass_email"
+  );
+
+  localStorage.removeItem(
+    "mass_modo_acceso"
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  return;
+}
+
+  localStorage.setItem(
+    "mass_modo_acceso",
+    "usuario"
+  );
+}
+	  
     await mostrarSesionActiva();
 
   } catch (errorAperturaMassId) {
@@ -69103,6 +70422,144 @@ await supabaseClient.auth.signOut({
   return;
 }
 
+// ==========================================================
+// MASS ID — ONBOARDING LEGAL DEL ECOSISTEMA
+//
+// La sesión Auth y el perfil MASS ya fueron validados,
+// pero todavía NO dejamos entrar normalmente al usuario.
+//
+// Aquí corresponden únicamente:
+// - MASS-LC-002 — Acuerdo de usuario MASS ID
+// - MASS-LC-003 — Aviso de privacidad MASS ID
+//
+// NO corresponden aquí:
+// - Edad de MASS Sorteos Pro
+// - T&C de organizadores
+// - Reglas Oficiales
+// ==========================================================
+
+const onboardingLegalMassId =
+  await cumplirRequisitosLegalesMassIdSeguro({
+    idiomaCodigo: "es"
+  });
+
+
+if (
+  !onboardingLegalMassId ||
+  onboardingLegalMassId.ok !== true
+) {
+
+  // --------------------------------------------------------
+  // El usuario cerró voluntariamente un documento.
+  //
+  // NO eliminamos la cuenta.
+  // NO inventamos aceptación.
+  // NO lo dejamos entrar al ecosistema todavía.
+  //
+  // Al iniciar sesión nuevamente podrá continuar.
+  // --------------------------------------------------------
+
+  if (
+    onboardingLegalMassId?.cancelado ===
+    true
+  ) {
+
+    alert(
+      "Tu cuenta MASS ID quedó pendiente de completar " +
+      "los documentos legales.\n\n" +
+      "Puedes volver a iniciar sesión para continuar."
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+
+
+  // --------------------------------------------------------
+  // Fallo real de verificación.
+  // El propio orquestador ya mostró el mensaje al usuario.
+  // Cerramos solamente esta sesión local para impedir
+  // continuar sin comprobación legal.
+  // --------------------------------------------------------
+
+  console.error(
+    "ACCESO MASS ID BLOQUEADO POR VERIFICACIÓN LEGAL:",
+    onboardingLegalMassId?.error ||
+    onboardingLegalMassId
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  return;
+}
+
+// ==========================================================
+// MASS SORTEOS PRO — ELEGIBILIDAD DE PRIMER ACCESO
+//
+// MASS-LC-002 y MASS-LC-003 ya fueron comprobados.
+//
+// Antes de permitir el acceso normal a este módulo,
+// verificamos exclusivamente la declaración 18+.
+//
+// Esto NO pertenece a la creación general de MASS ID.
+// ==========================================================
+
+const elegibilidadMassSorteosPro =
+  await cumplirElegibilidadMassSorteosProSeguro({
+    idiomaCodigo: "es"
+  });
+
+
+if (
+  !elegibilidadMassSorteosPro ||
+  elegibilidadMassSorteosPro.ok !== true
+) {
+
+  if (
+    elegibilidadMassSorteosPro?.cancelado ===
+    true
+  ) {
+
+    alert(
+      "Tu MASS ID permanece activo.\n\n" +
+      "Para acceder a MASS Sorteos Pro debes completar " +
+      "la declaración de elegibilidad requerida."
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+
+
+  console.error(
+    "ACCESO A MASS SORTEOS PRO BLOQUEADO POR ELEGIBILIDAD:",
+    elegibilidadMassSorteosPro?.error ||
+    elegibilidadMassSorteosPro
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  return;
+}	
+
   userActual = perfil.telefono;
   usuarioMASS = perfil.telefono;
 
@@ -69351,6 +70808,113 @@ async function iniciarSesionPasskeyMassId() {
       return;
     }
 
+// ==========================================================
+// MASS ID — ONBOARDING LEGAL DESPUÉS DE PASSKEY
+//
+// Face ID / Passkey autentica la identidad,
+// pero NO sustituye las acciones jurídicas pendientes.
+// ==========================================================
+
+const onboardingLegalMassIdPasskey =
+  await cumplirRequisitosLegalesMassIdSeguro({
+    idiomaCodigo: "es"
+  });
+
+
+if (
+  !onboardingLegalMassIdPasskey ||
+  onboardingLegalMassIdPasskey.ok !== true
+) {
+
+  if (
+    onboardingLegalMassIdPasskey?.cancelado === true
+  ) {
+
+    alert(
+      "Tu cuenta MASS ID quedó pendiente de completar " +
+      "los documentos legales.\n\n" +
+      "Puedes volver a iniciar sesión para continuar."
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+
+
+  console.error(
+    "ACCESO MASS ID CON PASSKEY BLOQUEADO POR VERIFICACIÓN LEGAL:",
+    onboardingLegalMassIdPasskey?.error ||
+    onboardingLegalMassIdPasskey
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  return;
+}
+
+// ==========================================================
+// MASS SORTEOS PRO — ELEGIBILIDAD DESPUÉS DE PASSKEY
+//
+// MASS-LC-002 y MASS-LC-003 ya fueron comprobados.
+// Face ID / Passkey NO sustituye la declaración 18+.
+// ==========================================================
+
+const elegibilidadMassSorteosProPasskey =
+  await cumplirElegibilidadMassSorteosProSeguro({
+    idiomaCodigo: "es"
+  });
+
+
+if (
+  !elegibilidadMassSorteosProPasskey ||
+  elegibilidadMassSorteosProPasskey.ok !== true
+) {
+
+  if (
+    elegibilidadMassSorteosProPasskey?.cancelado ===
+    true
+  ) {
+
+    alert(
+      "Tu MASS ID permanece activo.\n\n" +
+      "Para acceder a MASS Sorteos Pro debes completar " +
+      "la declaración de elegibilidad requerida."
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+
+
+  console.error(
+    "ACCESO A MASS SORTEOS PRO CON PASSKEY BLOQUEADO POR ELEGIBILIDAD:",
+    elegibilidadMassSorteosProPasskey?.error ||
+    elegibilidadMassSorteosProPasskey
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  return;
+}	  
+
     userActual = perfil.telefono;
     usuarioMASS = perfil.telefono;
 
@@ -69439,207 +71003,481 @@ async function iniciarSesionPasskeyMassId() {
 }	
 
 async function crearCuentaMassId() {
+
   const nombre = (
-    document.getElementById("massIdNombreRegistro")?.value || ""
+    document.getElementById(
+      "massIdNombreRegistro"
+    )?.value || ""
   ).trim();
 
+
   const telefono = (
-    document.getElementById("massIdTelefonoRegistro")?.value || ""
+    document.getElementById(
+      "massIdTelefonoRegistro"
+    )?.value || ""
   )
     .replace(/\D/g, "")
     .trim();
 
+
   const email = (
-    document.getElementById("massIdEmailRegistro")?.value || ""
+    document.getElementById(
+      "massIdEmailRegistro"
+    )?.value || ""
   )
     .trim()
     .toLowerCase();
 
+
   const password = (
-    document.getElementById("massIdPasswordRegistro")?.value || ""
+    document.getElementById(
+      "massIdPasswordRegistro"
+    )?.value || ""
   ).trim();
+
 
   const confirmarPassword = (
-    document.getElementById("massIdConfirmarPasswordRegistro")?.value || ""
+    document.getElementById(
+      "massIdConfirmarPasswordRegistro"
+    )?.value || ""
   ).trim();
 
-  const aceptaTerminos =
-    document.getElementById("massIdAceptaTerminos")?.checked === true;
 
-  const aceptaPrivacidad =
-    document.getElementById("massIdAceptaPrivacidad")?.checked === true;
+  // ==========================================================
+  // 1. VALIDACIONES DEL REGISTRO
+  // ==========================================================
 
   if (!nombre) {
-    alert("❌ Ingresa tu nombre completo.");
+    alert(
+      "❌ Ingresa tu nombre completo."
+    );
     return;
   }
+
 
   if (nombre.length < 3) {
-    alert("❌ El nombre debe tener al menos 3 caracteres.");
+    alert(
+      "❌ El nombre debe tener al menos 3 caracteres."
+    );
     return;
   }
+
 
   if (!telefono) {
-    alert("❌ Ingresa tu número de teléfono.");
+    alert(
+      "❌ Ingresa tu número de teléfono."
+    );
     return;
   }
 
-  if (telefono.length < 10 || telefono.length > 15) {
-    alert("❌ Ingresa un teléfono válido de 10 a 15 dígitos.");
+
+  if (
+    telefono.length < 10 ||
+    telefono.length > 15
+  ) {
+    alert(
+      "❌ Ingresa un teléfono válido de 10 a 15 dígitos."
+    );
     return;
   }
+
 
   if (!email) {
-    alert("❌ Ingresa tu correo electrónico.");
+    alert(
+      "❌ Ingresa tu correo electrónico."
+    );
     return;
   }
 
-  const formatoEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const formatoEmail =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 
   if (!formatoEmail.test(email)) {
-    alert("❌ Ingresa un correo electrónico válido.");
+    alert(
+      "❌ Ingresa un correo electrónico válido."
+    );
     return;
   }
+
 
   if (!password) {
-    alert("❌ Crea una contraseña.");
+    alert(
+      "❌ Crea una contraseña."
+    );
     return;
   }
+
 
   if (password.length < 8) {
-    alert("❌ La contraseña debe tener al menos 8 caracteres.");
+    alert(
+      "❌ La contraseña debe tener al menos 8 caracteres."
+    );
     return;
   }
+
 
   if (!/[A-Z]/.test(password)) {
-    alert("❌ La contraseña debe incluir una letra mayúscula.");
+    alert(
+      "❌ La contraseña debe incluir una letra mayúscula."
+    );
     return;
   }
+
 
   if (!/[a-z]/.test(password)) {
-    alert("❌ La contraseña debe incluir una letra minúscula.");
+    alert(
+      "❌ La contraseña debe incluir una letra minúscula."
+    );
     return;
   }
+
 
   if (!/[0-9]/.test(password)) {
-    alert("❌ La contraseña debe incluir al menos un número.");
+    alert(
+      "❌ La contraseña debe incluir al menos un número."
+    );
     return;
   }
 
-  if (password !== confirmarPassword) {
-    alert("❌ Las contraseñas no coinciden.");
+
+  if (
+    password !== confirmarPassword
+  ) {
+    alert(
+      "❌ Las contraseñas no coinciden."
+    );
     return;
   }
 
-  if (!aceptaTerminos) {
-    alert("❌ Debes aceptar los Términos y condiciones.");
-    return;
-  }
 
-  if (!aceptaPrivacidad) {
-    alert("❌ Debes aceptar el Aviso de privacidad.");
-    return;
-  }
+  const botonCrear =
+    document.querySelector(
+      '#formOrganizadorV2 button[onclick="crearCuentaMassId()"]'
+    );
 
-  const botonCrear = document.querySelector(
-    '#formOrganizadorV2 button[onclick="crearCuentaMassId()"]'
-  );
 
   if (botonCrear) {
     botonCrear.disabled = true;
-    botonCrear.textContent = "Creando cuenta...";
+    botonCrear.textContent =
+      "Creando cuenta...";
   }
 
+
   try {
-    const { data: authData, error: authError } =
+
+    // ========================================================
+    // 2. CREAR IDENTIDAD AUTH
+    //
+    // IMPORTANTE:
+    // Ya NO enviamos acepta_terminos ni acepta_privacidad.
+    //
+    // Esas banderas antiguas no constituyen la evidencia
+    // jurídica oficial.
+    // ========================================================
+
+    const {
+      data: authData,
+      error: authError
+    } =
       await supabaseClient.auth.signUp({
         email,
         password,
         options: {
           data: {
             nombre,
-            telefono,
-            acepta_terminos: aceptaTerminos,
-            acepta_privacidad: aceptaPrivacidad
+            telefono
           }
         }
       });
 
-    if (authError) {
-      console.error("ERROR CREANDO MASS ID:", authError);
 
-      const mensaje = String(authError.message || "").toLowerCase();
+    if (authError) {
+
+      console.error(
+        "ERROR CREANDO MASS ID:",
+        authError
+      );
+
+
+      const mensaje =
+        String(
+          authError.message || ""
+        ).toLowerCase();
+
 
       if (
-        mensaje.includes("already registered") ||
-        mensaje.includes("already exists") ||
-        mensaje.includes("user already")
+        mensaje.includes(
+          "already registered"
+        ) ||
+        mensaje.includes(
+          "already exists"
+        ) ||
+        mensaje.includes(
+          "user already"
+        )
       ) {
-        alert("❌ Ese correo ya está registrado en MASS ID.");
+
+        alert(
+          "❌ Ese correo ya está registrado en MASS ID."
+        );
+
         return;
       }
 
-      if (mensaje.includes("password")) {
-        alert("❌ La contraseña no cumple con los requisitos de seguridad.");
+
+      if (
+        mensaje.includes(
+          "password"
+        )
+      ) {
+
+        alert(
+          "❌ La contraseña no cumple con los requisitos de seguridad."
+        );
+
         return;
       }
+
 
       alert(
         "❌ No se pudo crear la cuenta MASS ID.\n\n" +
-        (authError.message || "Intenta nuevamente.")
+        (
+          authError.message ||
+          "Intenta nuevamente."
+        )
       );
+
       return;
     }
+
 
     if (!authData?.user) {
-      alert("❌ Supabase no devolvió el usuario creado.");
+
+      alert(
+        "❌ Supabase no devolvió el usuario creado."
+      );
+
       return;
     }
 
-    document.getElementById("massIdNombreRegistro").value = "";
-    document.getElementById("massIdTelefonoRegistro").value = "";
-    document.getElementById("massIdEmailRegistro").value = "";
-    document.getElementById("massIdPasswordRegistro").value = "";
-    document.getElementById("massIdConfirmarPasswordRegistro").value = "";
-    document.getElementById("massIdAceptaTerminos").checked = false;
-    document.getElementById("massIdAceptaPrivacidad").checked = false;
 
-    document.getElementById("formOrganizadorV2").style.display = "none";
-    document.getElementById("formUsuarioV2").style.display = "block";
+    // ========================================================
+    // 3. SI SUPABASE YA ENTREGÓ SESIÓN
+    //
+    // Podemos hacer el onboarding jurídico inmediatamente.
+    //
+    // Si la cuenta requiere confirmar correo primero,
+    // authData.session será NULL y el onboarding se realizará
+    // al primer inicio de sesión confirmado.
+    // ========================================================
+
+    const habiaSesionInicial =
+      Boolean(
+        authData.session
+      );
+
+
+    let onboardingCompletado =
+      false;
+
+
+    let onboardingCancelado =
+      false;
+
+
+    let onboardingConError =
+      false;
+
+
+    if (habiaSesionInicial) {
+
+      const onboardingLegalMassId =
+        await cumplirRequisitosLegalesMassIdSeguro({
+          idiomaCodigo: "es"
+        });
+
+
+      if (
+        onboardingLegalMassId?.ok ===
+        true
+      ) {
+
+        onboardingCompletado =
+          true;
+
+      } else if (
+        onboardingLegalMassId
+          ?.cancelado === true
+      ) {
+
+        onboardingCancelado =
+          true;
+
+      } else {
+
+        onboardingConError =
+          true;
+
+
+        console.error(
+          "ONBOARDING LEGAL MASS ID NO COMPLETADO DURANTE REGISTRO:",
+          onboardingLegalMassId?.error ||
+          onboardingLegalMassId
+        );
+      }
+
+
+      // ------------------------------------------------------
+      // La creación de cuenta ya terminó.
+      // Cerramos la sesión temporal del registro.
+      //
+      // Después el usuario ingresará por el flujo normal.
+      // ------------------------------------------------------
+
+      await supabaseClient.auth.signOut({
+        scope: "local"
+      });
+    }
+
+
+    // ========================================================
+    // 4. LIMPIAR FORMULARIO
+    // ========================================================
+
+    document.getElementById(
+      "massIdNombreRegistro"
+    ).value = "";
+
+
+    document.getElementById(
+      "massIdTelefonoRegistro"
+    ).value = "";
+
+
+    document.getElementById(
+      "massIdEmailRegistro"
+    ).value = "";
+
+
+    document.getElementById(
+      "massIdPasswordRegistro"
+    ).value = "";
+
+
+    document.getElementById(
+      "massIdConfirmarPasswordRegistro"
+    ).value = "";
+
+
+    // ========================================================
+    // 5. REGRESAR AL LOGIN
+    // ========================================================
+
+    document.getElementById(
+      "formOrganizadorV2"
+    ).style.display =
+      "none";
+
+
+    document.getElementById(
+      "formUsuarioV2"
+    ).style.display =
+      "block";
+
 
     const inputLoginEmail =
-      document.getElementById("massIdEmailLogin");
+      document.getElementById(
+        "massIdEmailLogin"
+      );
+
 
     if (inputLoginEmail) {
-      inputLoginEmail.value = email;
+      inputLoginEmail.value =
+        email;
     }
 
-    if (authData.session) {
-      alert(
-        "✅ Tu cuenta MASS ID fue creada correctamente.\n\n" +
-        "Ya puedes iniciar sesión."
-      );
-    } else {
+
+    // ========================================================
+    // 6. MENSAJE FINAL SEGÚN EL CASO
+    // ========================================================
+
+    if (!habiaSesionInicial) {
+
       alert(
         "✅ Tu cuenta MASS ID fue creada.\n\n" +
-        "Revisa tu correo electrónico y confirma tu cuenta antes de iniciar sesión."
+        "Revisa tu correo electrónico y confirma tu cuenta.\n\n" +
+        "Al iniciar sesión por primera vez revisarás los documentos legales vigentes de MASS ID."
       );
+
+      return;
     }
+
+
+    if (onboardingCompletado) {
+
+      alert(
+        "✅ Tu cuenta MASS ID fue creada y sus documentos legales fueron completados correctamente.\n\n" +
+        "Ya puedes iniciar sesión."
+      );
+
+      return;
+    }
+
+
+    if (onboardingCancelado) {
+
+      alert(
+        "✅ Tu cuenta MASS ID fue creada.\n\n" +
+        "Los documentos legales quedaron pendientes.\n\n" +
+        "Cuando inicies sesión nuevamente podrás continuar exactamente donde te quedaste."
+      );
+
+      return;
+    }
+
+
+    if (onboardingConError) {
+
+      alert(
+        "✅ Tu cuenta MASS ID fue creada.\n\n" +
+        "No fue posible completar la verificación legal en este momento.\n\n" +
+        "Podrás intentarlo nuevamente al iniciar sesión."
+      );
+
+      return;
+    }
+
+
   } catch (error) {
-    console.error("ERROR INESPERADO MASS ID SIGNUP:", error);
+
+    console.error(
+      "ERROR INESPERADO MASS ID SIGNUP:",
+      error
+    );
+
 
     alert(
       "❌ Ocurrió un error inesperado al crear la cuenta.\n\n" +
       "Intenta nuevamente."
     );
+
   } finally {
+
     if (botonCrear) {
-      botonCrear.disabled = false;
-      botonCrear.textContent = "📝 Crear cuenta";
+
+      botonCrear.disabled =
+        false;
+
+
+      botonCrear.textContent =
+        "📝 Crear cuenta";
     }
   }
 }
 
+	
 async function guardarNuevaPasswordMassId() {
   const nuevaPassword = (
     document.getElementById("massIdNuevaPassword")?.value || ""
@@ -70401,101 +72239,57 @@ font-family:Arial, sans-serif;">
 >
 
 <div
-    style="
-        width:min(420px, 100%);
-        margin:18px auto 0;
-        display:grid;
-        gap:14px;
-        text-align:left;
-    "
+  style="
+    width:min(420px, 100%);
+    margin:18px auto 0;
+    padding:14px;
+    border:1px solid rgba(57,255,20,.45);
+    border-radius:12px;
+    background:#151515;
+    color:#ddd;
+    text-align:left;
+    line-height:1.5;
+    box-sizing:border-box;
+  "
 >
-    <!-- TÉRMINOS Y CONDICIONES -->
-    <div
-        style="
-            display:grid;
-            grid-template-columns:22px minmax(0, 1fr);
-            align-items:start;
-            column-gap:10px;
-            width:100%;
-        "
-    >
-        <input
-            id="massIdAceptaTerminos"
-            type="checkbox"
-            style="
-                width:18px !important;
-                min-width:18px;
-                height:18px !important;
-                margin:3px 0 0 0;
-                padding:0;
-                cursor:pointer;
-            "
-        >
+  <div
+    style="
+      color:#39ff14;
+      font-weight:bold;
+      margin-bottom:8px;
+    "
+  >
+    📄 Documentos legales de MASS ID
+  </div>
 
-        <div style="margin:0; line-height:1.4; text-align:left;">
-            Acepto los
-            <a
-                href="#"
-                onclick="
-                    event.preventDefault();
-                    event.stopPropagation();
-                    abrirTerminosMassId();
-                "
-                style="
-                    color:#39ff14;
-                    font-weight:bold;
-                    text-decoration:underline;
-                    cursor:pointer;
-                "
-            >
-                Términos y Condiciones
-            </a>
-        </div>
-    </div>
+  <div>
+    Durante la creación y activación de tu cuenta
+    deberás revisar los documentos legales vigentes
+    de MASS ID:
+  </div>
 
-    <!-- AVISO DE PRIVACIDAD -->
-    <div
-        style="
-            display:grid;
-            grid-template-columns:22px minmax(0, 1fr);
-            align-items:start;
-            column-gap:10px;
-            width:100%;
-        "
-    >
-        <input
-            id="massIdAceptaPrivacidad"
-            type="checkbox"
-            style="
-                width:18px !important;
-                min-width:18px;
-                height:18px !important;
-                margin:3px 0 0 0;
-                padding:0;
-                cursor:pointer;
-            "
-        >
+  <div
+    style="
+      margin-top:10px;
+      color:#fff;
+    "
+  >
+    • MASS-LC-002 — Acuerdo de usuario MASS ID
+    <br>
+    • MASS-LC-003 — Aviso de privacidad MASS ID
+  </div>
 
-        <div style="margin:0; line-height:1.4; text-align:left;">
-            Acepto el
-            <a
-                href="#"
-                onclick="
-                    event.preventDefault();
-                    event.stopPropagation();
-                    abrirPrivacidadMassId();
-                "
-                style="
-                    color:#39ff14;
-                    font-weight:bold;
-                    text-decoration:underline;
-                    cursor:pointer;
-                "
-            >
-                Aviso de Privacidad
-            </a>
-        </div>
-    </div>
+  <div
+    style="
+      margin-top:10px;
+      color:#aaa;
+      font-size:13px;
+    "
+  >
+    Tu aceptación o reconocimiento se registrará
+    únicamente cuando revises el documento correspondiente
+    y confirmes expresamente la acción solicitada.
+  </div>
 </div>
 
 <button
