@@ -65493,6 +65493,165 @@ if (
   restauracionEsUsuarioMassId
 ) {
 
+// ==========================================================
+// MASS ID — VERIFICACIÓN INICIAL AL RESTAURAR SESIÓN
+//
+// Una sesión persistente tampoco puede saltarse:
+//
+// 1. La activación pendiente.
+// 2. La verificación del teléfono.
+// 3. La asignación server-authoritative del MASS ID.
+//
+// Solamente después continúa al Legal Center.
+// ==========================================================
+
+const {
+  data: perfilMassRestaurado,
+  error: errorPerfilMassRestaurado
+} =
+  await supabaseClient
+    .from("usuarios_mass")
+    .select("*")
+    .eq(
+      "auth_user_id",
+      session.user.id
+    )
+    .maybeSingle();
+
+
+if (
+  errorPerfilMassRestaurado ||
+  !perfilMassRestaurado
+) {
+
+  console.error(
+    "ERROR CARGANDO PERFIL MASS EN SESIÓN RESTAURADA:",
+    errorPerfilMassRestaurado
+  );
+
+
+  localStorage.removeItem(
+    "mass_user"
+  );
+
+  localStorage.removeItem(
+    "mass_telefono"
+  );
+
+  localStorage.removeItem(
+    "mass_auth_user_id"
+  );
+
+  localStorage.removeItem(
+    "mass_email"
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  alert(
+    "❌ No fue posible validar tu perfil MASS ID."
+  );
+
+
+  return;
+}
+
+
+// ----------------------------------------------------------
+// CUENTA NUEVA PENDIENTE
+// ----------------------------------------------------------
+
+if (
+  perfilMassRestaurado.estado ===
+  "pendiente_verificacion"
+) {
+
+  const verificacionInicialRestaurada =
+    await completarVerificacionInicialMassIdSeguro({
+      perfil:
+        perfilMassRestaurado,
+
+      authUser:
+        session.user
+    });
+
+
+  if (
+    !verificacionInicialRestaurada ||
+    verificacionInicialRestaurada.ok !== true
+  ) {
+
+    localStorage.removeItem(
+      "mass_user"
+    );
+
+    localStorage.removeItem(
+      "mass_telefono"
+    );
+
+    localStorage.removeItem(
+      "mass_auth_user_id"
+    );
+
+    localStorage.removeItem(
+      "mass_email"
+    );
+
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+
+    return;
+  }
+
+}
+
+
+// ----------------------------------------------------------
+// NINGÚN OTRO ESTADO PUEDE CONTINUAR AL LEGAL CENTER
+// ----------------------------------------------------------
+
+if (
+  perfilMassRestaurado.estado !==
+  "activo"
+) {
+
+  localStorage.removeItem(
+    "mass_user"
+  );
+
+  localStorage.removeItem(
+    "mass_telefono"
+  );
+
+  localStorage.removeItem(
+    "mass_auth_user_id"
+  );
+
+  localStorage.removeItem(
+    "mass_email"
+  );
+
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
+
+  alert(
+    "⌛ Tu cuenta MASS todavía no está activa."
+  );
+
+
+  return;
+}	
+
   const onboardingLegalRestaurado =
     await cumplirRequisitosLegalesMassIdSeguro({
       idiomaCodigo: "es"
@@ -70282,6 +70441,525 @@ if (btnChatFlotanteOrganizador) {
     btnVolverSuperAdmin.style.display =
       "none";
   }
+}
+
+// ==========================================================
+// MASS ID — VERIFICACIÓN INICIAL SEGURA
+//
+// Flujo para cuentas NUEVAS:
+//
+// 1. El correo debe estar confirmado en Supabase Auth.
+// 2. El teléfono capturado durante el registro se verifica
+//    mediante SMS / Twilio.
+// 3. Solamente después el backend puede:
+//      - asignar MASS ID;
+//      - guardar el teléfono verificado;
+//      - cambiar el perfil a estado "activo".
+//
+// IMPORTANTE:
+// - El frontend NO genera MASS ID.
+// - El frontend NO marca la cuenta como activa.
+// - El backend vuelve a comprobar las verificaciones.
+// ==========================================================
+
+function convertirTelefonoRegistroMassIdAE164(
+  telefono
+) {
+
+  const digitos =
+    String(
+      telefono || ""
+    )
+      .replace(/\D/g, "");
+
+
+  // Estados Unidos: 10 dígitos.
+  if (/^\d{10}$/.test(digitos)) {
+
+    return "+1" + digitos;
+
+  }
+
+
+  // Estados Unidos incluyendo el 1.
+  if (/^1\d{10}$/.test(digitos)) {
+
+    return "+" + digitos;
+
+  }
+
+
+  // Número internacional que ya incluye
+  // su código de país.
+  if (/^\d{11,15}$/.test(digitos)) {
+
+    return "+" + digitos;
+
+  }
+
+
+  return "";
+}
+
+
+async function completarVerificacionInicialMassIdSeguro({
+  perfil,
+  authUser
+} = {}) {
+
+  try {
+
+    // ======================================================
+    // A. COMPROBAR SESIÓN REAL
+    // ======================================================
+
+    const {
+      data: datosSesion,
+      error: errorSesion
+    } =
+      await supabaseClient.auth.getUser();
+
+
+    const usuario =
+      datosSesion?.user;
+
+
+    if (
+      errorSesion ||
+      !usuario ||
+      !authUser?.id ||
+      usuario.id !== authUser.id ||
+      perfil?.auth_user_id !== usuario.id
+    ) {
+
+      throw (
+        errorSesion ||
+        new Error(
+          "La sesión activa no coincide con el perfil MASS."
+        )
+      );
+
+    }
+
+
+    // ======================================================
+    // B. CORREO CONFIRMADO OBLIGATORIO
+    // ======================================================
+
+    const correoConfirmado =
+      Boolean(
+        usuario.email_confirmed_at ||
+        usuario.confirmed_at
+      );
+
+
+    if (!correoConfirmado) {
+
+      alert(
+        "📧 Primero debes confirmar tu correo electrónico.\n\n" +
+        "Revisa tu bandeja de entrada y vuelve a iniciar sesión."
+      );
+
+
+      return {
+        ok: false,
+        cancelado: true,
+        etapa: "correo"
+      };
+
+    }
+
+
+    // ======================================================
+    // C. DETERMINAR TELÉFONO ORIGINAL DEL REGISTRO
+    // ======================================================
+
+    const telefonoRegistro =
+      String(
+        usuario.user_metadata?.telefono ||
+        perfil?.telefono ||
+        ""
+      )
+        .replace(/\D/g, "")
+        .trim();
+
+
+    if (!telefonoRegistro) {
+
+      alert(
+        "❌ No encontramos el teléfono registrado para verificar tu cuenta."
+      );
+
+
+      return {
+        ok: false,
+        cancelado: false,
+        etapa: "telefono_sin_dato"
+      };
+
+    }
+
+
+    const telefonoE164 =
+      convertirTelefonoRegistroMassIdAE164(
+        telefonoRegistro
+      );
+
+
+    if (!telefonoE164) {
+
+      alert(
+        "❌ El teléfono registrado no tiene un formato válido para recibir el código SMS."
+      );
+
+
+      return {
+        ok: false,
+        cancelado: false,
+        etapa: "telefono_formato"
+      };
+
+    }
+
+
+    // ======================================================
+    // D. COMPROBAR SI EL TELÉFONO YA FUE VERIFICADO
+    // ======================================================
+
+    let telefonoYaConfirmado =
+      Boolean(
+        usuario.phone_confirmed_at &&
+        usuario.phone
+      );
+
+
+    if (!telefonoYaConfirmado) {
+
+      const telefonoAuthActual =
+        String(
+          usuario.phone || ""
+        )
+          .replace(/\D/g, "");
+
+
+      const telefonoObjetivo =
+        telefonoE164
+          .replace(/\D/g, "");
+
+
+      // ----------------------------------------------------
+      // Si ya se inició el cambio anteriormente,
+      // simplemente reenviamos el código.
+      // ----------------------------------------------------
+
+      if (
+        telefonoAuthActual ===
+        telefonoObjetivo
+      ) {
+
+        const {
+          error: errorReenvioSms
+        } =
+          await supabaseClient.auth.resend({
+            type: "phone_change",
+            phone: telefonoE164
+          });
+
+
+        if (errorReenvioSms) {
+
+          throw errorReenvioSms;
+
+        }
+
+      } else {
+
+        // --------------------------------------------------
+        // Primera solicitud:
+        // Supabase Auth + Twilio envían el SMS.
+        // --------------------------------------------------
+
+        const {
+          error: errorEnviarSms
+        } =
+          await supabaseClient.auth.updateUser({
+            phone: telefonoE164
+          });
+
+
+        if (errorEnviarSms) {
+
+          throw errorEnviarSms;
+
+        }
+
+      }
+
+
+      const ultimosCuatro =
+        telefonoRegistro.slice(-4);
+
+
+      const codigoSms =
+        String(
+          prompt(
+            "📱 Verificación de teléfono MASS ID\n\n" +
+            "Enviamos un código SMS de 6 dígitos al número terminado en " +
+            ultimosCuatro +
+            ".\n\n" +
+            "Escribe el código para continuar:"
+          ) || ""
+        )
+          .replace(/\D/g, "")
+          .trim();
+
+
+      if (!codigoSms) {
+
+        return {
+          ok: false,
+          cancelado: true,
+          etapa: "sms_cancelado"
+        };
+
+      }
+
+
+      if (!/^\d{6}$/.test(codigoSms)) {
+
+        alert(
+          "❌ El código SMS debe contener exactamente 6 dígitos."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          etapa: "sms_formato"
+        };
+
+      }
+
+
+      const {
+        error: errorVerificarSms
+      } =
+        await supabaseClient.auth.verifyOtp({
+          phone: telefonoE164,
+          token: codigoSms,
+          type: "phone_change"
+        });
+
+
+      if (errorVerificarSms) {
+
+        console.error(
+          "ERROR VERIFICANDO TELÉFONO INICIAL MASS ID:",
+          errorVerificarSms
+        );
+
+
+        alert(
+          "❌ El código SMS es incorrecto o venció.\n\n" +
+          "Vuelve a iniciar sesión para solicitar un código nuevo."
+        );
+
+
+        return {
+          ok: false,
+          cancelado: false,
+          etapa: "sms_incorrecto",
+          error: errorVerificarSms
+        };
+
+      }
+
+
+      // ----------------------------------------------------
+      // Volvemos a consultar Auth.
+      // No confiamos solamente en el resultado del frontend.
+      // ----------------------------------------------------
+
+      const {
+        data: datosUsuarioConfirmado,
+        error: errorUsuarioConfirmado
+      } =
+        await supabaseClient.auth.getUser();
+
+
+      const usuarioConfirmado =
+        datosUsuarioConfirmado?.user;
+
+
+      if (
+        errorUsuarioConfirmado ||
+        !usuarioConfirmado ||
+        usuarioConfirmado.id !== usuario.id ||
+        !usuarioConfirmado.phone_confirmed_at
+      ) {
+
+        throw (
+          errorUsuarioConfirmado ||
+          new Error(
+            "Supabase no confirmó jurídicamente el teléfono."
+          )
+        );
+
+      }
+
+
+      const telefonoConfirmadoDigitos =
+        String(
+          usuarioConfirmado.phone || ""
+        )
+          .replace(/\D/g, "");
+
+
+      if (
+        telefonoConfirmadoDigitos !==
+        telefonoObjetivo
+      ) {
+
+        throw new Error(
+          "El teléfono confirmado no coincide con el teléfono registrado."
+        );
+
+      }
+
+
+      telefonoYaConfirmado = true;
+
+    }
+
+
+    // ======================================================
+    // E. FINALIZAR EN BACKEND
+    //
+    // La RPC que crearemos en Supabase comprobará otra vez:
+    //
+    // - auth.uid()
+    // - email_confirmed_at
+    // - phone_confirmed_at
+    // - estado pendiente_verificacion
+    // - mass_id todavía NULL
+    //
+    // y SOLAMENTE entonces asignará el MASS ID.
+    // ======================================================
+
+    if (!telefonoYaConfirmado) {
+
+      throw new Error(
+        "El teléfono todavía no está confirmado."
+      );
+
+    }
+
+
+    const {
+      data: finalizacion,
+      error: errorFinalizacion
+    } =
+      await supabaseClient.rpc(
+        "finalizar_activacion_mass_id_segura"
+      );
+
+
+    if (errorFinalizacion) {
+
+      throw errorFinalizacion;
+
+    }
+
+
+    const resultadoFinal =
+      Array.isArray(finalizacion)
+        ? finalizacion[0]
+        : finalizacion;
+
+
+    if (
+      !resultadoFinal ||
+      resultadoFinal.ok !== true ||
+      resultadoFinal.estado !== "activo" ||
+      !resultadoFinal.mass_id
+    ) {
+
+      throw new Error(
+        "El backend no confirmó la activación del MASS ID."
+      );
+
+    }
+
+
+    // ======================================================
+    // F. ACTUALIZAR EL OBJETO LOCAL
+    //
+    // La autoridad sigue siendo Supabase.
+    // Esto solamente permite que este mismo login continúe.
+    // ======================================================
+
+    perfil.estado =
+      resultadoFinal.estado;
+
+
+    perfil.mass_id =
+      resultadoFinal.mass_id;
+
+
+    if (resultadoFinal.telefono) {
+
+      perfil.telefono =
+        resultadoFinal.telefono;
+
+    }
+
+
+    alert(
+      "✅ Teléfono verificado correctamente.\n\n" +
+      "Tu MASS ID " +
+      resultadoFinal.mass_id +
+      " quedó activado."
+    );
+
+
+    return {
+      ok: true,
+      cancelado: false,
+      estado:
+        resultadoFinal.estado,
+      mass_id:
+        resultadoFinal.mass_id,
+      telefono:
+        resultadoFinal.telefono || null
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR EN VERIFICACIÓN INICIAL MASS ID:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible completar la verificación inicial de tu cuenta.\n\n" +
+      (
+        error?.message ||
+        "Intenta nuevamente."
+      )
+    );
+
+
+    return {
+      ok: false,
+      cancelado: false,
+      etapa: "error",
+      error
+    };
+
+  }
+
 }	
 
 async function iniciarSesionMassId() {
@@ -70409,15 +71087,60 @@ if (
 return;
 }
 
-if (perfil.estado !== "activo") {
-  
-await supabaseClient.auth.signOut({
-  scope: "local"
-});
+// ==========================================================
+// MASS ID — VERIFICACIÓN INICIAL DE CUENTA
+//
+// Las cuentas nuevas permanecen pendientes hasta que:
+//
+// 1. El correo haya sido confirmado.
+// 2. El teléfono haya sido verificado por SMS.
+// 3. El backend asigne oficialmente el MASS ID.
+//
+// Las cuentas antiguas que ya están activas
+// continúan con su flujo normal.
+// ==========================================================
+
+if (
+  perfil.estado ===
+  "pendiente_verificacion"
+) {
+
+  const verificacionInicialMassId =
+    await completarVerificacionInicialMassIdSeguro({
+      perfil,
+      authUser:
+        authData.user
+    });
+
+
+  if (
+    !verificacionInicialMassId ||
+    verificacionInicialMassId.ok !== true
+  ) {
+
+    await supabaseClient.auth.signOut({
+      scope: "local"
+    });
+
+    return;
+  }
+}
+
+
+if (
+  perfil.estado !==
+  "activo"
+) {
+
+  await supabaseClient.auth.signOut({
+    scope: "local"
+  });
+
 
   alert(
     "⌛ Tu cuenta MASS todavía no está activa."
   );
+
 
   return;
 }
