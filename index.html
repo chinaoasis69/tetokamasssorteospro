@@ -69940,9 +69940,7 @@ async function cargarPaisesTelefoniaRegistroMassId() {
           inputTelefono.value = "";
 
           inputTelefono.placeholder =
-            prefijo
-              ? `Número nacional — ${prefijo}`
-              : "Número de teléfono";
+            "Número nacional";
 
         }
 
@@ -72181,6 +72179,63 @@ if (
       botonPasskey.style.cursor = "pointer";
     }
   }
+}
+
+// ==========================================================
+// MASS ID — MOSTRAR / OCULTAR CONTRASEÑA DE REGISTRO
+// ==========================================================
+
+function alternarVisibilidadPasswordMassId(
+  inputId,
+  boton
+) {
+
+  const input =
+    document.getElementById(
+      inputId
+    );
+
+
+  if (!input) {
+    return;
+  }
+
+
+  const mostrar =
+    input.type === "password";
+
+
+  input.type =
+    mostrar
+      ? "text"
+      : "password";
+
+
+  if (boton) {
+
+    boton.textContent =
+      mostrar
+        ? "🙈"
+        : "👁️";
+
+
+    boton.setAttribute(
+      "aria-label",
+      mostrar
+        ? "Ocultar contraseña"
+        : "Mostrar contraseña"
+    );
+
+
+    boton.setAttribute(
+      "aria-pressed",
+      mostrar
+        ? "true"
+        : "false"
+    );
+
+  }
+
 }	
 
 async function crearCuentaMassId() {
@@ -73471,14 +73526,15 @@ font-family:Arial, sans-serif;">
     aria-label="País y código internacional"
     autocomplete="country"
     style="
-      width:min(420px, 100%);
-      box-sizing:border-box;
-      padding:12px 18px;
-      border:none;
-      border-radius:10px;
-      margin:6px;
-      font-weight:bold;
-    "
+  width:250px;
+  max-width:90%;
+  box-sizing:border-box;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  margin:6px;
+  font-weight:bold;
+"
   >
     <option
       value=""
@@ -73519,19 +73575,111 @@ font-family:Arial, sans-serif;">
   autocomplete="email"
 >
 
-<input
-  id="massIdPasswordRegistro"
-  type="password"
-  placeholder="Contraseña"
-  autocomplete="new-password"
+<div
+  style="
+    position:relative;
+    width:250px;
+    max-width:90%;
+    margin:6px auto;
+  "
 >
+  <input
+    id="massIdPasswordRegistro"
+    type="password"
+    placeholder="Contraseña"
+    autocomplete="new-password"
+    style="
+      width:100%;
+      max-width:100%;
+      margin:0;
+      padding-right:52px;
+      box-sizing:border-box;
+    "
+  >
 
-<input
-  id="massIdConfirmarPasswordRegistro"
-  type="password"
-  placeholder="Confirmar contraseña"
-  autocomplete="new-password"
+  <button
+    type="button"
+    onclick="
+      alternarVisibilidadPasswordMassId(
+        'massIdPasswordRegistro',
+        this
+      )
+    "
+    aria-label="Mostrar contraseña"
+    aria-pressed="false"
+    title="Mostrar contraseña"
+    style="
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      margin:0;
+      padding:4px 6px;
+      border:none;
+      border-radius:6px;
+      background:transparent;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      z-index:2;
+    "
+  >
+    👁️
+  </button>
+</div>
+
+<div
+  style="
+    position:relative;
+    width:250px;
+    max-width:90%;
+    margin:6px auto;
+  "
 >
+  <input
+    id="massIdConfirmarPasswordRegistro"
+    type="password"
+    placeholder="Confirmar contraseña"
+    autocomplete="new-password"
+    style="
+      width:100%;
+      max-width:100%;
+      margin:0;
+      padding-right:52px;
+      box-sizing:border-box;
+    "
+  >
+
+  <button
+    type="button"
+    onclick="
+      alternarVisibilidadPasswordMassId(
+        'massIdConfirmarPasswordRegistro',
+        this
+      )
+    "
+    aria-label="Mostrar contraseña"
+    aria-pressed="false"
+    title="Mostrar contraseña"
+    style="
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      margin:0;
+      padding:4px 6px;
+      border:none;
+      border-radius:6px;
+      background:transparent;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      z-index:2;
+    "
+  >
+    👁️
+  </button>
+</div>
 
 <div
   style="
