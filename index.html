@@ -72548,6 +72548,120 @@ if (
     return;
   }
 
+// ==========================================================
+// VALIDACIÓN TELEFÓNICA BACKEND ANTES DE CREAR AUTH
+//
+// La cuenta NO se crea hasta que el mismo backend que
+// protege la activación confirme:
+//
+// - país habilitado;
+// - longitud nacional;
+// - NPA correcto para +1;
+// - código internacional compartido;
+// - E.164 canónico.
+// ==========================================================
+
+const validacionTelefonoRegistro =
+  await convertirTelefonoRegistroMassIdAE164(
+    telefono,
+    telefonoPaisIso2
+  );
+
+
+const telefonoE164Validado =
+  String(
+    validacionTelefonoRegistro
+      ?.telefono_e164 || ""
+  ).trim();
+
+
+const paisIso2Validado =
+  String(
+    validacionTelefonoRegistro
+      ?.codigo_iso2 || ""
+  )
+    .trim()
+    .toUpperCase();
+
+
+if (
+  validacionTelefonoRegistro?.ok !== true ||
+  !telefonoE164Validado ||
+  paisIso2Validado !== telefonoPaisIso2
+) {
+
+  const codigoError =
+    String(
+      validacionTelefonoRegistro
+        ?.codigo_error || ""
+    );
+
+
+  let mensajeTelefono =
+    "❌ El número de teléfono no es válido para el país seleccionado.";
+
+
+  if (
+    codigoError ===
+    "NANP_COUNTRY_NPA_MISMATCH"
+  ) {
+
+    mensajeTelefono =
+      "❌ El código de área del número no corresponde al país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "NANP_NPA_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código de área todavía no está habilitado para MASS ID.";
+
+  } else if (
+    codigoError ===
+    "PHONE_COUNTRY_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ El país seleccionado todavía no está habilitado para registro telefónico MASS ID.";
+
+  } else if (
+    codigoError ===
+      "REGISTRATION_PHONE_NATIONAL_LENGTH_INVALID" ||
+    codigoError ===
+      "NANP_NATIONAL_LENGTH_INVALID"
+  ) {
+
+    mensajeTelefono =
+      "❌ La cantidad de dígitos del número nacional no es válida para el país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "SHARED_CALLING_CODE_REQUIRES_NUMBERING_PLAN"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código internacional requiere una validación adicional antes de poder registrarse.";
+
+  } else if (
+    codigoError ===
+    "PHONE_VALIDATION_RPC_ERROR"
+  ) {
+
+    mensajeTelefono =
+      "❌ No fue posible validar el teléfono en este momento. Intenta nuevamente.";
+
+  }
+
+
+  alert(
+    mensajeTelefono
+  );
+
+
+  return;
+}	
+
 
   const botonCrear =
     document.querySelector(
