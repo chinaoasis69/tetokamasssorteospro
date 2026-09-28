@@ -70785,10 +70785,15 @@ async function convertirTelefonoRegistroMassIdAE164(
   // ========================================================
   // FLUJO INTERNACIONAL NUEVO
   //
-  // El país viene del metadata de Auth, pero:
-  // - NO confiamos en un prefijo enviado por el navegador;
-  // - consultamos nuevamente la RPC controlada;
-  // - aplicamos min/max recibidos desde backend.
+  // La validación real ya no se reproduce en frontend.
+  //
+  // Backend valida:
+  // - país habilitado;
+  // - longitud nacional;
+  // - prefijo;
+  // - NANP / NPA;
+  // - códigos internacionales compartidos;
+  // - E.164 canónico.
   // ========================================================
 
   if (codigoIso2) {
@@ -70798,7 +70803,14 @@ async function convertirTelefonoRegistroMassIdAE164(
         codigoIso2
       )
     ) {
-      return "";
+
+      return {
+        ok: false,
+        codigo_error:
+          "PHONE_COUNTRY_INVALID",
+        telefono_e164: ""
+      };
+
     }
 
 
@@ -70807,100 +70819,59 @@ async function convertirTelefonoRegistroMassIdAE164(
       error
     } =
       await supabaseClient.rpc(
-        "listar_paises_telefonia_mass_id_publico"
+        "validar_telefono_mass_id_publico",
+        {
+          p_codigo_iso2:
+            codigoIso2,
+
+          p_numero_nacional:
+            digitos
+        }
       );
 
 
     if (error) {
 
       console.error(
-        "ERROR VALIDANDO PAÍS DE TELEFONÍA MASS ID:",
+        "ERROR VALIDANDO TELÉFONO MASS ID:",
         error
       );
 
-      return "";
-    }
 
+      return {
+        ok: false,
+        codigo_error:
+          "PHONE_VALIDATION_RPC_ERROR",
+        telefono_e164: ""
+      };
 
-    const paises =
-      Array.isArray(
-        data?.paises
-      )
-        ? data.paises
-        : [];
-
-
-    const pais =
-      paises.find(
-        function (item) {
-
-          return (
-            String(
-              item?.codigo_iso2 || ""
-            )
-              .trim()
-              .toUpperCase()
-            === codigoIso2
-          );
-
-        }
-      );
-
-
-    if (!pais) {
-      return "";
-    }
-
-
-    const prefijo =
-      String(
-        pais?.prefijo_telefonico || ""
-      ).trim();
-
-
-    const minDigitos =
-      Number(
-        pais?.numero_nacional_min_digitos
-      );
-
-
-    const maxDigitos =
-      Number(
-        pais?.numero_nacional_max_digitos
-      );
-
-
-    if (
-      !/^\+[1-9][0-9]{0,2}$/.test(
-        prefijo
-      ) ||
-      !Number.isInteger(
-        minDigitos
-      ) ||
-      !Number.isInteger(
-        maxDigitos
-      ) ||
-      minDigitos < 1 ||
-      maxDigitos <
-        minDigitos
-    ) {
-      return "";
     }
 
 
     if (
-      digitos.length <
-        minDigitos ||
-      digitos.length >
-        maxDigitos
+      !data ||
+      data.ok !== true
     ) {
-      return "";
+
+      return {
+        ok: false,
+
+        codigo_error:
+          String(
+            data?.codigo_error ||
+            "REGISTRATION_PHONE_INVALID"
+          ),
+
+        telefono_e164: ""
+      };
+
     }
 
 
     const telefonoE164 =
-      prefijo +
-      digitos;
+      String(
+        data.telefono_e164 || ""
+      ).trim();
 
 
     if (
@@ -70908,45 +70879,104 @@ async function convertirTelefonoRegistroMassIdAE164(
         telefonoE164
       )
     ) {
-      return "";
+
+      return {
+        ok: false,
+        codigo_error:
+          "REGISTRATION_PHONE_INVALID",
+        telefono_e164: ""
+      };
+
     }
 
 
-    return telefonoE164;
+    return {
+      ok: true,
+
+      codigo_error: "",
+
+      telefono_e164:
+        telefonoE164,
+
+      codigo_iso2:
+        String(
+          data.codigo_iso2 || ""
+        ),
+
+      prefijo_telefonico:
+        String(
+          data.prefijo_telefonico || ""
+        ),
+
+      npa:
+        data.npa ?? null
+    };
+
   }
 
 
   // ========================================================
   // FLUJO LEGADO
   //
-  // Solamente para cuentas que comenzaron ANTES de que
-  // existiera telefono_pais_iso2 en el registro.
+  // Solamente para cuentas iniciadas antes de que existiera
+  // telefono_pais_iso2.
   // ========================================================
 
   if (/^\d{10}$/.test(digitos)) {
 
-    return "+1" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+1" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico:
+        "+1",
+      npa: null
+    };
 
   }
 
 
   if (/^1\d{10}$/.test(digitos)) {
 
-    return "+" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico:
+        "+1",
+      npa: null
+    };
 
   }
 
 
   if (/^\d{11,15}$/.test(digitos)) {
 
-    return "+" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico: "",
+      npa: null
+    };
 
   }
 
 
-  return "";
-}
+  return {
+    ok: false,
+    codigo_error:
+      "REGISTRATION_PHONE_INVALID",
+    telefono_e164: ""
+  };
 
+}
 
 async function completarVerificacionInicialMassIdSeguro({
   perfil,
@@ -71055,27 +71085,93 @@ async function completarVerificacionInicialMassIdSeguro({
     }
 
 
-    const telefonoE164 =
+const resultadoTelefono =
   await convertirTelefonoRegistroMassIdAE164(
     telefonoRegistro,
     telefonoPaisIso2Registro
   );
 
 
-    if (!telefonoE164) {
+const telefonoE164 =
+  String(
+    resultadoTelefono
+      ?.telefono_e164 || ""
+  ).trim();
 
-      alert(
-        "❌ El teléfono registrado no tiene un formato válido para recibir el código SMS."
-      );
+
+if (
+  resultadoTelefono?.ok !== true ||
+  !telefonoE164
+) {
+
+  const codigoError =
+    String(
+      resultadoTelefono
+        ?.codigo_error || ""
+    );
 
 
-      return {
-        ok: false,
-        cancelado: false,
-        etapa: "telefono_formato"
-      };
+  let mensajeTelefono =
+    "❌ El teléfono registrado no tiene un formato válido para recibir el código SMS.";
 
-    }
+
+  if (
+    codigoError ===
+    "NANP_COUNTRY_NPA_MISMATCH"
+  ) {
+
+    mensajeTelefono =
+      "❌ El código de área del número no corresponde al país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "NANP_NPA_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código de área todavía no está habilitado para MASS ID.";
+
+  } else if (
+    codigoError ===
+    "PHONE_COUNTRY_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ El país seleccionado todavía no está habilitado para verificación telefónica MASS ID.";
+
+  } else if (
+    codigoError ===
+    "REGISTRATION_PHONE_NATIONAL_LENGTH_INVALID" ||
+    codigoError ===
+    "NANP_NATIONAL_LENGTH_INVALID"
+  ) {
+
+    mensajeTelefono =
+      "❌ La cantidad de dígitos del número nacional no es válida para el país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "PHONE_VALIDATION_RPC_ERROR"
+  ) {
+
+    mensajeTelefono =
+      "❌ No fue posible validar el teléfono en este momento. Intenta nuevamente.";
+
+  }
+
+
+  alert(
+    mensajeTelefono
+  );
+
+
+  return {
+    ok: false,
+    cancelado: false,
+    etapa: "telefono_formato"
+  };
+
+}
 
 
     // ======================================================
