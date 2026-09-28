@@ -69697,8 +69697,327 @@ function mostrarLoginUsuarioV2() {
   prepararVistaAccesoV2("usuario");
 }
 
-function mostrarLoginOrganizadorV2() {
-  prepararVistaAccesoV2("registro");
+// ==========================================================
+// MASS ID — PAÍSES / TELEFONÍA INTERNACIONAL
+// ==========================================================
+
+async function cargarPaisesTelefoniaRegistroMassId() {
+
+  const selectPais =
+    document.getElementById(
+      "massIdPaisTelefonoRegistro"
+    );
+
+  const ayudaTelefono =
+    document.getElementById(
+      "massIdTelefonoRegistroAyuda"
+    );
+
+  const inputTelefono =
+    document.getElementById(
+      "massIdTelefonoRegistro"
+    );
+
+
+  if (!selectPais) {
+    return false;
+  }
+
+
+  selectPais.disabled = true;
+  selectPais.innerHTML = "";
+
+
+  const opcionCargando =
+    document.createElement("option");
+
+  opcionCargando.value = "";
+  opcionCargando.textContent =
+    "Cargando países...";
+  opcionCargando.disabled = true;
+  opcionCargando.selected = true;
+
+  selectPais.appendChild(
+    opcionCargando
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "listar_paises_telefonia_mass_id_publico"
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const paises =
+      Array.isArray(data?.paises)
+        ? data.paises
+        : [];
+
+
+    if (
+      data?.ok !== true ||
+      paises.length === 0
+    ) {
+      throw new Error(
+        "No hay países habilitados para registro MASS ID."
+      );
+    }
+
+
+    selectPais.innerHTML = "";
+
+
+    const opcionInicial =
+      document.createElement("option");
+
+    opcionInicial.value = "";
+    opcionInicial.textContent =
+      "Selecciona país / código";
+    opcionInicial.disabled = true;
+    opcionInicial.selected = true;
+
+    selectPais.appendChild(
+      opcionInicial
+    );
+
+
+    for (const pais of paises) {
+
+      const codigoIso2 =
+        String(
+          pais?.codigo_iso2 || ""
+        )
+          .trim()
+          .toUpperCase();
+
+
+      const nombrePais =
+        String(
+          pais?.nombre || ""
+        ).trim();
+
+
+      const prefijoTelefonico =
+        String(
+          pais?.prefijo_telefonico || ""
+        ).trim();
+
+
+      const minDigitos =
+        Number(
+          pais?.numero_nacional_min_digitos
+        );
+
+
+      const maxDigitos =
+        Number(
+          pais?.numero_nacional_max_digitos
+        );
+
+
+      if (
+        !/^[A-Z]{2}$/.test(
+          codigoIso2
+        ) ||
+        !nombrePais ||
+        !/^\+[1-9][0-9]{0,2}$/.test(
+          prefijoTelefonico
+        ) ||
+        !Number.isInteger(
+          minDigitos
+        ) ||
+        !Number.isInteger(
+          maxDigitos
+        ) ||
+        minDigitos < 1 ||
+        maxDigitos < minDigitos
+      ) {
+        continue;
+      }
+
+
+      const opcion =
+        document.createElement("option");
+
+
+      opcion.value =
+        codigoIso2;
+
+
+      opcion.textContent =
+        `${nombrePais} (${prefijoTelefonico})`;
+
+
+      opcion.dataset.prefijoTelefonico =
+        prefijoTelefonico;
+
+
+      opcion.dataset.minDigitos =
+        String(
+          minDigitos
+        );
+
+
+      opcion.dataset.maxDigitos =
+        String(
+          maxDigitos
+        );
+
+
+      selectPais.appendChild(
+        opcion
+      );
+
+    }
+
+
+    if (
+      selectPais.options.length <= 1
+    ) {
+      throw new Error(
+        "La configuración telefónica disponible no es válida."
+      );
+    }
+
+
+    selectPais.disabled = false;
+
+
+    selectPais.onchange =
+      function () {
+
+        const opcion =
+          selectPais.options[
+            selectPais.selectedIndex
+          ];
+
+
+        const prefijo =
+          opcion?.dataset
+            ?.prefijoTelefonico || "";
+
+
+        const min =
+          Number(
+            opcion?.dataset
+              ?.minDigitos
+          );
+
+
+        const max =
+          Number(
+            opcion?.dataset
+              ?.maxDigitos
+          );
+
+
+        if (ayudaTelefono) {
+
+          const reglaLongitud =
+            min === max
+              ? `${min} dígitos`
+              : `${min} a ${max} dígitos`;
+
+
+const codigoIso2Ayuda =
+  String(
+    opcion?.value || ""
+  )
+    .trim()
+    .toUpperCase();
+
+
+if (
+  codigoIso2Ayuda === "AR"
+) {
+
+  ayudaTelefono.textContent =
+    `${opcion.textContent}: escribe tu número nacional (${reglaLongitud}), sin 0 de acceso y sin 15.`;
+
+} else {
+
+  ayudaTelefono.textContent =
+    `${opcion.textContent}: escribe solamente tu número nacional (${reglaLongitud}).`;
+
+}
+
+        }
+
+
+        if (inputTelefono) {
+
+          inputTelefono.value = "";
+
+          inputTelefono.placeholder =
+            "Número nacional";
+
+        }
+
+      };
+
+
+    return true;
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR CARGANDO PAÍSES DE TELEFONÍA MASS ID:",
+      error
+    );
+
+
+    selectPais.innerHTML = "";
+
+
+    const opcionError =
+      document.createElement("option");
+
+    opcionError.value = "";
+    opcionError.textContent =
+      "No fue posible cargar países";
+    opcionError.disabled = true;
+    opcionError.selected = true;
+
+
+    selectPais.appendChild(
+      opcionError
+    );
+
+
+    selectPais.disabled = true;
+
+
+    if (ayudaTelefono) {
+
+      ayudaTelefono.textContent =
+        "No fue posible cargar los países disponibles. Intenta nuevamente.";
+
+    }
+
+
+    return false;
+  }
+}	
+
+async function mostrarLoginOrganizadorV2() {
+
+  prepararVistaAccesoV2(
+    "registro"
+  );
+
+  await cargarPaisesTelefoniaRegistroMassId();
+
 }
 
 function mostrarAccesoOrganizadorV2() {
@@ -70462,8 +70781,9 @@ if (btnChatFlotanteOrganizador) {
 // - El backend vuelve a comprobar las verificaciones.
 // ==========================================================
 
-function convertirTelefonoRegistroMassIdAE164(
-  telefono
+async function convertirTelefonoRegistroMassIdAE164(
+  telefono,
+  paisIso2 = ""
 ) {
 
   const digitos =
@@ -70473,34 +70793,209 @@ function convertirTelefonoRegistroMassIdAE164(
       .replace(/\D/g, "");
 
 
-  // Estados Unidos: 10 dígitos.
+  const codigoIso2 =
+    String(
+      paisIso2 || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  // ========================================================
+  // FLUJO INTERNACIONAL NUEVO
+  //
+  // La validación real ya no se reproduce en frontend.
+  //
+  // Backend valida:
+  // - país habilitado;
+  // - longitud nacional;
+  // - prefijo;
+  // - NANP / NPA;
+  // - códigos internacionales compartidos;
+  // - E.164 canónico.
+  // ========================================================
+
+  if (codigoIso2) {
+
+    if (
+      !/^[A-Z]{2}$/.test(
+        codigoIso2
+      )
+    ) {
+
+      return {
+        ok: false,
+        codigo_error:
+          "PHONE_COUNTRY_INVALID",
+        telefono_e164: ""
+      };
+
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "validar_telefono_mass_id_publico",
+        {
+          p_codigo_iso2:
+            codigoIso2,
+
+          p_numero_nacional:
+            digitos
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR VALIDANDO TELÉFONO MASS ID:",
+        error
+      );
+
+
+      return {
+        ok: false,
+        codigo_error:
+          "PHONE_VALIDATION_RPC_ERROR",
+        telefono_e164: ""
+      };
+
+    }
+
+
+    if (
+      !data ||
+      data.ok !== true
+    ) {
+
+      return {
+        ok: false,
+
+        codigo_error:
+          String(
+            data?.codigo_error ||
+            "REGISTRATION_PHONE_INVALID"
+          ),
+
+        telefono_e164: ""
+      };
+
+    }
+
+
+    const telefonoE164 =
+      String(
+        data.telefono_e164 || ""
+      ).trim();
+
+
+    if (
+      !/^\+[1-9][0-9]{1,14}$/.test(
+        telefonoE164
+      )
+    ) {
+
+      return {
+        ok: false,
+        codigo_error:
+          "REGISTRATION_PHONE_INVALID",
+        telefono_e164: ""
+      };
+
+    }
+
+
+    return {
+      ok: true,
+
+      codigo_error: "",
+
+      telefono_e164:
+        telefonoE164,
+
+      codigo_iso2:
+        String(
+          data.codigo_iso2 || ""
+        ),
+
+      prefijo_telefonico:
+        String(
+          data.prefijo_telefonico || ""
+        ),
+
+      npa:
+        data.npa ?? null
+    };
+
+  }
+
+
+  // ========================================================
+  // FLUJO LEGADO
+  //
+  // Solamente para cuentas iniciadas antes de que existiera
+  // telefono_pais_iso2.
+  // ========================================================
+
   if (/^\d{10}$/.test(digitos)) {
 
-    return "+1" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+1" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico:
+        "+1",
+      npa: null
+    };
 
   }
 
 
-  // Estados Unidos incluyendo el 1.
   if (/^1\d{10}$/.test(digitos)) {
 
-    return "+" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico:
+        "+1",
+      npa: null
+    };
 
   }
 
 
-  // Número internacional que ya incluye
-  // su código de país.
   if (/^\d{11,15}$/.test(digitos)) {
 
-    return "+" + digitos;
+    return {
+      ok: true,
+      codigo_error: "",
+      telefono_e164:
+        "+" + digitos,
+      codigo_iso2: "",
+      prefijo_telefonico: "",
+      npa: null
+    };
 
   }
 
 
-  return "";
-}
+  return {
+    ok: false,
+    codigo_error:
+      "REGISTRATION_PHONE_INVALID",
+    telefono_e164: ""
+  };
 
+}
 
 async function completarVerificacionInicialMassIdSeguro({
   perfil,
@@ -70582,6 +71077,15 @@ async function completarVerificacionInicialMassIdSeguro({
       )
         .replace(/\D/g, "")
         .trim();
+	  
+	const telefonoPaisIso2Registro =
+  String(
+    usuario.user_metadata
+      ?.telefono_pais_iso2 ||
+    ""
+  )
+    .trim()
+    .toUpperCase();  
 
 
     if (!telefonoRegistro) {
@@ -70600,26 +71104,93 @@ async function completarVerificacionInicialMassIdSeguro({
     }
 
 
-    const telefonoE164 =
-      convertirTelefonoRegistroMassIdAE164(
-        telefonoRegistro
-      );
+const resultadoTelefono =
+  await convertirTelefonoRegistroMassIdAE164(
+    telefonoRegistro,
+    telefonoPaisIso2Registro
+  );
 
 
-    if (!telefonoE164) {
+const telefonoE164 =
+  String(
+    resultadoTelefono
+      ?.telefono_e164 || ""
+  ).trim();
 
-      alert(
-        "❌ El teléfono registrado no tiene un formato válido para recibir el código SMS."
-      );
+
+if (
+  resultadoTelefono?.ok !== true ||
+  !telefonoE164
+) {
+
+  const codigoError =
+    String(
+      resultadoTelefono
+        ?.codigo_error || ""
+    );
 
 
-      return {
-        ok: false,
-        cancelado: false,
-        etapa: "telefono_formato"
-      };
+  let mensajeTelefono =
+    "❌ El teléfono registrado no tiene un formato válido para recibir el código SMS.";
 
-    }
+
+  if (
+    codigoError ===
+    "NANP_COUNTRY_NPA_MISMATCH"
+  ) {
+
+    mensajeTelefono =
+      "❌ El código de área del número no corresponde al país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "NANP_NPA_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código de área todavía no está habilitado para MASS ID.";
+
+  } else if (
+    codigoError ===
+    "PHONE_COUNTRY_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ El país seleccionado todavía no está habilitado para verificación telefónica MASS ID.";
+
+  } else if (
+    codigoError ===
+    "REGISTRATION_PHONE_NATIONAL_LENGTH_INVALID" ||
+    codigoError ===
+    "NANP_NATIONAL_LENGTH_INVALID"
+  ) {
+
+    mensajeTelefono =
+      "❌ La cantidad de dígitos del número nacional no es válida para el país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "PHONE_VALIDATION_RPC_ERROR"
+  ) {
+
+    mensajeTelefono =
+      "❌ No fue posible validar el teléfono en este momento. Intenta nuevamente.";
+
+  }
+
+
+  alert(
+    mensajeTelefono
+  );
+
+
+  return {
+    ok: false,
+    cancelado: false,
+    etapa: "telefono_formato"
+  };
+
+}
 
 
     // ======================================================
@@ -71723,6 +72294,63 @@ if (
       botonPasskey.style.cursor = "pointer";
     }
   }
+}
+
+// ==========================================================
+// MASS ID — MOSTRAR / OCULTAR CONTRASEÑA DE REGISTRO
+// ==========================================================
+
+function alternarVisibilidadPasswordMassId(
+  inputId,
+  boton
+) {
+
+  const input =
+    document.getElementById(
+      inputId
+    );
+
+
+  if (!input) {
+    return;
+  }
+
+
+  const mostrar =
+    input.type === "password";
+
+
+  input.type =
+    mostrar
+      ? "text"
+      : "password";
+
+
+  if (boton) {
+
+    boton.textContent =
+      mostrar
+        ? "🙈"
+        : "👁️";
+
+
+    boton.setAttribute(
+      "aria-label",
+      mostrar
+        ? "Ocultar contraseña"
+        : "Mostrar contraseña"
+    );
+
+
+    boton.setAttribute(
+      "aria-pressed",
+      mostrar
+        ? "true"
+        : "false"
+    );
+
+  }
+
 }	
 
 async function crearCuentaMassId() {
@@ -71734,13 +72362,54 @@ async function crearCuentaMassId() {
   ).trim();
 
 
-  const telefono = (
-    document.getElementById(
-      "massIdTelefonoRegistro"
-    )?.value || ""
+  const selectPaisTelefono =
+  document.getElementById(
+    "massIdPaisTelefonoRegistro"
+  );
+
+
+const opcionPaisTelefono =
+  selectPaisTelefono?.options?.[
+    selectPaisTelefono.selectedIndex
+  ] || null;
+
+
+const telefonoPaisIso2 =
+  String(
+    selectPaisTelefono?.value || ""
   )
-    .replace(/\D/g, "")
-    .trim();
+    .trim()
+    .toUpperCase();
+
+
+const telefonoPrefijo =
+  String(
+    opcionPaisTelefono?.dataset
+      ?.prefijoTelefonico || ""
+  ).trim();
+
+
+const telefonoMinDigitos =
+  Number(
+    opcionPaisTelefono?.dataset
+      ?.minDigitos
+  );
+
+
+const telefonoMaxDigitos =
+  Number(
+    opcionPaisTelefono?.dataset
+      ?.maxDigitos
+  );
+
+
+const telefono = (
+  document.getElementById(
+    "massIdTelefonoRegistro"
+  )?.value || ""
+)
+  .replace(/\D/g, "")
+  .trim();
 
 
   const email = (
@@ -71770,13 +72439,14 @@ async function crearCuentaMassId() {
   // 1. VALIDACIONES DEL REGISTRO
   // ==========================================================
 
-  if (
+if (
   !nombre ||
+  !telefonoPaisIso2 ||
   !telefono ||
   !email ||
   !password ||
   !confirmarPassword
-) {
+) {  
 
   alert(
     "❌ Completa todos los campos para continuar."
@@ -71794,15 +72464,54 @@ async function crearCuentaMassId() {
   }
 
 
-  if (
-    telefono.length < 10 ||
-    telefono.length > 15
-  ) {
-    alert(
-      "❌ Ingresa un teléfono válido de 10 a 15 dígitos."
-    );
-    return;
-  }
+if (
+  !/^[A-Z]{2}$/.test(
+    telefonoPaisIso2
+  ) ||
+  !/^\+[1-9][0-9]{0,2}$/.test(
+    telefonoPrefijo
+  ) ||
+  !Number.isInteger(
+    telefonoMinDigitos
+  ) ||
+  !Number.isInteger(
+    telefonoMaxDigitos
+  ) ||
+  telefonoMinDigitos < 1 ||
+  telefonoMaxDigitos <
+    telefonoMinDigitos
+) {
+
+  alert(
+    "❌ La configuración telefónica del país seleccionado no es válida.\n\n" +
+    "Selecciona nuevamente tu país."
+  );
+
+  return;
+}
+
+
+if (
+  telefono.length <
+    telefonoMinDigitos ||
+  telefono.length >
+    telefonoMaxDigitos
+) {
+
+  const reglaLongitud =
+    telefonoMinDigitos ===
+    telefonoMaxDigitos
+      ? `${telefonoMinDigitos}`
+      : `${telefonoMinDigitos} a ${telefonoMaxDigitos}`;
+
+
+  alert(
+    `❌ Para ${opcionPaisTelefono?.textContent || "el país seleccionado"}, ` +
+    `el número nacional debe tener ${reglaLongitud} dígitos.`
+  );
+
+  return;
+}  
 
 
   const formatoEmail =
@@ -71858,6 +72567,120 @@ async function crearCuentaMassId() {
     return;
   }
 
+// ==========================================================
+// VALIDACIÓN TELEFÓNICA BACKEND ANTES DE CREAR AUTH
+//
+// La cuenta NO se crea hasta que el mismo backend que
+// protege la activación confirme:
+//
+// - país habilitado;
+// - longitud nacional;
+// - NPA correcto para +1;
+// - código internacional compartido;
+// - E.164 canónico.
+// ==========================================================
+
+const validacionTelefonoRegistro =
+  await convertirTelefonoRegistroMassIdAE164(
+    telefono,
+    telefonoPaisIso2
+  );
+
+
+const telefonoE164Validado =
+  String(
+    validacionTelefonoRegistro
+      ?.telefono_e164 || ""
+  ).trim();
+
+
+const paisIso2Validado =
+  String(
+    validacionTelefonoRegistro
+      ?.codigo_iso2 || ""
+  )
+    .trim()
+    .toUpperCase();
+
+
+if (
+  validacionTelefonoRegistro?.ok !== true ||
+  !telefonoE164Validado ||
+  paisIso2Validado !== telefonoPaisIso2
+) {
+
+  const codigoError =
+    String(
+      validacionTelefonoRegistro
+        ?.codigo_error || ""
+    );
+
+
+  let mensajeTelefono =
+    "❌ El número de teléfono no es válido para el país seleccionado.";
+
+
+  if (
+    codigoError ===
+    "NANP_COUNTRY_NPA_MISMATCH"
+  ) {
+
+    mensajeTelefono =
+      "❌ El código de área del número no corresponde al país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "NANP_NPA_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código de área todavía no está habilitado para MASS ID.";
+
+  } else if (
+    codigoError ===
+    "PHONE_COUNTRY_NOT_ENABLED"
+  ) {
+
+    mensajeTelefono =
+      "❌ El país seleccionado todavía no está habilitado para registro telefónico MASS ID.";
+
+  } else if (
+    codigoError ===
+      "REGISTRATION_PHONE_NATIONAL_LENGTH_INVALID" ||
+    codigoError ===
+      "NANP_NATIONAL_LENGTH_INVALID"
+  ) {
+
+    mensajeTelefono =
+      "❌ La cantidad de dígitos del número nacional no es válida para el país seleccionado.";
+
+  } else if (
+    codigoError ===
+    "SHARED_CALLING_CODE_REQUIRES_NUMBERING_PLAN"
+  ) {
+
+    mensajeTelefono =
+      "❌ Ese código internacional requiere una validación adicional antes de poder registrarse.";
+
+  } else if (
+    codigoError ===
+    "PHONE_VALIDATION_RPC_ERROR"
+  ) {
+
+    mensajeTelefono =
+      "❌ No fue posible validar el teléfono en este momento. Intenta nuevamente.";
+
+  }
+
+
+  alert(
+    mensajeTelefono
+  );
+
+
+  return;
+}	
+
 
   const botonCrear =
     document.querySelector(
@@ -71892,10 +72715,12 @@ async function crearCuentaMassId() {
         email,
         password,
         options: {
-          data: {
-            nombre,
-            telefono
-          }
+        data: {
+        nombre,
+        telefono,
+        telefono_pais_iso2:
+        telefonoPaisIso2
+        }
         }
       });
 
@@ -72913,16 +73738,64 @@ font-family:Arial, sans-serif;">
 <input
   id="massIdNombreRegistro"
   type="text"
-  placeholder="Nombre completo"
+  placeholder="Nombre"
   autocomplete="name"
 >
 
-<input
-  id="massIdTelefonoRegistro"
-  type="tel"
-  placeholder="Teléfono"
-  autocomplete="tel"
+<div
+  style="
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+  "
 >
+  <select
+    id="massIdPaisTelefonoRegistro"
+    aria-label="País y código internacional"
+    autocomplete="country"
+    style="
+  width:250px;
+  max-width:90%;
+  box-sizing:border-box;
+  padding:12px 18px;
+  border:none;
+  border-radius:10px;
+  margin:6px;
+  font-weight:bold;
+"
+  >
+    <option
+      value=""
+      selected
+      disabled
+    >
+      Cargando países...
+    </option>
+  </select>
+
+  <input
+    id="massIdTelefonoRegistro"
+    type="tel"
+    inputmode="tel"
+    placeholder="Número de teléfono"
+    autocomplete="tel-national"
+  >
+
+  <div
+    id="massIdTelefonoRegistroAyuda"
+    style="
+      max-width:420px;
+      margin:0 6px 6px;
+      color:#bbb;
+      font-size:12px;
+      line-height:1.4;
+      text-align:left;
+    "
+  >
+    Selecciona tu país y escribe solamente tu número nacional.
+  </div>
+</div>
 
 <input
   id="massIdEmailRegistro"
@@ -72931,19 +73804,111 @@ font-family:Arial, sans-serif;">
   autocomplete="email"
 >
 
-<input
-  id="massIdPasswordRegistro"
-  type="password"
-  placeholder="Contraseña"
-  autocomplete="new-password"
+<div
+  style="
+    position:relative;
+    width:250px;
+    max-width:90%;
+    margin:6px auto;
+  "
 >
+  <input
+    id="massIdPasswordRegistro"
+    type="password"
+    placeholder="Contraseña"
+    autocomplete="new-password"
+    style="
+      width:100%;
+      max-width:100%;
+      margin:0;
+      padding-right:52px;
+      box-sizing:border-box;
+    "
+  >
 
-<input
-  id="massIdConfirmarPasswordRegistro"
-  type="password"
-  placeholder="Confirmar contraseña"
-  autocomplete="new-password"
+  <button
+    type="button"
+    onclick="
+      alternarVisibilidadPasswordMassId(
+        'massIdPasswordRegistro',
+        this
+      )
+    "
+    aria-label="Mostrar contraseña"
+    aria-pressed="false"
+    title="Mostrar contraseña"
+    style="
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      margin:0;
+      padding:4px 6px;
+      border:none;
+      border-radius:6px;
+      background:transparent;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      z-index:2;
+    "
+  >
+    👁️
+  </button>
+</div>
+
+<div
+  style="
+    position:relative;
+    width:250px;
+    max-width:90%;
+    margin:6px auto;
+  "
 >
+  <input
+    id="massIdConfirmarPasswordRegistro"
+    type="password"
+    placeholder="Confirmar contraseña"
+    autocomplete="new-password"
+    style="
+      width:100%;
+      max-width:100%;
+      margin:0;
+      padding-right:52px;
+      box-sizing:border-box;
+    "
+  >
+
+  <button
+    type="button"
+    onclick="
+      alternarVisibilidadPasswordMassId(
+        'massIdConfirmarPasswordRegistro',
+        this
+      )
+    "
+    aria-label="Mostrar contraseña"
+    aria-pressed="false"
+    title="Mostrar contraseña"
+    style="
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      margin:0;
+      padding:4px 6px;
+      border:none;
+      border-radius:6px;
+      background:transparent;
+      font-size:18px;
+      line-height:1;
+      cursor:pointer;
+      z-index:2;
+    "
+  >
+    👁️
+  </button>
+</div>
 
 <div
   style="
