@@ -69929,8 +69929,27 @@ async function cargarPaisesTelefoniaRegistroMassId() {
               : `${min} a ${max} dígitos`;
 
 
-          ayudaTelefono.textContent =
-            `${opcion.textContent}: escribe solamente tu número nacional (${reglaLongitud}).`;
+const codigoIso2Ayuda =
+  String(
+    opcion?.value || ""
+  )
+    .trim()
+    .toUpperCase();
+
+
+if (
+  codigoIso2Ayuda === "AR"
+) {
+
+  ayudaTelefono.textContent =
+    `${opcion.textContent}: escribe tu número nacional (${reglaLongitud}), sin 0 de acceso y sin 15.`;
+
+} else {
+
+  ayudaTelefono.textContent =
+    `${opcion.textContent}: escribe solamente tu número nacional (${reglaLongitud}).`;
+
+}
 
         }
 
