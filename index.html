@@ -48423,163 +48423,168 @@ if (btnMisComprobantesMass) {
 }	
 
 async function recargarSaldo() {
-const comprobante = document.getElementById("comprobante").files[0];	
-const nombreComprobanteBox = document.getElementById("nombreComprobante");
 
-if (nombreComprobanteBox && comprobante) {
-  nombreComprobanteBox.innerHTML = "✅ Archivo listo: " + comprobante.name;
-}	
+  const comprobante =
+    document.getElementById("comprobante")?.files?.[0] || null;
+
+  const nombreComprobanteBox =
+    document.getElementById("nombreComprobante");
+
+  if (nombreComprobanteBox && comprobante) {
+    nombreComprobanteBox.innerHTML =
+      "✅ Archivo listo: " + comprobante.name;
+  }
+
+
+  /* =====================================================
+     1. RESOLVER ORGANIZADOR
+  ===================================================== */
+
   let organizadorId = null;
 
-if (RIFA_ID) {
+  if (RIFA_ID) {
 
     const {
-        data: rifaActual,
-        error: errorRifaRecarga
+      data: rifaActual,
+      error: errorRifaRecarga
     } = await supabaseClient
-        .from("rifas")
-        .select("organizador_id, cliente_id")
-        .eq("id", RIFA_ID)
-        .maybeSingle();
+      .from("rifas")
+      .select("organizador_id, cliente_id")
+      .eq("id", RIFA_ID)
+      .maybeSingle();
+
 
     if (errorRifaRecarga) {
 
-        console.error(
-            "ERROR RESOLVIENDO ORGANIZADOR PARA RECARGA:",
-            errorRifaRecarga
-        );
+      console.error(
+        "ERROR RESOLVIENDO ORGANIZADOR PARA RECARGA:",
+        errorRifaRecarga
+      );
 
-        return;
+      return;
     }
 
-    organizadorId =
-        rifaActual?.organizador_id ||
-        rifaActual?.cliente_id ||
-        null;
-
-} else {
 
     organizadorId =
-        localStorage.getItem(
-            "organizador_actual_id"
-        ) ||
-        (
-            clienteActual?.id
-                ? clienteActual.id
-                : null
-        );
-}
+      rifaActual?.organizador_id ||
+      rifaActual?.cliente_id ||
+      null;
 
-if (!organizadorId) {
-    alert("⚠️ Primero elige un organizador activo o abre una rifa antes de recargar MASS.");
-    return;
-}
+  } else {
 
-/*
-=====================================================
-MÉTODO DE PAGO SELECCIONADO PARA LA RECARGA
+    organizadorId =
+      localStorage.getItem(
+        "organizador_actual_id"
+      ) ||
+      (
+        clienteActual?.id
+          ? clienteActual.id
+          : null
+      );
+  }
 
-Debe haber sido validado previamente mediante la
-RPC autenticada de detalle.
-=====================================================
-*/
 
-const configuracionMetodoPagoId =
-    String(
-        metodoPagoRecargaSeleccionado?.configuracion_id ||
-        ""
-    ).trim();
-
-const organizadorMetodoPagoId =
-    String(
-        metodoPagoRecargaSeleccionado?.organizador_id ||
-        ""
-    ).trim();
-
-if (!configuracionMetodoPagoId) {
+  if (!organizadorId) {
 
     alert(
-        "⚠️ Primero selecciona el método de pago que utilizarás para recargar Wallet MASS."
+      "⚠️ Primero elige un organizador activo o abre una rifa antes de recargar MASS."
     );
 
     return;
-}
+  }
 
-if (
+
+  /* =====================================================
+     2. MÉTODO DE PAGO
+  ===================================================== */
+
+  const configuracionMetodoPagoId =
+    String(
+      metodoPagoRecargaSeleccionado?.configuracion_id ||
+      ""
+    ).trim();
+
+
+  const organizadorMetodoPagoId =
+    String(
+      metodoPagoRecargaSeleccionado?.organizador_id ||
+      ""
+    ).trim();
+
+
+  const metodoCodigo =
+    String(
+      metodoPagoRecargaSeleccionado?.metodo_codigo ||
+      ""
+    ).trim().toUpperCase();
+
+
+  if (!configuracionMetodoPagoId) {
+
+    alert(
+      "⚠️ Primero selecciona el método de pago que utilizarás para recargar Wallet MASS."
+    );
+
+    return;
+  }
+
+
+  if (
     !organizadorMetodoPagoId ||
     organizadorMetodoPagoId !==
-        String(organizadorId || "").trim()
-) {
+      String(organizadorId || "").trim()
+  ) {
 
     alert(
-        "⚠️ El método de pago seleccionado no corresponde al organizador actual. Vuelve a seleccionar el método de pago."
+      "⚠️ El método de pago seleccionado no corresponde al organizador actual. Vuelve a seleccionar el método de pago."
     );
 
     return;
-}	  
+  }
 
-let cantidad = null;
 
-const conversionGuardada = sessionStorage.getItem("conversion_mass_temporal");
-const conversion = conversionGuardada ? JSON.parse(conversionGuardada) : null;
+  /* =====================================================
+     3. IDENTIFICAR ORGANIZADOR PARA CONFIRMACIÓN
+  ===================================================== */
 
-if (conversion && conversion.mass_calculado) {
-    cantidad = Number(conversion.mass_calculado);
+  let nombreOrganizador = "Organizador";
 
-    alert(
-        "✅ Se cargará a tu Wallet MASS la cantidad convertida por la Calculadora MASS:\n\n" +
-        cantidad + " MASS"
+
+  const {
+    data: org,
+    error: errorOrganizadorRecarga
+  } = await supabaseClient
+    .from("organizadores")
+    .select(
+      "nombre, nombre_publico, nombre_empresa"
+    )
+    .eq(
+      "id",
+      organizadorId
+    )
+    .maybeSingle();
+
+
+  if (errorOrganizadorRecarga) {
+
+    console.error(
+      "ERROR OBTENIENDO ORGANIZADOR PARA RECARGA:",
+      errorOrganizadorRecarga
     );
-} else {
-    cantidad = prompt("¿Cuánto quieres recargar?");
-
-    if (!cantidad || isNaN(cantidad) || Number(cantidad) <= 0) {
-        alert("Cantidad inválida");
-        return;
-    }
-
-    cantidad = Number(cantidad);
-}
-	
-let nombreOrganizador = "Organizador";
-
-if (organizadorId) {
-
-    const {
-        data: org,
-        error: errorOrganizadorRecarga
-    } = await supabaseClient
-        .from("organizadores")
-        .select(
-            "nombre, nombre_publico, nombre_empresa"
-        )
-        .eq(
-            "id",
-            organizadorId
-        )
-        .maybeSingle();
+  }
 
 
-    if (errorOrganizadorRecarga) {
+  nombreOrganizador =
+    org?.nombre_publico ||
+    org?.nombre ||
+    org?.nombre_empresa ||
+    mapaOrganizadores?.[organizadorId]?.nombre ||
+    mapaOrganizadores?.[organizadorId]?.nombre_publico ||
+    mapaOrganizadores?.[organizadorId]?.nombre_empresa ||
+    "Organizador";
 
-        console.error(
-            "ERROR OBTENIENDO ORGANIZADOR PARA RECARGA:",
-            errorOrganizadorRecarga
-        );
-    }
 
-
-    nombreOrganizador =
-        org?.nombre_publico ||
-        org?.nombre ||
-        org?.nombre_empresa ||
-        mapaOrganizadores?.[organizadorId]?.nombre ||
-        mapaOrganizadores?.[organizadorId]?.nombre_publico ||
-        mapaOrganizadores?.[organizadorId]?.nombre_empresa ||
-        "Organizador";
-}	
-	
-if (!confirm(
+  if (!confirm(
 `⚠️ IMPORTANTE
 
 Esta recarga MASS será válida únicamente para:
@@ -48589,213 +48594,422 @@ Esta recarga MASS será válida únicamente para:
 Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
 
 ¿Deseas continuar?`
-)) {
-    return;
-}
-
-  if (
-    metodoPagoRecargaSeleccionado?.metodo_codigo ===
-    "EFECTIVO_PUNTO_MASS"
-) {
-    await seleccionarPuntoMassParaRecarga(
-        organizadorId,
-        cantidad
-    );
-    return;
-}	
-
-  if (!comprobante) {
-    alert("Primero sube tu comprobante de pago");
+  )) {
     return;
   }
 
-  const telefono = localStorage.getItem("mass_telefono") || userActual || "";
+
+  /* =====================================================
+     4. PUNTO MASS CONSERVA SU FLUJO CON CANTIDAD
+
+     La eliminación de "¿Cuánto quieres recargar?"
+     aplica a RECARGAS EXTERNAS.
+
+     Punto MASS todavía necesita una cantidad para
+     generar su ficha.
+  ===================================================== */
+
+  if (
+    metodoCodigo ===
+    "EFECTIVO_PUNTO_MASS"
+  ) {
+
+    let cantidadPuntoMass = null;
+
+    const conversionGuardada =
+      sessionStorage.getItem(
+        "conversion_mass_temporal"
+      );
+
+    const conversion =
+      conversionGuardada
+        ? JSON.parse(conversionGuardada)
+        : null;
+
+
+    if (
+      conversion &&
+      Number(conversion.mass_calculado) > 0
+    ) {
+
+      cantidadPuntoMass =
+        Number(
+          conversion.mass_calculado
+        );
+
+    } else {
+
+      cantidadPuntoMass =
+        prompt(
+          "¿Cuánto quieres recargar en Punto MASS?"
+        );
+
+
+      if (
+        !cantidadPuntoMass ||
+        isNaN(cantidadPuntoMass) ||
+        Number(cantidadPuntoMass) <= 0
+      ) {
+
+        alert(
+          "Cantidad inválida"
+        );
+
+        return;
+      }
+
+
+      cantidadPuntoMass =
+        Number(cantidadPuntoMass);
+    }
+
+
+    await seleccionarPuntoMassParaRecarga(
+      organizadorId,
+      cantidadPuntoMass
+    );
+
+    return;
+  }
+
+
+  /* =====================================================
+     5. RECARGA EXTERNA V2
+
+     AQUÍ YA NO EXISTE:
+     - monto solicitado por usuario
+     - prompt de cantidad
+     - MASS calculado por navegador
+
+     Solo:
+     método + comprobante
+  ===================================================== */
+
+  if (!comprobante) {
+
+    alert(
+      "Primero sube tu comprobante de pago"
+    );
+
+    return;
+  }
+
+
+  const telefono =
+    localStorage.getItem("mass_telefono") ||
+    userActual ||
+    "";
+
 
   if (!telefono) {
-  alert("Inicia sesión primero");
-  return;
-}	
 
-  const nombreArchivoSeguro = String(comprobante.name || "comprobante")
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g, "")
-  .replace(/[^a-zA-Z0-9._-]/g, "_");
+    alert(
+      "Inicia sesión primero"
+    );
 
-const nombreArchivo =
-  `${telefono}_${Date.now()}_${nombreArchivoSeguro}`;
+    return;
+  }
 
-  const { error: uploadError } = await supabaseClient.storage
+
+  /* =====================================================
+     6. SUBIR COMPROBANTE
+  ===================================================== */
+
+  const nombreArchivoSeguro =
+    String(
+      comprobante.name ||
+      "comprobante"
+    )
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        ""
+      )
+      .replace(
+        /[^a-zA-Z0-9._-]/g,
+        "_"
+      );
+
+
+  const nombreArchivo =
+    `${telefono}_${Date.now()}_${nombreArchivoSeguro}`;
+
+
+  const {
+    error: uploadError
+  } = await supabaseClient.storage
     .from("comprobantes-mass")
-    .upload(nombreArchivo, comprobante);
+    .upload(
+      nombreArchivo,
+      comprobante
+    );
+
 
   if (uploadError) {
-  console.error("ERROR SUBIENDO COMPROBANTE:", uploadError);
 
-  alert(
-    "Error al subir comprobante ❌\n\n" +
-    uploadError.message
-  );
+    console.error(
+      "ERROR SUBIENDO COMPROBANTE:",
+      uploadError
+    );
 
-  return;
-}
+    alert(
+      "Error al subir comprobante ❌\n\n" +
+      uploadError.message
+    );
 
-  const { data: urlData } = supabaseClient.storage
+    return;
+  }
+
+
+  const {
+    data: urlData
+  } = supabaseClient.storage
     .from("comprobantes-mass")
-    .getPublicUrl(nombreArchivo);
+    .getPublicUrl(
+      nombreArchivo
+    );
 
-console.log("RIFA_ID:", RIFA_ID);
-console.log("clienteActual:", clienteActual);
-console.log("organizadorId:", organizadorId);	
 
- /*
-=====================================================
-REGISTRAR RECARGA MEDIANTE RPC SEGURA
+  /* =====================================================
+     7. REGISTRAR RECARGA V2
 
-El navegador ya NO decide:
-- identidad MASS
-- teléfono
-- estado
-- validez del organizador
-- validez del método de pago
+     El servidor obtiene desde Storage:
+     - object_id
+     - owner_id
+     - eTag
+     - tamaño
 
-El servidor vuelve a validar todo.
-=====================================================
-*/
+     El usuario NO declara monto.
+  ===================================================== */
 
-const {
+  const {
     data: resultadoRecargaSegura,
     error: errorRecargaSegura
-} = await supabaseClient.rpc(
-    "solicitar_recarga_mass_segura",
+  } = await supabaseClient.rpc(
+    "solicitar_recarga_mass_segura_v2",
     {
-        p_organizador_id:
-            organizadorId,
+      p_organizador_id:
+        organizadorId,
 
-        p_metodo_pago_configuracion_id:
-            configuracionMetodoPagoId,
+      p_metodo_pago_configuracion_id:
+        configuracionMetodoPagoId,
 
-        p_monto:
-            Number(cantidad),
-
-        p_comprobante_url:
-            urlData.publicUrl,
-
-        p_moneda_origen:
-            conversion
-                ? conversion.moneda_origen
-                : null,
-
-        p_cantidad_origen:
-            conversion
-                ? conversion.cantidad_origen
-                : null,
-
-        p_tipo_cambio_usado:
-            conversion
-                ? conversion.tipo_cambio_usado
-                : null,
-
-        p_ajuste_organizador:
-            conversion
-                ? conversion.ajuste_organizador
-                : null,
-
-        p_mass_calculado:
-            conversion
-                ? conversion.mass_calculado
-                : null,
-
-        p_conversion_creada_en:
-            conversion
-                ? new Date(
-                    conversion.creada_en
-                  ).toISOString()
-                : null,
-
-        p_conversion_expira_en:
-            conversion
-                ? new Date(
-                    conversion.expira_en
-                  ).toISOString()
-                : null
+      p_comprobante_url:
+        urlData.publicUrl
     }
-);
+  );
 
 
-if (errorRecargaSegura) {
+  if (errorRecargaSegura) {
 
     console.error(
-        "ERROR REGISTRANDO RECARGA MASS SEGURA:",
-        errorRecargaSegura
+      "ERROR REGISTRANDO RECARGA MASS V2:",
+      errorRecargaSegura
     );
 
+
+    /*
+    Limpieza del archivo recién subido cuando
+    la solicitud no pudo registrarse.
+
+    Es best-effort: si Storage no permite removerlo,
+    solamente dejamos evidencia en consola.
+    */
+
+    try {
+
+      const {
+        error: errorEliminarArchivo
+      } = await supabaseClient.storage
+        .from("comprobantes-mass")
+        .remove([
+          nombreArchivo
+        ]);
+
+
+      if (errorEliminarArchivo) {
+
+        console.warn(
+          "NO FUE POSIBLE LIMPIAR EL ARCHIVO:",
+          errorEliminarArchivo
+        );
+      }
+
+    } catch (errorLimpieza) {
+
+      console.warn(
+        "ERROR LIMPIANDO ARCHIVO DE RECARGA:",
+        errorLimpieza
+      );
+    }
+
+
+    const mensajeError =
+      String(
+        errorRecargaSegura.message ||
+        ""
+      );
+
+
+    if (
+      mensajeError.includes(
+        "COMPROBANTE_YA_REGISTRADO"
+      )
+    ) {
+
+      alert(
+        "⚠️ Este comprobante ya fue utilizado en una solicitud de recarga MASS."
+      );
+
+      return;
+    }
+
+
     alert(
-        "Error al registrar recarga ❌\n\n" +
-        (
-            errorRecargaSegura.message ||
-            "No fue posible registrar la recarga."
-        )
+      "Error al registrar recarga ❌\n\n" +
+      (
+        errorRecargaSegura.message ||
+        "No fue posible registrar la recarga."
+      )
     );
 
     return;
-}
+  }
 
 
-if (
+  if (
     !resultadoRecargaSegura ||
     resultadoRecargaSegura.ok !== true
-) {
+  ) {
 
     console.error(
-        "RESPUESTA INVÁLIDA DE RECARGA MASS SEGURA:",
-        resultadoRecargaSegura
+      "RESPUESTA INVÁLIDA DE RECARGA MASS V2:",
+      resultadoRecargaSegura
     );
 
+
+    try {
+
+      await supabaseClient.storage
+        .from("comprobantes-mass")
+        .remove([
+          nombreArchivo
+        ]);
+
+    } catch (errorLimpieza) {
+
+      console.warn(
+        "ERROR LIMPIANDO ARCHIVO:",
+        errorLimpieza
+      );
+    }
+
+
     alert(
-        "Error al registrar recarga ❌\n\n" +
-        "El servidor no confirmó la solicitud."
+      "Error al registrar recarga ❌\n\n" +
+      "El servidor no confirmó la solicitud."
     );
 
     return;
-}
+  }
 
-sessionStorage.removeItem("conversion_mass_temporal");
 
-const btnUsarCantidad = document.getElementById("btnUsarCantidadMass");
+  /* =====================================================
+     8. LIMPIAR ESTADO TEMPORAL DEL FRONTEND
+  ===================================================== */
 
-if (btnUsarCantidad) {
+  sessionStorage.removeItem(
+    "conversion_mass_temporal"
+  );
+
+
+  const btnUsarCantidad =
+    document.getElementById(
+      "btnUsarCantidadMass"
+    );
+
+
+  if (btnUsarCantidad) {
+
     btnUsarCantidad.disabled = false;
-    btnUsarCantidad.innerHTML = "✅ Usar esta cantidad";
+    btnUsarCantidad.innerHTML =
+      "✅ Usar esta cantidad";
     btnUsarCantidad.style.opacity = "1";
-}
+  }
 
-const tarjetaConvertidor = document.getElementById("tarjetaConvertidorMass");
-const tarjetaPreparada = document.getElementById("tarjetaRecargaPreparada");
-const boxGrande = document.getElementById("boxSubirComprobanteMass");
 
-if (tarjetaConvertidor) tarjetaConvertidor.style.display = "block";
-if (tarjetaPreparada) tarjetaPreparada.style.display = "none";
-if (boxGrande) {
-    boxGrande.style.display = "block";
-    boxGrande.style.visibility = "visible";
-}	
+  const tarjetaConvertidor =
+    document.getElementById(
+      "tarjetaConvertidorMass"
+    );
 
-document.getElementById("comprobante").value = "";
-if (nombreComprobanteBox) {
-  nombreComprobanteBox.innerHTML = "Ningún archivo seleccionado";
-}
+  const tarjetaPreparada =
+    document.getElementById(
+      "tarjetaRecargaPreparada"
+    );
 
-const mensajeSaldo = document.getElementById("mensajeSaldoDisponibleMass");
+  const boxGrande =
+    document.getElementById(
+      "boxSubirComprobanteMass"
+    );
 
-if (mensajeSaldo) {
-    mensajeSaldo.style.display = "block";
-}	
+
+  if (tarjetaConvertidor) {
+    tarjetaConvertidor.style.display =
+      "block";
+  }
+
+
+  if (tarjetaPreparada) {
+    tarjetaPreparada.style.display =
+      "none";
+  }
+
+
+  if (boxGrande) {
+
+    boxGrande.style.display =
+      "block";
+
+    boxGrande.style.visibility =
+      "visible";
+  }
+
+
+  const inputComprobante =
+    document.getElementById(
+      "comprobante"
+    );
+
+
+  if (inputComprobante) {
+    inputComprobante.value = "";
+  }
+
+
+  if (nombreComprobanteBox) {
+    nombreComprobanteBox.innerHTML =
+      "Ningún archivo seleccionado";
+  }
+
+
+  const mensajeSaldo =
+    document.getElementById(
+      "mensajeSaldoDisponibleMass"
+    );
+
+
+  if (mensajeSaldo) {
+    mensajeSaldo.style.display =
+      "block";
+  }
+
 
   mostrarNotificacion(
     "success",
     "Recarga enviada",
-    "Espera aprobación del organizador."
-);
+    "El organizador verificará los fondos recibidos y acreditará el monto correspondiente."
+  );
 }
 
 // =====================================================
