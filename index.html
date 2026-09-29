@@ -49694,8 +49694,59 @@ if (listaOrg) {
 }
 
   await cargarPatrocinadoresPlataforma();
-}
 
+// =====================================================
+// MASS - RESTAURAR DINÁMICA DESPUÉS DE REFRESH
+// =====================================================
+
+const rifaGuardadaId =
+  String(
+    sessionStorage.getItem(
+      "rifa_actual_id"
+    ) || ""
+  ).trim();
+
+
+if (
+  rifaGuardadaId &&
+  String(RIFA_ID || "") !==
+    rifaGuardadaId
+) {
+
+  const rifaGuardada =
+    (rifas || []).find(
+      r =>
+        String(r.id) ===
+          rifaGuardadaId &&
+        [
+          "activa",
+          "programada"
+        ].includes(
+          String(
+            r.estado || ""
+          )
+            .trim()
+            .toLowerCase()
+        )
+    );
+
+
+  if (rifaGuardada) {
+
+    await abrirRifa(
+      rifaGuardada.id
+    );
+
+  } else {
+
+    sessionStorage.removeItem(
+      "rifa_actual_id"
+    );
+  }
+ }	
+)
+
+	
 function toggleSorteosActivos(){
   const box = document.getElementById("sorteosActivosBox");
   if(!box) return;
@@ -49734,6 +49785,11 @@ if (tituloNumeros) {
 }
 
 RIFA_ID = null;
+
+sessionStorage.removeItem(
+  "rifa_actual_id"
+);
+
 boletos = [];
 filtrados = [];
 
@@ -57453,7 +57509,21 @@ if (actividadBox) {
         .eq("id", rifaId)
         .single();
 
-	if (!error && rifa) {
+if (!error && rifa) {
+
+  // =====================================================
+  // MASS - RECORDAR DINÁMICA ACTUAL
+  //
+  // Al refrescar la página se volverá a consultar
+  // Supabase y se restaurará esta misma dinámica.
+  // Solo se guarda el UUID, nunca datos financieros.
+  // =====================================================
+
+ sessionStorage.setItem(
+  "rifa_actual_id",
+  String(rifa.id)
+); 
+
   await cargarPatrocinadoresPublicos(
     "rifa",
     rifa.id,
@@ -57854,8 +57924,13 @@ if (cardSorteo) {
     const zonaRifa = document.getElementById("zonaRifaActiva");
     if(zonaRifa) zonaRifa.style.display = "none";
 
-    RIFA_ID = null;
-window.rifaSeleccionada = null;
+RIFA_ID = null;
+
+sessionStorage.removeItem(
+  "rifa_actual_id"
+);
+
+window.rifaSeleccionada = null;    
 
 /*
   Retirar los canales de la dinámica cerrada.
@@ -68014,6 +68089,10 @@ localStorage.removeItem(
 	localStorage.removeItem("admin_organizador_id");
     localStorage.removeItem("clienteActual");
     localStorage.removeItem("userActual");
+
+sessionStorage.removeItem(
+  "rifa_actual_id"
+);	
 
 	const btnChatFlotanteOrganizador =
   document.getElementById("btnChatFlotanteOrganizador");
