@@ -67420,7 +67420,7 @@ async function mostrarHistorialRecargasMassAdmin() {
 ] = await Promise.all([
 
     supabaseClient.rpc(
-     "listar_recargas_mass_admin_v2",
+     "listar_recargas_mass_admin_v3",
       {
         p_organizador_id: orgId,
         p_estado: null
@@ -67562,6 +67562,61 @@ const nombreOrganizador =
           "MASS-ID-NO-DISPONIBLE"
         );
 
+const flujoVersionHistorial =
+  Number(
+    r.flujo_version || 1
+  );
+
+const esV2Historial =
+  flujoVersionHistorial === 2;
+
+const estadoHistorial =
+  String(
+    r.estado || ""
+  )
+    .trim()
+    .toLowerCase();
+
+
+let textoMontoHistorial = "";
+
+if (
+  esV2Historial &&
+  estadoHistorial === "pendiente"
+) {
+
+  textoMontoHistorial =
+    "Pendiente de verificación";
+
+} else if (
+  esV2Historial &&
+  estadoHistorial === "rechazado"
+) {
+
+  textoMontoHistorial =
+    "No acreditado";
+
+} else {
+
+  textoMontoHistorial =
+    `${r.monto} MASS ${unidadMassHistorial}`;
+}
+
+
+const motivoRechazoHistorialHtml =
+  esV2Historial &&
+  estadoHistorial === "rechazado" &&
+  r.motivo_rechazo
+
+    ? `
+        <p>
+          <b>Motivo:</b>
+          ${r.motivo_rechazo}
+        </p>
+      `
+
+    : "";	
+
 	const esPuntoMass =
     String(
         r.metodo_codigo || ""
@@ -67627,10 +67682,12 @@ const comprobanteHistorialHtml =
           ${r.metodo_nombre || "Método no disponible"}
           </p>
 
-          <p>
-            <b>Monto:</b>
-            ${r.monto} MASS ${unidadMassHistorial}
-          </p>
+         <p>
+  <b>Monto:</b>
+  ${textoMontoHistorial}
+</p>
+
+${motivoRechazoHistorialHtml} 
 
           <p>
             <b>Estado:</b>
