@@ -65880,8 +65880,8 @@ if (
   );
 }
 	  
-    await mostrarSesionActiva();
-
+  await mostrarSesionActiva();
+  await inicializarNotificacionesMass();
   } catch (errorAperturaMassId) {
     console.error(
       "ERROR ABRIENDO ACCESO INICIAL MASS ID:",
@@ -67972,9 +67972,21 @@ async function cerrarSesion() {
     );
 
     try {
-    await sincronizarUsuarioOneSignal(null);
+
+    await detenerRealtimeNotificacionesMass();
+
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+        null;
+
+    ocultarNotificacionesMass();
+
+    await sincronizarUsuarioOneSignal(
+        null
+    );
 
     await supabaseClient.auth.signOut();
+
+		
 } catch (error) {
     console.error(
         "❌ Error cerrando sesión:",
@@ -67984,6 +67996,19 @@ async function cerrarSesion() {
 
     localStorage.removeItem("mass_telefono");
     localStorage.removeItem("mass_user");
+
+	localStorage.removeItem(
+    "mass_modo_acceso"
+);
+
+	localStorage.removeItem(
+    "mass_auth_user_id"
+);
+
+localStorage.removeItem(
+    "mass_email"
+);
+	
     localStorage.removeItem("admin_rol");
     localStorage.removeItem("organizador_admin_id");
 	localStorage.removeItem("admin_organizador_id");
@@ -68001,6 +68026,1087 @@ if (btnChatFlotanteOrganizador) {
         location.reload();
     }, 1200);
 }
+
+// ============================================================
+// MASS - NOTIFICACIONES PRIVADAS DEL USUARIO
+//
+// Backend:
+// - public.notificaciones_usuario_mass
+// - RLS: cada usuario solo puede leer las suyas.
+// - marcar_notificacion_mass_leida_segura(uuid)
+//
+// Frontend:
+// - Campanita.
+// - Contador de no leídas.
+// - Bandeja privada.
+// - Marcar una / marcar todas.
+// - Realtime por usuario MASS.
+// ============================================================
+
+let MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+  null;
+
+let MASS_NOTIFICACIONES_CANAL_REALTIME =
+  null;
+
+
+// ============================================================
+// ESCAPE HTML
+// ============================================================
+
+function escaparHtmlNotificacionMass(
+  valor
+) {
+
+  return String(
+    valor ?? ""
+  )
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ============================================================
+// FORMATEAR FECHA
+// ============================================================
+
+function formatearFechaNotificacionMass(
+  valor
+) {
+
+  if (!valor) {
+    return "";
+  }
+
+
+  const fecha =
+    new Date(valor);
+
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    return "";
+  }
+
+
+  try {
+
+    return fecha.toLocaleString();
+
+  } catch (_) {
+
+    return String(valor);
+  }
+}
+
+
+// ============================================================
+// OCULTAR CONTROLES
+// ============================================================
+
+function ocultarNotificacionesMass() {
+
+  const boton =
+    document.getElementById(
+      "btnNotificacionesMass"
+    );
+
+
+  const contador =
+    document.getElementById(
+      "contadorNotificacionesMass"
+    );
+
+
+  const panel =
+    document.getElementById(
+      "panelNotificacionesMass"
+    );
+
+
+  if (boton) {
+    boton.style.display =
+      "none";
+  }
+
+
+  if (contador) {
+
+    contador.style.display =
+      "none";
+
+    contador.textContent =
+      "0";
+  }
+
+
+  if (panel) {
+    panel.style.display =
+      "none";
+  }
+}
+
+
+// ============================================================
+// RESOLVER IDENTIDAD MASS DEL USUARIO AUTENTICADO
+//
+// El navegador NO inventa usuario_mass_id.
+// Se obtiene a partir de la sesión Auth.
+// ============================================================
+
+async function obtenerUsuarioMassIdNotificaciones() {
+
+  const {
+    data: sesionData,
+    error: errorSesion
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  const authUserId =
+    sesionData
+      ?.session
+      ?.user
+      ?.id || null;
+
+
+  if (
+    errorSesion ||
+    !authUserId
+  ) {
+
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+      null;
+
+    return null;
+  }
+
+
+  const {
+    data: perfil,
+    error: errorPerfil
+  } =
+    await supabaseClient
+      .from(
+        "usuarios_mass"
+      )
+      .select(
+        "id"
+      )
+      .eq(
+        "auth_user_id",
+        authUserId
+      )
+      .maybeSingle();
+
+
+  if (
+    errorPerfil ||
+    !perfil?.id
+  ) {
+
+    console.error(
+      "ERROR RESOLVIENDO USUARIO MASS PARA NOTIFICACIONES:",
+      errorPerfil
+    );
+
+
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+      null;
+
+
+    return null;
+  }
+
+
+  MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+    String(
+      perfil.id
+    );
+
+
+  return (
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID
+  );
+}
+
+
+// ============================================================
+// ACTUALIZAR CONTADOR DE NO LEÍDAS
+// ============================================================
+
+async function actualizarContadorNotificacionesMass() {
+
+  const boton =
+    document.getElementById(
+      "btnNotificacionesMass"
+    );
+
+
+  const contador =
+    document.getElementById(
+      "contadorNotificacionesMass"
+    );
+
+
+  if (
+    !boton ||
+    !contador
+  ) {
+    return;
+  }
+
+
+  const modoAcceso =
+    String(
+      localStorage.getItem(
+        "mass_modo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    modoAcceso !== "usuario"
+  ) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  const usuarioMassId =
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
+    await obtenerUsuarioMassIdNotificaciones();
+
+
+  if (!usuarioMassId) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  const {
+    count,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "notificaciones_usuario_mass"
+      )
+      .select(
+        "id",
+        {
+          count: "exact",
+          head: true
+        }
+      )
+      .eq(
+        "usuario_mass_id",
+        usuarioMassId
+      )
+      .is(
+        "leida_at",
+        null
+      );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CONTANDO NOTIFICACIONES MASS:",
+      error
+    );
+
+    return;
+  }
+
+
+  const total =
+    Number(
+      count || 0
+    );
+
+
+  boton.style.display =
+    "flex";
+
+
+  contador.textContent =
+    total > 9
+      ? "9+"
+      : String(total);
+
+
+  contador.style.display =
+    total > 0
+      ? "flex"
+      : "none";
+}
+
+
+// ============================================================
+// CARGAR BANDEJA
+// ============================================================
+
+async function cargarNotificacionesMass() {
+
+  const lista =
+    document.getElementById(
+      "listaNotificacionesMass"
+    );
+
+
+  const resumen =
+    document.getElementById(
+      "resumenNotificacionesMass"
+    );
+
+
+  const botonTodas =
+    document.getElementById(
+      "btnMarcarTodasNotificacionesMass"
+    );
+
+
+  if (
+    !lista ||
+    !resumen
+  ) {
+    return;
+  }
+
+
+  lista.innerHTML = `
+    <div
+      style="
+        color:#aaa;
+        text-align:center;
+        padding:20px;
+      "
+    >
+      Cargando notificaciones...
+    </div>
+  `;
+
+
+  const usuarioMassId =
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
+    await obtenerUsuarioMassIdNotificaciones();
+
+
+  if (!usuarioMassId) {
+
+    resumen.textContent =
+      "No fue posible validar tu MASS ID.";
+
+    lista.innerHTML =
+      "";
+
+    if (botonTodas) {
+      botonTodas.style.display =
+        "none";
+    }
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from(
+        "notificaciones_usuario_mass"
+      )
+      .select(`
+        id,
+        usuario_mass_id,
+        organizador_id,
+        recarga_id,
+        tipo,
+        titulo,
+        mensaje,
+        datos,
+        leida_at,
+        creado_at
+      `)
+      .eq(
+        "usuario_mass_id",
+        usuarioMassId
+      )
+      .order(
+        "creado_at",
+        {
+          ascending: false
+        }
+      )
+      .limit(50);
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO NOTIFICACIONES MASS:",
+      error
+    );
+
+
+    resumen.textContent =
+      "No fue posible cargar tus notificaciones.";
+
+
+    lista.innerHTML =
+      "";
+
+    return;
+  }
+
+
+  const notificaciones =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  const noLeidas =
+    notificaciones.filter(
+      item =>
+        !item?.leida_at
+    );
+
+
+  resumen.textContent =
+    noLeidas.length > 0
+      ? (
+          `Tienes ${noLeidas.length} ` +
+          (
+            noLeidas.length === 1
+              ? "notificación nueva."
+              : "notificaciones nuevas."
+          )
+        )
+      : "No tienes notificaciones nuevas.";
+
+
+  if (botonTodas) {
+
+    botonTodas.style.display =
+      noLeidas.length > 0
+        ? "block"
+        : "none";
+  }
+
+
+  if (
+    notificaciones.length === 0
+  ) {
+
+    lista.innerHTML = `
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:24px 10px;
+          border:1px solid #333;
+          border-radius:12px;
+          background:#111;
+        "
+      >
+        🔔 No tienes notificaciones MASS todavía.
+      </div>
+    `;
+
+
+    await actualizarContadorNotificacionesMass();
+
+    return;
+  }
+
+
+  lista.innerHTML =
+    "";
+
+
+  for (
+    const notificacion
+    of notificaciones
+  ) {
+
+    const estaLeida =
+      !!notificacion.leida_at;
+
+
+    const tarjeta =
+      document.createElement(
+        "div"
+      );
+
+
+    tarjeta.style.cssText = `
+      padding:14px;
+      border:
+        1px solid
+        ${
+          estaLeida
+            ? "#444"
+            : "#39ff14"
+        };
+      border-radius:12px;
+      background:
+        ${
+          estaLeida
+            ? "#151515"
+            : "rgba(57,255,20,.08)"
+        };
+      color:white;
+      text-align:left;
+      box-shadow:
+        ${
+          estaLeida
+            ? "none"
+            : "0 0 12px rgba(57,255,20,.18)"
+        };
+    `;
+
+
+    const titulo =
+      escaparHtmlNotificacionMass(
+        notificacion.titulo ||
+        "Notificación MASS"
+      );
+
+
+    const mensaje =
+      escaparHtmlNotificacionMass(
+        notificacion.mensaje ||
+        ""
+      );
+
+
+    const fecha =
+      escaparHtmlNotificacionMass(
+        formatearFechaNotificacionMass(
+          notificacion.creado_at
+        )
+      );
+
+
+    tarjeta.innerHTML = `
+      <div
+        style="
+          display:flex;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:10px;
+        "
+      >
+        <div
+          style="
+            font-size:17px;
+            font-weight:bold;
+            color:
+              ${
+                estaLeida
+                  ? "#ddd"
+                  : "#39ff14"
+              };
+          "
+        >
+          ${titulo}
+        </div>
+
+        ${
+          estaLeida
+            ? `
+                <span
+                  style="
+                    color:#888;
+                    font-size:12px;
+                    white-space:nowrap;
+                  "
+                >
+                  Leída
+                </span>
+              `
+            : `
+                <span
+                  style="
+                    color:#ffd60a;
+                    font-size:12px;
+                    font-weight:bold;
+                    white-space:nowrap;
+                  "
+                >
+                  NUEVA
+                </span>
+              `
+        }
+      </div>
+
+
+      <div
+        style="
+          margin-top:9px;
+          line-height:1.55;
+          color:#eee;
+          white-space:pre-wrap;
+          overflow-wrap:anywhere;
+        "
+      >
+        ${mensaje}
+      </div>
+
+
+      ${
+        fecha
+          ? `
+              <div
+                style="
+                  margin-top:10px;
+                  color:#888;
+                  font-size:12px;
+                "
+              >
+                ${fecha}
+              </div>
+            `
+          : ""
+      }
+
+
+      ${
+        !estaLeida
+          ? `
+              <button
+                type="button"
+                onclick="
+                  marcarNotificacionMassLeida(
+                    '${notificacion.id}'
+                  )
+                "
+                style="
+                  width:100%;
+                  margin-top:12px;
+                  padding:9px;
+                  border:1px solid #39ff14;
+                  border-radius:9px;
+                  background:#111;
+                  color:#39ff14;
+                  font-weight:bold;
+                  cursor:pointer;
+                "
+              >
+                ✅ Marcar como leída
+              </button>
+            `
+          : ""
+      }
+    `;
+
+
+    lista.appendChild(
+      tarjeta
+    );
+  }
+
+
+  await actualizarContadorNotificacionesMass();
+}
+
+
+// ============================================================
+// ABRIR BANDEJA
+// ============================================================
+
+async function abrirNotificacionesMass() {
+
+  const modoAcceso =
+    String(
+      localStorage.getItem(
+        "mass_modo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    modoAcceso !== "usuario"
+  ) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  const panel =
+    document.getElementById(
+      "panelNotificacionesMass"
+    );
+
+
+  if (!panel) {
+    return;
+  }
+
+
+  panel.style.display =
+    "block";
+
+
+  await cargarNotificacionesMass();
+}
+
+
+// ============================================================
+// CERRAR BANDEJA
+// ============================================================
+
+function cerrarNotificacionesMass() {
+
+  const panel =
+    document.getElementById(
+      "panelNotificacionesMass"
+    );
+
+
+  if (panel) {
+    panel.style.display =
+      "none";
+  }
+}
+
+
+// ============================================================
+// MARCAR UNA COMO LEÍDA
+// ============================================================
+
+async function marcarNotificacionMassLeida(
+  notificacionId
+) {
+
+  const id =
+    String(
+      notificacionId || ""
+    ).trim();
+
+
+  if (!id) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "marcar_notificacion_mass_leida_segura",
+      {
+        p_notificacion_id:
+          id
+      }
+    );
+
+
+  if (
+    error ||
+    data?.ok !== true
+  ) {
+
+    console.error(
+      "ERROR MARCANDO NOTIFICACIÓN MASS:",
+      error || data
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "No fue posible actualizar",
+      "Intenta nuevamente."
+    );
+
+
+    return;
+  }
+
+
+  await cargarNotificacionesMass();
+}
+
+
+// ============================================================
+// MARCAR TODAS COMO LEÍDAS
+//
+// NULL se envía EXPLÍCITAMENTE.
+// ============================================================
+
+async function marcarTodasNotificacionesMassLeidas() {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "marcar_notificacion_mass_leida_segura",
+      {
+        p_notificacion_id:
+          null
+      }
+    );
+
+
+  if (
+    error ||
+    data?.ok !== true
+  ) {
+
+    console.error(
+      "ERROR MARCANDO TODAS LAS NOTIFICACIONES MASS:",
+      error || data
+    );
+
+
+    mostrarNotificacion(
+      "error",
+      "No fue posible actualizar",
+      "Intenta nuevamente."
+    );
+
+
+    return;
+  }
+
+
+  await cargarNotificacionesMass();
+}
+
+
+// ============================================================
+// DETENER REALTIME
+// ============================================================
+
+async function detenerRealtimeNotificacionesMass() {
+
+  if (
+    MASS_NOTIFICACIONES_CANAL_REALTIME
+  ) {
+
+    try {
+
+      await supabaseClient.removeChannel(
+        MASS_NOTIFICACIONES_CANAL_REALTIME
+      );
+
+    } catch (
+      errorCanal
+    ) {
+
+      console.warn(
+        "NO SE PUDO CERRAR EL CANAL DE NOTIFICACIONES MASS:",
+        errorCanal
+      );
+    }
+
+
+    MASS_NOTIFICACIONES_CANAL_REALTIME =
+      null;
+  }
+}
+
+
+// ============================================================
+// INICIAR REALTIME PRIVADO
+// ============================================================
+
+async function iniciarRealtimeNotificacionesMass() {
+
+  await detenerRealtimeNotificacionesMass();
+
+
+  const modoAcceso =
+    String(
+      localStorage.getItem(
+        "mass_modo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    modoAcceso !== "usuario"
+  ) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  const usuarioMassId =
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
+    await obtenerUsuarioMassIdNotificaciones();
+
+
+  if (!usuarioMassId) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  MASS_NOTIFICACIONES_CANAL_REALTIME =
+    supabaseClient
+      .channel(
+        "notificaciones_mass_" +
+        usuarioMassId +
+        "_" +
+        Date.now()
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "notificaciones_usuario_mass",
+          filter:
+            "usuario_mass_id=eq." +
+            usuarioMassId
+        },
+        async (
+          payload
+        ) => {
+
+          await actualizarContadorNotificacionesMass();
+
+
+          const panel =
+            document.getElementById(
+              "panelNotificacionesMass"
+            );
+
+
+          if (
+            panel &&
+            panel.style.display !==
+              "none"
+          ) {
+
+            await cargarNotificacionesMass();
+          }
+
+
+          if (
+            payload?.eventType ===
+              "INSERT" &&
+            payload?.new
+          ) {
+
+            const titulo =
+              String(
+                payload.new.titulo ||
+                "Nueva notificación MASS"
+              );
+
+
+            const mensaje =
+              String(
+                payload.new.mensaje ||
+                ""
+              );
+
+
+mostrarNotificacion(
+  "info",
+  escaparHtmlNotificacionMass(
+    titulo
+  ),
+  escaparHtmlNotificacionMass(
+    mensaje
+  )
+);
+          }
+        }
+      )
+      .subscribe(
+        status => {
+
+          console.log(
+            "📡 NOTIFICACIONES MASS REALTIME:",
+            status
+          );
+        }
+      );
+}
+
+
+// ============================================================
+// INICIALIZAR SISTEMA
+// ============================================================
+
+async function inicializarNotificacionesMass() {
+
+  const modoAcceso =
+    String(
+      localStorage.getItem(
+        "mass_modo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    modoAcceso !== "usuario"
+  ) {
+
+    MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+      null;
+
+
+    await detenerRealtimeNotificacionesMass();
+
+
+    ocultarNotificacionesMass();
+
+
+    return;
+  }
+
+
+  const usuarioMassId =
+    await obtenerUsuarioMassIdNotificaciones();
+
+
+  if (!usuarioMassId) {
+
+    ocultarNotificacionesMass();
+
+    return;
+  }
+
+
+  await actualizarContadorNotificacionesMass();
+
+  await iniciarRealtimeNotificacionesMass();
+}	
 
 async function mostrarSesionActiva() {
   const box = document.getElementById("sesionActivaBox");
@@ -70835,7 +71941,9 @@ if (negocioOrganizador.activo === false) {
 	localStorage.setItem(
   "mass_modo_acceso",
   "organizador"
-);  
+);
+
+await inicializarNotificacionesMass();	  
 
     localStorage.setItem(
       "admin_rol",
@@ -71019,7 +72127,9 @@ const { data: adminData, error: adminError } =
 	localStorage.setItem(
   "mass_modo_acceso",
   "super_admin"
-);  
+); 
+
+await inicializarNotificacionesMass();	  
 
     localStorage.setItem("admin_rol", "super_admin");
     localStorage.removeItem("admin_organizador_id");
@@ -72538,7 +73648,7 @@ if (accesoV2SesionActiva) {
   cargarHistorialPremios();
 
   activarModoUsuarioMassId();
-	
+  await inicializarNotificacionesMass();
   alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
 }
 
@@ -72919,7 +74029,7 @@ if (
     }
 	  
     activarModoUsuarioMassId();
-	  
+	await inicializarNotificacionesMass(); 
     alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
 	  
   } catch (errorPasskey) {
@@ -74986,6 +76096,184 @@ font-family:Arial, sans-serif;">
   0
 </span>
 </button>
+
+<!-- ===================================================== -->
+<!-- MASS - NOTIFICACIONES PRIVADAS DEL USUARIO -->
+<!-- ===================================================== -->
+
+<div
+  id="panelNotificacionesMass"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:100001;
+    background:rgba(0,0,0,.88);
+    padding:20px 14px;
+    box-sizing:border-box;
+    overflow-y:auto;
+  "
+>
+  <div
+    style="
+      width:100%;
+      max-width:540px;
+      margin:30px auto;
+      padding:18px;
+      box-sizing:border-box;
+      border:2px solid #39ff14;
+      border-radius:18px;
+      background:#0b0b0b;
+      color:white;
+      box-shadow:0 0 24px rgba(57,255,20,.45);
+    "
+  >
+
+    <div
+      style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        margin-bottom:16px;
+      "
+    >
+      <div
+        style="
+          color:#39ff14;
+          font-size:22px;
+          font-weight:bold;
+        "
+      >
+        🔔 Notificaciones MASS
+      </div>
+
+      <button
+        type="button"
+        onclick="cerrarNotificacionesMass()"
+        style="
+          background:#222;
+          color:white;
+          border:1px solid #777;
+          border-radius:9px;
+          padding:8px 11px;
+          cursor:pointer;
+        "
+      >
+        ✕ Cerrar
+      </button>
+    </div>
+
+
+    <div
+      id="resumenNotificacionesMass"
+      style="
+        color:#bbb;
+        font-size:14px;
+        line-height:1.5;
+        margin-bottom:14px;
+      "
+    >
+      Cargando notificaciones...
+    </div>
+
+
+    <button
+      id="btnMarcarTodasNotificacionesMass"
+      type="button"
+      onclick="marcarTodasNotificacionesMassLeidas()"
+      style="
+        display:none;
+        width:100%;
+        margin-bottom:14px;
+        padding:11px;
+        border:1px solid #39ff14;
+        border-radius:10px;
+        background:#111;
+        color:#39ff14;
+        font-weight:bold;
+        cursor:pointer;
+      "
+    >
+      ✅ Marcar todas como leídas
+    </button>
+
+
+    <div
+      id="listaNotificacionesMass"
+      style="
+        display:flex;
+        flex-direction:column;
+        gap:12px;
+      "
+    >
+      <div
+        style="
+          color:#aaa;
+          text-align:center;
+          padding:20px;
+        "
+      >
+        Cargando...
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<button
+  id="btnNotificacionesMass"
+  type="button"
+  onclick="abrirNotificacionesMass()"
+  aria-label="Abrir notificaciones MASS"
+  title="Notificaciones MASS"
+  style="
+    display:none;
+    position:fixed;
+    overflow:visible;
+    right:18px;
+    bottom:92px;
+    width:58px;
+    height:58px;
+    border-radius:50%;
+    border:2px solid #39ff14;
+    background:#111;
+    color:white;
+    font-size:27px;
+    cursor:pointer;
+    z-index:99999;
+    box-shadow:0 0 18px rgba(57,255,20,.70);
+    align-items:center;
+    justify-content:center;
+  "
+>
+  🔔
+
+  <span
+    id="contadorNotificacionesMass"
+    style="
+      display:none;
+      position:absolute;
+      top:-7px;
+      right:-7px;
+      min-width:22px;
+      height:22px;
+      padding:0 5px;
+      border-radius:999px;
+      background:#ff2d2d;
+      color:white;
+      border:2px solid #111;
+      font-size:12px;
+      font-weight:bold;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+    "
+  >
+    0
+  </span>
+</button>	
 
 <!-- ===================================================== -->
 <!-- MASS - BOTÓN FLOTANTE DE CHAT PARA USUARIO -->
