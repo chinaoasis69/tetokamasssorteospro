@@ -66443,21 +66443,27 @@ async function mostrarRecargasMassAdmin() {
     return;
   }
 
+
+  /* ============================================================
+     RECARGAS PENDIENTES V1 + V2
+     ============================================================ */
+
   const {
     data,
     error
   } = await supabaseClient.rpc(
-    "listar_recargas_mass_admin",
+    "listar_recargas_mass_admin_v3",
     {
       p_organizador_id: orgId,
       p_estado: "pendiente"
     }
   );
 
+
   if (error) {
 
     console.error(
-      "ERROR CARGANDO RECARGAS PROTEGIDAS:",
+      "ERROR CARGANDO RECARGAS V3:",
       error
     );
 
@@ -66469,14 +66475,10 @@ async function mostrarRecargasMassAdmin() {
     return;
   }
 
-  /*
-  ============================================================
-  DIVISA PRINCIPAL DEL ORGANIZADOR
 
-  La unidad MASS se obtiene desde la RPC segura de divisas.
-  No se hardcodea MXN/USD/etc.
-  ============================================================
-  */
+  /* ============================================================
+     DIVISA PRINCIPAL DEL ORGANIZADOR
+     ============================================================ */
 
   const {
     data: datosDivisasRecargas,
@@ -66487,6 +66489,7 @@ async function mostrarRecargasMassAdmin() {
       p_organizador_id: orgId
     }
   );
+
 
   if (errorDivisasRecargas) {
 
@@ -66502,10 +66505,14 @@ async function mostrarRecargasMassAdmin() {
     return;
   }
 
+
   const divisasRecargas =
-    Array.isArray(datosDivisasRecargas?.divisas)
+    Array.isArray(
+      datosDivisasRecargas?.divisas
+    )
       ? datosDivisasRecargas.divisas
       : [];
+
 
   const divisaPrincipalRecargas =
     divisasRecargas.find(
@@ -66514,11 +66521,14 @@ async function mostrarRecargasMassAdmin() {
         divisa?.es_principal === true
     );
 
+
   const unidadMassRecargas =
     String(
-      divisaPrincipalRecargas?.moneda_codigo ||
+      divisaPrincipalRecargas
+        ?.moneda_codigo ||
       ""
     ).trim();
+
 
   if (!unidadMassRecargas) {
 
@@ -66527,11 +66537,27 @@ async function mostrarRecargasMassAdmin() {
     );
 
     return;
-  }	
+  }
+
+
+  /* ============================================================
+     ESCAPE BÁSICO PARA TEXTO MOSTRADO EN HTML
+     ============================================================ */
+
+  const escaparHtmlRecarga =
+    (valor) =>
+      String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
 
   let html = `
     <h2>💰 Recargas pendientes</h2>
   `;
+
 
   if (!data || data.length === 0) {
 
@@ -66546,10 +66572,128 @@ async function mostrarRecargasMassAdmin() {
     data.forEach(r => {
 
       const massId =
-        String(
+        escaparHtmlRecarga(
           r.mass_id ||
           "MASS-ID-NO-DISPONIBLE"
         );
+
+
+      const flujoVersion =
+        Number(
+          r.flujo_version || 1
+        );
+
+
+      const esV2 =
+        flujoVersion === 2;
+
+
+      const metodoNombre =
+        escaparHtmlRecarga(
+          r.metodo_nombre ||
+          "Método no disponible"
+        );
+
+
+      const comprobanteUrl =
+        escaparHtmlRecarga(
+          r.comprobante_url ||
+          ""
+        );
+
+
+      /* ========================================================
+         RECARGA HISTÓRICA V1
+
+         Conserva temporalmente sus botones anteriores.
+         ======================================================== */
+
+      if (!esV2) {
+
+        const montoV1 =
+          Number(
+            r.monto || 0
+          );
+
+
+        html += `
+          <div class="card">
+
+            <p>
+              <b>👤 MASS ID:</b>
+              ${massId}
+            </p>
+
+            <p>
+              <b>💳 Método:</b>
+              ${metodoNombre}
+            </p>
+
+            <p>
+              <b>Monto:</b>
+              ${montoV1}
+              MASS
+              ${escaparHtmlRecarga(
+                unidadMassRecargas
+              )}
+            </p>
+
+            ${
+              comprobanteUrl
+                ? `
+                    <a
+                      href="${comprobanteUrl}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ver comprobante
+                    </a>
+                  `
+                : `
+                    <p>
+                      Comprobante no disponible
+                    </p>
+                  `
+            }
+
+            <br><br>
+
+            <button
+              onclick="aprobarRecarga(
+                '${r.id}',
+                '',
+                ${montoV1},
+                '${escaparHtmlRecarga(
+                  unidadMassRecargas
+                )}'
+              )"
+            >
+              ✅ Aprobar
+            </button>
+
+            <button
+              onclick="rechazarRecarga(
+                '${r.id}'
+              )"
+            >
+              ❌ Rechazar
+            </button>
+
+          </div>
+        `;
+
+        return;
+      }
+
+
+      /* ========================================================
+         RECARGA V2
+
+         El usuario NO declaró monto.
+
+         El Organizador debe verificar directamente
+         cuánto dinero recibió.
+         ======================================================== */
 
       html += `
         <div class="card">
@@ -66560,51 +66704,146 @@ async function mostrarRecargasMassAdmin() {
           </p>
 
           <p>
-            <b>Monto:</b>
-           ${r.monto} MASS ${unidadMassRecargas} 
+            <b>💳 Método:</b>
+            ${metodoNombre}
           </p>
 
-          <a
-            href="${r.comprobante_url}"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ver comprobante
-          </a>
+          <p>
+            <b>Versión:</b>
+            Recarga MASS V2
+          </p>
 
-          <br><br>
+          <p
+            style="
+              color:#ffd60a;
+              font-weight:bold;
+            "
+          >
+            ⏳ Monto pendiente de verificación
+          </p>
+
+          ${
+            comprobanteUrl
+              ? `
+                  <a
+                    href="${comprobanteUrl}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Ver comprobante
+                  </a>
+                `
+              : `
+                  <p>
+                    ❌ Comprobante no disponible
+                  </p>
+                `
+          }
+
+          <div
+            style="
+              margin:18px 0;
+              padding:14px;
+              border:1px solid #ffd60a;
+              border-radius:12px;
+            "
+          >
+
+            <div
+              style="
+                margin-bottom:10px;
+                color:#ffd60a;
+                font-weight:bold;
+              "
+            >
+              ⚠️ Verifica directamente los fondos recibidos
+            </div>
+
+            <div
+              style="
+                margin-bottom:8px;
+                color:#ccc;
+                font-size:13px;
+              "
+            >
+              No acredites MASS basándote solamente
+              en el comprobante presentado.
+            </div>
+
+            <label
+              for="montoRecargaV2_${r.id}"
+              style="
+                display:block;
+                margin:10px 0 6px;
+                font-weight:bold;
+              "
+            >
+              Monto realmente recibido
+              (${escaparHtmlRecarga(
+                unidadMassRecargas
+              )})
+            </label>
+
+            <input
+              id="montoRecargaV2_${r.id}"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              placeholder="Ejemplo: 500"
+              style="
+                width:100%;
+                max-width:260px;
+              "
+            >
+
+          </div>
+
 
           <button
-            onclick="aprobarRecarga(
-  '${r.id}',
-  '',
-  ${Number(r.monto)},
-  '${unidadMassRecargas}'
-)"
+            onclick="aprobarRecargaV2(
+              '${r.id}',
+              '${escaparHtmlRecarga(
+                unidadMassRecargas
+              )}'
+            )"
+            style="
+              background:#168000;
+              color:white;
+            "
           >
-            ✅ Aprobar
+            ✅ Acreditar monto verificado
           </button>
 
+
           <button
-            onclick="rechazarRecarga(
+            onclick="rechazarRecargaV2(
               '${r.id}'
             )"
+            style="
+              background:#8b0000;
+              color:white;
+            "
           >
-            ❌ Rechazar
+            ❌ No recibí fondos
           </button>
 
         </div>
       `;
+
     });
   }
+
 
   document
     .getElementById(
       "adminContenido"
     )
-    .innerHTML = html;
+    .innerHTML =
+      html;
 }
 
+	
 async function abrirComprobanteEfectivoMassAdmin(recargaId) {
 
     const idRecarga =
@@ -67525,6 +67764,264 @@ async function rechazarRecarga(id) {
 
   await mostrarRecargasMassAdmin();
 }
+
+/* ============================================================
+   MASS RECARGAS V2
+   APROBAR MONTO REALMENTE VERIFICADO
+   ============================================================ */
+
+async function aprobarRecargaV2(
+  id,
+  unidadMass
+) {
+
+  const recargaId =
+    String(
+      id || ""
+    ).trim();
+
+
+  if (!recargaId) {
+
+    alert(
+      "❌ No fue posible identificar la recarga."
+    );
+
+    return;
+  }
+
+
+  const inputMonto =
+    document.getElementById(
+      `montoRecargaV2_${recargaId}`
+    );
+
+
+  if (!inputMonto) {
+
+    alert(
+      "❌ No fue posible localizar el campo del monto verificado."
+    );
+
+    return;
+  }
+
+
+  const montoVerificado =
+    Number(
+      inputMonto.value
+    );
+
+
+  if (
+    !Number.isInteger(
+      montoVerificado
+    ) ||
+    montoVerificado <= 0
+  ) {
+
+    alert(
+      "⚠️ Escribe una cantidad válida, entera y mayor que cero."
+    );
+
+    inputMonto.focus();
+
+    return;
+  }
+
+
+  const unidad =
+    String(
+      unidadMass || ""
+    ).trim();
+
+
+  if (!confirm(
+`⚠️ CONFIRMACIÓN DE RECARGA MASS
+
+Verifica nuevamente tu banco o método de pago.
+
+Confirmas que recibiste realmente:
+
+${montoVerificado} ${unidad}
+
+y que deseas acreditar:
+
+${montoVerificado} MASS ${unidad}
+
+¿Continuar?`
+  )) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "aprobar_recarga_mass_segura_v2",
+    {
+      p_recarga_id:
+        recargaId,
+
+      p_monto_verificado:
+        montoVerificado
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR APROBANDO RECARGA MASS V2:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible acreditar la recarga.\n\n" +
+      (
+        error.message ||
+        "La operación fue rechazada por el servidor."
+      )
+    );
+
+    return;
+  }
+
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    alert(
+      "❌ La recarga no devolvió una confirmación válida."
+    );
+
+    return;
+  }
+
+
+  alert(
+`✅ Recarga MASS acreditada
+
+Monto verificado:
+${resultado.credito_mass} MASS ${unidad}
+
+Saldo anterior:
+${resultado.saldo_anterior} MASS ${unidad}
+
+Saldo nuevo:
+${resultado.saldo_nuevo} MASS ${unidad}`
+  );
+
+
+  await mostrarRecargasMassAdmin();
+}
+
+
+/* ============================================================
+   MASS RECARGAS V2
+   RECHAZAR — NO RECIBÍ FONDOS
+   ============================================================ */
+
+async function rechazarRecargaV2(
+  id
+) {
+
+  const recargaId =
+    String(
+      id || ""
+    ).trim();
+
+
+  if (!recargaId) {
+
+    alert(
+      "❌ No fue posible identificar la recarga."
+    );
+
+    return;
+  }
+
+
+  if (!confirm(
+`⚠️ CONFIRMACIÓN
+
+¿Ya verificaste directamente tu banco o método de pago y confirmas que NO recibiste fondos?
+
+Esta acción quedará registrada como:
+
+NO_RECIBI_FONDOS`
+  )) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "rechazar_recarga_mass_segura_v2",
+    {
+      p_recarga_id:
+        recargaId
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR RECHAZANDO RECARGA MASS V2:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible rechazar la recarga.\n\n" +
+      (
+        error.message ||
+        "La operación fue rechazada por el servidor."
+      )
+    );
+
+    return;
+  }
+
+
+  const resultado =
+    Array.isArray(data)
+      ? data[0]
+      : data;
+
+
+  if (!resultado) {
+
+    alert(
+      "❌ La recarga no devolvió una confirmación válida."
+    );
+
+    return;
+  }
+
+
+  alert(
+`✅ Recarga rechazada
+
+Motivo:
+${resultado.motivo_rechazo || "NO_RECIBI_FONDOS"}
+
+No se acreditó saldo MASS.`
+  );
+
+
+  await mostrarRecargasMassAdmin();
+}	
 
 async function cerrarSesion() {
 
