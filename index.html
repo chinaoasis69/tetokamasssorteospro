@@ -1899,9 +1899,9 @@ font-size:15px;
 margin-top:8px;
 line-height:1.5;
 ">
-Calcula primero el monto exacto utilizando el
-<b>Convertidor MASS</b>
-antes de realizar tu pago.
+Consulta una estimación utilizando el
+<b>Convertidor MASS</b>.
+El monto acreditado no se determina con esta calculadora.
 </div>
 
 <div style="
@@ -3012,10 +3012,10 @@ Cargando historial...
         text-align:center;
         box-shadow:0 0 25px #39ff14;
     ">
-        <h2>🪙 Calculadora de Recarga MASS</h2>
+       <h2>💱 Convertidor MASS — Referencia</h2> 
 
 <p>
-Calcula tu recarga MASS utilizando el tipo de cambio en tiempo real.
+Consulta una estimación de referencia utilizando el tipo de cambio disponible.
 </p>
 
 		<div style="
@@ -3063,13 +3063,13 @@ font-weight:bold;
 
 <small style="color:#bbb;">
 🌐 Tipo de cambio en tiempo real
-⚙️ Después del ajuste del organizador: -$0.20 MXN
+⚙️ Ajuste aplicado al tipo de cambio: -0.20 MXN
 </small>
 
 </div>
 
         <div style="font-size:18px;color:#ccc;margin-bottom:8px;">
-    Recibirás aproximadamente
+    Estimación de referencia
 </div>
 
 <div id="resultadoConvertidorMass" style="margin:10px 0;font-size:52px;font-weight:bold;color:#39ff14;text-align:center;">
@@ -3077,11 +3077,12 @@ font-weight:bold;
 </div>
 
 <div style="font-size:14px;color:#bbb;text-align:center;margin-top:8px;">
-    La cantidad final será aprobada por el organizador.
+   Esta calculadora no acredita saldo ni fija el monto de tu recarga.
+El Organizador verificará los fondos realmente recibidos. 
 </div>
 
         <button onclick="calcularConvertidorMass()">🧮 Calcular</button>
-        <button onclick="usarCantidadConvertidorMass()">✅ Usar esta cantidad</button>
+        <button onclick="usarCantidadConvertidorMass()">✅ Entendido</button>
         <button onclick="cerrarConvertidorMass()">❌ Cerrar</button>
     </div>
 </div>
@@ -30511,166 +30512,71 @@ function calcularConvertidorMass() {
 }
 
 function usarCantidadConvertidorMass() {
-    calcularConvertidorMass();
 
-	if (!clienteActual || !clienteActual.id) {
+  calcularConvertidorMass();
+
+
+  const resultadoTexto =
+    document
+      .getElementById(
+        "resultadoConvertidorMass"
+      )
+      ?.innerText || "";
+
+
+  const cantidadMass =
+    resultadoTexto
+      .replace(
+        "MASS",
+        ""
+      )
+      .trim();
+
+
+  if (
+    !cantidadMass ||
+    isNaN(cantidadMass) ||
+    Number(cantidadMass) <= 0
+  ) {
+
     mostrarNotificacion(
-        "error",
-        "Selecciona un organizador",
-        "Primero elige un organizador con dinámica activa antes de preparar una recarga."
+      "error",
+      "Cantidad inválida",
+      "Primero escribe una cantidad para obtener una estimación."
     );
-    return;
-}
-
-if (!RIFA_ID) {
-    mostrarNotificacion(
-        "error",
-        "Selecciona una dinámica",
-        "Primero selecciona una dinámica activa antes de preparar una recarga."
-    );
-
-    setTimeout(() => {
-
-    cerrarConvertidorMass();
-
-    const box = document.getElementById("organizadoresActivosBox");
-
-    if (box) {
-        box.style.display = "block";
-
-        setTimeout(() => {
-            box.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }, 300);
-    }
-
-}, 2200);
 
     return;
-}
+  }
 
-    const resultadoTexto = document.getElementById("resultadoConvertidorMass").innerText;
-    const cantidadMass = resultadoTexto.replace("MASS","").trim();
 
-	if (!cantidadMass || isNaN(cantidadMass) || Number(cantidadMass) <= 0) {
-    mostrarNotificacion(
-        "error",
-        "Cantidad inválida",
-        "Primero escribe una cantidad y calcula tu recarga MASS."
-    );
-    return;
-}
+  /*
+  =====================================================
+  CONVERTIDOR MASS — SOLO REFERENCIA
 
-	const conversionPendiente = sessionStorage.getItem("conversion_mass_temporal");
+  No:
+  - prepara una recarga;
+  - fija monto;
+  - acredita MASS;
+  - envía cantidad a la solicitud V2.
 
-    if (conversionPendiente) {
-    mostrarNotificacion(
-        "error",
-        "Recarga pendiente",
-        "Ya preparaste una recarga MASS. Primero sube tu comprobante o cierra/cancela para calcular otra."
-    );
-    return;
-}
+  El Organizador verificará posteriormente
+  los fondos realmente recibidos.
+  =====================================================
+  */
 
-	const monedaOrigen = document.getElementById("monedaDepositoMass")?.value || "";
-    const cantidadOrigen = document.getElementById("cantidadDepositoMass")?.value || "";
+  sessionStorage.removeItem(
+    "conversion_mass_temporal"
+  );
 
-   const conversionMassTemporal = {
-    moneda_origen: monedaOrigen,
-    cantidad_origen: Number(cantidadOrigen),
-    tipo_cambio_usado: Number(tipoCambioMass.toFixed(2)),
-    ajuste_organizador: 0.20,
-    mass_calculado: Number(cantidadMass),
-    creada_en: Date.now(),
-    expira_en: Date.now() + (60 * 60 * 1000) // 1 hora
-};
 
-sessionStorage.setItem(
-    "conversion_mass_temporal",
-    JSON.stringify(conversionMassTemporal)
-);
+  mostrarNotificacion(
+    "success",
+    "Estimación de referencia",
+    `Estimación: ${cantidadMass} MASS. El monto acreditado será determinado después de que el Organizador verifique los fondos realmente recibidos.`
+  );
 
-	const btnUsarCantidad = document.getElementById("btnUsarCantidadMass");
 
-if (btnUsarCantidad) {
-    btnUsarCantidad.disabled = true;
-    btnUsarCantidad.innerHTML = "✅ Cantidad preparada";
-    btnUsarCantidad.style.opacity = "0.6";
-}
-
-const tarjetaConvertidor = document.getElementById("tarjetaConvertidorMass");
-
-if (tarjetaConvertidor) {
-    tarjetaConvertidor.style.display = "none";
-}	
-
-const tarjeta = document.getElementById("tarjetaRecargaPreparada");
-const resumen = document.getElementById("resumenRecargaMass");
-const boxGrande = document.getElementById("boxSubirComprobanteMass");
-
-if (resumen) {
-    resumen.innerHTML = `
-        <div style="font-size:14px;color:#aaa;">💱 Moneda</div>
-        <div style="font-size:20px;font-weight:bold;color:white;margin-bottom:8px;">
-            ${monedaOrigen}
-        </div>
-
-        <div style="font-size:14px;color:#aaa;">💵 Cantidad a depositar</div>
-        <div style="font-size:20px;font-weight:bold;color:white;margin-bottom:12px;">
-            ${cantidadOrigen}
-        </div>
-
-        <div style="height:1px;background:#39ff14;margin:12px 0;"></div>
-
-        <div style="font-size:15px;color:#ccc;">Recibirás</div>
-        <div style="font-size:34px;font-weight:900;color:#39ff14;margin:6px 0;">
-            ${cantidadMass} MASS
-        </div>
-
-        <div style="font-size:13px;color:#aaa;margin-top:8px;">
-            ⏳ Esperando comprobante
-        </div>
-
-    `;
-}
-
-if (tarjeta) tarjeta.style.display = "block";
-if (boxGrande) boxGrande.style.display = "none";
-
-const mensajeSaldo = document.getElementById("mensajeSaldoDisponibleMass");
-
-if (mensajeSaldo) {
-    mensajeSaldo.style.display = "none";
-}
-	
-if (boxGrande) boxGrande.style.visibility = "hidden";
-
-    // Llenar automáticamente el campo de la recarga
-    const campo = document.getElementById("cantidadMass");
-    if (campo) {
-        campo.value = cantidadMass;
-    }
-
-    // Cerrar la calculadora
-    cerrarConvertidorMass();
-
-    // Ir al formulario de recarga
-    if (campo) {
-        campo.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-        });
-        campo.focus();
-    }
-
-    mostrarNotificacion(
-        "success",
-        "Cantidad lista",
-        "Se preparó una recarga de " + cantidadMass + " MASS. Ahora sube tu comprobante para enviarla al organizador."
-    );
-
+  cerrarConvertidorMass();
 }
 
 function aplicarVisibilidadConvertidorMass() {
@@ -48614,54 +48520,30 @@ Una vez aprobada, el saldo NO podrá utilizarse con otros organizadores.
     "EFECTIVO_PUNTO_MASS"
   ) {
 
-    let cantidadPuntoMass = null;
-
-    const conversionGuardada =
-      sessionStorage.getItem(
-        "conversion_mass_temporal"
-      );
-
-    const conversion =
-      conversionGuardada
-        ? JSON.parse(conversionGuardada)
-        : null;
+  let cantidadPuntoMass =
+  prompt(
+    "¿Cuánto quieres recargar en Punto MASS?"
+  );
 
 
-    if (
-      conversion &&
-      Number(conversion.mass_calculado) > 0
-    ) {
+if (
+  !cantidadPuntoMass ||
+  !Number.isInteger(
+    Number(cantidadPuntoMass)
+  ) ||
+  Number(cantidadPuntoMass) <= 0
+) {
 
-      cantidadPuntoMass =
-        Number(
-          conversion.mass_calculado
-        );
+  alert(
+    "⚠️ Escribe una cantidad válida, entera y mayor que cero."
+  );
 
-    } else {
-
-      cantidadPuntoMass =
-        prompt(
-          "¿Cuánto quieres recargar en Punto MASS?"
-        );
+  return;
+}
 
 
-      if (
-        !cantidadPuntoMass ||
-        isNaN(cantidadPuntoMass) ||
-        Number(cantidadPuntoMass) <= 0
-      ) {
-
-        alert(
-          "Cantidad inválida"
-        );
-
-        return;
-      }
-
-
-      cantidadPuntoMass =
-        Number(cantidadPuntoMass);
-    }
+cantidadPuntoMass =
+  Number(cantidadPuntoMass);  
 
 
     await seleccionarPuntoMassParaRecarga(
