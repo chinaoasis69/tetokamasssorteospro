@@ -49743,7 +49743,48 @@ if (
       "rifa_actual_id"
     );
   }
- }	
+ }
+
+// =====================================================
+// MASS - RESTAURAR LISTADO DE ORGANIZADORES
+// =====================================================
+
+const vistaPublicaGuardada =
+  String(
+    sessionStorage.getItem(
+      "vista_publica_mass"
+    ) || ""
+  ).trim();
+
+
+if (
+  !rifaGuardadaId &&
+  vistaPublicaGuardada ===
+    "organizadores_activos"
+) {
+
+  const boxOrganizadoresGuardado =
+    document.getElementById(
+      "organizadoresActivosBox"
+    );
+
+
+  if (boxOrganizadoresGuardado) {
+
+    boxOrganizadoresGuardado.style.display =
+      "block";
+
+
+    setTimeout(() => {
+
+      boxOrganizadoresGuardado.scrollIntoView({
+        behavior: "auto",
+        block: "start"
+      });
+
+    }, 150);
+  }
+ }	  
 }
 
 	
@@ -49799,6 +49840,20 @@ if (typeof aplicarFiltros === "function") {
 
     const abriendoListadoOrganizadores =
     box.style.display === "none";
+
+if (abriendoListadoOrganizadores) {
+
+    sessionStorage.setItem(
+        "vista_publica_mass",
+        "organizadores_activos"
+    );
+
+} else {
+
+    sessionStorage.removeItem(
+        "vista_publica_mass"
+    );
+}	
 
 if (abriendoListadoOrganizadores) {
 
@@ -57522,7 +57577,12 @@ if (!error && rifa) {
  sessionStorage.setItem(
   "rifa_actual_id",
   String(rifa.id)
-); 
+);
+
+sessionStorage.setItem(
+  "vista_publica_mass",
+  "rifa"
+);	
 
   await cargarPatrocinadoresPublicos(
     "rifa",
@@ -68092,7 +68152,11 @@ localStorage.removeItem(
 
 sessionStorage.removeItem(
   "rifa_actual_id"
-);	
+);
+
+sessionStorage.removeItem(
+  "vista_publica_mass"
+);		
 
 	const btnChatFlotanteOrganizador =
   document.getElementById("btnChatFlotanteOrganizador");
