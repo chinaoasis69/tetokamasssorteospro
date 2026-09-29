@@ -73795,6 +73795,12 @@ if (accesoV2SesionActiva) {
   alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
 }
 
+window.scrollTo({
+	top:0,
+	left:0,
+	behavior: "auto"
+});		
+
 async function recuperarPasswordMassId() {
   const email = (
     document.getElementById("massIdEmailLogin")?.value || ""
@@ -74174,6 +74180,12 @@ if (
     activarModoUsuarioMassId();
 	await inicializarNotificacionesMass(); 
     alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
+
+	window.scrollTo({
+	top:0,
+	left:0,
+	behavior: "auto"
+});  
 	  
   } catch (errorPasskey) {
     console.error(
