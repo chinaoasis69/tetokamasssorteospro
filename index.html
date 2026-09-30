@@ -2330,9 +2330,9 @@ Cargando historial...
 
 <button
   type="button"
-  onclick="mostrarComprasMassAdmin()"
+  onclick="mostrarSolicitudesRevisionMassAdmin()"
 >
-  🧾 Compras MASS / Reversiones
+  📝 Solicitudes de revisión
 </button>	
 
 <button id="btnConfigAdmin" onclick="mostrarConfigAdmin()">
@@ -68982,6 +68982,515 @@ ${motivoRechazoHistorialHtml}
     )
     .innerHTML = html;
 }
+
+// ============================================================
+// MASS — SOLICITUDES DE REVISIÓN — PANEL ADMIN
+// SOLO LECTURA
+// ============================================================
+
+async function mostrarSolicitudesRevisionMassAdmin() {
+
+  const cont =
+    document.getElementById(
+      "adminContenido"
+    );
+
+
+  if (!cont) {
+
+    alert(
+      "❌ No se encontró el panel administrativo."
+    );
+
+    return;
+  }
+
+
+  cont.innerHTML = `
+    <h2>📝 Solicitudes de revisión</h2>
+
+    <p>
+      ⏳ Cargando solicitudes pendientes...
+    </p>
+  `;
+
+
+  /* ==========================================================
+     1. CONTEXTO ADMINISTRATIVO
+     ========================================================== */
+
+  const adminRol =
+    String(
+      localStorage.getItem(
+        "admin_rol"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  let organizadorId = null;
+
+
+  if (adminRol === "organizador") {
+
+    organizadorId =
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      localStorage.getItem(
+        "organizador_admin_id"
+      ) ||
+      null;
+
+
+    if (!organizadorId) {
+
+      cont.innerHTML = `
+        <h2>📝 Solicitudes de revisión</h2>
+
+        <p style="color:#ff6b6b;">
+          ❌ No fue posible identificar al Organizador.
+        </p>
+      `;
+
+      return;
+    }
+
+  } else if (
+    adminRol === "super_admin"
+  ) {
+
+    organizadorId =
+      localStorage.getItem(
+        "organizador_admin_id"
+      ) ||
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      null;
+
+  } else {
+
+    cont.innerHTML = `
+      <h2>📝 Solicitudes de revisión</h2>
+
+      <p style="color:#ff6b6b;">
+        ❌ No existe una sesión administrativa autorizada.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  /* ==========================================================
+     2. CONSULTA SEGURA
+
+     Solamente solicitudes PENDIENTES.
+     ========================================================== */
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_solicitudes_revision_compras_mass_admin_segura",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_estado:
+          "pendiente",
+
+        p_limite:
+          100,
+
+        p_offset:
+          0
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO SOLICITUDES DE REVISIÓN:",
+      error
+    );
+
+
+    cont.innerHTML = `
+      <h2>📝 Solicitudes de revisión</h2>
+
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible cargar las solicitudes.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const solicitudes =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  /* ==========================================================
+     3. ESCAPE HTML
+     ========================================================== */
+
+  const escaparHtmlSolicitud =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  /* ==========================================================
+     4. FECHA
+     ========================================================== */
+
+  const formatearFechaSolicitud =
+    valor => {
+
+      if (!valor) {
+        return "Sin fecha";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+
+        return "Sin fecha";
+      }
+
+
+      return fecha.toLocaleString();
+    };
+
+
+  /* ==========================================================
+     5. NOMBRES DE MOTIVOS
+     ========================================================== */
+
+  const nombresMotivo = {
+
+    ERROR_TECNICO:
+      "Error técnico",
+
+    COMPRA_DUPLICADA:
+      "Compra duplicada",
+
+    NO_RECONOZCO_COMPRA:
+      "No reconozco esta compra",
+
+    OTRO_PROBLEMA:
+      "Otro problema"
+
+  };
+
+
+  /* ==========================================================
+     6. ENCABEZADO
+     ========================================================== */
+
+  let html = `
+    <h2>📝 Solicitudes de revisión</h2>
+
+    <div
+      style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin-bottom:16px;
+        text-align:left;
+      "
+    >
+      🔐 Aquí aparecen solamente las compras
+      que un usuario envió voluntariamente
+      para revisión.
+
+      <br><br>
+
+      Una solicitud pendiente
+      <b>NO significa que la compra haya sido cancelada</b>
+      ni que corresponda automáticamente una devolución.
+    </div>
+  `;
+
+
+  /* ==========================================================
+     7. BANDEJA VACÍA
+     ========================================================== */
+
+  if (
+    solicitudes.length === 0
+  ) {
+
+    html += `
+      <div
+        class="card"
+        style="
+          text-align:center;
+          color:#aaa;
+        "
+      >
+        ✅ No hay solicitudes de revisión pendientes.
+      </div>
+    `;
+
+
+    cont.innerHTML =
+      html;
+
+    return;
+  }
+
+
+  html += `
+    <p
+      style="
+        color:#facc15;
+        font-weight:bold;
+      "
+    >
+      🟡 Solicitudes pendientes:
+      ${solicitudes.length}
+    </p>
+  `;
+
+
+  /* ==========================================================
+     8. TARJETAS
+     ========================================================== */
+
+  solicitudes.forEach(
+    solicitud => {
+
+      const numerosBase =
+        Array.isArray(
+          solicitud.numeros_base
+        )
+          ? solicitud.numeros_base
+          : [];
+
+
+      const numerosBoletos =
+        Array.isArray(
+          solicitud.numeros_boletos
+        )
+          ? solicitud.numeros_boletos
+          : [];
+
+
+      const numerosBaseTexto =
+        numerosBase.length > 0
+
+          ? numerosBase
+              .map(
+                numero =>
+                  escaparHtmlSolicitud(
+                    numero
+                  )
+              )
+              .join(", ")
+
+          : "No disponibles";
+
+
+      const numerosBoletosTexto =
+        numerosBoletos.length > 0
+
+          ? numerosBoletos
+              .map(
+                numero =>
+                  escaparHtmlSolicitud(
+                    numero
+                  )
+              )
+              .join(", ")
+
+          : "No disponibles";
+
+
+      const motivoCodigo =
+        String(
+          solicitud.motivo_usuario ||
+          ""
+        )
+          .trim()
+          .toUpperCase();
+
+
+      const motivoTexto =
+        nombresMotivo[
+          motivoCodigo
+        ] ||
+        motivoCodigo ||
+        "No disponible";
+
+
+      const unidadMass =
+        escaparHtmlSolicitud(
+          solicitud.unidad_mass ||
+          ""
+        );
+
+
+      html += `
+        <div
+          class="card"
+          style="
+            text-align:left;
+            border:1px solid #facc15;
+          "
+        >
+
+          <h3
+            style="
+              margin-top:0;
+              color:#facc15;
+            "
+          >
+            🟡 Solicitud pendiente
+          </h3>
+
+
+          <p>
+            <b>👤 MASS ID:</b>
+            ${
+              escaparHtmlSolicitud(
+                solicitud.mass_id ||
+                "MASS ID no disponible"
+              )
+            }
+          </p>
+
+
+          <p>
+            <b>🎯 Dinámica:</b>
+            ${
+              escaparHtmlSolicitud(
+                solicitud.rifa_titulo ||
+                "Dinámica no disponible"
+              )
+            }
+          </p>
+
+
+          <p>
+            <b>🎟️ Número(s) seleccionado(s):</b>
+            ${numerosBaseTexto}
+          </p>
+
+
+          <p>
+            <b>🎫 Boletos incluidos:</b>
+            ${numerosBoletosTexto}
+          </p>
+
+
+          <p>
+            <b>💰 Total pagado:</b>
+            ${Number(
+              solicitud.total_pagado || 0
+            )}
+            MASS
+            ${unidadMass}
+          </p>
+
+
+          <p>
+            <b>🕘 Compra:</b>
+            ${
+              escaparHtmlSolicitud(
+                formatearFechaSolicitud(
+                  solicitud.compra_creada_at
+                )
+              )
+            }
+          </p>
+
+
+          <hr>
+
+
+          <p>
+            <b>📋 Motivo del usuario:</b>
+            ${
+              escaparHtmlSolicitud(
+                motivoTexto
+              )
+            }
+          </p>
+
+
+          ${
+            solicitud.detalle_usuario
+
+              ? `
+                  <p>
+                    <b>📝 Explicación:</b>
+                    ${
+                      escaparHtmlSolicitud(
+                        solicitud.detalle_usuario
+                      )
+                    }
+                  </p>
+                `
+
+              : ""
+          }
+
+
+          <p>
+            <b>🕘 Solicitud enviada:</b>
+            ${
+              escaparHtmlSolicitud(
+                formatearFechaSolicitud(
+                  solicitud.solicitud_creada_at
+                )
+              )
+            }
+          </p>
+
+
+          <div
+            style="
+              margin-top:14px;
+              padding:10px;
+              border:1px solid #555;
+              border-radius:10px;
+              color:#ccc;
+            "
+          >
+            🔎 Pendiente de revisión administrativa.
+          </div>
+
+        </div>
+      `;
+    }
+  );
+
+
+  cont.innerHTML =
+    html;
+}	  
 
 // ============================================================
 // MASS — COMPRAS / REVERSIONES — PANEL ADMIN
