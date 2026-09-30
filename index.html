@@ -71917,7 +71917,129 @@ async function obtenerUsuarioMassIdNotificaciones() {
     MASS_NOTIFICACIONES_USUARIO_MASS_ID
   );
 }
+	
+// ============================================================
+// RESOLVER CONTEXTO DE NOTIFICACIONES
+//
+// USUARIO:
+//   notificaciones_usuario_mass
+//
+// ORGANIZADOR:
+//   notificaciones_organizador_mass
+// ============================================================
 
+async function obtenerContextoNotificacionesMass() {
+
+  const modoAcceso =
+    String(
+      localStorage.getItem(
+        "mass_modo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  /* ==========================================================
+     USUARIO MASS ID
+     ========================================================== */
+
+  if (
+    modoAcceso ===
+    "usuario"
+  ) {
+
+    const usuarioMassId =
+      MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
+      await obtenerUsuarioMassIdNotificaciones();
+
+
+    if (!usuarioMassId) {
+      return null;
+    }
+
+
+    return {
+
+      modo:
+        "usuario",
+
+      tabla:
+        "notificaciones_usuario_mass",
+
+      columnaDestinatario:
+        "usuario_mass_id",
+
+      destinatarioId:
+        usuarioMassId,
+
+      rpcMarcarLeida:
+        "marcar_notificacion_mass_leida_segura"
+    };
+  }
+
+
+  /* ==========================================================
+     ORGANIZADOR
+     ========================================================== */
+
+  if (
+    modoAcceso ===
+    "organizador"
+  ) {
+
+    const {
+      data: sesionData,
+      error: errorSesion
+    } =
+      await supabaseClient.auth
+        .getSession();
+
+
+    const authUserId =
+      sesionData
+        ?.session
+        ?.user
+        ?.id ||
+      null;
+
+
+    if (
+      errorSesion ||
+      !authUserId
+    ) {
+
+      console.error(
+        "SESIÓN NO DISPONIBLE PARA NOTIFICACIONES ADMINISTRATIVAS:",
+        errorSesion
+      );
+
+      return null;
+    }
+
+
+    return {
+
+      modo:
+        "organizador",
+
+      tabla:
+        "notificaciones_organizador_mass",
+
+      columnaDestinatario:
+        "destinatario_auth_id",
+
+      destinatarioId:
+        authUserId,
+
+      rpcMarcarLeida:
+        "marcar_notificacion_organizador_mass_leida_segura"
+    };
+  }
+
+
+  return null;
+}
 
 // ============================================================
 // ACTUALIZAR CONTADOR DE NO LEÍDAS
@@ -71955,87 +72077,200 @@ async function actualizarContadorNotificacionesMass() {
       .toLowerCase();
 
 
+  /* ==========================================================
+     USUARIO MASS ID
+     ========================================================== */
+
   if (
-    modoAcceso !== "usuario"
+    modoAcceso ===
+    "usuario"
   ) {
 
-    ocultarNotificacionesMass();
-
-    return;
-  }
-
-
-  const usuarioMassId =
-    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
-    await obtenerUsuarioMassIdNotificaciones();
+    const usuarioMassId =
+      MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
+      await obtenerUsuarioMassIdNotificaciones();
 
 
-  if (!usuarioMassId) {
+    if (!usuarioMassId) {
 
-    ocultarNotificacionesMass();
+      ocultarNotificacionesMass();
 
-    return;
-  }
+      return;
+    }
 
 
-  const {
-    count,
-    error
-  } =
-    await supabaseClient
-      .from(
-        "notificaciones_usuario_mass"
-      )
-      .select(
-        "id",
-        {
-          count: "exact",
-          head: true
-        }
-      )
-      .eq(
-        "usuario_mass_id",
-        usuarioMassId
-      )
-      .is(
-        "leida_at",
-        null
+    const {
+      count,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "notificaciones_usuario_mass"
+        )
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "usuario_mass_id",
+          usuarioMassId
+        )
+        .is(
+          "leida_at",
+          null
+        );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CONTANDO NOTIFICACIONES DEL USUARIO:",
+        error
+      );
+
+      return;
+    }
+
+
+    const total =
+      Number(
+        count || 0
       );
 
 
-  if (error) {
+    boton.style.display =
+      "flex";
 
-    console.error(
-      "ERROR CONTANDO NOTIFICACIONES MASS:",
-      error
-    );
+
+    contador.textContent =
+      total > 9
+        ? "9+"
+        : String(total);
+
+
+    contador.style.display =
+      total > 0
+        ? "flex"
+        : "none";
+
 
     return;
   }
 
 
-  const total =
-    Number(
-      count || 0
-    );
+  /* ==========================================================
+     ORGANIZADOR
+     ========================================================== */
+
+  if (
+    modoAcceso ===
+    "organizador"
+  ) {
+
+    const {
+      data: sesionData,
+      error: errorSesion
+    } =
+      await supabaseClient.auth
+        .getSession();
 
 
-  boton.style.display =
-    "flex";
+    const authUserId =
+      sesionData
+        ?.session
+        ?.user
+        ?.id ||
+      null;
 
 
-  contador.textContent =
-    total > 9
-      ? "9+"
-      : String(total);
+    if (
+      errorSesion ||
+      !authUserId
+    ) {
+
+      console.error(
+        "SESIÓN NO DISPONIBLE PARA NOTIFICACIONES DEL ORGANIZADOR:",
+        errorSesion
+      );
 
 
-  contador.style.display =
-    total > 0
-      ? "flex"
-      : "none";
+      ocultarNotificacionesMass();
+
+      return;
+    }
+
+
+    const {
+      count,
+      error
+    } =
+      await supabaseClient
+        .from(
+          "notificaciones_organizador_mass"
+        )
+        .select(
+          "id",
+          {
+            count: "exact",
+            head: true
+          }
+        )
+        .eq(
+          "destinatario_auth_id",
+          authUserId
+        )
+        .is(
+          "leida_at",
+          null
+        );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CONTANDO NOTIFICACIONES DEL ORGANIZADOR:",
+        error
+      );
+
+      return;
+    }
+
+
+    const total =
+      Number(
+        count || 0
+      );
+
+
+    boton.style.display =
+      "flex";
+
+
+    contador.textContent =
+      total > 9
+        ? "9+"
+        : String(total);
+
+
+    contador.style.display =
+      total > 0
+        ? "flex"
+        : "none";
+
+
+    return;
+  }
+
+
+  /* ==========================================================
+     OTROS MODOS
+     ========================================================== */
+
+  ocultarNotificacionesMass();
 }
-
 
 // ============================================================
 // CARGAR BANDEJA
@@ -72082,27 +72317,36 @@ async function cargarNotificacionesMass() {
   `;
 
 
-  const usuarioMassId =
-    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
-    await obtenerUsuarioMassIdNotificaciones();
+  const contexto =
+    await obtenerContextoNotificacionesMass();
 
 
-  if (!usuarioMassId) {
+  if (!contexto) {
 
     resumen.textContent =
-      "No fue posible validar tu MASS ID.";
+      "No fue posible validar la sesión para consultar notificaciones.";
 
     lista.innerHTML =
       "";
 
+
     if (botonTodas) {
+
       botonTodas.style.display =
         "none";
     }
 
+
     return;
   }
 
+
+  /* ==========================================================
+     CONSULTA PRIVADA
+
+     RLS vuelve a comprobar que la sesión
+     solamente pueda ver sus propios registros.
+     ========================================================== */
 
   const {
     data,
@@ -72110,13 +72354,10 @@ async function cargarNotificacionesMass() {
   } =
     await supabaseClient
       .from(
-        "notificaciones_usuario_mass"
+        contexto.tabla
       )
       .select(`
         id,
-        usuario_mass_id,
-        organizador_id,
-        recarga_id,
         tipo,
         titulo,
         mensaje,
@@ -72125,8 +72366,8 @@ async function cargarNotificacionesMass() {
         creado_at
       `)
       .eq(
-        "usuario_mass_id",
-        usuarioMassId
+        contexto.columnaDestinatario,
+        contexto.destinatarioId
       )
       .order(
         "creado_at",
@@ -72146,11 +72387,19 @@ async function cargarNotificacionesMass() {
 
 
     resumen.textContent =
-      "No fue posible cargar tus notificaciones.";
+      "No fue posible cargar las notificaciones.";
 
 
     lista.innerHTML =
       "";
+
+
+    if (botonTodas) {
+
+      botonTodas.style.display =
+        "none";
+    }
+
 
     return;
   }
@@ -72191,6 +72440,10 @@ async function cargarNotificacionesMass() {
   }
 
 
+  /* ==========================================================
+     BANDEJA VACÍA
+     ========================================================== */
+
   if (
     notificaciones.length === 0
   ) {
@@ -72206,7 +72459,14 @@ async function cargarNotificacionesMass() {
           background:#111;
         "
       >
-        🔔 No tienes notificaciones MASS todavía.
+        ${
+          contexto.modo ===
+          "organizador"
+
+            ? "🛎️ No tienes notificaciones administrativas todavía."
+
+            : "🔔 No tienes notificaciones MASS todavía."
+        }
       </div>
     `;
 
@@ -72220,6 +72480,10 @@ async function cargarNotificacionesMass() {
   lista.innerHTML =
     "";
 
+
+  /* ==========================================================
+     TARJETAS
+     ========================================================== */
 
   for (
     const notificacion
@@ -72266,7 +72530,12 @@ async function cargarNotificacionesMass() {
     const titulo =
       escaparHtmlNotificacionMass(
         notificacion.titulo ||
-        "Notificación MASS"
+        (
+          contexto.modo ===
+          "organizador"
+            ? "Notificación administrativa"
+            : "Notificación MASS"
+        )
       );
 
 
@@ -72294,6 +72563,7 @@ async function cargarNotificacionesMass() {
           gap:10px;
         "
       >
+
         <div
           style="
             font-size:17px;
@@ -72309,8 +72579,10 @@ async function cargarNotificacionesMass() {
           ${titulo}
         </div>
 
+
         ${
           estaLeida
+
             ? `
                 <span
                   style="
@@ -72322,6 +72594,7 @@ async function cargarNotificacionesMass() {
                   Leída
                 </span>
               `
+
             : `
                 <span
                   style="
@@ -72335,6 +72608,7 @@ async function cargarNotificacionesMass() {
                 </span>
               `
         }
+
       </div>
 
 
@@ -72353,6 +72627,7 @@ async function cargarNotificacionesMass() {
 
       ${
         fecha
+
           ? `
               <div
                 style="
@@ -72364,12 +72639,14 @@ async function cargarNotificacionesMass() {
                 ${fecha}
               </div>
             `
+
           : ""
       }
 
 
       ${
         !estaLeida
+
           ? `
               <button
                 type="button"
@@ -72393,6 +72670,7 @@ async function cargarNotificacionesMass() {
                 ✅ Marcar como leída
               </button>
             `
+
           : ""
       }
     `;
@@ -72414,19 +72692,11 @@ async function cargarNotificacionesMass() {
 
 async function abrirNotificacionesMass() {
 
-  const modoAcceso =
-    String(
-      localStorage.getItem(
-        "mass_modo_acceso"
-      ) || ""
-    )
-      .trim()
-      .toLowerCase();
+  const contexto =
+    await obtenerContextoNotificacionesMass();
 
 
-  if (
-    modoAcceso !== "usuario"
-  ) {
+  if (!contexto) {
 
     ocultarNotificacionesMass();
 
@@ -72491,12 +72761,28 @@ async function marcarNotificacionMassLeida(
   }
 
 
+  const contexto =
+    await obtenerContextoNotificacionesMass();
+
+
+  if (!contexto) {
+
+    mostrarNotificacion(
+      "error",
+      "Sesión no válida",
+      "No fue posible validar la sesión."
+    );
+
+    return;
+  }
+
+
   const {
     data,
     error
   } =
     await supabaseClient.rpc(
-      "marcar_notificacion_mass_leida_segura",
+      contexto.rpcMarcarLeida,
       {
         p_notificacion_id:
           id
@@ -72529,7 +72815,6 @@ async function marcarNotificacionMassLeida(
   await cargarNotificacionesMass();
 }
 
-
 // ============================================================
 // MARCAR TODAS COMO LEÍDAS
 //
@@ -72538,12 +72823,28 @@ async function marcarNotificacionMassLeida(
 
 async function marcarTodasNotificacionesMassLeidas() {
 
+  const contexto =
+    await obtenerContextoNotificacionesMass();
+
+
+  if (!contexto) {
+
+    mostrarNotificacion(
+      "error",
+      "Sesión no válida",
+      "No fue posible validar la sesión."
+    );
+
+    return;
+  }
+
+
   const {
     data,
     error
   } =
     await supabaseClient.rpc(
-      "marcar_notificacion_mass_leida_segura",
+      contexto.rpcMarcarLeida,
       {
         p_notificacion_id:
           null
@@ -72619,19 +72920,11 @@ async function iniciarRealtimeNotificacionesMass() {
   await detenerRealtimeNotificacionesMass();
 
 
-  const modoAcceso =
-    String(
-      localStorage.getItem(
-        "mass_modo_acceso"
-      ) || ""
-    )
-      .trim()
-      .toLowerCase();
+  const contexto =
+    await obtenerContextoNotificacionesMass();
 
 
-  if (
-    modoAcceso !== "usuario"
-  ) {
+  if (!contexto) {
 
     ocultarNotificacionesMass();
 
@@ -72639,44 +72932,60 @@ async function iniciarRealtimeNotificacionesMass() {
   }
 
 
-  const usuarioMassId =
-    MASS_NOTIFICACIONES_USUARIO_MASS_ID ||
-    await obtenerUsuarioMassIdNotificaciones();
+  /* ==========================================================
+     CANAL PRIVADO SEGÚN EL MODO ACTUAL
 
+     USUARIO:
+       notificaciones_usuario_mass
+       usuario_mass_id
 
-  if (!usuarioMassId) {
-
-    ocultarNotificacionesMass();
-
-    return;
-  }
-
+     ORGANIZADOR:
+       notificaciones_organizador_mass
+       destinatario_auth_id
+     ========================================================== */
 
   MASS_NOTIFICACIONES_CANAL_REALTIME =
     supabaseClient
       .channel(
         "notificaciones_mass_" +
-        usuarioMassId +
+        contexto.modo +
+        "_" +
+        contexto.destinatarioId +
         "_" +
         Date.now()
       )
       .on(
         "postgres_changes",
         {
-          event: "*",
-          schema: "public",
+          event:
+            "*",
+
+          schema:
+            "public",
+
           table:
-            "notificaciones_usuario_mass",
+            contexto.tabla,
+
           filter:
-            "usuario_mass_id=eq." +
-            usuarioMassId
+            contexto.columnaDestinatario +
+            "=eq." +
+            contexto.destinatarioId
         },
+
         async (
           payload
         ) => {
 
+          /* ================================================
+             ACTUALIZAR CONTADOR
+             ================================================ */
+
           await actualizarContadorNotificacionesMass();
 
+
+          /* ================================================
+             SI LA BANDEJA ESTÁ ABIERTA, REFRESCARLA
+             ================================================ */
 
           const panel =
             document.getElementById(
@@ -72694,6 +73003,10 @@ async function iniciarRealtimeNotificacionesMass() {
           }
 
 
+          /* ================================================
+             NUEVA NOTIFICACIÓN EN TIEMPO REAL
+             ================================================ */
+
           if (
             payload?.eventType ===
               "INSERT" &&
@@ -72703,7 +73016,14 @@ async function iniciarRealtimeNotificacionesMass() {
             const titulo =
               String(
                 payload.new.titulo ||
-                "Nueva notificación MASS"
+                (
+                  contexto.modo ===
+                  "organizador"
+
+                    ? "Nueva notificación administrativa"
+
+                    : "Nueva notificación MASS"
+                )
               );
 
 
@@ -72714,15 +73034,17 @@ async function iniciarRealtimeNotificacionesMass() {
               );
 
 
-mostrarNotificacion(
-  "info",
-  escaparHtmlNotificacionMass(
-    titulo
-  ),
-  escaparHtmlNotificacionMass(
-    mensaje
-  )
-);
+            mostrarNotificacion(
+              "info",
+
+              escaparHtmlNotificacionMass(
+                titulo
+              ),
+
+              escaparHtmlNotificacionMass(
+                mensaje
+              )
+            );
           }
         }
       )
@@ -72730,13 +73052,14 @@ mostrarNotificacion(
         status => {
 
           console.log(
-            "📡 NOTIFICACIONES MASS REALTIME:",
+            "📡 NOTIFICACIONES MASS REALTIME " +
+            contexto.modo +
+            ":",
             status
           );
         }
       );
 }
-
 
 // ============================================================
 // INICIALIZAR SISTEMA
@@ -72754,39 +73077,80 @@ async function inicializarNotificacionesMass() {
       .toLowerCase();
 
 
+  /* ==========================================================
+     USUARIO MASS ID
+     ========================================================== */
+
   if (
-    modoAcceso !== "usuario"
+    modoAcceso ===
+    "usuario"
   ) {
 
-    MASS_NOTIFICACIONES_USUARIO_MASS_ID =
-      null;
+    const usuarioMassId =
+      await obtenerUsuarioMassIdNotificaciones();
 
 
-    await detenerRealtimeNotificacionesMass();
+    if (!usuarioMassId) {
+
+      ocultarNotificacionesMass();
+
+      return;
+    }
 
 
-    ocultarNotificacionesMass();
+    await actualizarContadorNotificacionesMass();
+
+    await iniciarRealtimeNotificacionesMass();
 
 
     return;
   }
 
+/* ==========================================================
+   ORGANIZADOR
 
-  const usuarioMassId =
-    await obtenerUsuarioMassIdNotificaciones();
+   Habilita:
+   - campanita administrativa
+   - contador de no leídas
+   - bandeja privada
+   - Realtime administrativo
+   ========================================================== */
+ 
+
+if (
+  modoAcceso ===
+  "organizador"
+) {
+
+  MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+    null;
 
 
-  if (!usuarioMassId) {
-
-    ocultarNotificacionesMass();
-
-    return;
-  }
+  await detenerRealtimeNotificacionesMass();
 
 
   await actualizarContadorNotificacionesMass();
 
+
   await iniciarRealtimeNotificacionesMass();
+
+
+  return;
+}
+	
+
+  /* ==========================================================
+     SÚPER ADMIN / ANÓNIMO / OTROS
+     ========================================================== */
+
+  MASS_NOTIFICACIONES_USUARIO_MASS_ID =
+    null;
+
+
+  await detenerRealtimeNotificacionesMass();
+
+
+  ocultarNotificacionesMass();
 }	
 
 async function mostrarSesionActiva() {
