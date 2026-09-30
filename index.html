@@ -2283,6 +2283,13 @@ Cargando historial...
 
 <button onclick="mostrarHistorialRecargasMassAdmin()">
 📜 Historial recargas
+</button>
+
+<button
+  type="button"
+  onclick="mostrarComprasMassAdmin()"
+>
+  🧾 Compras MASS / Reversiones
 </button>	
 
 <button id="btnConfigAdmin" onclick="mostrarConfigAdmin()">
@@ -67730,6 +67737,471 @@ ${motivoRechazoHistorialHtml}
       "adminContenido"
     )
     .innerHTML = html;
+}
+
+// ============================================================
+// MASS — COMPRAS / REVERSIONES — PANEL ADMIN
+// SOLO LECTURA
+// ============================================================
+
+async function mostrarComprasMassAdmin() {
+
+  const cont =
+    document.getElementById(
+      "adminContenido"
+    );
+
+
+  if (!cont) {
+
+    alert(
+      "❌ No se encontró el panel administrativo."
+    );
+
+    return;
+  }
+
+
+  cont.innerHTML = `
+    <h2>🧾 Compras MASS / Reversiones</h2>
+
+    <p>
+      Cargando historial de compras...
+    </p>
+  `;
+
+
+  /* ==========================================================
+     1. CONTEXTO ADMINISTRATIVO
+     ========================================================== */
+
+  const adminRol =
+    String(
+      localStorage.getItem(
+        "admin_rol"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  let organizadorId = null;
+
+
+  if (adminRol === "organizador") {
+
+    organizadorId =
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      localStorage.getItem(
+        "organizador_admin_id"
+      ) ||
+      null;
+
+  } else if (adminRol === "super_admin") {
+
+    organizadorId =
+      localStorage.getItem(
+        "organizador_admin_id"
+      ) ||
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      null;
+
+  } else {
+
+    cont.innerHTML = `
+      <h2>🧾 Compras MASS / Reversiones</h2>
+
+      <p style="color:#ff6b6b;">
+        ❌ No existe una sesión administrativa autorizada.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  /* ==========================================================
+     2. CONSULTA SEGURA AL BACKEND
+     ========================================================== */
+
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "listar_compras_mass_admin_segura",
+    {
+      p_organizador_id:
+        organizadorId,
+
+      p_estado:
+        null,
+
+      p_limite:
+        100,
+
+      p_offset:
+        0
+    }
+  );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO COMPRAS MASS:",
+      error
+    );
+
+
+    cont.innerHTML = `
+      <h2>🧾 Compras MASS / Reversiones</h2>
+
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible cargar las compras MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const compras =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  /* ==========================================================
+     3. ESCAPE HTML
+     ========================================================== */
+
+  const escaparHtmlCompraMass =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  /* ==========================================================
+     4. FORMATEAR FECHA
+     ========================================================== */
+
+  const formatearFechaCompraMass =
+    valor => {
+
+      if (!valor) {
+        return "Sin fecha";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+        return "Sin fecha";
+      }
+
+
+      return fecha.toLocaleString();
+    };
+
+
+  /* ==========================================================
+     5. ENCABEZADO
+     ========================================================== */
+
+  let html = `
+    <h2>🧾 Compras MASS / Reversiones</h2>
+
+    <div
+      style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin-bottom:16px;
+        text-align:left;
+      "
+    >
+      🔐 Historial administrativo protegido.<br>
+      Las compras originales y sus movimientos
+      financieros permanecen registrados aunque
+      exista una reversión.
+    </div>
+  `;
+
+
+  /* ==========================================================
+     6. SIN COMPRAS
+     ========================================================== */
+
+  if (compras.length === 0) {
+
+    html += `
+      <p>
+        No existen compras MASS registradas todavía.
+      </p>
+    `;
+
+
+    cont.innerHTML =
+      html;
+
+    return;
+  }
+
+
+  /* ==========================================================
+     7. TARJETAS
+     ========================================================== */
+
+  compras.forEach(
+    compra => {
+
+      const estadoCompra =
+        String(
+          compra.estado_compra ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const estaRevertida =
+        estadoCompra ===
+        "revertida";
+
+
+      const numerosBase =
+        Array.isArray(
+          compra.numeros_base
+        )
+          ? compra.numeros_base
+          : [];
+
+
+      const numerosBoletos =
+        Array.isArray(
+          compra.numeros_boletos
+        )
+          ? compra.numeros_boletos
+          : [];
+
+
+      const massId =
+        escaparHtmlCompraMass(
+          compra.mass_id ||
+          "MASS ID no disponible"
+        );
+
+
+      const rifaTitulo =
+        escaparHtmlCompraMass(
+          compra.rifa_titulo ||
+          "Dinámica no disponible"
+        );
+
+
+      const unidadMass =
+        escaparHtmlCompraMass(
+          compra.unidad_mass ||
+          ""
+        );
+
+
+      const estadoRifa =
+        escaparHtmlCompraMass(
+          compra.estado_rifa ||
+          "No disponible"
+        );
+
+
+      const numerosBaseTexto =
+        numerosBase.length > 0
+          ? numerosBase
+              .map(
+                numero =>
+                  escaparHtmlCompraMass(
+                    numero
+                  )
+              )
+              .join(", ")
+          : "No disponibles";
+
+
+      const numerosBoletosTexto =
+        numerosBoletos.length > 0
+          ? numerosBoletos
+              .map(
+                numero =>
+                  escaparHtmlCompraMass(
+                    numero
+                  )
+              )
+              .join(", ")
+          : "No disponibles";
+
+
+      html += `
+        <div
+          class="card"
+          style="
+            text-align:left;
+            border:
+              1px solid
+              ${
+                estaRevertida
+                  ? "#facc15"
+                  : "#39ff14"
+              };
+          "
+        >
+
+          <h3
+            style="
+              margin-top:0;
+              color:
+                ${
+                  estaRevertida
+                    ? "#facc15"
+                    : "#39ff14"
+                };
+            "
+          >
+            ${
+              estaRevertida
+                ? "↩️ Compra revertida"
+                : "✅ Compra vigente"
+            }
+          </h3>
+
+
+          <p>
+            <b>👤 MASS ID:</b>
+            ${massId}
+          </p>
+
+
+          <p>
+            <b>🎯 Dinámica:</b>
+            ${rifaTitulo}
+          </p>
+
+
+          <p>
+            <b>📌 Estado de la dinámica:</b>
+            ${estadoRifa}
+          </p>
+
+
+          <p>
+            <b>🎟️ Número(s) seleccionado(s):</b>
+            ${numerosBaseTexto}
+          </p>
+
+
+          <p>
+            <b>🎫 Boletos incluidos:</b>
+            ${numerosBoletosTexto}
+          </p>
+
+
+          <p>
+            <b>💰 Total pagado:</b>
+            ${Number(
+              compra.total_pagado || 0
+            )}
+            MASS
+            ${unidadMass}
+          </p>
+
+
+          <p>
+            <b>🕘 Compra:</b>
+            ${
+              escaparHtmlCompraMass(
+                formatearFechaCompraMass(
+                  compra.compra_creada_at
+                )
+              )
+            }
+          </p>
+
+
+          ${
+            estaRevertida
+              ? `
+                  <hr>
+
+                  <p>
+                    <b>↩️ Monto reintegrado:</b>
+                    ${Number(
+                      compra.monto_reintegrado || 0
+                    )}
+                    MASS
+                    ${unidadMass}
+                  </p>
+
+                  <p>
+                    <b>📋 Motivo:</b>
+                    ${
+                      escaparHtmlCompraMass(
+                        compra.motivo_reversion ||
+                        "No disponible"
+                      )
+                    }
+                  </p>
+
+                  ${
+                    compra.detalle_reversion
+                      ? `
+                          <p>
+                            <b>📝 Detalle:</b>
+                            ${
+                              escaparHtmlCompraMass(
+                                compra.detalle_reversion
+                              )
+                            }
+                          </p>
+                        `
+                      : ""
+                  }
+
+                  <p>
+                    <b>🕘 Reversión:</b>
+                    ${
+                      escaparHtmlCompraMass(
+                        formatearFechaCompraMass(
+                          compra.reversion_creada_at
+                        )
+                      )
+                    }
+                  </p>
+                `
+              : ""
+          }
+
+        </div>
+      `;
+    }
+  );
+
+
+  cont.innerHTML =
+    html;
 }	
 
 async function aprobarRecarga(id, userId, monto, unidadMass) {
