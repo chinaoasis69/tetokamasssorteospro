@@ -66817,8 +66817,13 @@ window.addEventListener("DOMContentLoaded", async () => {
     }	
 
 // ==========================================================
-// MASS - MOSTRAR BOTÓN DE MENSAJES AL RECARGAR LA PÁGINA
+// MASS - RESTAURAR MENSAJES AL RECARGAR LA PÁGINA
 // SOLO PARA ORGANIZADOR
+//
+// Restaura:
+// - botón administrativo de mensajes
+// - botón flotante 💬
+// - área de chat del Organizador
 // ==========================================================
 
 const btnMensajesClientesOrganizador =
@@ -66826,33 +66831,85 @@ const btnMensajesClientesOrganizador =
     "btnMensajesClientesOrganizador"
   );
 
+const btnChatFlotanteOrganizadorRestaurado =
+  document.getElementById(
+    "btnChatFlotanteOrganizador"
+  );
+
+const chatOrganizadorUsuarioBoxRestaurado =
+  document.getElementById(
+    "chatOrganizadorUsuarioBox"
+  );
+
 const rolAdminGuardado =
-  localStorage.getItem("admin_rol");
+  String(
+    localStorage.getItem(
+      "admin_rol"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();
 
 const organizadorIdGuardado =
-  localStorage.getItem("admin_organizador_id");
+  localStorage.getItem(
+    "admin_organizador_id"
+  ) ||
+  localStorage.getItem(
+    "organizador_admin_id"
+  ) ||
+  null;
+
+const modoAccesoGuardado =
+  String(
+    localStorage.getItem(
+      "mass_modo_acceso"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();
+
+const sesionOrganizadorGuardada =
+  modoAccesoGuardado === "organizador" &&
+  rolAdminGuardado === "organizador" &&
+  !!organizadorIdGuardado;
+
 
 if (btnMensajesClientesOrganizador) {
-  const modoAccesoGuardado =
-    localStorage.getItem("mass_modo_acceso");
 
-  if (
-    modoAccesoGuardado === "organizador" &&
-    organizadorIdGuardado
-  ) {
-    btnMensajesClientesOrganizador.style.display = "block";
+  btnMensajesClientesOrganizador.style.display =
+    sesionOrganizadorGuardada
+      ? "block"
+      : "none";
+}
 
-    const chatOrganizadorUsuarioBox =
-      document.getElementById(
-        "chatOrganizadorUsuarioBox"
-      );
 
-    if (chatOrganizadorUsuarioBox) {
-      chatOrganizadorUsuarioBox.style.display = "block";
-    }
+if (btnChatFlotanteOrganizadorRestaurado) {
+
+  if (sesionOrganizadorGuardada) {
+
+    btnChatFlotanteOrganizadorRestaurado.style.display =
+      "flex";
+
+    btnChatFlotanteOrganizadorRestaurado.style.alignItems =
+      "center";
+
+    btnChatFlotanteOrganizadorRestaurado.style.justifyContent =
+      "center";
+
   } else {
-    btnMensajesClientesOrganizador.style.display = "none";
+
+    btnChatFlotanteOrganizadorRestaurado.style.display =
+      "none";
   }
+}
+
+
+if (chatOrganizadorUsuarioBoxRestaurado) {
+
+  chatOrganizadorUsuarioBoxRestaurado.style.display =
+    sesionOrganizadorGuardada
+      ? "block"
+      : "none";
 }	
 
   const parametrosRecuperacion =
