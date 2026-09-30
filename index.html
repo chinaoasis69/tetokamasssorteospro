@@ -68139,7 +68139,38 @@ async function mostrarComprasMassAdmin() {
               )
             }
           </p>
-
+		  
+          ${
+            !estaRevertida
+              ? `
+                  <div
+                    style="
+                      margin-top:16px;
+                      padding-top:14px;
+                      border-top:1px solid #444;
+                    "
+                  >
+                    <button
+                      type="button"
+                      onclick="abrirFormularioReversionCompraMass(
+                        '${compra.compra_id}'
+                      )"
+                      style="
+                        padding:10px 16px;
+                        border:1px solid #facc15;
+                        border-radius:10px;
+                        background:#2b2200;
+                        color:#facc15;
+                        font-weight:bold;
+                        cursor:pointer;
+                      "
+                    >
+                      ↩️ Reversión técnica
+                    </button>
+                  </div>
+                `
+              : ""
+          }
 
           ${
             estaRevertida
@@ -68202,6 +68233,615 @@ async function mostrarComprasMassAdmin() {
 
   cont.innerHTML =
     html;
+}
+
+// ============================================================
+// MASS — REVERSIÓN TÉCNICA DE COMPRA — PANEL ADMIN
+// ============================================================
+
+const MASS_REVERSIONES_COMPRAS_EN_CURSO =
+  new Set();
+
+
+// ============================================================
+// ABRIR FORMULARIO
+// ============================================================
+
+function abrirFormularioReversionCompraMass(
+  compraId
+) {
+
+  const idCompra =
+    String(
+      compraId || ""
+    ).trim();
+
+
+  const uuidValido =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+
+  if (!uuidValido.test(idCompra)) {
+
+    alert(
+      "❌ No fue posible identificar la compra."
+    );
+
+    return;
+  }
+
+
+  const modalAnterior =
+    document.getElementById(
+      "modalReversionCompraMassAdmin"
+    );
+
+
+  if (modalAnterior) {
+    modalAnterior.remove();
+  }
+
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const modal =
+    document.createElement(
+      "div"
+    );
+
+
+  modal.id =
+    "modalReversionCompraMassAdmin";
+
+
+  modal.dataset.compraId =
+    idCompra;
+
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,.82);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    box-sizing:border-box;
+    overflow:auto;
+  `;
+
+
+  modal.innerHTML = `
+    <div
+      style="
+        width:100%;
+        max-width:620px;
+        background:#111;
+        color:white;
+        border:2px solid #facc15;
+        border-radius:16px;
+        padding:20px;
+        box-sizing:border-box;
+        text-align:left;
+        box-shadow:0 0 24px rgba(250,204,21,.28);
+      "
+    >
+
+      <h2
+        style="
+          margin-top:0;
+          color:#facc15;
+          text-align:center;
+        "
+      >
+        ↩️ Reversión técnica
+      </h2>
+
+
+      <div
+        style="
+          border:1px solid #facc15;
+          border-radius:10px;
+          padding:12px;
+          margin-bottom:18px;
+          background:#211c05;
+        "
+      >
+        ⚠️ Esta función es únicamente para
+        correcciones administrativas excepcionales.
+
+        <br><br>
+
+        El servidor volverá a verificar que la compra
+        pueda revertirse de forma segura.
+
+        <br><br>
+
+        Una compra con Lucky Spin utilizado,
+        participación en pre-sorteos, premios,
+        resultados oficiales u otros bloqueos
+        será rechazada automáticamente.
+      </div>
+
+
+      <p>
+        <b>ID de compra:</b><br>
+        <span
+          style="
+            word-break:break-all;
+            color:#ccc;
+          "
+        >
+          ${escaparHtml(idCompra)}
+        </span>
+      </p>
+
+
+      <label
+        for="motivoReversionCompraMassAdmin"
+        style="
+          display:block;
+          margin-top:16px;
+          margin-bottom:7px;
+          font-weight:bold;
+        "
+      >
+        Motivo *
+      </label>
+
+
+      <select
+        id="motivoReversionCompraMassAdmin"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:11px;
+          border-radius:9px;
+          margin-bottom:16px;
+        "
+      >
+        <option value="">
+          Selecciona un motivo
+        </option>
+
+        <option value="ERROR_TECNICO">
+          Error técnico
+        </option>
+
+        <option value="COMPRA_DUPLICADA">
+          Compra duplicada
+        </option>
+
+        <option value="CORRECCION_ADMINISTRATIVA">
+          Corrección administrativa
+        </option>
+
+        <option value="EXIGENCIA_LEGAL">
+          Exigencia legal
+        </option>
+      </select>
+
+
+      <label
+        for="detalleReversionCompraMassAdmin"
+        style="
+          display:block;
+          margin-bottom:7px;
+          font-weight:bold;
+        "
+      >
+        Detalle administrativo
+      </label>
+
+
+      <textarea
+        id="detalleReversionCompraMassAdmin"
+        maxlength="1000"
+        rows="5"
+        placeholder="Describe brevemente por qué se requiere esta reversión."
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:11px;
+          border-radius:9px;
+          resize:vertical;
+          margin-bottom:18px;
+        "
+      ></textarea>
+
+
+      <div
+        style="
+          display:flex;
+          gap:10px;
+          justify-content:center;
+          flex-wrap:wrap;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="cerrarFormularioReversionCompraMass()"
+        >
+          ❌ Cancelar
+        </button>
+
+
+        <button
+          id="btnConfirmarReversionCompraMassAdmin"
+          type="button"
+          onclick="ejecutarReversionCompraMassAdmin(
+            '${idCompra}'
+          )"
+          style="
+            border:1px solid #facc15;
+            background:#2b2200;
+            color:#facc15;
+            font-weight:bold;
+          "
+        >
+          ↩️ Confirmar reversión técnica
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+
+  document.body.appendChild(
+    modal
+  );
+}
+
+
+// ============================================================
+// CERRAR FORMULARIO
+// ============================================================
+
+function cerrarFormularioReversionCompraMass() {
+
+  if (
+    MASS_REVERSIONES_COMPRAS_EN_CURSO.size > 0
+  ) {
+
+    alert(
+      "⏳ Hay una reversión en proceso. Espera a que termine."
+    );
+
+    return;
+  }
+
+
+  const modal =
+    document.getElementById(
+      "modalReversionCompraMassAdmin"
+    );
+
+
+  if (modal) {
+    modal.remove();
+  }
+}
+
+
+// ============================================================
+// EJECUTAR REVERSIÓN
+// ============================================================
+
+async function ejecutarReversionCompraMassAdmin(
+  compraId
+) {
+
+  const idCompra =
+    String(
+      compraId || ""
+    ).trim();
+
+
+  if (
+    MASS_REVERSIONES_COMPRAS_EN_CURSO.has(
+      idCompra
+    )
+  ) {
+    return;
+  }
+
+
+  const selectMotivo =
+    document.getElementById(
+      "motivoReversionCompraMassAdmin"
+    );
+
+
+  const inputDetalle =
+    document.getElementById(
+      "detalleReversionCompraMassAdmin"
+    );
+
+
+  const boton =
+    document.getElementById(
+      "btnConfirmarReversionCompraMassAdmin"
+    );
+
+
+  if (
+    !selectMotivo ||
+    !inputDetalle
+  ) {
+
+    alert(
+      "❌ No fue posible leer el formulario de reversión."
+    );
+
+    return;
+  }
+
+
+  const motivo =
+    String(
+      selectMotivo.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const motivosPermitidos =
+    [
+      "ERROR_TECNICO",
+      "COMPRA_DUPLICADA",
+      "CORRECCION_ADMINISTRATIVA",
+      "EXIGENCIA_LEGAL"
+    ];
+
+
+  if (
+    !motivosPermitidos.includes(
+      motivo
+    )
+  ) {
+
+    alert(
+      "⚠️ Selecciona un motivo válido."
+    );
+
+    selectMotivo.focus();
+
+    return;
+  }
+
+
+  const detalle =
+    String(
+      inputDetalle.value || ""
+    ).trim();
+
+
+  if (
+    detalle.length > 1000
+  ) {
+
+    alert(
+      "⚠️ El detalle no puede superar 1000 caracteres."
+    );
+
+    return;
+  }
+
+
+  const nombresMotivo = {
+
+    ERROR_TECNICO:
+      "Error técnico",
+
+    COMPRA_DUPLICADA:
+      "Compra duplicada",
+
+    CORRECCION_ADMINISTRATIVA:
+      "Corrección administrativa",
+
+    EXIGENCIA_LEGAL:
+      "Exigencia legal"
+
+  };
+
+
+  const confirmar =
+    confirm(
+`⚠️ REVERSIÓN TÉCNICA
+
+Compra:
+${idCompra}
+
+Motivo:
+${nombresMotivo[motivo]}
+
+Esta operación intentará:
+
+• reintegrar el monto original a la Wallet MASS;
+• liberar todos los boletos de la compra;
+• conservar intacto el historial original;
+• registrar un movimiento compensatorio;
+• crear un expediente permanente de reversión.
+
+El servidor volverá a validar todas las condiciones.
+
+¿Confirmas que deseas continuar?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_REVERSIONES_COMPRAS_EN_CURSO.add(
+    idCompra
+  );
+
+
+  if (boton) {
+
+    boton.disabled =
+      true;
+
+    boton.textContent =
+      "⏳ Procesando reversión...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "revertir_compra_mass_segura",
+        {
+          p_compra_id:
+            idCompra,
+
+          p_motivo:
+            motivo,
+
+          p_detalle:
+            detalle || null
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR EJECUTANDO REVERSIÓN MASS:",
+        error
+      );
+
+
+      alert(
+        "❌ La reversión fue rechazada.\n\n" +
+        (
+          error.message ||
+          "El servidor bloqueó la operación de forma segura."
+        )
+      );
+
+      return;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.compra_id || ""
+      ) !== idCompra
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA DE REVERSIÓN:",
+        data
+      );
+
+
+      alert(
+        "❌ El servidor no devolvió una confirmación válida."
+      );
+
+      return;
+    }
+
+
+    MASS_REVERSIONES_COMPRAS_EN_CURSO.delete(
+      idCompra
+    );
+
+
+    const modal =
+      document.getElementById(
+        "modalReversionCompraMassAdmin"
+      );
+
+
+    if (modal) {
+      modal.remove();
+    }
+
+
+    alert(
+`✅ Reversión técnica completada
+
+Monto reintegrado:
+${resultado.monto_reintegrado} MASS ${resultado.unidad_mass}
+
+Saldo anterior:
+${resultado.saldo_anterior} MASS ${resultado.unidad_mass}
+
+Saldo nuevo:
+${resultado.saldo_nuevo} MASS ${resultado.unidad_mass}
+
+Boletos liberados:
+${resultado.boletos_revertidos}`
+    );
+
+
+    await mostrarComprasMassAdmin();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO EN REVERSIÓN MASS:",
+      errorInesperado
+    );
+
+
+    alert(
+      "❌ Ocurrió un error inesperado procesando la reversión."
+    );
+
+
+  } finally {
+
+    MASS_REVERSIONES_COMPRAS_EN_CURSO.delete(
+      idCompra
+    );
+
+
+    const botonActual =
+      document.getElementById(
+        "btnConfirmarReversionCompraMassAdmin"
+      );
+
+
+    if (botonActual) {
+
+      botonActual.disabled =
+        false;
+
+      botonActual.textContent =
+        "↩️ Confirmar reversión técnica";
+    }
+  }
 }	
 
 async function aprobarRecarga(id, userId, monto, unidadMass) {
