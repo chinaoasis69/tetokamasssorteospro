@@ -62862,13 +62862,34 @@ async function cargarMisComprasMass() {
           <div
             style="
               margin-top:14px;
-              padding:10px;
+              padding:12px;
               border:1px solid #555;
               border-radius:10px;
               color:#ccc;
             "
           >
-            Sin solicitud de revisión.
+            <div>
+              Sin solicitud de revisión.
+            </div>
+
+            <button
+              type="button"
+              onclick="abrirFormularioSolicitudRevisionMass(
+                '${compra.compra_id}'
+              )"
+              style="
+                margin-top:12px;
+                padding:10px 16px;
+                border:1px solid #facc15;
+                border-radius:10px;
+                background:#2b2200;
+                color:#facc15;
+                font-weight:bold;
+                cursor:pointer;
+              "
+            >
+              📝 Solicitar revisión
+            </button>
           </div>
         `;
 
@@ -62964,6 +62985,638 @@ async function cargarMisComprasMass() {
 
   contenedor.innerHTML =
     html;
+}
+
+// ============================================================
+// MASS — SOLICITUD DE REVISIÓN DE COMPRA — USUARIO
+// ============================================================
+
+const MASS_SOLICITUDES_REVISION_EN_CURSO =
+  new Set();
+
+
+// ============================================================
+// ABRIR FORMULARIO
+// ============================================================
+
+function abrirFormularioSolicitudRevisionMass(
+  compraId
+) {
+
+  const idCompra =
+    String(
+      compraId || ""
+    ).trim();
+
+
+  const uuidValido =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+
+  if (!uuidValido.test(idCompra)) {
+
+    alert(
+      "❌ No fue posible identificar la compra."
+    );
+
+    return;
+  }
+
+
+  const modalAnterior =
+    document.getElementById(
+      "modalSolicitudRevisionCompraMass"
+    );
+
+
+  if (modalAnterior) {
+    modalAnterior.remove();
+  }
+
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const modal =
+    document.createElement(
+      "div"
+    );
+
+
+  modal.id =
+    "modalSolicitudRevisionCompraMass";
+
+
+  modal.dataset.compraId =
+    idCompra;
+
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,.82);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    box-sizing:border-box;
+    overflow:auto;
+  `;
+
+
+  modal.innerHTML = `
+    <div
+      style="
+        width:100%;
+        max-width:620px;
+        background:#111;
+        color:white;
+        border:2px solid #facc15;
+        border-radius:16px;
+        padding:20px;
+        box-sizing:border-box;
+        text-align:left;
+        box-shadow:0 0 24px rgba(250,204,21,.28);
+      "
+    >
+
+      <h2
+        style="
+          margin-top:0;
+          color:#facc15;
+          text-align:center;
+        "
+      >
+        📝 Solicitar revisión
+      </h2>
+
+
+      <div
+        style="
+          border:1px solid #facc15;
+          border-radius:10px;
+          padding:12px;
+          margin-bottom:18px;
+          background:#211c05;
+          line-height:1.5;
+        "
+      >
+        ⚠️ Solicitar una revisión
+        <b>NO cancela automáticamente la compra</b>
+        y no garantiza una devolución.
+
+        <br><br>
+
+        El Organizador revisará tu solicitud.
+        Si corresponde una reversión, el servidor
+        volverá a comprobar todas las condiciones
+        de seguridad.
+      </div>
+
+
+      <p>
+        <b>ID de compra:</b><br>
+
+        <span
+          style="
+            word-break:break-all;
+            color:#ccc;
+          "
+        >
+          ${escaparHtml(idCompra)}
+        </span>
+      </p>
+
+
+      <label
+        for="motivoSolicitudRevisionMass"
+        style="
+          display:block;
+          margin-top:16px;
+          margin-bottom:7px;
+          font-weight:bold;
+        "
+      >
+        Motivo *
+      </label>
+
+
+      <select
+        id="motivoSolicitudRevisionMass"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:11px;
+          border-radius:9px;
+          margin-bottom:16px;
+        "
+      >
+
+        <option value="">
+          Selecciona un motivo
+        </option>
+
+        <option value="ERROR_TECNICO">
+          Error técnico
+        </option>
+
+        <option value="COMPRA_DUPLICADA">
+          Compra duplicada
+        </option>
+
+        <option value="NO_RECONOZCO_COMPRA">
+          No reconozco esta compra
+        </option>
+
+        <option value="OTRO_PROBLEMA">
+          Otro problema
+        </option>
+
+      </select>
+
+
+      <label
+        for="detalleSolicitudRevisionMass"
+        style="
+          display:block;
+          margin-bottom:7px;
+          font-weight:bold;
+        "
+      >
+        Explica qué ocurrió
+      </label>
+
+
+      <textarea
+        id="detalleSolicitudRevisionMass"
+        maxlength="1000"
+        rows="5"
+        placeholder="Describe brevemente el problema."
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:11px;
+          border-radius:9px;
+          resize:vertical;
+          margin-bottom:8px;
+        "
+      ></textarea>
+
+
+      <div
+        style="
+          color:#aaa;
+          font-size:13px;
+          margin-bottom:18px;
+        "
+      >
+        Si seleccionas “Otro problema”,
+        la explicación es obligatoria.
+      </div>
+
+
+      <div
+        style="
+          display:flex;
+          gap:10px;
+          justify-content:center;
+          flex-wrap:wrap;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="cerrarFormularioSolicitudRevisionMass()"
+        >
+          ❌ Cancelar
+        </button>
+
+
+        <button
+          id="btnEnviarSolicitudRevisionMass"
+          type="button"
+          onclick="enviarSolicitudRevisionCompraMass(
+            '${idCompra}'
+          )"
+          style="
+            border:1px solid #facc15;
+            background:#2b2200;
+            color:#facc15;
+            font-weight:bold;
+          "
+        >
+          📝 Enviar solicitud
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+
+  document.body.appendChild(
+    modal
+  );
+}
+
+
+// ============================================================
+// CERRAR FORMULARIO
+// ============================================================
+
+function cerrarFormularioSolicitudRevisionMass() {
+
+  if (
+    MASS_SOLICITUDES_REVISION_EN_CURSO.size > 0
+  ) {
+
+    alert(
+      "⏳ Tu solicitud se está procesando. Espera un momento."
+    );
+
+    return;
+  }
+
+
+  const modal =
+    document.getElementById(
+      "modalSolicitudRevisionCompraMass"
+    );
+
+
+  if (modal) {
+    modal.remove();
+  }
+}
+
+
+// ============================================================
+// ENVIAR SOLICITUD
+// ============================================================
+
+async function enviarSolicitudRevisionCompraMass(
+  compraId
+) {
+
+  const idCompra =
+    String(
+      compraId || ""
+    ).trim();
+
+
+  if (
+    MASS_SOLICITUDES_REVISION_EN_CURSO.has(
+      idCompra
+    )
+  ) {
+    return;
+  }
+
+
+  const selectMotivo =
+    document.getElementById(
+      "motivoSolicitudRevisionMass"
+    );
+
+
+  const inputDetalle =
+    document.getElementById(
+      "detalleSolicitudRevisionMass"
+    );
+
+
+  const boton =
+    document.getElementById(
+      "btnEnviarSolicitudRevisionMass"
+    );
+
+
+  if (
+    !selectMotivo ||
+    !inputDetalle
+  ) {
+
+    alert(
+      "❌ No fue posible leer el formulario."
+    );
+
+    return;
+  }
+
+
+  const motivo =
+    String(
+      selectMotivo.value || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const motivosPermitidos =
+    [
+      "ERROR_TECNICO",
+      "COMPRA_DUPLICADA",
+      "NO_RECONOZCO_COMPRA",
+      "OTRO_PROBLEMA"
+    ];
+
+
+  if (
+    !motivosPermitidos.includes(
+      motivo
+    )
+  ) {
+
+    alert(
+      "⚠️ Selecciona un motivo válido."
+    );
+
+    selectMotivo.focus();
+
+    return;
+  }
+
+
+  const detalle =
+    String(
+      inputDetalle.value || ""
+    ).trim();
+
+
+  if (
+    detalle.length > 1000
+  ) {
+
+    alert(
+      "⚠️ La explicación no puede superar 1000 caracteres."
+    );
+
+    return;
+  }
+
+
+  if (
+    motivo === "OTRO_PROBLEMA" &&
+    !detalle
+  ) {
+
+    alert(
+      "⚠️ Explica qué ocurrió para poder enviar la solicitud."
+    );
+
+    inputDetalle.focus();
+
+    return;
+  }
+
+
+  const nombresMotivo = {
+
+    ERROR_TECNICO:
+      "Error técnico",
+
+    COMPRA_DUPLICADA:
+      "Compra duplicada",
+
+    NO_RECONOZCO_COMPRA:
+      "No reconozco esta compra",
+
+    OTRO_PROBLEMA:
+      "Otro problema"
+
+  };
+
+
+  const confirmar =
+    confirm(
+`📝 SOLICITUD DE REVISIÓN
+
+Motivo:
+${nombresMotivo[motivo]}
+
+Esta solicitud NO cancela automáticamente tu compra
+ni garantiza una devolución.
+
+El Organizador revisará el caso.
+
+¿Deseas enviar la solicitud?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_SOLICITUDES_REVISION_EN_CURSO.add(
+    idCompra
+  );
+
+
+  if (boton) {
+
+    boton.disabled =
+      true;
+
+    boton.textContent =
+      "⏳ Enviando solicitud...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "solicitar_revision_compra_mass_segura",
+        {
+          p_compra_id:
+            idCompra,
+
+          p_motivo_usuario:
+            motivo,
+
+          p_detalle_usuario:
+            detalle || null
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR SOLICITANDO REVISIÓN MASS:",
+        error
+      );
+
+
+      alert(
+        "❌ No fue posible enviar la solicitud.\n\n" +
+        (
+          error.message ||
+          "El servidor rechazó la operación."
+        )
+      );
+
+      return;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.compra_id || ""
+      ) !== idCompra
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA DE SOLICITUD:",
+        data
+      );
+
+
+      alert(
+        "❌ El servidor no devolvió una confirmación válida."
+      );
+
+      return;
+    }
+
+
+    MASS_SOLICITUDES_REVISION_EN_CURSO.delete(
+      idCompra
+    );
+
+
+    const modal =
+      document.getElementById(
+        "modalSolicitudRevisionCompraMass"
+      );
+
+
+    if (modal) {
+      modal.remove();
+    }
+
+
+    if (
+      resultado.ya_existia === true
+    ) {
+
+      alert(
+        "🟡 Esta compra ya tiene una solicitud de revisión pendiente."
+      );
+
+    } else {
+
+      alert(
+`✅ Solicitud enviada
+
+Tu compra NO fue cancelada.
+
+El Organizador revisará el caso y podrás consultar
+el estado desde Mis compras MASS.`
+      );
+    }
+
+
+    await cargarMisComprasMass();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO EN SOLICITUD DE REVISIÓN:",
+      errorInesperado
+    );
+
+
+    alert(
+      "❌ Ocurrió un error inesperado enviando la solicitud."
+    );
+
+
+  } finally {
+
+    MASS_SOLICITUDES_REVISION_EN_CURSO.delete(
+      idCompra
+    );
+
+
+    const botonActual =
+      document.getElementById(
+        "btnEnviarSolicitudRevisionMass"
+      );
+
+
+    if (botonActual) {
+
+      botonActual.disabled =
+        false;
+
+      botonActual.textContent =
+        "📝 Enviar solicitud";
+    }
+  }
 }	
 
 let boletoLuckySpinSeleccionado = null;	
