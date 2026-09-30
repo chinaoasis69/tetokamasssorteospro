@@ -68128,7 +68128,6 @@ async function mostrarComprasMassAdmin() {
             ${unidadMass}
           </p>
 
-
           <p>
             <b>🕘 Compra:</b>
             ${
@@ -68139,38 +68138,6 @@ async function mostrarComprasMassAdmin() {
               )
             }
           </p>
-		  
-          ${
-            !estaRevertida
-              ? `
-                  <div
-                    style="
-                      margin-top:16px;
-                      padding-top:14px;
-                      border-top:1px solid #444;
-                    "
-                  >
-                    <button
-                      type="button"
-                      onclick="abrirFormularioReversionCompraMass(
-                        '${compra.compra_id}'
-                      )"
-                      style="
-                        padding:10px 16px;
-                        border:1px solid #facc15;
-                        border-radius:10px;
-                        background:#2b2200;
-                        color:#facc15;
-                        font-weight:bold;
-                        cursor:pointer;
-                      "
-                    >
-                      ↩️ Reversión técnica
-                    </button>
-                  </div>
-                `
-              : ""
-          }
 
           ${
             estaRevertida
