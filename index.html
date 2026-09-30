@@ -2013,7 +2013,23 @@ Cargando historial...
 </div>
 -->	
 </div>
+	
+<div class="card">
 
+  <h2>🧾 Mis compras MASS</h2>
+
+  <p>
+    Consulta tus compras realizadas con Wallet MASS.
+  </p>
+
+  <button
+    type="button"
+    onclick="abrirModalMisComprasMass()"
+  >
+    🧾 Ver mis compras MASS
+  </button>
+
+</div>
 	  
   <div class="card">
 <h2>🎁 Mis Premios</h2>
@@ -2088,6 +2104,33 @@ Cargando historial...
     </button>
   </div>
 </div>
+
+<!-- =====================================================
+     MASS — MIS COMPRAS MASS — USUARIO
+===================================================== -->
+
+<div
+  id="modalMisComprasMass"
+  class="modal-premios"
+  style="display:none;"
+>
+  <div class="modal-premios-contenido">
+
+    <h2>🧾 Mis compras MASS</h2>
+
+    <div id="misComprasMassDentroModal">
+      Cargando tus compras...
+    </div>
+
+    <button
+      type="button"
+      onclick="cerrarModalMisComprasMass()"
+    >
+      ❌ Cerrar
+    </button>
+
+  </div>
+</div>	
 
 <!-- =====================================================
      TARJETA PÚBLICA: RESULTADOS DE SORTEOS
@@ -62374,6 +62417,554 @@ async function abrirModalMisBoletos() {
 
     await cargarMisBoletos();
 }
+
+// ============================================================
+// MASS — MIS COMPRAS MASS — USUARIO
+// SOLO LECTURA
+// ============================================================
+
+async function abrirModalMisComprasMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisComprasMass"
+    );
+
+
+  const contenedor =
+    document.getElementById(
+      "misComprasMassDentroModal"
+    );
+
+
+  if (
+    !modal ||
+    !contenedor
+  ) {
+
+    console.error(
+      "No existe el modal Mis compras MASS."
+    );
+
+    return;
+  }
+
+
+  modal.style.display =
+    "block";
+
+
+  contenedor.innerHTML = `
+    <div
+      style="
+        padding:20px;
+        text-align:center;
+        color:#ddd;
+      "
+    >
+      ⏳ Cargando tus compras MASS...
+    </div>
+  `;
+
+
+  await cargarMisComprasMass();
+}
+
+
+// ============================================================
+// CERRAR MODAL
+// ============================================================
+
+function cerrarModalMisComprasMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisComprasMass"
+    );
+
+
+  if (modal) {
+
+    modal.style.display =
+      "none";
+  }
+}
+
+
+// ============================================================
+// CARGAR COMPRAS DEL USUARIO AUTENTICADO
+// ============================================================
+
+async function cargarMisComprasMass() {
+
+  const contenedor =
+    document.getElementById(
+      "misComprasMassDentroModal"
+    );
+
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  /* ==========================================================
+     1. VERIFICAR SESIÓN AUTH
+     ========================================================== */
+
+  const {
+    data: datosSesion,
+    error: errorSesion
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  const sesion =
+    datosSesion?.session ||
+    null;
+
+
+  if (
+    errorSesion ||
+    !sesion?.user?.id
+  ) {
+
+    console.error(
+      "SESIÓN NO DISPONIBLE PARA MIS COMPRAS MASS:",
+      errorSesion
+    );
+
+
+    contenedor.innerHTML = `
+      <p style="color:#ff6b6b;">
+        🔐 Inicia sesión para consultar tus compras MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  /* ==========================================================
+     2. CONSULTA SEGURA
+     ========================================================== */
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_mis_compras_mass_segura",
+      {
+        p_limite:
+          100,
+
+        p_offset:
+          0
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO MIS COMPRAS MASS:",
+      error
+    );
+
+
+    contenedor.innerHTML = `
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible cargar tus compras MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const compras =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  /* ==========================================================
+     3. ESCAPE HTML
+     ========================================================== */
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  /* ==========================================================
+     4. FORMATEAR FECHA
+     ========================================================== */
+
+  const formatearFecha =
+    valor => {
+
+      if (!valor) {
+        return "Sin fecha";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+
+        return "Sin fecha";
+      }
+
+
+      return fecha.toLocaleString();
+    };
+
+
+  /* ==========================================================
+     5. SIN COMPRAS
+     ========================================================== */
+
+  if (compras.length === 0) {
+
+    contenedor.innerHTML = `
+      <p>
+        Todavía no tienes compras realizadas con Wallet MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  /* ==========================================================
+     6. CONSTRUIR TARJETAS
+     ========================================================== */
+
+  let html = `
+    <div
+      style="
+        margin-bottom:16px;
+        padding:12px;
+        border:1px solid #39ff14;
+        border-radius:12px;
+        text-align:left;
+      "
+    >
+      🔐 Aquí puedes consultar tus compras realizadas
+      con Wallet MASS y el estado de cualquier
+      solicitud de revisión.
+    </div>
+  `;
+
+
+  compras.forEach(
+    compra => {
+
+      const estadoCompra =
+        String(
+          compra.estado_compra ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      const estaRevertida =
+        estadoCompra ===
+        "revertida";
+
+
+      const numerosBase =
+        Array.isArray(
+          compra.numeros_base
+        )
+          ? compra.numeros_base
+          : [];
+
+
+      const numerosBoletos =
+        Array.isArray(
+          compra.numeros_boletos
+        )
+          ? compra.numeros_boletos
+          : [];
+
+
+      const numerosBaseTexto =
+        numerosBase.length > 0
+
+          ? numerosBase
+              .map(
+                numero =>
+                  escaparHtml(
+                    numero
+                  )
+              )
+              .join(", ")
+
+          : "No disponibles";
+
+
+      const numerosBoletosTexto =
+        numerosBoletos.length > 0
+
+          ? numerosBoletos
+              .map(
+                numero =>
+                  escaparHtml(
+                    numero
+                  )
+              )
+              .join(", ")
+
+          : "No disponibles";
+
+
+      const unidadMass =
+        escaparHtml(
+          compra.unidad_mass ||
+          ""
+        );
+
+
+      const solicitudEstado =
+        String(
+          compra.solicitud_estado ||
+          ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      let revisionHtml = "";
+
+
+      /* ======================================================
+         COMPRA YA REVERTIDA
+         ====================================================== */
+
+      if (estaRevertida) {
+
+        revisionHtml = `
+          <div
+            style="
+              margin-top:14px;
+              padding:10px;
+              border:1px solid #facc15;
+              border-radius:10px;
+              color:#facc15;
+            "
+          >
+            ↩️ Esta compra ya fue revertida.
+          </div>
+        `;
+
+      }
+
+
+      /* ======================================================
+         SOLICITUD PENDIENTE
+         ====================================================== */
+
+      else if (
+        solicitudEstado ===
+        "pendiente"
+      ) {
+
+        revisionHtml = `
+          <div
+            style="
+              margin-top:14px;
+              padding:10px;
+              border:1px solid #facc15;
+              border-radius:10px;
+              color:#facc15;
+            "
+          >
+            🟡 Revisión solicitada — pendiente de respuesta.
+          </div>
+        `;
+
+      }
+
+
+      /* ======================================================
+         SOLICITUD RECHAZADA
+         ====================================================== */
+
+      else if (
+        solicitudEstado ===
+        "rechazada"
+      ) {
+
+        revisionHtml = `
+          <div
+            style="
+              margin-top:14px;
+              padding:10px;
+              border:1px solid #ff6b6b;
+              border-radius:10px;
+              color:#ff8a8a;
+            "
+          >
+            🔴 Solicitud de revisión rechazada.
+
+            ${
+              compra
+                .solicitud_respuesta_organizador
+
+                ? `
+                    <br><br>
+
+                    <b>Respuesta:</b>
+                    ${
+                      escaparHtml(
+                        compra
+                          .solicitud_respuesta_organizador
+                      )
+                    }
+                  `
+
+                : ""
+            }
+          </div>
+        `;
+
+      }
+
+
+      /* ======================================================
+         SIN SOLICITUD
+         ====================================================== */
+
+      else if (
+        compra.puede_solicitar_revision ===
+        true
+      ) {
+
+        revisionHtml = `
+          <div
+            style="
+              margin-top:14px;
+              padding:10px;
+              border:1px solid #555;
+              border-radius:10px;
+              color:#ccc;
+            "
+          >
+            Sin solicitud de revisión.
+          </div>
+        `;
+
+      }
+
+
+      html += `
+        <div
+          class="card"
+          style="
+            text-align:left;
+            border:
+              1px solid
+              ${
+                estaRevertida
+                  ? "#facc15"
+                  : "#39ff14"
+              };
+          "
+        >
+
+          <h3
+            style="
+              margin-top:0;
+              color:
+                ${
+                  estaRevertida
+                    ? "#facc15"
+                    : "#39ff14"
+                };
+            "
+          >
+            ${
+              estaRevertida
+                ? "↩️ Compra revertida"
+                : "✅ Compra vigente"
+            }
+          </h3>
+
+
+          <p>
+            <b>🎯 Dinámica:</b>
+            ${
+              escaparHtml(
+                compra.rifa_titulo ||
+                "Dinámica no disponible"
+              )
+            }
+          </p>
+
+
+          <p>
+            <b>🎟️ Número(s) seleccionado(s):</b>
+            ${numerosBaseTexto}
+          </p>
+
+
+          <p>
+            <b>🎫 Boletos incluidos:</b>
+            ${numerosBoletosTexto}
+          </p>
+
+
+          <p>
+            <b>💰 Total pagado:</b>
+            ${Number(
+              compra.total_pagado || 0
+            )}
+            MASS
+            ${unidadMass}
+          </p>
+
+
+          <p>
+            <b>🕘 Compra:</b>
+            ${
+              escaparHtml(
+                formatearFecha(
+                  compra.compra_creada_at
+                )
+              )
+            }
+          </p>
+
+
+          ${revisionHtml}
+
+        </div>
+      `;
+    }
+  );
+
+
+  contenedor.innerHTML =
+    html;
+}	
 
 let boletoLuckySpinSeleccionado = null;	
 
