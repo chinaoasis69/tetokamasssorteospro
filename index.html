@@ -69482,6 +69482,60 @@ async function mostrarSolicitudesRevisionMassAdmin() {
             🔎 Pendiente de revisión administrativa.
           </div>
 
+
+          <div
+            style="
+              display:flex;
+              gap:10px;
+              justify-content:center;
+              flex-wrap:wrap;
+              margin-top:16px;
+              padding-top:14px;
+              border-top:1px solid #444;
+            "
+          >
+
+            <button
+              type="button"
+              onclick="abrirResolucionSolicitudRevisionMass(
+                '${solicitud.solicitud_id}',
+                'RECHAZAR'
+              )"
+              style="
+                padding:10px 16px;
+                border:1px solid #ff6b6b;
+                border-radius:10px;
+                background:#341313;
+                color:#ff8a8a;
+                font-weight:bold;
+                cursor:pointer;
+              "
+            >
+              ❌ Rechazar solicitud
+            </button>
+
+
+            <button
+              type="button"
+              onclick="abrirResolucionSolicitudRevisionMass(
+                '${solicitud.solicitud_id}',
+                'REVERTIR'
+              )"
+              style="
+                padding:10px 16px;
+                border:1px solid #facc15;
+                border-radius:10px;
+                background:#2b2200;
+                color:#facc15;
+                font-weight:bold;
+                cursor:pointer;
+              "
+            >
+              ↩️ Aprobar reversión
+            </button>
+
+          </div>
+
         </div>
       `;
     }
@@ -69490,7 +69544,659 @@ async function mostrarSolicitudesRevisionMassAdmin() {
 
   cont.innerHTML =
     html;
-}	  
+}
+
+// ============================================================
+// MASS — RESOLVER SOLICITUD DE REVISIÓN — PANEL ADMIN
+// ============================================================
+
+const MASS_RESOLUCIONES_REVISION_EN_CURSO =
+  new Set();
+
+
+// ============================================================
+// ABRIR FORMULARIO DE RESOLUCIÓN
+// ============================================================
+
+function abrirResolucionSolicitudRevisionMass(
+  solicitudId,
+  accion
+) {
+
+  const idSolicitud =
+    String(
+      solicitudId || ""
+    ).trim();
+
+
+  const accionNormalizada =
+    String(
+      accion || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const uuidValido =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+
+  if (!uuidValido.test(idSolicitud)) {
+
+    alert(
+      "❌ No fue posible identificar la solicitud."
+    );
+
+    return;
+  }
+
+
+  if (
+    ![
+      "RECHAZAR",
+      "REVERTIR"
+    ].includes(
+      accionNormalizada
+    )
+  ) {
+
+    alert(
+      "❌ La acción seleccionada no es válida."
+    );
+
+    return;
+  }
+
+
+  const modalAnterior =
+    document.getElementById(
+      "modalResolucionSolicitudRevisionMass"
+    );
+
+
+  if (modalAnterior) {
+    modalAnterior.remove();
+  }
+
+
+  const esRechazo =
+    accionNormalizada ===
+    "RECHAZAR";
+
+
+  const colorAccion =
+    esRechazo
+      ? "#ff6b6b"
+      : "#facc15";
+
+
+  const fondoAccion =
+    esRechazo
+      ? "#341313"
+      : "#2b2200";
+
+
+  const modal =
+    document.createElement(
+      "div"
+    );
+
+
+  modal.id =
+    "modalResolucionSolicitudRevisionMass";
+
+
+  modal.dataset.solicitudId =
+    idSolicitud;
+
+
+  modal.dataset.accion =
+    accionNormalizada;
+
+
+  modal.style.cssText = `
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    background:rgba(0,0,0,.84);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    box-sizing:border-box;
+    overflow:auto;
+  `;
+
+
+  modal.innerHTML = `
+    <div
+      style="
+        width:100%;
+        max-width:620px;
+        background:#111;
+        color:white;
+        border:2px solid ${colorAccion};
+        border-radius:16px;
+        padding:20px;
+        box-sizing:border-box;
+        text-align:left;
+      "
+    >
+
+      <h2
+        style="
+          margin-top:0;
+          color:${colorAccion};
+          text-align:center;
+        "
+      >
+        ${
+          esRechazo
+            ? "❌ Rechazar solicitud"
+            : "↩️ Aprobar reversión"
+        }
+      </h2>
+
+
+      <div
+        style="
+          border:1px solid ${colorAccion};
+          border-radius:10px;
+          padding:12px;
+          margin-bottom:18px;
+          background:${fondoAccion};
+          line-height:1.5;
+        "
+      >
+        ${
+          esRechazo
+
+            ? `
+                La compra permanecerá intacta.
+
+                <br><br>
+
+                No se modificará la Wallet MASS
+                ni se liberarán boletos.
+              `
+
+            : `
+                ⚠️ Aprobar esta acción
+                <b>no fuerza una devolución</b>.
+
+                <br><br>
+
+                El servidor volverá a verificar
+                Lucky Spin, resultados, premios,
+                Wallet, boletos y demás condiciones
+                antes de permitir la reversión.
+
+                <br><br>
+
+                Si alguna protección falla,
+                no se modificará nada.
+              `
+        }
+      </div>
+
+
+      <p>
+        <b>ID de solicitud:</b><br>
+
+        <span
+          style="
+            color:#ccc;
+            word-break:break-all;
+          "
+        >
+          ${idSolicitud}
+        </span>
+      </p>
+
+
+      <label
+        for="respuestaResolucionRevisionMass"
+        style="
+          display:block;
+          margin-top:16px;
+          margin-bottom:7px;
+          font-weight:bold;
+        "
+      >
+        ${
+          esRechazo
+            ? "Respuesta para el usuario *"
+            : "Mensaje para el usuario"
+        }
+      </label>
+
+
+      <textarea
+        id="respuestaResolucionRevisionMass"
+        maxlength="1000"
+        rows="5"
+        placeholder="${
+          esRechazo
+            ? "Explica por qué la solicitud fue rechazada."
+            : "Puedes escribir una explicación para el usuario."
+        }"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:11px;
+          border-radius:9px;
+          resize:vertical;
+          margin-bottom:18px;
+        "
+      ></textarea>
+
+
+      <div
+        style="
+          display:flex;
+          gap:10px;
+          justify-content:center;
+          flex-wrap:wrap;
+        "
+      >
+
+        <button
+          type="button"
+          onclick="cerrarResolucionSolicitudRevisionMass()"
+        >
+          ❌ Cancelar
+        </button>
+
+
+        <button
+          id="btnConfirmarResolucionRevisionMass"
+          type="button"
+          onclick="ejecutarResolucionSolicitudRevisionMass(
+            '${idSolicitud}',
+            '${accionNormalizada}'
+          )"
+          style="
+            border:1px solid ${colorAccion};
+            background:${fondoAccion};
+            color:${colorAccion};
+            font-weight:bold;
+          "
+        >
+          ${
+            esRechazo
+              ? "❌ Confirmar rechazo"
+              : "↩️ Confirmar reversión"
+          }
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+
+  document.body.appendChild(
+    modal
+  );
+}
+
+
+// ============================================================
+// CERRAR FORMULARIO
+// ============================================================
+
+function cerrarResolucionSolicitudRevisionMass() {
+
+  if (
+    MASS_RESOLUCIONES_REVISION_EN_CURSO.size > 0
+  ) {
+
+    alert(
+      "⏳ Hay una resolución en proceso. Espera a que termine."
+    );
+
+    return;
+  }
+
+
+  const modal =
+    document.getElementById(
+      "modalResolucionSolicitudRevisionMass"
+    );
+
+
+  if (modal) {
+    modal.remove();
+  }
+}
+
+
+// ============================================================
+// EJECUTAR RESOLUCIÓN SEGURA
+// ============================================================
+
+async function ejecutarResolucionSolicitudRevisionMass(
+  solicitudId,
+  accion
+) {
+
+  const idSolicitud =
+    String(
+      solicitudId || ""
+    ).trim();
+
+
+  const accionNormalizada =
+    String(
+      accion || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    MASS_RESOLUCIONES_REVISION_EN_CURSO.has(
+      idSolicitud
+    )
+  ) {
+    return;
+  }
+
+
+  if (
+    ![
+      "RECHAZAR",
+      "REVERTIR"
+    ].includes(
+      accionNormalizada
+    )
+  ) {
+
+    alert(
+      "❌ La acción seleccionada no es válida."
+    );
+
+    return;
+  }
+
+
+  const inputRespuesta =
+    document.getElementById(
+      "respuestaResolucionRevisionMass"
+    );
+
+
+  const boton =
+    document.getElementById(
+      "btnConfirmarResolucionRevisionMass"
+    );
+
+
+  if (!inputRespuesta) {
+
+    alert(
+      "❌ No fue posible leer el formulario."
+    );
+
+    return;
+  }
+
+
+  const respuesta =
+    String(
+      inputRespuesta.value || ""
+    ).trim();
+
+
+  if (
+    respuesta.length > 1000
+  ) {
+
+    alert(
+      "⚠️ La respuesta no puede superar 1000 caracteres."
+    );
+
+    return;
+  }
+
+
+  if (
+    accionNormalizada ===
+      "RECHAZAR" &&
+    !respuesta
+  ) {
+
+    alert(
+      "⚠️ Escribe una respuesta para explicar al usuario por qué se rechaza la solicitud."
+    );
+
+    inputRespuesta.focus();
+
+    return;
+  }
+
+
+  const esRechazo =
+    accionNormalizada ===
+    "RECHAZAR";
+
+
+  const confirmar =
+    confirm(
+esRechazo
+  ? `❌ RECHAZAR SOLICITUD
+
+La compra seguirá vigente.
+No se modificará la Wallet MASS
+ni se liberarán boletos.
+
+¿Confirmas el rechazo?`
+
+  : `⚠️ APROBAR REVERSIÓN
+
+El servidor volverá a comprobar
+todas las condiciones de seguridad.
+
+Si la compra es reversible:
+
+• se reintegrará el monto original;
+• los boletos de la compra serán liberados;
+• el historial financiero permanecerá intacto;
+• la solicitud quedará cerrada como revertida.
+
+¿Deseas continuar?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_RESOLUCIONES_REVISION_EN_CURSO.add(
+    idSolicitud
+  );
+
+
+  if (boton) {
+
+    boton.disabled =
+      true;
+
+    boton.textContent =
+      esRechazo
+        ? "⏳ Rechazando..."
+        : "⏳ Procesando reversión...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "resolver_solicitud_revision_compra_mass_segura",
+        {
+          p_solicitud_id:
+            idSolicitud,
+
+          p_accion:
+            accionNormalizada,
+
+          p_respuesta_organizador:
+            respuesta || null,
+
+          p_motivo_reversion:
+            null,
+
+          p_detalle_reversion:
+            null
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR RESOLVIENDO SOLICITUD MASS:",
+        error
+      );
+
+
+      alert(
+        "❌ No fue posible resolver la solicitud.\n\n" +
+        (
+          error.message ||
+          "El servidor rechazó la operación de forma segura."
+        )
+      );
+
+      return;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.solicitud_id || ""
+      ) !== idSolicitud
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA AL RESOLVER SOLICITUD:",
+        data
+      );
+
+
+      alert(
+        "❌ El servidor no devolvió una confirmación válida."
+      );
+
+      return;
+    }
+
+
+    MASS_RESOLUCIONES_REVISION_EN_CURSO.delete(
+      idSolicitud
+    );
+
+
+    const modal =
+      document.getElementById(
+        "modalResolucionSolicitudRevisionMass"
+      );
+
+
+    if (modal) {
+      modal.remove();
+    }
+
+
+    if (
+      accionNormalizada ===
+      "RECHAZAR"
+    ) {
+
+      alert(
+`✅ Solicitud rechazada
+
+La compra continúa vigente.
+
+No se modificó la Wallet MASS
+ni se liberaron boletos.`
+      );
+
+    } else {
+
+      alert(
+`✅ Reversión completada
+
+Monto reintegrado:
+${resultado.monto_reintegrado} MASS ${resultado.unidad_mass}
+
+Saldo anterior:
+${resultado.saldo_anterior} MASS ${resultado.unidad_mass}
+
+Saldo nuevo:
+${resultado.saldo_nuevo} MASS ${resultado.unidad_mass}
+
+Boletos liberados:
+${resultado.boletos_revertidos}`
+      );
+    }
+
+
+    await mostrarSolicitudesRevisionMassAdmin();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO RESOLVIENDO SOLICITUD:",
+      errorInesperado
+    );
+
+
+    alert(
+      "❌ Ocurrió un error inesperado al resolver la solicitud."
+    );
+
+
+  } finally {
+
+    MASS_RESOLUCIONES_REVISION_EN_CURSO.delete(
+      idSolicitud
+    );
+
+
+    const botonActual =
+      document.getElementById(
+        "btnConfirmarResolucionRevisionMass"
+      );
+
+
+    if (botonActual) {
+
+      botonActual.disabled =
+        false;
+
+      botonActual.textContent =
+        accionNormalizada ===
+          "RECHAZAR"
+          ? "❌ Confirmar rechazo"
+          : "↩️ Confirmar reversión";
+    }
+  }
+}	
 
 // ============================================================
 // MASS — COMPRAS / REVERSIONES — PANEL ADMIN
