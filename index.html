@@ -2013,6 +2013,27 @@ Cargando historial...
 </div>
 -->	
 </div>
+
+<!-- =====================================================
+     MASS — MIS RECARGAS MASS — USUARIO
+===================================================== -->
+
+<div class="card">
+
+  <h2>💰 Mis recargas MASS</h2>
+
+  <p>
+    Consulta tus recargas Wallet MASS y el estado de tus reembolsos.
+  </p>
+
+  <button
+    type="button"
+    onclick="abrirModalMisRecargasMass()"
+  >
+    💰 Ver mis recargas MASS
+  </button>
+
+</div>	
 	
 <div class="card">
 
@@ -2104,6 +2125,33 @@ Cargando historial...
     </button>
   </div>
 </div>
+
+<!-- =====================================================
+     MASS — MIS RECARGAS MASS — USUARIO
+===================================================== -->
+
+<div
+  id="modalMisRecargasMass"
+  class="modal-premios"
+  style="display:none;"
+>
+  <div class="modal-premios-contenido">
+
+    <h2>💰 Mis recargas MASS</h2>
+
+    <div id="misRecargasMassDentroModal">
+      Cargando tus recargas...
+    </div>
+
+    <button
+      type="button"
+      onclick="cerrarModalMisRecargasMass()"
+    >
+      ❌ Cerrar
+    </button>
+
+  </div>
+</div>	
 
 <!-- =====================================================
      MASS — MIS COMPRAS MASS — USUARIO
@@ -2327,6 +2375,13 @@ Cargando historial...
 <button onclick="mostrarHistorialRecargasMassAdmin()">
 📜 Historial recargas
 </button>
+
+<button
+  type="button"
+  onclick="mostrarReembolsosRecargaMassAdmin()"
+>
+  ↩️ Reembolsos MASS
+</button>	
 
 <button
   type="button"
@@ -62419,6 +62474,908 @@ async function abrirModalMisBoletos() {
 }
 
 // ============================================================
+// MASS — MIS RECARGAS MASS / REEMBOLSOS — USUARIO
+// ============================================================
+
+async function abrirModalMisRecargasMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisRecargasMass"
+    );
+
+  const contenedor =
+    document.getElementById(
+      "misRecargasMassDentroModal"
+    );
+
+  if (!modal || !contenedor) {
+
+    console.error(
+      "No existe el modal Mis recargas MASS."
+    );
+
+    return;
+  }
+
+  modal.style.display =
+    "block";
+
+  contenedor.innerHTML = `
+    <div
+      style="
+        padding:20px;
+        text-align:center;
+        color:#ddd;
+      "
+    >
+      ⏳ Cargando tus recargas MASS...
+    </div>
+  `;
+
+  await cargarMisRecargasMass();
+}
+
+
+// ============================================================
+// CERRAR MODAL
+// ============================================================
+
+function cerrarModalMisRecargasMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisRecargasMass"
+    );
+
+  if (modal) {
+
+    modal.style.display =
+      "none";
+  }
+}
+
+
+// ============================================================
+// CARGAR RECARGAS + REEMBOLSOS DEL USUARIO
+// ============================================================
+
+async function cargarMisRecargasMass() {
+
+  const contenedor =
+    document.getElementById(
+      "misRecargasMassDentroModal"
+    );
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  const {
+    data: datosSesion,
+    error: errorSesion
+  } =
+    await supabaseClient.auth
+      .getSession();
+
+
+  const sesion =
+    datosSesion?.session ||
+    null;
+
+
+  if (
+    errorSesion ||
+    !sesion?.user?.id
+  ) {
+
+    contenedor.innerHTML = `
+      <p style="color:#ff6b6b;">
+        🔐 Inicia sesión para consultar tus recargas MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_mis_recargas_mass_reembolso_segura",
+      {
+        p_limite: 100,
+        p_offset: 0
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO MIS RECARGAS MASS:",
+      error
+    );
+
+    contenedor.innerHTML = `
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible cargar tus recargas MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const recargas =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const formatearFecha =
+    valor => {
+
+      if (!valor) {
+        return "Sin fecha";
+      }
+
+      const fecha =
+        new Date(valor);
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+        return "Sin fecha";
+      }
+
+      return fecha.toLocaleString();
+    };
+
+
+  if (recargas.length === 0) {
+
+    contenedor.innerHTML = `
+      <p>
+        Todavía no tienes recargas Wallet MASS.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const textoEstadoReembolso =
+    estado => {
+
+      switch (
+        String(
+          estado || ""
+        ).toLowerCase()
+      ) {
+
+        case "pendiente":
+          return "🟡 Solicitud pendiente";
+
+        case "aprobado_pendiente_pago":
+          return "🟢 Reembolso aprobado · esperando pago";
+
+        case "rechazado":
+          return "🔴 Solicitud rechazada";
+
+        case "pago_reportado":
+          return "💵 El Organizador reportó el reembolso";
+
+        case "confirmado_usuario":
+          return "✅ Reembolso recibido y cerrado";
+
+        case "disputado":
+          return "⚠️ Marcado como no recibido";
+
+        case "revision_administrativa":
+          return "⚖️ Revisión administrativa";
+
+        default:
+          return "Sin solicitud de reembolso";
+      }
+    };
+
+
+  const textoNoElegible =
+    motivo => {
+
+      switch (
+        String(
+          motivo || ""
+        )
+      ) {
+
+        case "RECARGA_NO_APROBADA":
+          return "Esta recarga todavía no está aprobada.";
+
+        case "SIN_MOVIMIENTO_ACREDITACION":
+          return "La recarga no tiene acreditación MASS disponible.";
+
+        case "MONTO_ACREDITADO_INVALIDO":
+          return "No existe un monto MASS válido para reembolso.";
+
+        case "WALLET_NO_DISPONIBLE":
+          return "La Wallet MASS no está disponible.";
+
+        case "SALDO_DISPONIBLE_INSUFICIENTE":
+          return "Ya no está disponible el saldo MASS completo de esta recarga.";
+
+        default:
+          return "";
+      }
+    };
+
+
+  let html = "";
+
+
+  recargas.forEach(
+    r => {
+
+      const recargaId =
+        String(
+          r.recarga_id || ""
+        );
+
+      const reembolsoId =
+        String(
+          r.reembolso_id || ""
+        );
+
+      const unidad =
+        String(
+          r.unidad_mass || ""
+        )
+          .trim()
+          .toUpperCase();
+
+
+      const montoTexto =
+        r.monto_acreditado !== null &&
+        r.monto_acreditado !== undefined
+
+          ? `${Number(
+              r.monto_acreditado
+            )} MASS${
+              unidad
+                ? ` ${escaparHtml(unidad)}`
+                : ""
+            }`
+
+          : "Sin acreditación MASS";
+
+
+      let acciones = "";
+
+
+      /* ======================================================
+         SIN REEMBOLSO EXISTENTE
+         ====================================================== */
+
+      if (!reembolsoId) {
+
+        if (
+          r.puede_solicitar_reembolso ===
+          true
+        ) {
+
+          acciones = `
+            <button
+              type="button"
+              onclick="solicitarReembolsoRecargaMass('${recargaId}')"
+              style="
+                margin-top:10px;
+                background:#ffb000;
+                color:#111;
+                font-weight:bold;
+              "
+            >
+              ↩️ Solicitar reembolso
+            </button>
+
+            <p
+              style="
+                margin-top:8px;
+                font-size:12px;
+                color:#bbb;
+              "
+            >
+              Disponible únicamente para reembolso completo
+              de esta recarga.
+            </p>
+          `;
+
+        } else {
+
+          const razon =
+            textoNoElegible(
+              r.motivo_no_elegible
+            );
+
+          if (razon) {
+
+            acciones = `
+              <p
+                style="
+                  margin-top:10px;
+                  color:#bbb;
+                  font-size:13px;
+                "
+              >
+                ${escaparHtml(razon)}
+              </p>
+            `;
+          }
+        }
+      }
+
+
+      /* ======================================================
+         COMPROBANTE
+         ====================================================== */
+
+      if (
+        reembolsoId &&
+        r.comprobante_reembolso_disponible ===
+        true
+      ) {
+
+        acciones += `
+          <button
+            type="button"
+            onclick="verComprobanteReembolsoRecargaMass('${reembolsoId}')"
+            style="margin-top:10px;"
+          >
+            📄 Ver comprobante del reembolso
+          </button>
+        `;
+      }
+
+
+      /* ======================================================
+         PAGO REPORTADO
+         ====================================================== */
+
+      if (
+        r.reembolso_estado ===
+        "pago_reportado"
+      ) {
+
+        acciones += `
+          <div
+            style="
+              margin-top:12px;
+              padding:12px;
+              border:1px solid #39ff14;
+              border-radius:10px;
+            "
+          >
+            <p style="margin-top:0;">
+              Confirma solamente después de revisar tu depósito.
+            </p>
+
+            <button
+              type="button"
+              onclick="confirmarRecepcionReembolsoRecargaMass('${reembolsoId}')"
+              style="
+                background:#39ff14;
+                color:#111;
+                font-weight:bold;
+              "
+            >
+              ✅ Sí, recibí mi dinero
+            </button>
+
+            <button
+              type="button"
+              onclick="reportarNoRecepcionReembolsoRecargaMass('${reembolsoId}')"
+              style="
+                margin-top:8px;
+                background:#ff6b6b;
+                color:#111;
+                font-weight:bold;
+              "
+            >
+              ⚠️ No recibí mi dinero
+            </button>
+          </div>
+        `;
+      }
+
+
+      /* ======================================================
+         DISPUTA YA ABIERTA
+
+         Si después llega el dinero,
+         el propio usuario puede cerrar.
+         ====================================================== */
+
+      if (
+        r.reembolso_estado ===
+        "disputado"
+      ) {
+
+        acciones += `
+          <button
+            type="button"
+            onclick="confirmarRecepcionReembolsoRecargaMass('${reembolsoId}')"
+            style="
+              margin-top:10px;
+              background:#39ff14;
+              color:#111;
+              font-weight:bold;
+            "
+          >
+            ✅ Ya recibí mi dinero
+          </button>
+        `;
+      }
+
+
+      const respuestaOrganizador =
+        r.respuesta_organizador
+
+          ? `
+              <p>
+                <b>Respuesta del Organizador:</b><br>
+                ${escaparHtml(
+                  r.respuesta_organizador
+                )}
+              </p>
+            `
+
+          : "";
+
+
+      const referenciaPago =
+        r.referencia_pago
+
+          ? `
+              <p>
+                <b>Referencia del reembolso:</b>
+                ${escaparHtml(
+                  r.referencia_pago
+                )}
+              </p>
+            `
+
+          : "";
+
+
+      html += `
+        <div
+          style="
+            padding:16px;
+            margin-bottom:14px;
+            border:1px solid rgba(57,255,20,.55);
+            border-radius:14px;
+            background:rgba(0,0,0,.30);
+            text-align:left;
+          "
+        >
+
+          <div
+            style="
+              font-size:18px;
+              font-weight:bold;
+              color:#39ff14;
+              margin-bottom:8px;
+            "
+          >
+            ${escaparHtml(
+              r.organizador_nombre ||
+              "Organizador"
+            )}
+          </div>
+
+          <p>
+            <b>Recarga:</b>
+            ${escaparHtml(montoTexto)}
+          </p>
+
+          <p>
+            <b>Estado de la recarga:</b>
+            ${escaparHtml(
+              r.recarga_estado ||
+              "Sin estado"
+            )}
+          </p>
+
+          <p>
+            <b>Fecha:</b>
+            ${escaparHtml(
+              formatearFecha(
+                r.recarga_creada_at
+              )
+            )}
+          </p>
+
+          ${
+            r.saldo_wallet !== null &&
+            r.saldo_wallet !== undefined
+
+              ? `
+                  <p>
+                    <b>Wallet:</b>
+                    ${Number(
+                      r.saldo_wallet
+                    )} MASS${
+                      unidad
+                        ? ` ${escaparHtml(unidad)}`
+                        : ""
+                    }
+                  </p>
+
+                  <p>
+                    <b>Disponible:</b>
+                    ${Number(
+                      r.saldo_disponible ?? 0
+                    )} MASS${
+                      unidad
+                        ? ` ${escaparHtml(unidad)}`
+                        : ""
+                    }
+                  </p>
+                `
+
+              : ""
+          }
+
+          ${
+            reembolsoId
+
+              ? `
+                  <hr
+                    style="
+                      border:none;
+                      border-top:1px solid #444;
+                      margin:14px 0;
+                    "
+                  >
+
+                  <p>
+                    <b>Reembolso:</b>
+                    ${escaparHtml(
+                      textoEstadoReembolso(
+                        r.reembolso_estado
+                      )
+                    )}
+                  </p>
+                `
+
+              : ""
+          }
+
+          ${respuestaOrganizador}
+
+          ${referenciaPago}
+
+          ${acciones}
+
+        </div>
+      `;
+    }
+  );
+
+
+  contenedor.innerHTML =
+    html;
+}
+
+
+// ============================================================
+// SOLICITAR REEMBOLSO
+// ============================================================
+
+async function solicitarReembolsoRecargaMass(
+  recargaId
+) {
+
+  if (
+    !confirm(
+      "¿Solicitar el reembolso completo de esta recarga?\n\n" +
+      "Los MASS correspondientes quedarán retenidos mientras se procesa la solicitud."
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "solicitar_reembolso_recarga_mass_segura",
+      {
+        p_recarga_id:
+          recargaId,
+
+        p_detalle_usuario:
+          null
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR SOLICITANDO REEMBOLSO MASS:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible solicitar el reembolso.\n\n" +
+      (
+        error.message ||
+        "Intenta nuevamente."
+      )
+    );
+
+    return;
+  }
+
+
+  alert(
+    data?.ya_existia
+      ? "ℹ️ Esta recarga ya tiene una solicitud de reembolso."
+      : "✅ Solicitud de reembolso enviada al Organizador."
+  );
+
+
+  await cargarMisRecargasMass();
+}
+
+
+// ============================================================
+// VER COMPROBANTE PRIVADO
+// ============================================================
+
+async function verComprobanteReembolsoRecargaMass(
+  reembolsoId
+) {
+
+  const ventana =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "obtener_comprobante_reembolso_recarga_usuario_seguro",
+      {
+        p_reembolso_id:
+          reembolsoId
+      }
+    );
+
+
+  if (error || !data?.storage_path) {
+
+    if (ventana) {
+      ventana.close();
+    }
+
+    console.error(
+      "ERROR OBTENIENDO COMPROBANTE DE REEMBOLSO:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible abrir el comprobante."
+    );
+
+    return;
+  }
+
+
+  const bucket =
+    String(
+      data.bucket ||
+      "reembolsos-mass"
+    );
+
+
+  const {
+    data: urlData,
+    error: urlError
+  } =
+    await supabaseClient.storage
+      .from(bucket)
+      .createSignedUrl(
+        data.storage_path,
+        120
+      );
+
+
+  if (
+    urlError ||
+    !urlData?.signedUrl
+  ) {
+
+    if (ventana) {
+      ventana.close();
+    }
+
+    console.error(
+      "ERROR CREANDO URL PRIVADA:",
+      urlError
+    );
+
+    alert(
+      "❌ No fue posible abrir el comprobante privado."
+    );
+
+    return;
+  }
+
+
+  if (ventana) {
+
+    ventana.location.href =
+      urlData.signedUrl;
+
+  } else {
+
+    alert(
+      "Tu navegador bloqueó la ventana del comprobante."
+    );
+  }
+}
+
+
+// ============================================================
+// USUARIO CONFIRMA RECEPCIÓN
+// ============================================================
+
+async function confirmarRecepcionReembolsoRecargaMass(
+  reembolsoId
+) {
+
+  if (
+    !confirm(
+      "Confirma únicamente si el dinero del reembolso ya llegó a tu cuenta.\n\n" +
+      "Al confirmar, los MASS retenidos serán debitados definitivamente de tu Wallet."
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "confirmar_recepcion_reembolso_recarga_mass_segura",
+      {
+        p_reembolso_id:
+          reembolsoId
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CONFIRMANDO REEMBOLSO:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible confirmar el reembolso.\n\n" +
+      (
+        error.message ||
+        "Intenta nuevamente."
+      )
+    );
+
+    return;
+  }
+
+
+  alert(
+    data?.ya_confirmado
+      ? "ℹ️ Este reembolso ya estaba confirmado."
+      : "✅ Reembolso recibido y cerrado correctamente."
+  );
+
+
+  await cargarMisRecargasMass();
+}
+
+
+// ============================================================
+// USUARIO REPORTA QUE NO RECIBIÓ
+// ============================================================
+
+async function reportarNoRecepcionReembolsoRecargaMass(
+  reembolsoId
+) {
+
+  if (
+    !confirm(
+      "¿Confirmas que revisaste el comprobante y todavía no recibiste el dinero?\n\n" +
+      "Tus compras MASS con este Organizador quedarán temporalmente congeladas mientras se resuelve el caso."
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "reportar_no_recepcion_reembolso_recarga_mass_segura",
+      {
+        p_reembolso_id:
+          reembolsoId,
+
+        p_motivo_disputa:
+          null
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR REPORTANDO NO RECEPCIÓN:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible reportar el problema.\n\n" +
+      (
+        error.message ||
+        "Intenta nuevamente."
+      )
+    );
+
+    return;
+  }
+
+
+  alert(
+    data?.ya_disputado
+      ? "ℹ️ Este reembolso ya estaba marcado como no recibido."
+      : "⚠️ El reembolso quedó marcado como no recibido."
+  );
+
+
+  await cargarMisRecargasMass();
+}	
+
+// ============================================================
 // MASS — MIS COMPRAS MASS — USUARIO
 // SOLO LECTURA
 // ============================================================
@@ -69039,6 +69996,893 @@ ${motivoRechazoHistorialHtml}
     )
     .innerHTML = html;
 }
+
+// ============================================================
+// MASS — REEMBOLSOS DE RECARGA — ORGANIZADOR
+// ============================================================
+
+async function mostrarReembolsosRecargaMassAdmin() {
+
+  const cont =
+    document.getElementById("adminContenido");
+
+  if (!cont) {
+    return;
+  }
+
+  cont.innerHTML = `
+    <h2>↩️ Reembolsos MASS</h2>
+    <p>⏳ Cargando expedientes...</p>
+  `;
+
+
+  const adminRol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  let organizadorId =
+    localStorage.getItem("organizador_admin_id") ||
+    localStorage.getItem("admin_organizador_id") ||
+    null;
+
+
+  if (
+    adminRol === "organizador" &&
+    !organizadorId
+  ) {
+
+    cont.innerHTML = `
+      <h2>↩️ Reembolsos MASS</h2>
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible identificar al Organizador.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  if (
+    adminRol !== "organizador" &&
+    adminRol !== "super_admin"
+  ) {
+
+    cont.innerHTML = `
+      <h2>↩️ Reembolsos MASS</h2>
+      <p style="color:#ff6b6b;">
+        ❌ No existe una sesión administrativa autorizada.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_reembolsos_recarga_mass_admin_segura",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_estado:
+          null,
+
+        p_limite:
+          100,
+
+        p_offset:
+          0
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO REEMBOLSOS MASS:",
+      error
+    );
+
+    cont.innerHTML = `
+      <h2>↩️ Reembolsos MASS</h2>
+      <p style="color:#ff6b6b;">
+        ❌ No fue posible cargar los reembolsos.
+      </p>
+    `;
+
+    return;
+  }
+
+
+  const expedientes =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  const escapar =
+    valor =>
+      String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const fecha =
+    valor => {
+
+      if (!valor) {
+        return "Sin fecha";
+      }
+
+      const d =
+        new Date(valor);
+
+      return Number.isNaN(d.getTime())
+        ? "Sin fecha"
+        : d.toLocaleString();
+    };
+
+
+  const nombreEstado =
+    estado => {
+
+      switch (
+        String(estado || "").toLowerCase()
+      ) {
+
+        case "pendiente":
+          return "🟡 Pendiente de decisión";
+
+        case "aprobado_pendiente_pago":
+          return "🟢 Aprobado · pendiente de devolver dinero";
+
+        case "rechazado":
+          return "🔴 Rechazado";
+
+        case "pago_reportado":
+          return "💵 Pago reportado · esperando al usuario";
+
+        case "confirmado_usuario":
+          return "✅ Reembolso recibido y cerrado";
+
+        case "disputado":
+          return "⚠️ Usuario reportó que no recibió";
+
+        case "revision_administrativa":
+          return "⚖️ Revisión administrativa";
+
+        default:
+          return escapar(estado || "Sin estado");
+      }
+    };
+
+
+  let html = `
+    <h2>↩️ Reembolsos MASS</h2>
+
+    <div
+      style="
+        border:1px solid #39ff14;
+        border-radius:12px;
+        padding:12px;
+        margin-bottom:16px;
+        text-align:left;
+      "
+    >
+      El Organizador y el usuario resuelven normalmente
+      el reembolso entre ellos.
+
+      <br><br>
+
+      La revisión administrativa queda reservada
+      para casos extraordinarios.
+    </div>
+  `;
+
+
+  if (expedientes.length === 0) {
+
+    html += `
+      <div class="card">
+        ✅ No hay expedientes de reembolso.
+      </div>
+    `;
+
+    cont.innerHTML =
+      html;
+
+    return;
+  }
+
+
+  expedientes.forEach(
+    r => {
+
+      const id =
+        String(r.reembolso_id || "");
+
+      const estado =
+        String(
+          r.estado_reembolso || ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+      let acciones = "";
+
+
+      // ======================================================
+      // SOLICITUD PENDIENTE
+      // ======================================================
+
+      if (estado === "pendiente") {
+
+        acciones = `
+          <button
+            type="button"
+            onclick="resolverReembolsoRecargaMassAdmin(
+              '${id}',
+              'APROBAR'
+            )"
+            style="
+              background:#39ff14;
+              color:#111;
+              font-weight:bold;
+              margin-top:10px;
+            "
+          >
+            ✅ Aprobar reembolso
+          </button>
+
+          <button
+            type="button"
+            onclick="resolverReembolsoRecargaMassAdmin(
+              '${id}',
+              'RECHAZAR'
+            )"
+            style="
+              background:#ff6b6b;
+              color:#111;
+              font-weight:bold;
+              margin-top:10px;
+            "
+          >
+            ❌ Rechazar
+          </button>
+        `;
+      }
+
+
+      // ======================================================
+      // APROBADO — ORGANIZADOR DEBE PAGAR
+      // ======================================================
+
+      if (
+        estado ===
+        "aprobado_pendiente_pago"
+      ) {
+
+        acciones = `
+          <div
+            style="
+              margin-top:14px;
+              padding:12px;
+              border:1px solid #39ff14;
+              border-radius:12px;
+            "
+          >
+            <p>
+              <b>💵 Devuelve primero el dinero real al usuario.</b>
+            </p>
+
+            <p>
+              Después adjunta el comprobante para que
+              el usuario pueda revisarlo.
+            </p>
+
+            <input
+              id="archivoReembolso_${id}"
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+              style="
+                width:100%;
+                margin-top:8px;
+              "
+            >
+
+            <input
+              id="referenciaReembolso_${id}"
+              type="text"
+              maxlength="500"
+              placeholder="Referencia del pago (opcional)"
+              style="
+                width:100%;
+                box-sizing:border-box;
+                margin-top:10px;
+                padding:10px;
+              "
+            >
+
+            <button
+              type="button"
+              onclick="reportarPagoReembolsoRecargaMassAdmin('${id}')"
+              style="
+                margin-top:12px;
+                background:#39ff14;
+                color:#111;
+                font-weight:bold;
+              "
+            >
+              📤 Subir comprobante y reportar pago
+            </button>
+          </div>
+        `;
+      }
+
+
+      // ======================================================
+      // PAGO REPORTADO
+      // ======================================================
+
+      if (estado === "pago_reportado") {
+
+        acciones = `
+          <p
+            style="
+              margin-top:12px;
+              color:#facc15;
+              font-weight:bold;
+            "
+          >
+            ⏳ Esperando que el usuario confirme
+            que recibió el dinero.
+          </p>
+        `;
+      }
+
+
+      // ======================================================
+      // DISPUTA
+      // ======================================================
+
+      if (estado === "disputado") {
+
+        acciones = `
+          <div
+            style="
+              margin-top:12px;
+              padding:12px;
+              border:1px solid #ffb000;
+              border-radius:10px;
+            "
+          >
+            ⚠️ El usuario indicó que no recibió el dinero.
+
+            <br><br>
+
+            Contacta al usuario y resuelvan el pago.
+            Si finalmente lo recibe, el propio usuario
+            puede confirmar y cerrar el expediente.
+          </div>
+        `;
+      }
+
+
+      if (
+        estado ===
+        "revision_administrativa"
+      ) {
+
+        acciones = `
+          <p
+            style="
+              margin-top:12px;
+              color:#facc15;
+              font-weight:bold;
+            "
+          >
+            ⚖️ Caso extraordinario bajo revisión administrativa.
+          </p>
+        `;
+      }
+
+
+      const detalle =
+        r.detalle_usuario
+
+          ? `
+              <p>
+                <b>Detalle del usuario:</b><br>
+                ${escapar(r.detalle_usuario)}
+              </p>
+            `
+
+          : "";
+
+
+      const respuesta =
+        r.respuesta_organizador
+
+          ? `
+              <p>
+                <b>Respuesta del Organizador:</b><br>
+                ${escapar(
+                  r.respuesta_organizador
+                )}
+              </p>
+            `
+
+          : "";
+
+
+      const disputa =
+        r.motivo_disputa
+
+          ? `
+              <p style="color:#ffb000;">
+                <b>Motivo de disputa:</b><br>
+                ${escapar(
+                  r.motivo_disputa
+                )}
+              </p>
+            `
+
+          : "";
+
+
+      const referencia =
+        r.referencia_pago
+
+          ? `
+              <p>
+                <b>Referencia:</b>
+                ${escapar(
+                  r.referencia_pago
+                )}
+              </p>
+            `
+
+          : "";
+
+
+      html += `
+        <div
+          class="card"
+          style="
+            text-align:left;
+            margin-bottom:14px;
+          "
+        >
+
+          <p>
+            <b>👤 MASS ID:</b>
+            ${escapar(
+              r.mass_id ||
+              "MASS ID no disponible"
+            )}
+          </p>
+
+          <p>
+            <b>💰 Reembolso:</b>
+            ${Number(
+              r.monto_mass || 0
+            )}
+            MASS
+            ${escapar(
+              r.unidad_mass || ""
+            )}
+          </p>
+
+          <p>
+            <b>Estado:</b>
+            ${nombreEstado(estado)}
+          </p>
+
+          <p>
+            <b>Retención MASS:</b>
+            ${escapar(
+              r.retencion_estado ||
+              "Sin estado"
+            )}
+          </p>
+
+          <p>
+            <b>Solicitud:</b>
+            ${escapar(
+              fecha(r.creado_at)
+            )}
+          </p>
+
+          ${detalle}
+          ${respuesta}
+          ${referencia}
+          ${disputa}
+          ${acciones}
+
+        </div>
+      `;
+    }
+  );
+
+
+  cont.innerHTML =
+    html;
+}
+
+
+// ============================================================
+// APROBAR / RECHAZAR SOLICITUD
+// ============================================================
+
+async function resolverReembolsoRecargaMassAdmin(
+  reembolsoId,
+  accion
+) {
+
+  const accionNormalizada =
+    String(accion || "")
+      .trim()
+      .toUpperCase();
+
+
+  let respuesta = "";
+
+
+  if (
+    accionNormalizada === "RECHAZAR"
+  ) {
+
+    respuesta =
+      prompt(
+        "Escribe el motivo por el que rechazas esta solicitud:"
+      );
+
+
+    if (respuesta === null) {
+      return;
+    }
+
+
+    respuesta =
+      respuesta.trim();
+
+
+    if (!respuesta) {
+
+      alert(
+        "❌ Debes escribir un motivo para rechazar."
+      );
+
+      return;
+    }
+
+  } else {
+
+    if (
+      !confirm(
+        "¿Aprobar esta solicitud de reembolso?\n\n" +
+        "Después deberás devolver el dinero real al usuario y subir el comprobante."
+      )
+    ) {
+      return;
+    }
+
+
+    respuesta = null;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "resolver_reembolso_recarga_mass_admin_segura",
+      {
+        p_reembolso_id:
+          reembolsoId,
+
+        p_accion:
+          accionNormalizada,
+
+        p_respuesta_organizador:
+          respuesta
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR RESOLVIENDO REEMBOLSO MASS:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible procesar la solicitud.\n\n" +
+      (
+        error.message ||
+        "Intenta nuevamente."
+      )
+    );
+
+    return;
+  }
+
+
+  alert(
+    accionNormalizada === "APROBAR"
+      ? "✅ Reembolso aprobado."
+      : "✅ Solicitud rechazada."
+  );
+
+
+  await mostrarReembolsosRecargaMassAdmin();
+}
+
+
+// ============================================================
+// SUBIR COMPROBANTE + REPORTAR PAGO
+// ============================================================
+
+async function reportarPagoReembolsoRecargaMassAdmin(
+  reembolsoId
+) {
+
+  const inputArchivo =
+    document.getElementById(
+      `archivoReembolso_${reembolsoId}`
+    );
+
+
+  const inputReferencia =
+    document.getElementById(
+      `referenciaReembolso_${reembolsoId}`
+    );
+
+
+  const archivo =
+    inputArchivo?.files?.[0] ||
+    null;
+
+
+  if (!archivo) {
+
+    alert(
+      "❌ Selecciona el comprobante del reembolso."
+    );
+
+    return;
+  }
+
+
+  if (
+    archivo.size <= 0 ||
+    archivo.size > 10485760
+  ) {
+
+    alert(
+      "❌ El comprobante debe pesar como máximo 10 MB."
+    );
+
+    return;
+  }
+
+
+  const extension =
+    String(
+      archivo.name
+        .split(".")
+        .pop() || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const mimePorExtension = {
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    heic: "image/heic",
+    heif: "image/heif",
+    pdf: "application/pdf"
+  };
+
+
+  const mime =
+    String(
+      archivo.type ||
+      mimePorExtension[extension] ||
+      ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const mimesPermitidos =
+    new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+      "application/pdf"
+    ]);
+
+
+  if (!mimesPermitidos.has(mime)) {
+
+    alert(
+      "❌ Tipo de comprobante no permitido."
+    );
+
+    return;
+  }
+
+
+  if (
+    !confirm(
+      "Confirma que ya devolviste el dinero real al usuario y que este archivo es el comprobante correcto."
+    )
+  ) {
+    return;
+  }
+
+
+  // ----------------------------------------------------------
+  // 1. RESERVAR RUTA PRIVADA
+  // ----------------------------------------------------------
+
+  const {
+    data: reserva,
+    error: errorReserva
+  } =
+    await supabaseClient.rpc(
+      "reservar_comprobante_reembolso_recarga_mass_seguro",
+      {
+        p_reembolso_id:
+          reembolsoId,
+
+        p_mime_type:
+          mime,
+
+        p_tamano:
+          archivo.size
+      }
+    );
+
+
+  if (
+    errorReserva ||
+    !reserva?.storage_path
+  ) {
+
+    console.error(
+      "ERROR RESERVANDO COMPROBANTE:",
+      errorReserva
+    );
+
+    alert(
+      "❌ No fue posible preparar el comprobante."
+    );
+
+    return;
+  }
+
+
+  // ----------------------------------------------------------
+  // 2. SUBIR SOLO SI TODAVÍA NO EXISTE
+  // ----------------------------------------------------------
+
+  if (
+    reserva.objeto_ya_existe !== true
+  ) {
+
+    const {
+      error: errorUpload
+    } =
+      await supabaseClient.storage
+        .from(
+          reserva.bucket ||
+          "reembolsos-mass"
+        )
+        .upload(
+          reserva.storage_path,
+          archivo,
+          {
+            contentType:
+              mime,
+
+            upsert:
+              false
+          }
+        );
+
+
+    if (errorUpload) {
+
+      console.error(
+        "ERROR SUBIENDO COMPROBANTE:",
+        errorUpload
+      );
+
+      alert(
+        "❌ No fue posible subir el comprobante.\n\n" +
+        "Puedes intentarlo nuevamente."
+      );
+
+      return;
+    }
+  }
+
+
+  // ----------------------------------------------------------
+  // 3. REPORTAR PAGO FORMALMENTE
+  // ----------------------------------------------------------
+
+  const referencia =
+    String(
+      inputReferencia?.value || ""
+    )
+      .trim();
+
+
+  const {
+    data: resultado,
+    error: errorReporte
+  } =
+    await supabaseClient.rpc(
+      "reportar_pago_reembolso_recarga_mass_admin_segura",
+      {
+        p_reembolso_id:
+          reembolsoId,
+
+        p_referencia_pago:
+          referencia || null
+      }
+    );
+
+
+  if (errorReporte) {
+
+    console.error(
+      "ERROR REPORTANDO PAGO DEL REEMBOLSO:",
+      errorReporte
+    );
+
+    alert(
+      "❌ El comprobante pudo haberse cargado, " +
+      "pero no fue posible finalizar el reporte.\n\n" +
+      "No vuelvas a realizar el pago real. " +
+      "Intenta nuevamente desde este expediente."
+    );
+
+    return;
+  }
+
+
+  alert(
+    resultado?.ya_reportado
+      ? "ℹ️ Este pago ya estaba reportado."
+      : "✅ Pago reportado. El usuario ya puede revisar el comprobante."
+  );
+
+
+  await mostrarReembolsosRecargaMassAdmin();
+}	
 
 // ============================================================
 // MASS — SOLICITUDES DE REVISIÓN — PANEL ADMIN
