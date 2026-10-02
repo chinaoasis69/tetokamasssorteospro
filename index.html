@@ -75067,6 +75067,27 @@ if (
   contexto.modo === "usuario"
 ) {
 
+  /* ================================================
+     REFRESCAR WALLET DEL USUARIO
+
+     Una recarga acreditada genera notificación
+     Realtime al usuario. Aprovechamos ese evento
+     para reconciliar inmediatamente el saldo.
+     ================================================ */
+
+  if (
+    typeof cargarSaldo ===
+    "function"
+  ) {
+
+    await cargarSaldo();
+  }
+
+
+  /* ================================================
+     REFRESCAR MIS RECARGAS SI EL MODAL ESTÁ ABIERTO
+     ================================================ */
+
   const modalMisRecargas =
     document.getElementById(
       "modalMisRecargasMass"
