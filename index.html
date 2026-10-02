@@ -70011,7 +70011,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
   }
 
   cont.innerHTML = `
-    <h2>↩️ Reembolsos MASS</h2>
+    <h2 id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
     <p>⏳ Cargando expedientes...</p>
   `;
 
@@ -70036,7 +70036,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
   ) {
 
     cont.innerHTML = `
-      <h2>↩️ Reembolsos MASS</h2>
+      <h2 id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
       <p style="color:#ff6b6b;">
         ❌ No fue posible identificar al Organizador.
       </p>
@@ -70052,7 +70052,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
   ) {
 
     cont.innerHTML = `
-      <h2>↩️ Reembolsos MASS</h2>
+      <h2 id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
       <p style="color:#ff6b6b;">
         ❌ No existe una sesión administrativa autorizada.
       </p>
@@ -70092,7 +70092,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
     );
 
     cont.innerHTML = `
-      <h2>↩️ Reembolsos MASS</h2>
+      <h2 id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
       <p style="color:#ff6b6b;">
         ❌ No fue posible cargar los reembolsos.
       </p>
@@ -70169,7 +70169,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
 
 
   let html = `
-    <h2>↩️ Reembolsos MASS</h2>
+    mostrarReembolsosRecargaMassAdmin()
 
     <div
       style="
@@ -74811,6 +74811,75 @@ async function detenerRealtimeNotificacionesMass() {
   }
 }
 
+// ============================================================
+// CONTADOR REALTIME INMEDIATO
+//
+// Evita que una notificación recién llegada aparezca
+// sin número en la campanita mientras la consulta al
+// servidor termina de sincronizarse.
+// ============================================================
+
+function incrementarContadorNotificacionesMassRealtime() {
+
+  const boton =
+    document.getElementById(
+      "btnNotificacionesMass"
+    );
+
+  const contador =
+    document.getElementById(
+      "contadorNotificacionesMass"
+    );
+
+
+  if (!boton || !contador) {
+    return;
+  }
+
+
+  const textoActual =
+    String(
+      contador.textContent || "0"
+    ).trim();
+
+
+  let totalActual = 0;
+
+
+  if (textoActual === "9+") {
+
+    totalActual = 9;
+
+  } else {
+
+    const numero =
+      Number(textoActual);
+
+    totalActual =
+      Number.isFinite(numero)
+        ? numero
+        : 0;
+  }
+
+
+  const nuevoTotal =
+    totalActual + 1;
+
+
+  boton.style.display =
+    "flex";
+
+
+  contador.textContent =
+    nuevoTotal > 9
+      ? "9+"
+      : String(nuevoTotal);
+
+
+  contador.style.display =
+    "flex";
+}	
+
 
 // ============================================================
 // INICIAR REALTIME PRIVADO
@@ -74878,10 +74947,38 @@ async function iniciarRealtimeNotificacionesMass() {
         ) => {
 
           /* ================================================
-             ACTUALIZAR CONTADOR
-             ================================================ */
+   ACTUALIZAR CONTADOR
 
-          await actualizarContadorNotificacionesMass();
+   INSERT:
+   - mostrar número inmediatamente;
+   - después reconciliar con servidor.
+
+   UPDATE / DELETE:
+   - consultar directamente el valor real.
+   ================================================ */
+
+if (
+  payload?.eventType === "INSERT" &&
+  payload?.new &&
+  !payload.new.leida_at
+) {
+
+  incrementarContadorNotificacionesMassRealtime();
+
+
+  setTimeout(
+    () => {
+
+      actualizarContadorNotificacionesMass();
+
+    },
+    800
+  );
+
+} else {
+
+  await actualizarContadorNotificacionesMass();
+}
 
 
           /* ================================================
@@ -74946,6 +75043,44 @@ async function iniciarRealtimeNotificacionesMass() {
                 mensaje
               )
             );
+
+/* ================================================
+   REFRESCAR VISTAS RF ABIERTAS EN TIEMPO REAL
+   ================================================ */
+
+if (
+  contexto.modo === "organizador" &&
+  document.getElementById(
+    "vistaReembolsosMassAdminActiva"
+  ) &&
+  typeof mostrarReembolsosRecargaMassAdmin ===
+    "function"
+) {
+
+  await mostrarReembolsosRecargaMassAdmin();
+}
+
+
+if (
+  contexto.modo === "usuario"
+) {
+
+  const modalMisRecargas =
+    document.getElementById(
+      "modalMisRecargasMass"
+    );
+
+
+  if (
+    modalMisRecargas &&
+    modalMisRecargas.style.display !== "none" &&
+    typeof cargarMisRecargasMass ===
+      "function"
+  ) {
+
+    await cargarMisRecargasMass();
+  }
+}		
           }
         }
       )
