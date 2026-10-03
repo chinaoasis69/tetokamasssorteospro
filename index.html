@@ -31778,6 +31778,82 @@ const cfg = clienteActual || {};
 
 <br><br>
 
+${adminRol === "organizador" ? `
+
+<div
+  style="
+    margin-top:26px;
+    padding:18px;
+    border:2px solid #ff5252;
+    border-radius:14px;
+    background:#240b0b;
+    text-align:left;
+  "
+>
+  <h3
+    style="
+      margin-top:0;
+      color:#ff7474;
+    "
+  >
+    ⚠️ Cierre de cuenta de Organizador
+  </h3>
+
+  <p
+    style="
+      color:#ddd;
+      line-height:1.55;
+      margin-bottom:14px;
+    "
+  >
+    Iniciar el cierre
+    <b>no elimina inmediatamente tu cuenta</b>.
+    Primero comenzará una etapa de saneamiento
+    para proteger y resolver las obligaciones
+    existentes con tus usuarios.
+  </p>
+
+  <p
+    style="
+      color:#bbb;
+      line-height:1.5;
+      font-size:14px;
+    "
+  >
+    Las compras, premios, Wallet MASS,
+    dinámicas y demás derechos existentes
+    deberán respetarse antes de completar
+    el cierre.
+  </p>
+
+  <div
+    id="estadoCierreOrganizadorPerfil"
+    style="margin-top:14px;"
+  ></div>
+
+  <button
+    id="btnIniciarCierreOrganizadorPerfil"
+    type="button"
+    onclick="solicitarCierreCuentaOrganizadorDesdePerfil()"
+    style="
+      margin-top:14px;
+      padding:12px 18px;
+      border:2px solid #ff5252;
+      border-radius:10px;
+      background:#7f1d1d;
+      color:white;
+      font-weight:bold;
+      cursor:pointer;
+    "
+  >
+    ⚠️ Iniciar cierre de cuenta
+  </button>
+</div>
+
+<br><br>
+
+` : ""}	
+
 ${localStorage.getItem("admin_rol")==="super_admin" ? `
 <button onclick="mostrarOrganizadoresAdmin()">
     👤 Organizadores
