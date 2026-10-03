@@ -31873,6 +31873,430 @@ document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7C
 
 }
 
+async function solicitarCierreCuentaOrganizadorDesdePerfil() {
+
+  const boton =
+    document.getElementById(
+      "btnIniciarCierreOrganizadorPerfil"
+    );
+
+  const estadoBox =
+    document.getElementById(
+      "estadoCierreOrganizadorPerfil"
+    );
+
+
+  const escaparHtml = valor =>
+    String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+
+  try {
+
+    /* =====================================================
+       1. VALIDAR IDENTIDAD ADMINISTRATIVA
+       ===================================================== */
+
+    const adminActual =
+      await obtenerAdminActual();
+
+
+    if (
+      !adminActual ||
+      adminActual.rol !== "organizador"
+    ) {
+
+      alert(
+        "❌ Esta acción está disponible únicamente " +
+        "para el Organizador autenticado."
+      );
+
+      return;
+    }
+
+
+    const organizadorId =
+      adminActual.organizador_id ||
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      localStorage.getItem(
+        "organizador_admin_id"
+      );
+
+
+    if (!organizadorId) {
+
+      alert(
+        "❌ No fue posible identificar tu cuenta " +
+        "de Organizador."
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       2. PRIMERA CONFIRMACIÓN CONSCIENTE
+       ===================================================== */
+
+    const confirmarInicio =
+      confirm(
+`⚠️ INICIAR CIERRE DE CUENTA DE ORGANIZADOR
+
+Esta acción NO elimina inmediatamente tu cuenta.
+
+Se iniciará la etapa de SANEAMIENTO.
+
+Durante este proceso:
+
+• se protegerán las obligaciones existentes;
+• no podrán generarse nuevas obligaciones incompatibles con el cierre;
+• compras, premios y Wallet MASS pendientes deberán resolverse;
+• las dinámicas comprometidas deberán respetarse;
+• los usuarios relacionados recibirán un aviso del inicio del proceso.
+
+Mientras el expediente permanezca en SANEAMIENTO podrás cancelar el proceso conforme a las reglas del sistema.
+
+¿Deseas continuar?`
+      );
+
+
+    if (!confirmarInicio) {
+      return;
+    }
+
+
+    /* =====================================================
+       3. MOTIVO OPCIONAL
+       ===================================================== */
+
+    const motivoIngresado =
+      prompt(
+`Motivo del cierre (opcional)
+
+Puedes dejar este campo vacío.
+
+Máximo: 1000 caracteres.`
+      );
+
+
+    if (motivoIngresado === null) {
+      return;
+    }
+
+
+    const motivo =
+      String(
+        motivoIngresado || ""
+      ).trim();
+
+
+    if (motivo.length > 1000) {
+
+      alert(
+        "❌ El motivo no puede exceder " +
+        "1000 caracteres."
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       4. CONFIRMACIÓN FINAL FUERTE
+       ===================================================== */
+
+    const palabra =
+      prompt(
+`⚠️ CONFIRMACIÓN FINAL
+
+Para iniciar el proceso de cierre escribe exactamente:
+
+INICIAR CIERRE`
+      );
+
+
+    if (
+      String(
+        palabra || ""
+      )
+        .trim()
+        .toUpperCase() !==
+      "INICIAR CIERRE"
+    ) {
+
+      alert(
+        "✅ Operación cancelada. " +
+        "No se inició ningún cierre."
+      );
+
+      return;
+    }
+
+
+    /* =====================================================
+       5. BLOQUEAR BOTÓN DURANTE LA SOLICITUD
+       ===================================================== */
+
+    if (boton) {
+
+      boton.disabled = true;
+
+      boton.textContent =
+        "⏳ Iniciando cierre...";
+
+      boton.style.opacity =
+        "0.65";
+
+      boton.style.cursor =
+        "not-allowed";
+    }
+
+
+    if (estadoBox) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #facc15;
+            border-radius:10px;
+            color:#facc15;
+            background:#2a2105;
+          "
+        >
+          ⏳ Validando obligaciones
+          e iniciando el expediente...
+        </div>
+      `;
+    }
+
+
+    /* =====================================================
+       6. RPC SEGURA
+       ===================================================== */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "solicitar_cierre_organizador_seguro",
+        {
+          p_organizador_id:
+            organizadorId,
+
+          p_motivo_solicitud:
+            motivo || null
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR INICIANDO CIERRE DEL ORGANIZADOR:",
+        error
+      );
+
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      !resultado.cierre_id
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA DE CIERRE:",
+        resultado
+      );
+
+      throw new Error(
+        "Supabase no devolvió una confirmación válida."
+      );
+    }
+
+
+    /* =====================================================
+       7. MOSTRAR ESTADO CONFIRMADO
+       ===================================================== */
+
+    const estado =
+      String(
+        resultado.estado ||
+        "saneamiento"
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const yaExistente =
+      resultado.ya_existente === true;
+
+
+    if (estadoBox) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:14px;
+            border:2px solid #facc15;
+            border-radius:12px;
+            background:#2a2105;
+            color:white;
+            line-height:1.55;
+          "
+        >
+          <div
+            style="
+              color:#facc15;
+              font-weight:bold;
+              margin-bottom:8px;
+            "
+          >
+            ${
+              yaExistente
+                ? "⚠️ Proceso de cierre ya existente"
+                : "✅ Proceso de cierre iniciado"
+            }
+          </div>
+
+          <div>
+            <b>Estado:</b>
+            ${escaparHtml(
+              estado.toUpperCase()
+            )}
+          </div>
+
+          <div>
+            <b>Expediente:</b>
+            ${escaparHtml(
+              resultado.cierre_id
+            )}
+          </div>
+
+          ${
+            resultado.solicitado_at
+              ? `
+                <div>
+                  <b>Solicitado:</b>
+                  ${escaparHtml(
+                    resultado.solicitado_at
+                  )}
+                </div>
+              `
+              : ""
+          }
+        </div>
+      `;
+    }
+
+
+    if (boton) {
+
+      boton.disabled = true;
+
+      boton.textContent =
+        estado === "saneamiento"
+          ? "🔒 Cierre en saneamiento"
+          : "🔒 Proceso de cierre activo";
+
+      boton.style.opacity =
+        "0.7";
+
+      boton.style.cursor =
+        "not-allowed";
+    }
+
+
+    alert(
+      yaExistente
+        ? (
+            "⚠️ Ya existe un proceso de cierre " +
+            "para este Organizador.\n\n" +
+            "Estado actual: " +
+            estado.toUpperCase()
+          )
+        : (
+            "✅ Proceso de cierre iniciado.\n\n" +
+            "Estado: SANEAMIENTO\n\n" +
+            "Las obligaciones existentes permanecen " +
+            "protegidas y los usuarios relacionados " +
+            "serán notificados automáticamente."
+          )
+    );
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO INICIANDO CIERRE:",
+      errorInesperado
+    );
+
+
+    if (estadoBox) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #ff5252;
+            border-radius:10px;
+            color:#ff8a8a;
+            background:#240b0b;
+          "
+        >
+          ❌ No se inició el cierre.
+          <br><br>
+          ${escaparHtml(
+            errorInesperado?.message ||
+            "La operación fue rechazada por el servidor."
+          )}
+        </div>
+      `;
+    }
+
+
+    if (boton) {
+
+      boton.disabled = false;
+
+      boton.textContent =
+        "⚠️ Iniciar cierre de cuenta";
+
+      boton.style.opacity =
+        "1";
+
+      boton.style.cursor =
+        "pointer";
+    }
+
+
+    alert(
+      "❌ No fue posible iniciar el cierre.\n\n" +
+      (
+        errorInesperado?.message ||
+        "Supabase rechazó la operación."
+      )
+    );
+  }
+}	
+
 async function mostrarConvertidorMassAdmin() {
 
   const contenedor =
