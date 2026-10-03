@@ -26023,7 +26023,935 @@ async function mostrarGanadoresAdmin() {
 
 await cargarSorteosGanador();
 
+await cargarEntregasPremiosPrincipalesAdmin();
+
 }
+
+function escaparHtmlEntregaPremioPrincipalAdmin(valor) {
+    return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function formatearFechaEntregaPremioPrincipalAdmin(valor) {
+    if (!valor) {
+        return "—";
+    }
+
+    const fecha = new Date(valor);
+
+    if (Number.isNaN(fecha.getTime())) {
+        return "—";
+    }
+
+    return new Intl.DateTimeFormat(
+        "es-MX",
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    ).format(fecha);
+}
+
+function resolverMimeEntregaPremioPrincipalAdmin(archivo) {
+    const permitidos = new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+        "application/pdf"
+    ]);
+
+    const mimeOriginal = String(
+        archivo?.type || ""
+    )
+        .trim()
+        .toLowerCase();
+
+    if (permitidos.has(mimeOriginal)) {
+        return mimeOriginal;
+    }
+
+    const nombre = String(
+        archivo?.name || ""
+    )
+        .trim()
+        .toLowerCase();
+
+    const punto = nombre.lastIndexOf(".");
+
+    if (punto < 0) {
+        return "";
+    }
+
+    const extension = nombre.slice(punto + 1);
+
+    const porExtension = {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        webp: "image/webp",
+        heic: "image/heic",
+        heif: "image/heif",
+        pdf: "application/pdf"
+    };
+
+    return porExtension[extension] || "";
+}
+
+function validarArchivoEntregaPremioPrincipalAdmin(archivo) {
+    const mimePermitidos = new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+        "application/pdf"
+    ]);
+
+    if (!archivo) {
+        return {
+            ok: false,
+            mensaje: "Selecciona un comprobante."
+        };
+    }
+
+    const mime =
+        resolverMimeEntregaPremioPrincipalAdmin(
+            archivo
+        );
+
+    if (!mimePermitidos.has(mime)) {
+        return {
+            ok: false,
+            mensaje:
+                "Tipo no permitido. Usa JPG, PNG, WEBP, HEIC, HEIF o PDF."
+        };
+    }
+
+    const tamano = Number(archivo.size);
+
+    if (
+        !Number.isFinite(tamano) ||
+        tamano < 1
+    ) {
+        return {
+            ok: false,
+            mensaje:
+                "El archivo está vacío o no es válido."
+        };
+    }
+
+    if (tamano > 10485760) {
+        return {
+            ok: false,
+            mensaje:
+                "El comprobante excede el máximo de 10 MB."
+        };
+    }
+
+    return {
+        ok: true,
+        mime,
+        tamano
+    };
+}
+
+async function cargarEntregasPremiosPrincipalesAdmin() {
+    const cont =
+        document.getElementById("adminContenido");
+
+    if (!cont) {
+        return;
+    }
+
+    let panel =
+        document.getElementById(
+            "panelEntregasPremiosPrincipalesAdmin"
+        );
+
+    if (!panel) {
+        cont.insertAdjacentHTML(
+            "beforeend",
+            `
+                <div
+                    id="panelEntregasPremiosPrincipalesAdmin"
+                    class="card"
+                    style="margin-top:20px;"
+                ></div>
+            `
+        );
+
+        panel =
+            document.getElementById(
+                "panelEntregasPremiosPrincipalesAdmin"
+            );
+    }
+
+    if (!panel) {
+        return;
+    }
+
+    panel.innerHTML = `
+        <h2>📦 Entrega de premios principales</h2>
+        <p style="color:#aaa;">
+            Cargando premios y expedientes de entrega...
+        </p>
+    `;
+
+    const organizadorId = String(
+        localStorage.getItem(
+            "organizador_admin_id"
+        ) || ""
+    ).trim();
+
+    if (!organizadorId) {
+        panel.innerHTML = `
+            <h2>📦 Entrega de premios principales</h2>
+            <p style="color:#ff8a8a;">
+                ❌ No fue posible identificar al Organizador.
+            </p>
+        `;
+        return;
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_premios_principales_organizador_segura",
+        {
+            p_organizador_id: organizadorId,
+            p_limite: 100,
+            p_offset: 0
+        }
+    );
+
+    if (error) {
+        console.error(
+            "ERROR LISTANDO PREMIOS PRINCIPALES:",
+            error
+        );
+
+        panel.innerHTML = `
+            <h2>📦 Entrega de premios principales</h2>
+            <p style="color:#ff8a8a;">
+                ❌ No fue posible cargar los premios principales.
+            </p>
+        `;
+        return;
+    }
+
+    if (!data || data.ok !== true) {
+        panel.innerHTML = `
+            <h2>📦 Entrega de premios principales</h2>
+            <p style="color:#ff8a8a;">
+                ❌ El servidor no devolvió una respuesta válida.
+            </p>
+        `;
+        return;
+    }
+
+    const premios =
+        Array.isArray(data.premios)
+            ? data.premios
+            : [];
+
+    const total = Number(data.total || 0);
+
+    if (premios.length === 0) {
+        panel.innerHTML = `
+            <h2>📦 Entrega de premios principales</h2>
+            <p style="color:#aaa;">
+                No hay premios principales de dinámicas finalizadas pendientes de gestión.
+            </p>
+        `;
+        return;
+    }
+
+    const tarjetas = premios
+        .map((premio, indice) => {
+            const ganadorId = String(
+                premio?.ganador_id || ""
+            ).trim();
+
+            const idSeguro = ganadorId.replace(
+                /[^a-zA-Z0-9_-]/g,
+                ""
+            );
+
+            const rifaTitulo =
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    premio?.rifa_titulo ||
+                    "Dinámica"
+                );
+
+            const lugar =
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    premio?.lugar_premio ||
+                    "Premio"
+                );
+
+            const nombrePremio =
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    premio?.premio ||
+                    "Premio"
+                );
+
+            const numero =
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    premio?.numero_ganador ||
+                    "—"
+                );
+
+            const massId =
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    premio?.mass_id ||
+                    "—"
+                );
+
+            const estadoExpediente = String(
+                premio?.estado_expediente || ""
+            )
+                .trim()
+                .toLowerCase();
+
+            const estadoEntrega = String(
+                premio?.estado_entrega || ""
+            )
+                .trim()
+                .toLowerCase();
+
+            let estadoTexto =
+                "⏳ Pendiente de reportar entrega";
+
+            let estadoColor = "#ffd700";
+
+            if (
+                estadoEntrega === "entregado" ||
+                estadoExpediente ===
+                    "confirmado_usuario" ||
+                estadoExpediente ===
+                    "resuelto_admin"
+            ) {
+                estadoTexto =
+                    "✅ Premio entregado y certificado";
+                estadoColor = "#39ff14";
+            } else if (
+                estadoExpediente === "disputado"
+            ) {
+                estadoTexto =
+                    "⚠️ Entrega disputada por el ganador";
+                estadoColor = "#ff8a8a";
+            } else if (
+                estadoExpediente === "reportado"
+            ) {
+                estadoTexto =
+                    "📨 Entrega reportada — esperando confirmación del ganador";
+                estadoColor = "#7dd3fc";
+            }
+
+            const evidenciaTexto =
+                premio?.comprobante_disponible === true
+                    ? `
+                        <div style="margin-top:8px;color:#7dd3fc;">
+                            🧾 Comprobante privado registrado
+                        </div>
+                    `
+                    : "";
+
+            const disputaTexto =
+                estadoExpediente === "disputado"
+                    ? `
+                        <div
+                            style="
+                                margin-top:10px;
+                                padding:10px;
+                                border:1px solid #ff8a8a;
+                                border-radius:10px;
+                                color:#ffb4b4;
+                            "
+                        >
+                            <strong>Motivo de la disputa:</strong><br>
+                            ${
+                                escaparHtmlEntregaPremioPrincipalAdmin(
+                                    premio?.motivo_disputa ||
+                                    "No especificado"
+                                )
+                            }
+                        </div>
+                    `
+                    : "";
+
+            const fechaReporte =
+                premio?.reportado_at
+                    ? `
+                        <div style="margin-top:6px;color:#aaa;">
+                            Reportado: ${
+                                escaparHtmlEntregaPremioPrincipalAdmin(
+                                    formatearFechaEntregaPremioPrincipalAdmin(
+                                        premio.reportado_at
+                                    )
+                                )
+                            }
+                        </div>
+                    `
+                    : "";
+
+            let accionHtml = "";
+
+            if (
+                premio?.puede_reportar === true &&
+                ganadorId
+            ) {
+                accionHtml = `
+                    <div
+                        style="
+                            margin-top:14px;
+                            padding-top:14px;
+                            border-top:1px solid #333;
+                        "
+                    >
+                        <label>
+                            🧾 Comprobante privado de entrega
+                        </label>
+
+                        <input
+                            id="comprobantePremioPrincipal_${idSeguro}"
+                            class="inputComprobantePremioPrincipalAdmin"
+                            data-ganador-id="${
+                                escaparHtmlEntregaPremioPrincipalAdmin(
+                                    ganadorId
+                                )
+                            }"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.webp,.heic,.heif,.pdf"
+                            style="margin-top:8px;"
+                        >
+
+                        <div
+                            id="estadoComprobantePremioPrincipal_${idSeguro}"
+                            style="
+                                margin-top:8px;
+                                color:#aaa;
+                                font-size:13px;
+                                line-height:1.45;
+                            "
+                        >
+                            Selecciona JPG, PNG, WEBP, HEIC, HEIF o PDF. Máximo 10 MB.
+                        </div>
+
+                        <button
+                            id="btnReportarPremioPrincipal_${idSeguro}"
+                            class="btnReportarPremioPrincipalAdmin"
+                            data-ganador-id="${
+                                escaparHtmlEntregaPremioPrincipalAdmin(
+                                    ganadorId
+                                )
+                            }"
+                            type="button"
+                            disabled
+                            style="
+                                margin-top:10px;
+                                opacity:.55;
+                                cursor:not-allowed;
+                            "
+                        >
+                            📦 Reportar entrega
+                        </button>
+                    </div>
+                `;
+            } else if (
+                premio?.entrega_existe !== true &&
+                estadoEntrega !== "entregado"
+            ) {
+                accionHtml = `
+                    <div
+                        style="
+                            margin-top:12px;
+                            color:#aaa;
+                            font-size:13px;
+                        "
+                    >
+                        🔒 Este premio todavía no reúne los requisitos server-side para reportar la entrega.
+                    </div>
+                `;
+            }
+
+            return `
+                <div
+                    class="cardEntregaPremioPrincipalAdmin"
+                    data-indice="${indice}"
+                    style="
+                        margin-top:14px;
+                        padding:14px;
+                        border:1px solid #39ff14;
+                        border-radius:12px;
+                        text-align:left;
+                    "
+                >
+                    <div style="font-weight:700;">
+                        🏆 ${lugar} — ${nombrePremio}
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        🎯 ${rifaTitulo}
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        🎟️ Número ganador: ${numero}
+                    </div>
+
+                    <div style="margin-top:6px;">
+                        🪪 MASS ID: ${massId}
+                    </div>
+
+                    <div
+                        style="
+                            margin-top:10px;
+                            color:${estadoColor};
+                            font-weight:700;
+                        "
+                    >
+                        ${estadoTexto}
+                    </div>
+
+                    ${evidenciaTexto}
+                    ${fechaReporte}
+                    ${disputaTexto}
+                    ${accionHtml}
+                </div>
+            `;
+        })
+        .join("");
+
+    panel.innerHTML = `
+        <h2>📦 Entrega de premios principales</h2>
+
+        <p style="color:#aaa;margin-top:-5px;">
+            El Organizador reporta la entrega y adjunta evidencia privada.
+            El premio solamente cambia a Entregado cuando el ganador confirma
+            la recepción o cuando existe resolución extraordinaria válida.
+        </p>
+
+        <div
+            style="
+                margin:12px 0;
+                color:#aaa;
+                font-size:13px;
+            "
+        >
+            Premios encontrados: ${
+                escaparHtmlEntregaPremioPrincipalAdmin(
+                    total
+                )
+            }
+        </div>
+
+        ${tarjetas}
+    `;
+
+    const inputs = panel.querySelectorAll(
+        ".inputComprobantePremioPrincipalAdmin"
+    );
+
+    inputs.forEach(input => {
+        const ganadorId = String(
+            input.dataset.ganadorId || ""
+        ).trim();
+
+        const idSeguro = ganadorId.replace(
+            /[^a-zA-Z0-9_-]/g,
+            ""
+        );
+
+        const boton =
+            document.getElementById(
+                `btnReportarPremioPrincipal_${idSeguro}`
+            );
+
+        const estado =
+            document.getElementById(
+                `estadoComprobantePremioPrincipal_${idSeguro}`
+            );
+
+        if (!boton || !estado) {
+            return;
+        }
+
+        input.addEventListener(
+            "change",
+            () => {
+                const archivo =
+                    input.files?.[0] || null;
+
+                const validacion =
+                    validarArchivoEntregaPremioPrincipalAdmin(
+                        archivo
+                    );
+
+                if (!validacion.ok) {
+                    input.value = "";
+                    boton.disabled = true;
+                    boton.style.opacity = ".55";
+                    boton.style.cursor = "not-allowed";
+                    estado.style.color = "#ff8a8a";
+                    estado.textContent =
+                        "❌ " + validacion.mensaje;
+                    return;
+                }
+
+                boton.disabled = false;
+                boton.style.opacity = "1";
+                boton.style.cursor = "pointer";
+                estado.style.color = "#39ff14";
+                estado.textContent =
+                    `✅ Archivo válido: ${archivo.name}`;
+            }
+        );
+
+        boton.addEventListener(
+            "click",
+            async () => {
+                await procesarReporteEntregaPremioPrincipalAdmin(
+                    ganadorId,
+                    input,
+                    boton,
+                    estado
+                );
+            }
+        );
+    });
+}
+
+async function procesarReporteEntregaPremioPrincipalAdmin(
+    ganadorId,
+    input,
+    boton,
+    estado
+) {
+    const archivo =
+        input?.files?.[0] || null;
+
+    const validacion =
+        validarArchivoEntregaPremioPrincipalAdmin(
+            archivo
+        );
+
+    if (!validacion.ok) {
+        alert(
+            "❌ " + validacion.mensaje
+        );
+        return;
+    }
+
+    const confirmar = window.confirm(
+        "REPORTAR ENTREGA DE PREMIO PRINCIPAL\n\n" +
+        "Continúa únicamente si el premio YA fue entregado físicamente " +
+        "al ganador y este archivo corresponde a la evidencia de esa entrega.\n\n" +
+        "Esta acción NO marca el premio como Entregado. " +
+        "El ganador deberá confirmar que lo recibió."
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    const mime = validacion.mime;
+    const tamano = validacion.tamano;
+
+    input.disabled = true;
+    boton.disabled = true;
+    boton.style.opacity = ".55";
+    boton.style.cursor = "not-allowed";
+    boton.textContent = "⏳ Procesando...";
+
+    let reservaCreada = false;
+    let archivoSubido = false;
+    let procesoCompletado = false;
+    let requiereRevision = false;
+
+    const mostrarEstado = (texto, color) => {
+        if (!estado) {
+            return;
+        }
+
+        estado.textContent = texto;
+        estado.style.color = color;
+    };
+
+    const reportarEnServidor = async () => {
+        return await supabaseClient.rpc(
+            "reportar_entrega_premio_principal_segura",
+            {
+                p_ganador_id: ganadorId
+            }
+        );
+    };
+
+    try {
+        mostrarEstado(
+            "⏳ Reservando ruta privada...",
+            "#ffd700"
+        );
+
+        const {
+            data: reserva,
+            error: errorReserva
+        } = await supabaseClient.rpc(
+            "reservar_comprobante_entrega_premio_principal_seguro",
+            {
+                p_ganador_id: ganadorId,
+                p_mime_type: mime,
+                p_tamano: tamano
+            }
+        );
+
+        if (errorReserva) {
+            throw errorReserva;
+        }
+
+        if (!reserva || reserva.ok !== true) {
+            throw new Error(
+                "El servidor no devolvió una reserva válida."
+            );
+        }
+
+        reservaCreada = true;
+
+        const bucket = String(
+            reserva.bucket || ""
+        ).trim();
+
+        const path = String(
+            reserva.storage_path || ""
+        ).trim();
+
+        const mimeReservado = String(
+            reserva.mime_type || ""
+        )
+            .trim()
+            .toLowerCase();
+
+        const tamanoReservado = Number(
+            reserva.tamano_esperado
+        );
+
+        const objetoYaExiste =
+            reserva.objeto_ya_existe === true;
+
+        if (
+            bucket !==
+                "premios-principales-entregas" ||
+            !path ||
+            mimeReservado !== mime ||
+            tamanoReservado !== tamano
+        ) {
+            throw new Error(
+                "La reserva privada no coincide con el archivo validado."
+            );
+        }
+
+        if (!objetoYaExiste) {
+            mostrarEstado(
+                "⏳ Subiendo comprobante a la bóveda privada...",
+                "#ffd700"
+            );
+
+            const {
+                error: errorUpload
+            } = await supabaseClient
+                .storage
+                .from(bucket)
+                .upload(
+                    path,
+                    archivo,
+                    {
+                        cacheControl: "3600",
+                        upsert: false,
+                        contentType: mime
+                    }
+                );
+
+            if (errorUpload) {
+                mostrarEstado(
+                    "⏳ Verificando si Storage recibió el archivo...",
+                    "#ffd700"
+                );
+
+                const {
+                    error: errorLiberacion
+                } = await supabaseClient.rpc(
+                    "liberar_reserva_comprobante_entrega_premio_principal_seguro",
+                    {
+                        p_ganador_id: ganadorId
+                    }
+                );
+
+                if (!errorLiberacion) {
+                    reservaCreada = false;
+                    throw errorUpload;
+                }
+
+                const {
+                    data: recuperacion,
+                    error: errorRecuperacion
+                } = await reportarEnServidor();
+
+                if (
+                    !errorRecuperacion &&
+                    recuperacion?.ok === true
+                ) {
+                    archivoSubido = true;
+                    procesoCompletado = true;
+                } else {
+                    requiereRevision = true;
+                    throw new Error(
+                        "No fue posible confirmar de forma segura si Storage recibió el comprobante. No vuelvas a subir otro archivo hasta revisar este premio."
+                    );
+                }
+            } else {
+                archivoSubido = true;
+            }
+        } else {
+            archivoSubido = true;
+        }
+
+        if (!procesoCompletado) {
+            mostrarEstado(
+                "⏳ Validando evidencia y registrando la entrega reportada...",
+                "#ffd700"
+            );
+
+            let {
+                data: reporte,
+                error: errorReporte
+            } = await reportarEnServidor();
+
+            if (
+                errorReporte ||
+                reporte?.ok !== true
+            ) {
+                ({
+                    data: reporte,
+                    error: errorReporte
+                } = await reportarEnServidor());
+            }
+
+            if (
+                errorReporte ||
+                reporte?.ok !== true
+            ) {
+                requiereRevision = true;
+                throw new Error(
+                    "El comprobante puede haber quedado cargado, pero no fue posible registrar la entrega de forma segura. No vuelvas a subir otro archivo para este premio hasta revisarlo."
+                );
+            }
+
+            procesoCompletado = true;
+        }
+
+        if (!procesoCompletado) {
+            throw new Error(
+                "La entrega no pudo registrarse de forma segura."
+            );
+        }
+
+        mostrarEstado(
+            "✅ Entrega reportada. Esperando confirmación del ganador.",
+            "#39ff14"
+        );
+
+        alert(
+            "✅ ENTREGA REPORTADA\n\n" +
+            "El comprobante privado fue validado y registrado.\n\n" +
+            "El premio sigue Pendiente hasta que el ganador confirme que lo recibió."
+        );
+
+        await cargarEntregasPremiosPrincipalesAdmin();
+
+    } catch (error) {
+        console.error(
+            "ERROR REPORTANDO ENTREGA DE PREMIO PRINCIPAL:",
+            error
+        );
+
+        if (
+            reservaCreada &&
+            !archivoSubido &&
+            !requiereRevision
+        ) {
+            try {
+                const {
+                    error: errorLiberacionFinal
+                } = await supabaseClient.rpc(
+                    "liberar_reserva_comprobante_entrega_premio_principal_seguro",
+                    {
+                        p_ganador_id: ganadorId
+                    }
+                );
+
+                if (!errorLiberacionFinal) {
+                    reservaCreada = false;
+                } else {
+                    requiereRevision = true;
+                }
+            } catch (errorLiberacionFinal) {
+                console.error(
+                    "ERROR LIBERANDO RESERVA DE PREMIO PRINCIPAL:",
+                    errorLiberacionFinal
+                );
+
+                requiereRevision = true;
+            }
+        }
+
+        const mensaje = String(
+            error?.message ||
+            "No fue posible reportar la entrega."
+        );
+
+        if (
+            requiereRevision ||
+            (
+                reservaCreada &&
+                archivoSubido
+            )
+        ) {
+            input.disabled = true;
+            boton.disabled = true;
+            boton.textContent =
+                "🔒 Revisión necesaria";
+            boton.style.opacity = ".55";
+            boton.style.cursor = "not-allowed";
+
+            mostrarEstado(
+                "❌ " +
+                mensaje +
+                " No vuelvas a subir otro archivo para este premio.",
+                "#ff8a8a"
+            );
+        } else {
+            input.disabled = false;
+            boton.disabled = false;
+            boton.textContent =
+                "📦 Reportar entrega";
+            boton.style.opacity = "1";
+            boton.style.cursor = "pointer";
+
+            mostrarEstado(
+                "❌ " +
+                mensaje +
+                " Puedes revisar el archivo e intentarlo nuevamente.",
+                "#ff8a8a"
+            );
+        }
+    }
+}	
 
 async function cargarSorteosGanador(){
 
