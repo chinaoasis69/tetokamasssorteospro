@@ -68537,13 +68537,116 @@ document
   });
 }	
 
-	function abrirModalPremios(){
+function abrirModalPremios(){
 
-    document.getElementById("premiosDentroModal").innerHTML =
-    document.getElementById("historialPremios").innerHTML;
+    const origen =
+        document.getElementById(
+            "historialPremios"
+        );
 
-    document.getElementById("modalPremios").style.display = "block";
+    const destino =
+        document.getElementById(
+            "premiosDentroModal"
+        );
 
+    const modal =
+        document.getElementById(
+            "modalPremios"
+        );
+
+
+    if (
+        !origen ||
+        !destino ||
+        !modal
+    ) {
+        return;
+    }
+
+
+    destino.innerHTML =
+        origen.innerHTML;
+
+
+    destino
+        .querySelectorAll(
+            ".entregaPremioPrincipalUsuario"
+        )
+        .forEach(contenedor => {
+
+            const ganadorId =
+                String(
+                    contenedor.dataset.ganadorId ||
+                    ""
+                ).trim();
+
+
+            if (!ganadorId) {
+                return;
+            }
+
+
+            const btnVer =
+                contenedor.querySelector(
+                    ".btnVerComprobantePremioPrincipal"
+                );
+
+
+            if (btnVer) {
+
+                btnVer.onclick =
+                    () => {
+
+                        verComprobanteEntregaPremioPrincipalUsuario(
+                            ganadorId
+                        );
+
+                    };
+            }
+
+
+            const btnConfirmar =
+                contenedor.querySelector(
+                    ".btnConfirmarPremioPrincipal"
+                );
+
+
+            if (btnConfirmar) {
+
+                btnConfirmar.onclick =
+                    () => {
+
+                        confirmarRecepcionPremioPrincipalUsuario(
+                            ganadorId
+                        );
+
+                    };
+            }
+
+
+            const btnNoRecibi =
+                contenedor.querySelector(
+                    ".btnNoRecibiPremioPrincipal"
+                );
+
+
+            if (btnNoRecibi) {
+
+                btnNoRecibi.onclick =
+                    () => {
+
+                        reportarNoRecepcionPremioPrincipalUsuario(
+                            ganadorId
+                        );
+
+                    };
+            }
+
+        });
+
+
+    modal.style.display =
+        "block";
 }
 
 function cerrarModalPremios(){
