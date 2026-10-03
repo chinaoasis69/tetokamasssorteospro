@@ -76979,7 +76979,18 @@ if (
 
   await mostrarReembolsosRecargaMassAdmin();
 }
+			  
+if (
+  contexto.modo === "organizador" &&
+  document.getElementById(
+    "panelEntregasPremiosPrincipalesAdmin"
+  ) &&
+  typeof cargarEntregasPremiosPrincipalesAdmin ===
+    "function"
+) {
 
+  await cargarEntregasPremiosPrincipalesAdmin();
+}
 
 if (
   contexto.modo === "usuario"
