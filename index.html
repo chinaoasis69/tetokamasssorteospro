@@ -68179,9 +68179,12 @@ if (item.tipo === "lucky_spin") {
             `;
         }).join("");
 
-document
-  .querySelectorAll(".entregaPremioPrincipalUsuario")
-  .forEach(async contenedor => {
+await Promise.all(
+  Array.from(
+    document.querySelectorAll(
+      ".entregaPremioPrincipalUsuario"
+    )
+  ).map(async contenedor => {
 
     const ganadorId =
       String(
@@ -68482,8 +68485,8 @@ document
         ⚠️ No fue posible consultar
         el estado de entrega en este momento.
       `;
-    }
-  });	
+    })
+  );	
 
 	document
   .querySelectorAll(".qrLuckySpinPremio")
