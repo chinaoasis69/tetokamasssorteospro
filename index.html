@@ -31869,9 +31869,339 @@ document.getElementById("cfgSlogan").value = cfg.slogan || "";
 document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
 document.getElementById("cfgLogoUrl").value = cfg.logo_url || "";
 document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
-document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";	
+document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";
+
+	await cargarEstadoCierreOrganizadorPerfil();
 
 }
+
+async function cargarEstadoCierreOrganizadorPerfil() {
+
+  const estadoBox =
+    document.getElementById(
+      "estadoCierreOrganizadorPerfil"
+    );
+
+  const boton =
+    document.getElementById(
+      "btnIniciarCierreOrganizadorPerfil"
+    );
+
+
+  if (!estadoBox || !boton) {
+    return;
+  }
+
+
+  const escaparHtml = valor =>
+    String(valor ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+
+  try {
+
+    const adminActual =
+      await obtenerAdminActual();
+
+
+    if (
+      !adminActual ||
+      adminActual.rol !== "organizador"
+    ) {
+
+      estadoBox.innerHTML = "";
+      boton.style.display = "none";
+
+      return;
+    }
+
+
+    const organizadorId =
+      adminActual.organizador_id ||
+      localStorage.getItem(
+        "admin_organizador_id"
+      ) ||
+      localStorage.getItem(
+        "organizador_admin_id"
+      );
+
+
+    if (!organizadorId) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #ff5252;
+            border-radius:10px;
+            color:#ff8a8a;
+            background:#240b0b;
+          "
+        >
+          ❌ No fue posible identificar
+          tu cuenta de Organizador.
+        </div>
+      `;
+
+      boton.disabled = true;
+
+      return;
+    }
+
+
+    /* =====================================================
+       RLS DE cierres_organizador GARANTIZA
+       QUE EL ORGANIZADOR SOLO VEA SU EXPEDIENTE
+       ===================================================== */
+
+    const {
+      data: cierre,
+      error
+    } =
+      await supabaseClient
+        .from("cierres_organizador")
+        .select(`
+          id,
+          organizador_id,
+          estado,
+          solicitado_at,
+          liquidacion_iniciada_at,
+          listo_cierre_at,
+          cerrado_at
+        `)
+        .eq(
+          "organizador_id",
+          organizadorId
+        )
+        .neq(
+          "estado",
+          "cancelado"
+        )
+        .order(
+          "solicitado_at",
+          {
+            ascending: false
+          }
+        )
+        .limit(1)
+        .maybeSingle();
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CARGANDO ESTADO DEL CIERRE:",
+        error
+      );
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #ff5252;
+            border-radius:10px;
+            color:#ff8a8a;
+            background:#240b0b;
+          "
+        >
+          ❌ No fue posible consultar
+          el estado del cierre.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    /* =====================================================
+       NO HAY EXPEDIENTE ACTIVO
+       ===================================================== */
+
+    if (!cierre) {
+
+      estadoBox.innerHTML = "";
+
+      boton.style.display = "";
+      boton.disabled = false;
+
+      boton.textContent =
+        "⚠️ Iniciar cierre de cuenta";
+
+      boton.style.opacity = "1";
+      boton.style.cursor = "pointer";
+
+      return;
+    }
+
+
+    const estado =
+      String(
+        cierre.estado || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const etiquetas = {
+
+      saneamiento:
+        "🧹 SANEAMIENTO",
+
+      liquidacion:
+        "💰 LIQUIDACIÓN",
+
+      listo_cierre:
+        "✅ LISTO PARA CIERRE",
+
+      cerrado:
+        "🔒 CERRADO"
+    };
+
+
+    const etiqueta =
+      etiquetas[estado] ||
+      estado.toUpperCase();
+
+
+    /* =====================================================
+       EXISTE EXPEDIENTE ACTIVO
+       ===================================================== */
+
+    estadoBox.innerHTML = `
+      <div
+        style="
+          padding:14px;
+          border:2px solid #facc15;
+          border-radius:12px;
+          background:#2a2105;
+          color:white;
+          line-height:1.55;
+        "
+      >
+
+        <div
+          style="
+            color:#facc15;
+            font-weight:bold;
+            margin-bottom:8px;
+          "
+        >
+          🔒 Proceso de cierre activo
+        </div>
+
+        <div>
+          <b>Estado:</b>
+          ${escaparHtml(etiqueta)}
+        </div>
+
+        <div>
+          <b>Expediente:</b>
+          ${escaparHtml(cierre.id)}
+        </div>
+
+        ${
+          cierre.solicitado_at
+            ? `
+              <div>
+                <b>Solicitado:</b>
+                ${escaparHtml(
+                  new Date(
+                    cierre.solicitado_at
+                  ).toLocaleString()
+                )}
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          estado === "saneamiento"
+            ? `
+              <div
+                style="
+                  margin-top:14px;
+                  padding-top:14px;
+                  border-top:
+                    1px solid rgba(250,204,21,.45);
+                "
+              >
+                <div
+                  style="
+                    color:#ddd;
+                    margin-bottom:10px;
+                  "
+                >
+                  Mientras el proceso permanezca
+                  en SANEAMIENTO todavía puede
+                  cancelarse de forma auditada.
+                </div>
+
+                <button
+                  type="button"
+                  onclick="
+                    cancelarCierreCuentaOrganizadorDesdePerfil(
+                      '${escaparHtml(cierre.id)}'
+                    )
+                  "
+                  style="
+                    padding:10px 15px;
+                    border:1px solid #facc15;
+                    border-radius:9px;
+                    background:#4a3700;
+                    color:white;
+                    font-weight:bold;
+                    cursor:pointer;
+                  "
+                >
+                  ↩️ Cancelar proceso de cierre
+                </button>
+              </div>
+            `
+            : ""
+        }
+
+      </div>
+    `;
+
+
+    boton.disabled = true;
+
+    boton.textContent =
+      estado === "saneamiento"
+        ? "🔒 Cierre en saneamiento"
+        : "🔒 Proceso de cierre activo";
+
+    boton.style.opacity = "0.65";
+    boton.style.cursor = "not-allowed";
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CARGANDO CIERRE:",
+      errorInesperado
+    );
+
+    estadoBox.innerHTML = `
+      <div
+        style="
+          padding:12px;
+          border:1px solid #ff5252;
+          border-radius:10px;
+          color:#ff8a8a;
+          background:#240b0b;
+        "
+      >
+        ❌ Ocurrió un error consultando
+        el proceso de cierre.
+      </div>
+    `;
+  }
+}	
 
 async function solicitarCierreCuentaOrganizadorDesdePerfil() {
 
@@ -32294,6 +32624,268 @@ INICIAR CIERRE`
         "Supabase rechazó la operación."
       )
     );
+  }
+}
+
+async function cancelarCierreCuentaOrganizadorDesdePerfil(
+  cierreId
+) {
+
+  const cierreTexto =
+    String(
+      cierreId || ""
+    ).trim();
+
+
+  if (!cierreTexto) {
+
+    alert(
+      "❌ No fue posible identificar " +
+      "el expediente de cierre."
+    );
+
+    return;
+  }
+
+
+  /* =====================================================
+     1. CONFIRMACIÓN CONSCIENTE
+     ===================================================== */
+
+  const confirmar =
+    confirm(
+`↩️ CANCELAR PROCESO DE CIERRE
+
+Esta acción cancelará el proceso de cierre actual.
+
+La cuenta del Organizador continuará operando y el expediente quedará conservado como historial.
+
+Los usuarios que recibieron el aviso de inicio recibirán también un aviso de cancelación.
+
+Esta opción solamente está permitida mientras el proceso permanezca en SANEAMIENTO.
+
+¿Deseas continuar?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  /* =====================================================
+     2. MOTIVO OBLIGATORIO
+     ===================================================== */
+
+  const motivoIngresado =
+    prompt(
+`Motivo de la cancelación
+
+Este motivo quedará registrado de forma privada en el expediente.
+
+Máximo: 1000 caracteres.`
+    );
+
+
+  if (motivoIngresado === null) {
+    return;
+  }
+
+
+  const motivo =
+    String(
+      motivoIngresado || ""
+    ).trim();
+
+
+  if (!motivo) {
+
+    alert(
+      "❌ Debes escribir el motivo " +
+      "de la cancelación."
+    );
+
+    return;
+  }
+
+
+  if (motivo.length > 1000) {
+
+    alert(
+      "❌ El motivo no puede exceder " +
+      "1000 caracteres."
+    );
+
+    return;
+  }
+
+
+  /* =====================================================
+     3. CONFIRMACIÓN FINAL FUERTE
+     ===================================================== */
+
+  const palabra =
+    prompt(
+`⚠️ CONFIRMACIÓN FINAL
+
+Para cancelar el proceso escribe exactamente:
+
+CANCELAR CIERRE`
+    );
+
+
+  if (
+    String(
+      palabra || ""
+    )
+      .trim()
+      .toUpperCase() !==
+    "CANCELAR CIERRE"
+  ) {
+
+    alert(
+      "✅ Operación cancelada. " +
+      "El proceso de cierre continúa activo."
+    );
+
+    return;
+  }
+
+
+  const estadoBox =
+    document.getElementById(
+      "estadoCierreOrganizadorPerfil"
+    );
+
+
+  try {
+
+    /* =====================================================
+       4. ESTADO VISUAL TEMPORAL
+       ===================================================== */
+
+    if (estadoBox) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #facc15;
+            border-radius:10px;
+            color:#facc15;
+            background:#2a2105;
+          "
+        >
+          ⏳ Cancelando el proceso
+          de cierre...
+        </div>
+      `;
+    }
+
+
+    /* =====================================================
+       5. RPC SEGURA
+       ===================================================== */
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "cancelar_cierre_organizador_seguro",
+        {
+          p_cierre_id:
+            cierreTexto,
+
+          p_motivo_cancelacion:
+            motivo
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CANCELANDO CIERRE:",
+        error
+      );
+
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      resultado.estado !== "cancelado"
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA CANCELANDO CIERRE:",
+        resultado
+      );
+
+      throw new Error(
+        "Supabase no confirmó la cancelación."
+      );
+    }
+
+
+    /* =====================================================
+       6. CONFIRMACIÓN AL ORGANIZADOR
+       ===================================================== */
+
+    alert(
+      resultado.ya_cancelado === true
+        ? (
+            "ℹ️ Este proceso de cierre " +
+            "ya se encontraba cancelado."
+          )
+        : (
+            "✅ Proceso de cierre cancelado.\n\n" +
+            "La cuenta del Organizador puede " +
+            "continuar operando.\n\n" +
+            "Los usuarios relacionados serán " +
+            "notificados automáticamente."
+          )
+    );
+
+
+    /* =====================================================
+       7. RECARGAR ESTADO DESDE SUPABASE
+       ===================================================== */
+
+    await cargarEstadoCierreOrganizadorPerfil();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO CANCELANDO CIERRE:",
+      errorInesperado
+    );
+
+
+    alert(
+      "❌ No fue posible cancelar el cierre.\n\n" +
+      (
+        errorInesperado?.message ||
+        "La operación fue rechazada por el servidor."
+      )
+    );
+
+
+    /*
+      Volver a consultar Supabase para no dejar
+      la tarjeta en un estado visual incorrecto.
+    */
+    await cargarEstadoCierreOrganizadorPerfil();
   }
 }	
 
