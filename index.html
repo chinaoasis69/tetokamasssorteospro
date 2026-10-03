@@ -67032,7 +67032,510 @@ async function marcarBeneficioUsado(id) {
   await abrirModalBeneficios();
 
   await actualizarContadorBeneficios();
-} 	
+}
+
+async function obtenerDetalleEntregaPremioPrincipalUsuario(ganadorId) {
+
+    const id =
+        String(
+            ganadorId || ""
+        ).trim();
+
+    if (!id) {
+        throw new Error(
+            "No fue posible identificar el premio."
+        );
+    }
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "obtener_entrega_premio_principal_ganador_segura",
+        {
+            p_ganador_id: id
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    const detalle =
+        Array.isArray(data)
+            ? data[0]
+            : data;
+
+    if (
+        !detalle ||
+        detalle.ok !== true
+    ) {
+        throw new Error(
+            "No se recibió un expediente de entrega válido."
+        );
+    }
+
+    return detalle;
+}
+
+
+async function verComprobanteEntregaPremioPrincipalUsuario(
+    ganadorId
+) {
+
+    /*
+      Abrimos inmediatamente la pestaña desde el clic
+      para evitar que Safari/Chrome móvil la bloquee.
+    */
+    const ventana =
+        window.open(
+            "",
+            "_blank"
+        );
+
+    if (!ventana) {
+
+        alert(
+            "⚠️ El navegador bloqueó la ventana. " +
+            "Permite ventanas emergentes e inténtalo de nuevo."
+        );
+
+        return;
+    }
+
+
+    ventana.document.body.innerHTML =
+        "<p style='font-family:Arial;padding:20px;'>" +
+        "⏳ Cargando comprobante privado..." +
+        "</p>";
+
+
+    try {
+
+        const detalle =
+            await obtenerDetalleEntregaPremioPrincipalUsuario(
+                ganadorId
+            );
+
+
+        const bucket =
+            String(
+                detalle?.comprobante_bucket ||
+                ""
+            ).trim();
+
+
+        const path =
+            String(
+                detalle?.comprobante_path ||
+                ""
+            ).trim();
+
+
+        if (
+            detalle?.puede_ver_comprobante !==
+                true ||
+            detalle?.comprobante_disponible !==
+                true ||
+            bucket !==
+                "premios-principales-entregas" ||
+            !path
+        ) {
+
+            ventana.close();
+
+            alert(
+                "❌ El comprobante privado no está disponible."
+            );
+
+            return;
+        }
+
+
+        const {
+            data: archivo,
+            error
+        } =
+            await supabaseClient
+                .storage
+                .from(bucket)
+                .download(path);
+
+
+        if (
+            error ||
+            !archivo
+        ) {
+
+            throw (
+                error ||
+                new Error(
+                    "Storage no devolvió el comprobante."
+                )
+            );
+        }
+
+
+        const urlTemporal =
+            URL.createObjectURL(
+                archivo
+            );
+
+
+        ventana.location.href =
+            urlTemporal;
+
+
+        setTimeout(
+            () => {
+
+                try {
+
+                    URL.revokeObjectURL(
+                        urlTemporal
+                    );
+
+                } catch (_) {}
+
+            },
+            120000
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR ABRIENDO COMPROBANTE DE PREMIO PRINCIPAL:",
+            error
+        );
+
+
+        if (!ventana.closed) {
+            ventana.close();
+        }
+
+
+        alert(
+            "❌ No fue posible abrir el comprobante privado.\n\n" +
+            String(
+                error?.message ||
+                ""
+            )
+        );
+    }
+}
+
+
+async function confirmarRecepcionPremioPrincipalUsuario(
+    ganadorId
+) {
+
+    try {
+
+        const detalle =
+            await obtenerDetalleEntregaPremioPrincipalUsuario(
+                ganadorId
+            );
+
+
+        const entregaId =
+            String(
+                detalle?.entrega_id ||
+                ""
+            ).trim();
+
+
+        if (
+            !entregaId ||
+            detalle?.puede_confirmar_recepcion !==
+                true
+        ) {
+
+            alert(
+                "⚠️ Este premio no está disponible " +
+                "para confirmar recepción."
+            );
+
+            return;
+        }
+
+
+        const veniaDisputado =
+            String(
+                detalle?.estado_expediente ||
+                ""
+            )
+            .trim()
+            .toLowerCase() ===
+            "disputado";
+
+
+        const confirmar =
+            window.confirm(
+
+                veniaDisputado
+
+                    ? "CONFIRMAR RECEPCIÓN\n\n" +
+                      "Tú habías reportado que no recibiste este premio.\n\n" +
+                      "Confirma únicamente si AHORA sí lo recibiste.\n\n" +
+                      "La disputa permanecerá guardada en el historial."
+
+                    : "CONFIRMAR RECEPCIÓN\n\n" +
+                      "Confirma únicamente si realmente recibiste el premio " +
+                      "y revisaste el comprobante privado."
+            );
+
+
+        if (!confirmar) {
+            return;
+        }
+
+
+        const {
+            error
+        } =
+            await supabaseClient.rpc(
+                "confirmar_recepcion_entrega_premio_principal_segura",
+                {
+                    p_entrega_id:
+                        entregaId
+                }
+            );
+
+
+        if (error) {
+
+            const actual =
+                await obtenerDetalleEntregaPremioPrincipalUsuario(
+                    ganadorId
+                )
+                .catch(
+                    () => null
+                );
+
+
+            if (
+                String(
+                    actual?.estado_entrega ||
+                    ""
+                )
+                .trim()
+                .toLowerCase() !==
+                "entregado"
+            ) {
+
+                throw error;
+            }
+        }
+
+
+        alert(
+            "✅ Recepción confirmada.\n\n" +
+            "El premio quedó registrado como ENTREGADO."
+        );
+
+
+        await cargarHistorialPremios();
+
+
+        if (
+            document.getElementById(
+                "modalPremios"
+            )?.style.display ===
+            "block"
+        ) {
+
+            abrirModalPremios();
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CONFIRMANDO RECEPCIÓN DE PREMIO PRINCIPAL:",
+            error
+        );
+
+
+        alert(
+            "❌ No fue posible confirmar la recepción.\n\n" +
+            String(
+                error?.message ||
+                ""
+            )
+        );
+    }
+}
+
+
+async function reportarNoRecepcionPremioPrincipalUsuario(
+    ganadorId
+) {
+
+    try {
+
+        const detalle =
+            await obtenerDetalleEntregaPremioPrincipalUsuario(
+                ganadorId
+            );
+
+
+        const entregaId =
+            String(
+                detalle?.entrega_id ||
+                ""
+            ).trim();
+
+
+        if (
+            !entregaId ||
+            detalle?.puede_reportar_no_recepcion !==
+                true
+        ) {
+
+            alert(
+                "⚠️ Este premio no está disponible " +
+                "para reportar como no recibido."
+            );
+
+            return;
+        }
+
+
+        const motivoIngresado =
+            window.prompt(
+
+                "NO RECIBÍ MI PREMIO\n\n" +
+                "Describe brevemente lo ocurrido.\n\n" +
+                "Puedes dejarlo vacío para usar " +
+                "el motivo estándar del sistema.",
+
+                ""
+            );
+
+
+        if (
+            motivoIngresado ===
+            null
+        ) {
+            return;
+        }
+
+
+        const motivo =
+            String(
+                motivoIngresado
+            ).trim();
+
+
+        if (
+            motivo.length >
+            2000
+        ) {
+
+            alert(
+                "⚠️ El motivo no puede exceder 2000 caracteres."
+            );
+
+            return;
+        }
+
+
+        const confirmar =
+            window.confirm(
+
+                "CONFIRMAR REPORTE\n\n" +
+                "El premio permanecerá pendiente y se abrirá " +
+                "una disputa para revisión.\n\n" +
+                "¿Deseas continuar?"
+            );
+
+
+        if (!confirmar) {
+            return;
+        }
+
+
+        const {
+            error
+        } =
+            await supabaseClient.rpc(
+                "reportar_no_recepcion_entrega_premio_principal_segura",
+                {
+                    p_entrega_id:
+                        entregaId,
+
+                    p_motivo:
+                        motivo ||
+                        null
+                }
+            );
+
+
+        if (error) {
+
+            const actual =
+                await obtenerDetalleEntregaPremioPrincipalUsuario(
+                    ganadorId
+                )
+                .catch(
+                    () => null
+                );
+
+
+            if (
+                String(
+                    actual?.estado_expediente ||
+                    ""
+                )
+                .trim()
+                .toLowerCase() !==
+                "disputado"
+            ) {
+
+                throw error;
+            }
+        }
+
+
+        alert(
+            "⚠️ Reporte registrado.\n\n" +
+            "El premio permanece pendiente y la entrega " +
+            "quedó en disputa para revisión."
+        );
+
+
+        await cargarHistorialPremios();
+
+
+        if (
+            document.getElementById(
+                "modalPremios"
+            )?.style.display ===
+            "block"
+        ) {
+
+            abrirModalPremios();
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "ERROR REPORTANDO NO RECEPCIÓN DE PREMIO PRINCIPAL:",
+            error
+        );
+
+
+        alert(
+            "❌ No fue posible registrar el reporte.\n\n" +
+            String(
+                error?.message ||
+                ""
+            )
+        );
+    }
+}	
 
 async function cargarHistorialPremios(){
 
@@ -67498,7 +68001,12 @@ if (item.tipo === "lucky_spin") {
   `;
 }
 
-			if (item.tipo === "sorteo_principal") {
+	if (item.tipo === "sorteo_principal") {
+
+    const ganadorIdPremioPrincipal =
+        String(
+            p.ganador_id || ""
+        ).trim();
 
     return `
         <div style="
@@ -67513,30 +68021,44 @@ if (item.tipo === "lucky_spin") {
             <br><br>
 
             🎁 Sorteo:
-            <b>${p.rifa_titulo || "Sorteo"}</b>
+            <b>${escaparHtmlPremios(
+                p.rifa_titulo || "Sorteo"
+            )}</b>
             <br>
 
             🏢 Organizador:
-            <b>${p.organizador_nombre || "Organizador"}</b>
+            <b>${escaparHtmlPremios(
+                p.organizador_nombre || "Organizador"
+            )}</b>
             <br>
 
-            🥇 ${p.lugar_premio || "Premio"}
+            🥇 ${escaparHtmlPremios(
+                p.lugar_premio || "Premio"
+            )}
             <br>
 
             🎟️ Número ganador:
-            <b>${p.numero_ganador || "-"}</b>
+            <b>${escaparHtmlPremios(
+                p.numero_ganador || "-"
+            )}</b>
             <br>
 
             🪪 MASS ID:
-            <b>${p.mass_id || "-"}</b>
+            <b>${escaparHtmlPremios(
+                p.mass_id || "-"
+            )}</b>
             <br>
 
             🎁 Premio:
-            <b>${p.premio || "Premio"}</b>
+            <b>${escaparHtmlPremios(
+                p.premio || "Premio"
+            )}</b>
             <br>
 
             📦 Estado de entrega:
-            <b>${p.estado_entrega || "pendiente"}</b>
+            <b>${escaparHtmlPremios(
+                p.estado_entrega || "pendiente"
+            )}</b>
             <br>
 
             📅 ${
@@ -67552,7 +68074,9 @@ if (item.tipo === "lucky_spin") {
                     ? `
                         <br>
                         <img
-                            src="${p.imagen_url}"
+                            src="${escaparHtmlPremios(
+                                p.imagen_url
+                            )}"
                             style="
                                 max-width:200px;
                                 width:100%;
@@ -67565,9 +68089,32 @@ if (item.tipo === "lucky_spin") {
                     : ""
             }
 
+            <div
+                class="entregaPremioPrincipalUsuario"
+                data-ganador-id="${escaparHtmlPremios(
+                    ganadorIdPremioPrincipal
+                )}"
+                style="
+                    margin-top:14px;
+                    padding-top:12px;
+                    border-top:1px solid rgba(57,255,20,.25);
+                "
+            >
+                ${
+                    ganadorIdPremioPrincipal
+                        ? `
+                            ⏳ Cargando estado de entrega...
+                        `
+                        : `
+                            ⚠️ No fue posible identificar
+                            el expediente de este premio.
+                        `
+                }
+            </div>
+
         </div>
     `;
-}
+}		
 
             if (item.tipo === "pre_sorteo") {
                 return `
@@ -67631,6 +68178,312 @@ if (item.tipo === "lucky_spin") {
                 </div>
             `;
         }).join("");
+
+document
+  .querySelectorAll(".entregaPremioPrincipalUsuario")
+  .forEach(async contenedor => {
+
+    const ganadorId =
+      String(
+        contenedor.dataset.ganadorId || ""
+      ).trim();
+
+    if (!ganadorId) {
+      return;
+    }
+
+    try {
+
+      const detalle =
+        await obtenerDetalleEntregaPremioPrincipalUsuario(
+          ganadorId
+        );
+
+      const entregaExiste =
+        detalle?.entrega_existe === true;
+
+      const estadoExpediente =
+        String(
+          detalle?.estado_expediente || ""
+        )
+        .trim()
+        .toLowerCase();
+
+      const estadoEntrega =
+        String(
+          detalle?.estado_entrega || "pendiente"
+        )
+        .trim()
+        .toLowerCase();
+
+      const puedeVerComprobante =
+        detalle?.puede_ver_comprobante === true &&
+        detalle?.comprobante_disponible === true;
+
+      const puedeConfirmar =
+        detalle?.puede_confirmar_recepcion === true;
+
+      const puedeReportarNoRecepcion =
+        detalle?.puede_reportar_no_recepcion === true;
+
+      const motivoDisputa =
+        String(
+          detalle?.motivo_disputa || ""
+        ).trim();
+
+      const motivoResolucionAdmin =
+        String(
+          detalle?.motivo_resolucion_admin || ""
+        ).trim();
+
+      const disputaHistorica =
+        detalle?.disputa_historica === true;
+
+      if (!entregaExiste) {
+
+        contenedor.innerHTML = `
+          <b>📦 Entrega del premio</b>
+          <br>
+          ⏳ Pendiente de entrega.
+        `;
+
+        return;
+      }
+
+      let estadoHtml = "";
+
+      if (estadoExpediente === "reportado") {
+
+        estadoHtml = `
+          <b>📦 Entrega reportada</b>
+          <br>
+          El Organizador reportó la entrega.
+          Revisa el comprobante privado y confirma
+          si recibiste el premio.
+        `;
+
+      } else if (estadoExpediente === "disputado") {
+
+        estadoHtml = `
+          <b>⚠️ Entrega en disputa</b>
+          <br>
+          Reportaste que no recibiste este premio.
+
+          ${
+            motivoDisputa
+              ? `
+                  <br><br>
+                  📝 Motivo:
+                  <b>${escaparHtmlPremios(
+                    motivoDisputa
+                  )}</b>
+                `
+              : ""
+          }
+
+          <br><br>
+          La obligación permanece pendiente
+          mientras se revisa la entrega.
+        `;
+
+      } else if (
+        estadoExpediente === "confirmado_usuario"
+      ) {
+
+        estadoHtml = `
+          <b>✅ Premio recibido</b>
+          <br>
+          Confirmaste la recepción de este premio.
+        `;
+
+        if (disputaHistorica) {
+
+          estadoHtml += `
+            <br><br>
+            ℹ️ Este expediente conserva
+            historial de una disputa anterior.
+          `;
+        }
+
+      } else if (
+        estadoExpediente === "resuelto_admin"
+      ) {
+
+        estadoHtml = `
+          <b>✅ Entrega resuelta administrativamente</b>
+          <br>
+          El expediente fue resuelto por
+          administración.
+        `;
+
+        if (motivoResolucionAdmin) {
+
+          estadoHtml += `
+            <br><br>
+            📝 Resolución:
+            <b>${escaparHtmlPremios(
+              motivoResolucionAdmin
+            )}</b>
+          `;
+        }
+
+        if (disputaHistorica) {
+
+          estadoHtml += `
+            <br><br>
+            ℹ️ El historial de la disputa
+            permanece registrado.
+          `;
+        }
+
+      } else {
+
+        estadoHtml = `
+          <b>📦 Estado de entrega</b>
+          <br>
+          ${escaparHtmlPremios(
+            estadoEntrega || "pendiente"
+          )}
+        `;
+      }
+
+      const acciones = [];
+
+      if (puedeVerComprobante) {
+
+        acciones.push(`
+          <button
+            type="button"
+            class="btnVerComprobantePremioPrincipal"
+            style="
+              margin:8px 6px 0 0;
+              padding:10px 12px;
+              cursor:pointer;
+            "
+          >
+            🧾 Ver comprobante privado
+          </button>
+        `);
+      }
+
+      if (puedeConfirmar) {
+
+        acciones.push(`
+          <button
+            type="button"
+            class="btnConfirmarPremioPrincipal"
+            style="
+              margin:8px 6px 0 0;
+              padding:10px 12px;
+              cursor:pointer;
+            "
+          >
+            ${
+              estadoExpediente === "disputado"
+                ? "✅ Ya recibí mi premio"
+                : "✅ Sí, recibí mi premio"
+            }
+          </button>
+        `);
+      }
+
+      if (puedeReportarNoRecepcion) {
+
+        acciones.push(`
+          <button
+            type="button"
+            class="btnNoRecibiPremioPrincipal"
+            style="
+              margin:8px 6px 0 0;
+              padding:10px 12px;
+              cursor:pointer;
+            "
+          >
+            ⚠️ No recibí mi premio
+          </button>
+        `);
+      }
+
+      contenedor.innerHTML = `
+        ${estadoHtml}
+
+        ${
+          acciones.length
+            ? `
+                <div style="margin-top:10px;">
+                  ${acciones.join("")}
+                </div>
+              `
+            : ""
+        }
+      `;
+
+      const btnVer =
+        contenedor.querySelector(
+          ".btnVerComprobantePremioPrincipal"
+        );
+
+      if (btnVer) {
+
+        btnVer.addEventListener(
+          "click",
+          () => {
+            verComprobanteEntregaPremioPrincipalUsuario(
+              ganadorId
+            );
+          }
+        );
+      }
+
+      const btnConfirmar =
+        contenedor.querySelector(
+          ".btnConfirmarPremioPrincipal"
+        );
+
+      if (btnConfirmar) {
+
+        btnConfirmar.addEventListener(
+          "click",
+          () => {
+            confirmarRecepcionPremioPrincipalUsuario(
+              ganadorId
+            );
+          }
+        );
+      }
+
+      const btnNoRecibi =
+        contenedor.querySelector(
+          ".btnNoRecibiPremioPrincipal"
+        );
+
+      if (btnNoRecibi) {
+
+        btnNoRecibi.addEventListener(
+          "click",
+          () => {
+            reportarNoRecepcionPremioPrincipalUsuario(
+              ganadorId
+            );
+          }
+        );
+      }
+
+    } catch (error) {
+
+      console.error(
+        "ERROR CARGANDO EXPEDIENTE DE PREMIO PRINCIPAL:",
+        error
+      );
+
+      contenedor.innerHTML = `
+        <b>📦 Entrega del premio</b>
+        <br>
+        ⚠️ No fue posible consultar
+        el estado de entrega en este momento.
+      `;
+    }
+  });	
 
 	document
   .querySelectorAll(".qrLuckySpinPremio")
