@@ -25972,16 +25972,38 @@ async function mostrarGanadoresAdmin() {
  >
  </div>
 
-      <label>📍 Estado</label>
-      <select id="ganadorEstado">
+           <label>📍 Estado de entrega</label>
+
+      <select
+        id="ganadorEstado"
+        disabled
+        style="
+          opacity:.85;
+          cursor:not-allowed;
+        "
+      >
         <option value="pendiente">Pendiente</option>
         <option value="entregado">Entregado</option>
       </select>
+
+      <div
+        style="
+          margin-top:8px;
+          color:#aaa;
+          font-size:13px;
+          line-height:1.45;
+        "
+      >
+        🔒 El estado de entrega es informativo.
+        Solo cambia mediante el flujo seguro de
+        entrega y confirmación del premio.
+      </div>
+	  
     </div>
 
     <div class="form-section">
       <label>💬 Comentario</label>
-      <input id="ganadorComentario" placeholder="Ejemplo: Premio entregado correctamente">
+            <input id="ganadorComentario" placeholder="Comentario público opcional">
     </div>
 
     <div class="form-section">
@@ -26113,8 +26135,11 @@ async function manejarCambioSorteoGanador(){
     numeroInput.readOnly = false;
     numeroInput.placeholder = "Ejemplo: 0099";
 
-    premioSelect.disabled = false;
-    estadoSelect.disabled = false;
+        premioSelect.disabled = false;
+
+    estadoSelect.value = "pendiente";
+    estadoSelect.disabled = true;
+
     comentarioInput.disabled = false;
     imagenInput.disabled = false;
 
@@ -26293,10 +26318,17 @@ ganadoresAutomaticosFormulario =
   habilitar solamente los datos de entrega
   y el selector de premios.
 */
+
 premioSelect.disabled = false;
-estadoSelect.disabled = false;
+
+/*
+  El estado de entrega solamente se muestra.
+  No puede modificarse desde Publicar ganador.
+*/
+estadoSelect.disabled = true;
+
 comentarioInput.disabled = false;
-imagenInput.disabled = false;
+imagenInput.disabled = false;	
 
 btnPublicar.disabled = false;
 btnPublicar.style.opacity = "1";
@@ -26528,7 +26560,6 @@ async function publicarGanador(){
     const premioId = premioSelect.value;
 
     const numero = document.getElementById("ganadorNumero").value.trim();
-    const estado = document.getElementById("ganadorEstado").value;
     const comentario = document.getElementById("ganadorComentario").value.trim();
 
     const organizadorId = localStorage.getItem("organizador_admin_id");
@@ -26672,7 +26703,6 @@ if (archivoImagen) {
     } = await supabaseClient
         .from("ganadores")
         .update({
-            estado_entrega: estado,
             comentario: comentario,
             imagen_url: imagenUrl,
             autorizado_publicar: true
@@ -26711,7 +26741,7 @@ if (archivoImagen) {
             lugar_premio: lugarPremio,
             premio: premioNombre,
             numero_ganador: numero,
-            estado_entrega: estado,
+            estado_entrega: "pendiente",
             comentario: comentario,
             imagen_url: imagenUrl,
             autorizado_publicar: true
