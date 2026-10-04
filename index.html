@@ -32848,6 +32848,112 @@ async function construirPanelLiquidacionesCierreOrganizador(
       ? data
       : [];
 
+  let respuestaSnapshotLiquidacion = null;
+  let snapshotLiquidacion = null;
+  let puedeMarcarListoCierre = false;
+  let errorSnapshotLiquidacion = null;
+
+
+  const {
+    data: snapshotLiquidacionData,
+    error: snapshotLiquidacionError
+  } =
+    await supabaseClient.rpc(
+      "obtener_snapshot_liquidacion_cierre_frontend_seguro",
+      {
+        p_cierre_id:
+          cierreId
+      }
+    );
+
+
+  if (snapshotLiquidacionError) {
+
+    console.error(
+      "ERROR CARGANDO SNAPSHOT DE LIQUIDACIÓN:",
+      snapshotLiquidacionError
+    );
+
+    errorSnapshotLiquidacion =
+      snapshotLiquidacionError;
+
+  } else {
+
+    let respuestaNormalizada =
+      snapshotLiquidacionData;
+
+
+    if (
+      typeof respuestaNormalizada ===
+      "string"
+    ) {
+
+      try {
+
+        respuestaNormalizada =
+          JSON.parse(
+            respuestaNormalizada
+          );
+
+      } catch (errorParseSnapshot) {
+
+        console.error(
+          "ERROR INTERPRETANDO SNAPSHOT DE LIQUIDACIÓN:",
+          errorParseSnapshot
+        );
+
+        respuestaNormalizada =
+          null;
+      }
+    }
+
+
+    if (
+      respuestaNormalizada &&
+      typeof respuestaNormalizada ===
+        "object" &&
+      !Array.isArray(
+        respuestaNormalizada
+      )
+    ) {
+
+      respuestaSnapshotLiquidacion =
+        respuestaNormalizada;
+
+
+      if (
+        respuestaNormalizada.snapshot &&
+        typeof respuestaNormalizada.snapshot ===
+          "object" &&
+        !Array.isArray(
+          respuestaNormalizada.snapshot
+        )
+      ) {
+
+        snapshotLiquidacion =
+          respuestaNormalizada.snapshot;
+      }
+
+
+      puedeMarcarListoCierre =
+        respuestaNormalizada
+          .puede_marcar_listo_cierre ===
+        true;
+    }
+
+
+    if (!snapshotLiquidacion) {
+
+      errorSnapshotLiquidacion =
+        new Error(
+          "SNAPSHOT_LIQUIDACION_INVALIDO"
+        );
+
+      puedeMarcarListoCierre =
+        false;
+    }
+  }	
+
 
   const estadosTerminales =
     new Set([
@@ -32956,7 +33062,289 @@ async function construirPanelLiquidacionesCierreOrganizador(
           liquidaciones.length
         )
       : 0;
+	
+  const numeroSnapshotLiquidacion =
+    valor => {
 
+      const numero =
+        Number(valor);
+
+      return Number.isFinite(numero)
+        ? numero
+        : 0;
+    };
+
+
+  let panelAvanceLiquidacionHtml = "";
+
+
+  if (
+    errorSnapshotLiquidacion ||
+    !snapshotLiquidacion
+  ) {
+
+    panelAvanceLiquidacionHtml = `
+      <div
+        style="
+          margin-top:14px;
+          padding:12px;
+          border:1px solid #ff5252;
+          border-radius:10px;
+          background:#240b0b;
+          color:#ffb3b3;
+        "
+      >
+        ⚠️ No fue posible verificar el
+        snapshot final de LIQUIDACIÓN.
+
+        <br><br>
+
+        Por seguridad, la transición a
+        <b>LISTO_CIERRE</b> permanece bloqueada.
+      </div>
+    `;
+
+    puedeMarcarListoCierre =
+      false;
+
+  } else {
+
+    const resumenLiquidaciones =
+      snapshotLiquidacion
+        ?.liquidaciones ||
+      {};
+
+    const resumenWallet =
+      snapshotLiquidacion
+        ?.wallet ||
+      {};
+
+    const resumenRetenciones =
+      snapshotLiquidacion
+        ?.retenciones ||
+      {};
+
+
+    const abiertasSnapshot =
+      numeroSnapshotLiquidacion(
+        resumenLiquidaciones
+          ?.abiertas
+      );
+
+    const terminalesSnapshot =
+      numeroSnapshotLiquidacion(
+        resumenLiquidaciones
+          ?.terminales
+      );
+
+    const walletsNoCero =
+      numeroSnapshotLiquidacion(
+        resumenWallet
+          ?.wallets_no_cero
+      );
+
+    const saldoNoCero =
+      numeroSnapshotLiquidacion(
+        resumenWallet
+          ?.saldo_no_cero_total_absoluto
+      );
+
+    const retencionesActivas =
+      numeroSnapshotLiquidacion(
+        resumenRetenciones
+          ?.activas
+      );
+
+    const inconsistenciasTerminales =
+      numeroSnapshotLiquidacion(
+        resumenLiquidaciones
+          ?.terminales_inconsistentes
+      );
+
+    const inconsistenciasMovimientos =
+      numeroSnapshotLiquidacion(
+        resumenLiquidaciones
+          ?.movimientos_inconsistentes
+      );
+
+    const snapshotMaestroOk =
+      snapshotLiquidacion
+        ?.snapshot_maestro_ok ===
+      true;
+
+
+    panelAvanceLiquidacionHtml = `
+      <div
+        style="
+          margin-top:14px;
+          padding:12px;
+          border:1px solid
+            ${
+              puedeMarcarListoCierre
+                ? "#39ff14"
+                : "#facc15"
+            };
+          border-radius:10px;
+          background:
+            ${
+              puedeMarcarListoCierre
+                ? "#0d2b10"
+                : "#211b06"
+            };
+        "
+      >
+
+        <div
+          style="
+            font-weight:bold;
+            color:
+              ${
+                puedeMarcarListoCierre
+                  ? "#39ff14"
+                  : "#facc15"
+              };
+            margin-bottom:8px;
+          "
+        >
+          ${
+            puedeMarcarListoCierre
+              ? "✅ Liquidación completada"
+              : "⚠️ Liquidación todavía pendiente"
+          }
+        </div>
+
+
+        <div>
+          <b>Snapshot maestro saneado:</b>
+          ${
+            snapshotMaestroOk
+              ? "✅ Sí"
+              : "❌ No"
+          }
+        </div>
+
+        <div>
+          <b>Liquidaciones abiertas:</b>
+          ${escaparHtml(
+            abiertasSnapshot
+          )}
+        </div>
+
+        <div>
+          <b>Liquidaciones terminales:</b>
+          ${escaparHtml(
+            terminalesSnapshot
+          )}
+        </div>
+
+        <div>
+          <b>Wallets con saldo distinto de cero:</b>
+          ${escaparHtml(
+            walletsNoCero
+          )}
+        </div>
+
+        <div>
+          <b>Saldo pendiente absoluto:</b>
+          ${escaparHtml(
+            saldoNoCero
+          )}
+          MASS
+          ${escaparHtml(unidad)}
+        </div>
+
+        <div>
+          <b>Retenciones activas:</b>
+          ${escaparHtml(
+            retencionesActivas
+          )}
+        </div>
+
+        <div>
+          <b>Liquidaciones terminales inconsistentes:</b>
+          ${escaparHtml(
+            inconsistenciasTerminales
+          )}
+        </div>
+
+        <div>
+          <b>Movimientos inconsistentes:</b>
+          ${escaparHtml(
+            inconsistenciasMovimientos
+          )}
+        </div>
+
+
+        <button
+          type="button"
+
+          id="btnMarcarListoCierreOrganizador_${escaparHtml(
+            cierreId
+          )}"
+
+          ${
+            puedeMarcarListoCierre
+              ? ""
+              : "disabled"
+          }
+
+          onclick="
+            marcarCierreOrganizadorListoDesdePerfil(
+              '${escaparHtml(cierreId)}'
+            )
+          "
+
+          style="
+            width:100%;
+            margin-top:12px;
+            padding:11px;
+
+            border:1px solid
+              ${
+                puedeMarcarListoCierre
+                  ? "#39ff14"
+                  : "#666"
+              };
+
+            border-radius:9px;
+
+            background:
+              ${
+                puedeMarcarListoCierre
+                  ? "#123b16"
+                  : "#2b2b2b"
+              };
+
+            color:white;
+            font-weight:bold;
+
+            opacity:
+              ${
+                puedeMarcarListoCierre
+                  ? "1"
+                  : "0.55"
+              };
+
+            cursor:
+              ${
+                puedeMarcarListoCierre
+                  ? "pointer"
+                  : "not-allowed"
+              };
+          "
+        >
+
+          ${
+            puedeMarcarListoCierre
+              ? "✅ Marcar listo para cierre"
+              : "🔒 Aún no listo para cierre"
+          }
+
+        </button>
+
+      </div>
+    `;
+  }
 
   const tarjetas =
     liquidaciones
@@ -33471,7 +33859,8 @@ async function construirPanelLiquidacionesCierreOrganizador(
             </div>
           `
       }
-
+	  
+      ${panelAvanceLiquidacionHtml}
 
       <div
         style="
@@ -34594,7 +34983,211 @@ async function abrirComprobanteLiquidacionCierreOrganizador(
         textoOriginal;
     }
   }
-}	  
+}
+
+async function marcarCierreOrganizadorListoDesdePerfil(
+  cierreId
+) {
+
+  const id =
+    String(
+      cierreId || ""
+    ).trim();
+
+
+  if (!id) {
+
+    alert(
+      "❌ No fue posible identificar el expediente de cierre."
+    );
+
+    return;
+  }
+
+
+  const boton =
+    document.getElementById(
+      `btnMarcarListoCierreOrganizador_${id}`
+    );
+
+
+  const confirmar =
+    window.confirm(
+      "✅ MARCAR LISTO PARA CIERRE\n\n" +
+
+      "Esta acción solo debe ejecutarse cuando TODAS las liquidaciones estén terminadas, las Wallets estén en cero y no existan retenciones pendientes.\n\n" +
+
+      "El servidor volverá a validar todas las condiciones antes de cambiar el expediente a LISTO_CIERRE.\n\n" +
+
+      "¿Deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const textoOriginal =
+    boton?.textContent ||
+    "✅ Marcar listo para cierre";
+
+
+  if (boton) {
+
+    boton.disabled =
+      true;
+
+    boton.style.opacity =
+      "0.55";
+
+    boton.style.cursor =
+      "not-allowed";
+
+    boton.textContent =
+      "⏳ Verificando cierre...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "marcar_cierre_organizador_listo_seguro",
+        {
+          p_cierre_id:
+            id
+        }
+      );
+
+
+    if (error) {
+
+      const mensajeServidor =
+        String(
+          error?.message ||
+          ""
+        );
+
+
+      if (
+        mensajeServidor.includes(
+          "CIERRE_AUN_NO_ESTA_LISTO_PARA_CIERRE"
+        )
+      ) {
+
+        alert(
+          "⚠️ El cierre todavía no cumple todas las condiciones para pasar a LISTO_CIERRE."
+        );
+
+        await cargarEstadoCierreOrganizadorPerfil();
+
+        return;
+      }
+
+
+      throw error;
+    }
+
+
+    let resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      typeof resultado ===
+      "string"
+    ) {
+
+      try {
+
+        resultado =
+          JSON.parse(
+            resultado
+          );
+
+      } catch (_) {
+
+        resultado =
+          null;
+      }
+    }
+
+
+    const estadoResultado =
+      String(
+        resultado?.estado ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      ![
+        "listo_cierre",
+        "cerrado"
+      ].includes(
+        estadoResultado
+      )
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó la transición a LISTO_CIERRE."
+      );
+    }
+
+
+    alert(
+      resultado?.ya_listo === true
+        ? "ℹ️ El expediente ya se encontraba listo para cierre."
+        : "✅ Todas las obligaciones fueron validadas. El expediente quedó LISTO PARA CIERRE."
+    );
+
+
+    await cargarEstadoCierreOrganizadorPerfil();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR MARCANDO CIERRE COMO LISTO:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible marcar el expediente como LISTO_CIERRE.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+    if (boton) {
+
+      boton.disabled =
+        false;
+
+      boton.style.opacity =
+        "1";
+
+      boton.style.cursor =
+        "pointer";
+
+      boton.textContent =
+        textoOriginal;
+    }
+  }
+}	
 
 async function solicitarCierreCuentaOrganizadorDesdePerfil() {
 
