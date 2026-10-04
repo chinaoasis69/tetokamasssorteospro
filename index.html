@@ -2051,6 +2051,28 @@ Cargando historial...
   </button>
 
 </div>
+
+<!-- =====================================================
+     MASS — MIS LIQUIDACIONES MASS — USUARIO
+===================================================== -->
+
+<div class="card">
+
+  <h2>💵 Mis liquidaciones MASS</h2>
+
+  <p>
+    Consulta las liquidaciones de tu Wallet MASS
+    relacionadas con el cierre de cuenta de un Organizador.
+  </p>
+
+  <button
+    type="button"
+    onclick="abrirModalMisLiquidacionesMass()"
+  >
+    💵 Ver mis liquidaciones MASS
+  </button>
+
+</div>	
 	  
   <div class="card">
 <h2>🎁 Mis Premios</h2>
@@ -2173,6 +2195,33 @@ Cargando historial...
     <button
       type="button"
       onclick="cerrarModalMisComprasMass()"
+    >
+      ❌ Cerrar
+    </button>
+
+  </div>
+</div>
+
+<!-- =====================================================
+     MASS — MIS LIQUIDACIONES MASS — USUARIO
+===================================================== -->
+
+<div
+  id="modalMisLiquidacionesMass"
+  class="modal-premios"
+  style="display:none;"
+>
+  <div class="modal-premios-contenido">
+
+    <h2>💵 Mis liquidaciones MASS</h2>
+
+    <div id="misLiquidacionesMassDentroModal">
+      Cargando tus liquidaciones...
+    </div>
+
+    <button
+      type="button"
+      onclick="cerrarModalMisLiquidacionesMass()"
     >
       ❌ Cerrar
     </button>
@@ -70344,6 +70393,1043 @@ el estado desde Mis compras MASS.`
       botonActual.textContent =
         "📝 Enviar solicitud";
     }
+  }
+}
+
+// ============================================================
+// MASS — LIQUIDACIONES DE CIERRE — USUARIO
+// ============================================================
+
+const MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO =
+  new Set();
+
+
+// ============================================================
+// ABRIR MODAL
+// ============================================================
+
+async function abrirModalMisLiquidacionesMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisLiquidacionesMass"
+    );
+
+  const contenedor =
+    document.getElementById(
+      "misLiquidacionesMassDentroModal"
+    );
+
+
+  if (!modal || !contenedor) {
+
+    console.error(
+      "No existe el modal Mis liquidaciones MASS."
+    );
+
+    return;
+  }
+
+
+  modal.style.display =
+    "block";
+
+
+  contenedor.innerHTML = `
+    <div
+      style="
+        padding:20px;
+        text-align:center;
+        color:#ddd;
+      "
+    >
+      ⏳ Cargando tus liquidaciones MASS...
+    </div>
+  `;
+
+
+  await cargarMisLiquidacionesMass();
+}
+
+
+// ============================================================
+// CERRAR MODAL
+// ============================================================
+
+function cerrarModalMisLiquidacionesMass() {
+
+  const modal =
+    document.getElementById(
+      "modalMisLiquidacionesMass"
+    );
+
+
+  if (modal) {
+
+    modal.style.display =
+      "none";
+  }
+}
+
+
+// ============================================================
+// CARGAR LIQUIDACIONES DEL USUARIO
+// ============================================================
+
+async function cargarMisLiquidacionesMass() {
+
+  const contenedor =
+    document.getElementById(
+      "misLiquidacionesMassDentroModal"
+    );
+
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const formatearFecha =
+    valor => {
+
+      if (!valor) {
+        return "";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+        return "";
+      }
+
+
+      return fecha.toLocaleString();
+    };
+
+
+  try {
+
+    const {
+      data: datosSesion,
+      error: errorSesion
+    } =
+      await supabaseClient.auth
+        .getSession();
+
+
+    const sesion =
+      datosSesion?.session ||
+      null;
+
+
+    if (
+      errorSesion ||
+      !sesion?.user?.id
+    ) {
+
+      contenedor.innerHTML = `
+        <p style="color:#ff6b6b;">
+          🔐 Inicia sesión para consultar
+          tus liquidaciones MASS.
+        </p>
+      `;
+
+      return;
+    }
+
+
+    const authUserId =
+      sesion.user.id;
+
+
+    const [
+      resultadoPerfil,
+      resultadoLiquidaciones
+    ] =
+      await Promise.all([
+
+        supabaseClient
+          .from("usuarios_mass")
+          .select("mass_id")
+          .eq(
+            "auth_user_id",
+            authUserId
+          )
+          .maybeSingle(),
+
+        supabaseClient.rpc(
+          "listar_mis_liquidaciones_wallet_cierre_segura",
+          {
+            p_limite:
+              100,
+
+            p_offset:
+              0
+          }
+        )
+
+      ]);
+
+
+    if (
+      resultadoPerfil.error
+    ) {
+
+      console.error(
+        "ERROR CARGANDO MASS ID PARA LIQUIDACIONES:",
+        resultadoPerfil.error
+      );
+    }
+
+
+    if (
+      resultadoLiquidaciones.error
+    ) {
+
+      console.error(
+        "ERROR CARGANDO MIS LIQUIDACIONES MASS:",
+        resultadoLiquidaciones.error
+      );
+
+
+      contenedor.innerHTML = `
+        <p style="color:#ff6b6b;">
+          ❌ No fue posible cargar
+          tus liquidaciones MASS.
+        </p>
+      `;
+
+      return;
+    }
+
+
+    const massId =
+      String(
+        resultadoPerfil
+          ?.data
+          ?.mass_id ||
+        "MASS ID no disponible"
+      );
+
+
+    const liquidaciones =
+      Array.isArray(
+        resultadoLiquidaciones.data
+      )
+        ? resultadoLiquidaciones.data
+        : [];
+
+
+    if (
+      liquidaciones.length ===
+      0
+    ) {
+
+      contenedor.innerHTML = `
+        <p>
+          Todavía no tienes liquidaciones
+          Wallet MASS por cierre de Organizador.
+        </p>
+      `;
+
+      return;
+    }
+
+
+    const textoEstado =
+      estado => {
+
+        switch (
+          String(
+            estado || ""
+          )
+            .trim()
+            .toLowerCase()
+        ) {
+
+          case "pendiente_pago":
+            return "🟡 Pendiente de devolución";
+
+          case "pago_reportado":
+            return "💵 Devolución reportada";
+
+          case "confirmado_usuario":
+            return "✅ Reembolso recibido";
+
+          case "disputado":
+            return "⚠️ Reembolso reportado como no recibido";
+
+          case "revision_administrativa":
+            return "⚖️ En revisión administrativa";
+
+          case "resuelto_admin":
+            return "✅ Expediente resuelto";
+
+          default:
+            return "Estado no disponible";
+        }
+      };
+
+
+    let html = `
+      <div
+        style="
+          margin-bottom:16px;
+          padding:12px;
+          border:1px solid #39ff14;
+          border-radius:12px;
+          text-align:left;
+        "
+      >
+        🔐 Estas liquidaciones pertenecen
+        exclusivamente a tu MASS ID.
+
+        <br><br>
+
+        <b>MASS ID:</b>
+        ${escaparHtml(
+          massId
+        )}
+      </div>
+    `;
+
+
+    liquidaciones.forEach(
+      item => {
+
+        const liquidacionId =
+          String(
+            item.liquidacion_id ||
+            ""
+          );
+
+
+        const estado =
+          String(
+            item.liquidacion_estado ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+
+        const estadoCierre =
+          String(
+            item.cierre_estado ||
+            ""
+          )
+            .trim()
+            .toLowerCase();
+
+
+        const unidadMass =
+          String(
+            item.unidad_mass ||
+            ""
+          )
+            .trim()
+            .toUpperCase();
+
+
+        const fechaCreada =
+          formatearFecha(
+            item.creado_at
+          );
+
+
+        const fechaPago =
+          formatearFecha(
+            item.pago_reportado_at
+          );
+
+
+        const fechaConfirmacion =
+          formatearFecha(
+            item.confirmado_at
+          );
+
+
+        const fechaDisputa =
+          formatearFecha(
+            item.disputado_at
+          );
+
+
+        const fechaRevision =
+          formatearFecha(
+            item.revision_administrativa_at
+          );
+
+
+        const fechaResolucion =
+          formatearFecha(
+            item.resuelto_admin_at
+          );
+
+
+        let accionesHtml = "";
+
+
+        if (
+          item.comprobante_disponible ===
+          true
+        ) {
+
+          accionesHtml += `
+            <button
+              type="button"
+              onclick="
+                abrirComprobanteLiquidacionCierreOrganizador(
+                  '${escaparHtml(
+                    liquidacionId
+                  )}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+              "
+            >
+              🧾 Ver comprobante privado
+            </button>
+          `;
+        }
+
+
+        if (
+          estado ===
+          "pago_reportado"
+        ) {
+
+          accionesHtml += `
+            <button
+              type="button"
+              id="btnConfirmarLiquidacionMass_${escaparHtml(
+                liquidacionId
+              )}"
+              onclick="
+                confirmarRecepcionLiquidacionCierreUsuarioMass(
+                  '${escaparHtml(
+                    liquidacionId
+                  )}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+                background:#168a28;
+                color:white;
+              "
+            >
+              ✅ Sí, recibí mi reembolso
+            </button>
+
+            <button
+              type="button"
+              id="btnDisputarLiquidacionMass_${escaparHtml(
+                liquidacionId
+              )}"
+              onclick="
+                reportarNoRecepcionLiquidacionCierreUsuarioMass(
+                  '${escaparHtml(
+                    liquidacionId
+                  )}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:8px;
+                background:#8b1e1e;
+                color:white;
+              "
+            >
+              ⚠️ No recibí mi reembolso
+            </button>
+          `;
+        }
+
+
+        if (
+          estado === "disputado" &&
+          estadoCierre === "liquidacion" &&
+          !item.revision_administrativa_at
+        ) {
+
+          accionesHtml += `
+            <button
+              type="button"
+              id="btnConfirmarLiquidacionMass_${escaparHtml(
+                liquidacionId
+              )}"
+              onclick="
+                confirmarRecepcionLiquidacionCierreUsuarioMass(
+                  '${escaparHtml(
+                    liquidacionId
+                  )}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+                background:#168a28;
+                color:white;
+              "
+            >
+              ✅ Finalmente sí recibí mi reembolso
+            </button>
+          `;
+        }
+
+
+        html += `
+          <div
+            style="
+              margin:14px 0;
+              padding:15px;
+              border:1px solid rgba(57,255,20,.55);
+              border-radius:12px;
+              background:#111;
+              text-align:left;
+              line-height:1.55;
+            "
+          >
+
+            <div
+              style="
+                color:#39ff14;
+                font-weight:bold;
+                font-size:17px;
+                margin-bottom:8px;
+              "
+            >
+              ${escaparHtml(
+                item.organizador_nombre ||
+                "Organizador"
+              )}
+            </div>
+
+
+            <div>
+              <b>MASS ID:</b>
+              ${escaparHtml(
+                massId
+              )}
+            </div>
+
+
+            <div>
+              <b>Monto:</b>
+              ${Number(
+                item.monto_mass ||
+                0
+              )}
+              MASS
+              ${escaparHtml(
+                unidadMass
+              )}
+            </div>
+
+
+            <div>
+              <b>Estado:</b>
+              ${escaparHtml(
+                textoEstado(
+                  estado
+                )
+              )}
+            </div>
+
+
+            ${
+              item.referencia_pago
+                ? `
+                  <div>
+                    <b>Referencia:</b>
+                    ${escaparHtml(
+                      item.referencia_pago
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaCreada
+                ? `
+                  <div>
+                    <b>Creada:</b>
+                    ${escaparHtml(
+                      fechaCreada
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaPago
+                ? `
+                  <div>
+                    <b>Pago reportado:</b>
+                    ${escaparHtml(
+                      fechaPago
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaDisputa
+                ? `
+                  <div>
+                    <b>Disputa:</b>
+                    ${escaparHtml(
+                      fechaDisputa
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              item.motivo_disputa
+                ? `
+                  <div
+                    style="
+                      margin-top:8px;
+                      padding:9px;
+                      border:1px solid #ffb000;
+                      border-radius:8px;
+                      color:#ffd166;
+                    "
+                  >
+                    <b>Motivo de disputa:</b><br>
+                    ${escaparHtml(
+                      item.motivo_disputa
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaRevision
+                ? `
+                  <div>
+                    <b>En revisión administrativa:</b>
+                    ${escaparHtml(
+                      fechaRevision
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaConfirmacion
+                ? `
+                  <div>
+                    <b>Recepción confirmada:</b>
+                    ${escaparHtml(
+                      fechaConfirmacion
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaResolucion
+                ? `
+                  <div>
+                    <b>Resolución administrativa:</b>
+                    ${escaparHtml(
+                      fechaResolucion
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              item.resolucion_admin
+                ? `
+                  <div
+                    style="
+                      margin-top:8px;
+                      padding:9px;
+                      border:1px solid #39ff14;
+                      border-radius:8px;
+                    "
+                  >
+                    <b>Resolución:</b><br>
+                    ${escaparHtml(
+                      item.resolucion_admin
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${accionesHtml}
+
+          </div>
+        `;
+      }
+    );
+
+
+    contenedor.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO CARGANDO LIQUIDACIONES MASS:",
+      error
+    );
+
+
+    contenedor.innerHTML = `
+      <p style="color:#ff6b6b;">
+        ❌ Ocurrió un error consultando
+        tus liquidaciones MASS.
+      </p>
+    `;
+  }
+}
+
+
+// ============================================================
+// CONFIRMAR RECEPCIÓN DEL REEMBOLSO
+// ============================================================
+
+async function confirmarRecepcionLiquidacionCierreUsuarioMass(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  if (
+    !id ||
+    MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.has(
+      id
+    )
+  ) {
+    return;
+  }
+
+
+  const confirmar =
+    window.confirm(
+`✅ CONFIRMAR RECEPCIÓN
+
+Confirma esta acción únicamente si el dinero
+devuelto por el Organizador ya fue recibido.
+
+Al confirmar, el servidor cerrará esta obligación
+y descontará de tu Wallet MASS el saldo protegido
+correspondiente a esta liquidación.
+
+¿Confirmas que recibiste tu reembolso?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.add(
+    id
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "confirmar_recepcion_liquidacion_wallet_cierre_segura",
+        {
+          p_liquidacion_id:
+            id
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.estado || ""
+      ) !== "confirmado_usuario"
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó correctamente la recepción."
+      );
+    }
+
+
+    alert(
+      "✅ Reembolso confirmado correctamente."
+    );
+
+
+    if (
+      typeof cargarSaldo ===
+      "function"
+    ) {
+
+      await cargarSaldo();
+    }
+
+
+    await cargarMisLiquidacionesMass();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR CONFIRMANDO LIQUIDACIÓN MASS:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible confirmar la recepción.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+  } finally {
+
+    MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.delete(
+      id
+    );
+  }
+}
+
+
+// ============================================================
+// REPORTAR NO RECEPCIÓN
+// ============================================================
+
+async function reportarNoRecepcionLiquidacionCierreUsuarioMass(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  if (
+    !id ||
+    MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.has(
+      id
+    )
+  ) {
+    return;
+  }
+
+
+  const respuesta =
+    window.prompt(
+`⚠️ NO RECIBÍ MI REEMBOLSO
+
+Describe brevemente por qué reportas
+que el reembolso no fue recibido.
+
+Esta acción NO descontará tu Wallet MASS
+y el saldo permanecerá protegido.`
+    );
+
+
+  if (
+    respuesta === null
+  ) {
+    return;
+  }
+
+
+  const motivo =
+    String(
+      respuesta || ""
+    ).trim();
+
+
+  if (!motivo) {
+
+    alert(
+      "⚠️ Debes indicar el motivo."
+    );
+
+    return;
+  }
+
+
+  if (
+    motivo.length >
+    2000
+  ) {
+
+    alert(
+      "⚠️ El motivo no puede superar 2000 caracteres."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    window.confirm(
+`⚠️ CONFIRMAR REPORTE
+
+Se registrará que NO recibiste
+el reembolso reportado por el Organizador.
+
+Tu Wallet MASS no será debitada.
+
+¿Deseas continuar?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.add(
+    id
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "reportar_no_recepcion_liquidacion_wallet_cierre_segura",
+        {
+          p_liquidacion_id:
+            id,
+
+          p_motivo:
+            motivo
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.estado || ""
+      ) !== "disputado"
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó correctamente la disputa."
+      );
+    }
+
+
+    alert(
+      "⚠️ El reporte fue registrado. Tu saldo MASS continúa protegido."
+    );
+
+
+    await cargarMisLiquidacionesMass();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR REPORTANDO NO RECEPCIÓN:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible registrar el reporte.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+  } finally {
+
+    MASS_LIQUIDACIONES_CIERRE_USUARIO_EN_CURSO.delete(
+      id
+    );
   }
 }	
 
