@@ -32118,7 +32118,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             : ""
         }
 
-        ${
+               ${
           estado === "saneamiento"
             ? `
               <div
@@ -32132,33 +32132,67 @@ async function cargarEstadoCierreOrganizadorPerfil() {
                 <div
                   style="
                     color:#ddd;
-                    margin-bottom:10px;
+                    margin-bottom:12px;
+                    line-height:1.5;
                   "
                 >
                   Mientras el proceso permanezca
-                  en SANEAMIENTO todavía puede
+                  en <b>SANEAMIENTO</b> todavía puede
                   cancelarse de forma auditada.
+                  <br><br>
+                  Cuando todas las obligaciones
+                  existentes hayan sido resueltas,
+                  podrás intentar avanzar a
+                  <b>LIQUIDACIÓN</b>.
                 </div>
 
-                <button
-                  type="button"
-                  onclick="
-                    cancelarCierreCuentaOrganizadorDesdePerfil(
-                      '${escaparHtml(cierre.id)}'
-                    )
-                  "
+                <div
                   style="
-                    padding:10px 15px;
-                    border:1px solid #facc15;
-                    border-radius:9px;
-                    background:#4a3700;
-                    color:white;
-                    font-weight:bold;
-                    cursor:pointer;
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
                   "
                 >
-                  ↩️ Cancelar proceso de cierre
-                </button>
+                  <button
+                    type="button"
+                    onclick="
+                      iniciarLiquidacionCierreOrganizadorDesdePerfil(
+                        '${escaparHtml(cierre.id)}'
+                      )
+                    "
+                    style="
+                      padding:10px 15px;
+                      border:1px solid #39ff14;
+                      border-radius:9px;
+                      background:#123b16;
+                      color:white;
+                      font-weight:bold;
+                      cursor:pointer;
+                    "
+                  >
+                    💰 Intentar iniciar liquidación
+                  </button>
+
+                  <button
+                    type="button"
+                    onclick="
+                      cancelarCierreCuentaOrganizadorDesdePerfil(
+                        '${escaparHtml(cierre.id)}'
+                      )
+                    "
+                    style="
+                      padding:10px 15px;
+                      border:1px solid #facc15;
+                      border-radius:9px;
+                      background:#4a3700;
+                      color:white;
+                      font-weight:bold;
+                      cursor:pointer;
+                    "
+                  >
+                    ↩️ Cancelar proceso de cierre
+                  </button>
+                </div>
               </div>
             `
             : ""
@@ -32626,6 +32660,219 @@ INICIAR CIERRE`
     );
   }
 }
+
+async function iniciarLiquidacionCierreOrganizadorDesdePerfil(
+  cierreId
+) {
+
+  const cierreTexto =
+    String(
+      cierreId || ""
+    ).trim();
+
+
+  if (!cierreTexto) {
+
+    alert(
+      "❌ No fue posible identificar " +
+      "el expediente de cierre."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    confirm(
+`💰 INICIAR ETAPA DE LIQUIDACIÓN
+
+Esta acción solamente avanzará si el servidor confirma que TODAS las obligaciones previas ya fueron saneadas.
+
+Antes de entrar a LIQUIDACIÓN deben estar resueltos, entre otros:
+
+• dinámicas comprometidas;
+• premios pendientes;
+• Lucky Spin vigentes;
+• recargas o reembolsos abiertos;
+• reservas y retenciones;
+• demás obligaciones del Organizador.
+
+Si todavía existe alguna obligación, el servidor rechazará esta operación y el cierre permanecerá en SANEAMIENTO.
+
+Una vez iniciada LIQUIDACIÓN ya no existe cancelación simple del proceso.
+
+¿Deseas comprobar si el cierre puede avanzar?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const estadoBox =
+    document.getElementById(
+      "estadoCierreOrganizadorPerfil"
+    );
+
+
+  try {
+
+    if (estadoBox) {
+
+      estadoBox.innerHTML = `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #39ff14;
+            border-radius:10px;
+            color:#39ff14;
+            background:#0d2a12;
+          "
+        >
+          ⏳ Verificando todas las obligaciones
+          antes de iniciar LIQUIDACIÓN...
+        </div>
+      `;
+    }
+
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "iniciar_liquidacion_cierre_organizador_segura",
+        {
+          p_cierre_id:
+            cierreTexto
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR INICIANDO LIQUIDACIÓN DEL CIERRE:",
+        error
+      );
+
+
+      const mensajeServidor =
+        String(
+          error.message || ""
+        );
+
+
+      if (
+        mensajeServidor.includes(
+          "CIERRE_AUN_TIENE_OBLIGACIONES_PENDIENTES"
+        )
+      ) {
+
+        alert(
+          "⚠️ El cierre todavía NO puede entrar a LIQUIDACIÓN.\n\n" +
+          "Existen obligaciones pendientes que deben resolverse primero.\n\n" +
+          "No se realizó ningún cambio de etapa."
+        );
+
+        await cargarEstadoCierreOrganizadorPerfil();
+
+        return;
+      }
+
+
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      !resultado.estado
+    ) {
+
+      console.error(
+        "RESPUESTA INVÁLIDA INICIANDO LIQUIDACIÓN:",
+        resultado
+      );
+
+      throw new Error(
+        "Supabase no confirmó la transición a liquidación."
+      );
+    }
+
+
+    const estadoResultado =
+      String(
+        resultado.estado || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      ![
+        "liquidacion",
+        "listo_cierre",
+        "cerrado"
+      ].includes(
+        estadoResultado
+      )
+    ) {
+
+      throw new Error(
+        "El servidor devolvió un estado de cierre inesperado."
+      );
+    }
+
+
+    alert(
+      resultado.ya_iniciada === true
+        ? (
+            "ℹ️ La etapa de LIQUIDACIÓN " +
+            "ya había sido iniciada.\n\n" +
+            "Estado actual: " +
+            estadoResultado.toUpperCase()
+          )
+        : (
+            "✅ LIQUIDACIÓN iniciada correctamente.\n\n" +
+            "Las Wallet MASS con saldo quedaron " +
+            "protegidas como obligaciones individuales " +
+            "de devolución."
+          )
+    );
+
+
+    await cargarEstadoCierreOrganizadorPerfil();
+
+
+  } catch (errorInesperado) {
+
+    console.error(
+      "ERROR INESPERADO INICIANDO LIQUIDACIÓN:",
+      errorInesperado
+    );
+
+
+    alert(
+      "❌ No fue posible iniciar LIQUIDACIÓN.\n\n" +
+      (
+        errorInesperado?.message ||
+        "La operación fue rechazada por el servidor."
+      )
+    );
+
+
+    await cargarEstadoCierreOrganizadorPerfil();
+  }
+}	
 
 async function cancelarCierreCuentaOrganizadorDesdePerfil(
   cierreId
