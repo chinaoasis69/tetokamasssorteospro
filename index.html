@@ -79963,7 +79963,9 @@ async function mostrarLiquidacionesCierreSuperAdmin() {
 
 
   cont.innerHTML = `
-    <h2>⚖️ Liquidaciones en disputa</h2>
+    <h2 id="vistaLiquidacionesCierreSuperAdminActiva">
+  ⚖️ Liquidaciones en disputa
+</h2>
 
     <p>
       ⏳ Cargando expedientes...
@@ -80025,7 +80027,9 @@ async function mostrarLiquidacionesCierreSuperAdmin() {
     ) {
 
       cont.innerHTML = `
-        <h2>⚖️ Liquidaciones en disputa</h2>
+        <h2 id="vistaLiquidacionesCierreSuperAdminActiva">
+  ⚖️ Liquidaciones en disputa
+</h2>
 
         <p style="color:#ff6b6b;">
           ❌ Acceso exclusivo para Súper Admin.
@@ -80101,7 +80105,9 @@ async function mostrarLiquidacionesCierreSuperAdmin() {
 
 
       cont.innerHTML = `
-        <h2>⚖️ Liquidaciones en disputa</h2>
+        <h2 id="vistaLiquidacionesCierreSuperAdminActiva">
+  ⚖️ Liquidaciones en disputa
+</h2>
 
         <p style="color:#ff6b6b;">
           ❌ No fue posible cargar los expedientes.
@@ -80475,7 +80481,9 @@ async function mostrarLiquidacionesCierreSuperAdmin() {
 
 
     let html = `
-      <h2>⚖️ Liquidaciones en disputa</h2>
+      <h2 id="vistaLiquidacionesCierreSuperAdminActiva">
+  ⚖️ Liquidaciones en disputa
+</h2>
 
       <div
         style="
@@ -80621,7 +80629,9 @@ async function mostrarLiquidacionesCierreSuperAdmin() {
 
 
     cont.innerHTML = `
-      <h2>⚖️ Liquidaciones en disputa</h2>
+     <h2 id="vistaLiquidacionesCierreSuperAdminActiva">
+  ⚖️ Liquidaciones en disputa
+</h2> 
 
       <p style="color:#ff6b6b;">
         ❌ Ocurrió un error cargando
@@ -82780,13 +82790,17 @@ async function obtenerContextoNotificacionesMass() {
   }
 
 
-  /* ==========================================================
-     ORGANIZADOR
+   /* ==========================================================
+     ADMINISTRATIVO — ORGANIZADOR / SÚPER ADMIN
      ========================================================== */
 
   if (
-    modoAcceso ===
-    "organizador"
+    [
+      "organizador",
+      "super_admin"
+    ].includes(
+      modoAcceso
+    )
   ) {
 
     const {
@@ -82822,7 +82836,7 @@ async function obtenerContextoNotificacionesMass() {
     return {
 
       modo:
-        "organizador",
+        modoAcceso,
 
       tabla:
         "notificaciones_organizador_mass",
@@ -82837,10 +82851,6 @@ async function obtenerContextoNotificacionesMass() {
         "marcar_notificacion_organizador_mass_leida_segura"
     };
   }
-
-
-  return null;
-}
 
 // ============================================================
 // ACTUALIZAR CONTADOR DE NO LEÍDAS
@@ -82967,9 +82977,13 @@ async function actualizarContadorNotificacionesMass() {
      ========================================================== */
 
   if (
-    modoAcceso ===
-    "organizador"
-  ) {
+  [
+    "organizador",
+    "super_admin"
+  ].includes(
+    modoAcceso
+  )
+) {
 
     const {
       data: sesionData,
@@ -83260,14 +83274,16 @@ async function cargarNotificacionesMass() {
           background:#111;
         "
       >
-        ${
-          contexto.modo ===
-          "organizador"
 
-            ? "🛎️ No tienes notificaciones administrativas todavía."
+		${
+  contexto.modo ===
+  "usuario"
 
-            : "🔔 No tienes notificaciones MASS todavía."
-        }
+    ? "🔔 No tienes notificaciones MASS todavía."
+
+    : "🛎️ No tienes notificaciones administrativas todavía."
+}
+
       </div>
     `;
 
@@ -83330,14 +83346,15 @@ async function cargarNotificacionesMass() {
 
     const titulo =
       escaparHtmlNotificacionMass(
-        notificacion.titulo ||
-        (
-          contexto.modo ===
-          "organizador"
-            ? "Notificación administrativa"
-            : "Notificación MASS"
-        )
-      );
+
+notificacion.titulo ||
+(
+  contexto.modo ===
+  "usuario"
+    ? "Notificación MASS"
+    : "Notificación administrativa"
+  )	
+);
 
 
     const mensaje =
@@ -83846,7 +83863,7 @@ async function iniciarRealtimeNotificacionesMass() {
           payload
         ) => {
 
-          /* ================================================
+   /* ================================================
    ACTUALIZAR CONTADOR
 
    INSERT:
@@ -83911,18 +83928,18 @@ if (
             payload?.new
           ) {
 
-            const titulo =
-              String(
-                payload.new.titulo ||
-                (
-                  contexto.modo ===
-                  "organizador"
+    const titulo =
+  String(
+    payload.new.titulo ||
+    (
+      contexto.modo ===
+      "usuario"
 
-                    ? "Nueva notificación administrativa"
+        ? "Nueva notificación MASS"
 
-                    : "Nueva notificación MASS"
-                )
-              );
+        : "Nueva notificación administrativa"
+    )
+  );
 
 
             const mensaje =
@@ -83973,8 +83990,40 @@ if (
 }
 
 if (
+  contexto.modo === "super_admin" &&
+  document.getElementById(
+    "vistaLiquidacionesCierreSuperAdminActiva"
+  ) &&
+  typeof mostrarLiquidacionesCierreSuperAdmin ===
+    "function"
+) {
+
+  await mostrarLiquidacionesCierreSuperAdmin();
+}	
+
+if (
   contexto.modo === "usuario"
 ) {
+
+  /* ================================================
+     REFRESCAR MIS LIQUIDACIONES SI EL MODAL ESTÁ ABIERTO
+     ================================================ */
+
+  const modalMisLiquidaciones =
+    document.getElementById(
+      "modalMisLiquidacionesMass"
+    );
+
+
+  if (
+    modalMisLiquidaciones &&
+    modalMisLiquidaciones.style.display !== "none" &&
+    typeof cargarMisLiquidacionesMass ===
+      "function"
+  ) {
+
+    await cargarMisLiquidacionesMass();
+  }	
 
   /* ================================================
      REFRESCAR WALLET DEL USUARIO
@@ -84086,29 +84135,29 @@ async function inicializarNotificacionesMass() {
  
 
 if (
-  modoAcceso ===
-  "organizador"
+  [
+    "organizador",
+    "super_admin"
+  ].includes(
+    modoAcceso
+  )
 ) {
 
   MASS_NOTIFICACIONES_USUARIO_MASS_ID =
     null;
 
-
   await detenerRealtimeNotificacionesMass();
-
 
   await actualizarContadorNotificacionesMass();
 
-
   await iniciarRealtimeNotificacionesMass();
-
 
   return;
 }
 	
 
   /* ==========================================================
-     SÚPER ADMIN / ANÓNIMO / OTROS
+     ANÓNIMO / OTROS
      ========================================================== */
 
   MASS_NOTIFICACIONES_USUARIO_MASS_ID =
