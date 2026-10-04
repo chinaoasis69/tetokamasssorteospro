@@ -83994,6 +83994,26 @@ if (
 }
 
 if (
+  contexto.modo === "organizador" &&
+  String(
+    payload?.new?.tipo || ""
+  )
+    .trim()
+    .toUpperCase()
+    .startsWith(
+      "LIQUIDACION_CIERRE_"
+    ) &&
+  document.getElementById(
+    "estadoCierreOrganizadorPerfil"
+  ) &&
+  typeof cargarEstadoCierreOrganizadorPerfil ===
+    "function"
+) {
+
+  await cargarEstadoCierreOrganizadorPerfil();
+}	
+
+if (
   contexto.modo === "super_admin" &&
   document.getElementById(
     "vistaLiquidacionesCierreSuperAdminActiva"
