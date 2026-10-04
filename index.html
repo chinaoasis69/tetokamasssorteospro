@@ -3280,7 +3280,16 @@ async function volverPanelSuperAdmin(){
     <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
     <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
     <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
-    <button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+
+<button
+  type="button"
+  onclick="mostrarLiquidacionesCierreSuperAdmin()"
+>
+  ⚖️ Liquidaciones en disputa
+</button>
+
+<button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+
 	<button onclick="mostrarBillingSuperAdmin()">💳 Billing / Cobros</button>
     <button onclick="cerrarPanelAdmin()">❌ Cerrar panel</button>
   `;
@@ -12985,8 +12994,18 @@ if(btnVolverSuperAdmin){
 </button>
     <button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores plataforma</button>
     <button onclick="mostrarSorteosAdmin()">🎯 Todos los sorteos</button>
-    <button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
-    <button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+
+<button onclick="mostrarRecargasMassAdmin()">💰 Recargas globales</button>
+
+<button
+  type="button"
+  onclick="mostrarLiquidacionesCierreSuperAdmin()"
+>
+  ⚖️ Liquidaciones en disputa
+</button>
+
+<button onclick="mostrarConfigAdmin()">⚙️ Configuración plataforma</button>
+						
 	<button onclick="mostrarBillingSuperAdmin()">💳 Billing / Cobros</button>
     <button onclick="cerrarPanelAdmin()">❌ Cerrar panel</button>
   `;
@@ -79916,7 +79935,1069 @@ ${resultado.boletos_revertidos}`
           : "↩️ Confirmar reversión";
     }
   }
-}	
+}
+
+// ============================================================
+// MASS — LIQUIDACIONES DE CIERRE — SÚPER ADMIN
+// ============================================================
+
+const MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO =
+  new Set();
+
+
+// ============================================================
+// BANDEJA GLOBAL DE DISPUTAS / REVISIONES
+// ============================================================
+
+async function mostrarLiquidacionesCierreSuperAdmin() {
+
+  const cont =
+    document.getElementById(
+      "superAdminContenido"
+    );
+
+
+  if (!cont) {
+    return;
+  }
+
+
+  cont.innerHTML = `
+    <h2>⚖️ Liquidaciones en disputa</h2>
+
+    <p>
+      ⏳ Cargando expedientes...
+    </p>
+  `;
+
+
+  const escaparHtml =
+    valor =>
+      String(
+        valor ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+
+  const formatearFecha =
+    valor => {
+
+      if (!valor) {
+        return "";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      if (
+        Number.isNaN(
+          fecha.getTime()
+        )
+      ) {
+        return "";
+      }
+
+
+      return fecha.toLocaleString();
+    };
+
+
+  try {
+
+    const adminActual =
+      await obtenerAdminActual();
+
+
+    if (
+      !adminActual ||
+      String(
+        adminActual.rol || ""
+      )
+        .trim()
+        .toLowerCase() !==
+        "super_admin"
+    ) {
+
+      cont.innerHTML = `
+        <h2>⚖️ Liquidaciones en disputa</h2>
+
+        <p style="color:#ff6b6b;">
+          ❌ Acceso exclusivo para Súper Admin.
+        </p>
+
+        <button
+          type="button"
+          onclick="volverPanelSuperAdmin()"
+        >
+          👑 Volver
+        </button>
+      `;
+
+      return;
+    }
+
+
+    const [
+      resultadoDisputadas,
+      resultadoRevision,
+      resultadoResueltas
+    ] =
+      await Promise.all([
+
+        supabaseClient.rpc(
+          "listar_liquidaciones_wallet_cierre_admin_segura",
+          {
+            p_organizador_id: null,
+            p_cierre_id: null,
+            p_estado: "disputado",
+            p_limite: 200,
+            p_offset: 0
+          }
+        ),
+
+        supabaseClient.rpc(
+          "listar_liquidaciones_wallet_cierre_admin_segura",
+          {
+            p_organizador_id: null,
+            p_cierre_id: null,
+            p_estado: "revision_administrativa",
+            p_limite: 200,
+            p_offset: 0
+          }
+        ),
+
+        supabaseClient.rpc(
+          "listar_liquidaciones_wallet_cierre_admin_segura",
+          {
+            p_organizador_id: null,
+            p_cierre_id: null,
+            p_estado: "resuelto_admin",
+            p_limite: 200,
+            p_offset: 0
+          }
+        )
+
+      ]);
+
+
+    const error =
+      resultadoDisputadas.error ||
+      resultadoRevision.error ||
+      resultadoResueltas.error;
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CARGANDO LIQUIDACIONES SUPER ADMIN:",
+        error
+      );
+
+
+      cont.innerHTML = `
+        <h2>⚖️ Liquidaciones en disputa</h2>
+
+        <p style="color:#ff6b6b;">
+          ❌ No fue posible cargar los expedientes.
+        </p>
+
+        <button
+          type="button"
+          onclick="volverPanelSuperAdmin()"
+        >
+          👑 Volver
+        </button>
+      `;
+
+      return;
+    }
+
+
+    const disputadas =
+      Array.isArray(
+        resultadoDisputadas.data
+      )
+        ? resultadoDisputadas.data
+        : [];
+
+
+    const enRevision =
+      Array.isArray(
+        resultadoRevision.data
+      )
+        ? resultadoRevision.data
+        : [];
+
+
+    const resueltas =
+      Array.isArray(
+        resultadoResueltas.data
+      )
+        ? resultadoResueltas.data
+        : [];
+
+
+    const construirTarjeta =
+      (
+        item,
+        tipo
+      ) => {
+
+        const id =
+          String(
+            item.liquidacion_id ||
+            ""
+          );
+
+
+        const unidad =
+          String(
+            item.unidad_mass ||
+            ""
+          )
+            .trim()
+            .toUpperCase();
+
+
+        const fechaPago =
+          formatearFecha(
+            item.pago_reportado_at
+          );
+
+
+        const fechaDisputa =
+          formatearFecha(
+            item.disputado_at
+          );
+
+
+        const fechaRevision =
+          formatearFecha(
+            item.revision_administrativa_at
+          );
+
+
+        const fechaResolucion =
+          formatearFecha(
+            item.resuelto_admin_at
+          );
+
+
+        let acciones = "";
+
+
+        if (
+          item.comprobante_disponible ===
+          true
+        ) {
+
+          acciones += `
+            <button
+              type="button"
+              onclick="
+                abrirComprobanteLiquidacionCierreOrganizador(
+                  '${escaparHtml(id)}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+              "
+            >
+              🧾 Ver comprobante privado
+            </button>
+          `;
+        }
+
+
+        if (
+          tipo === "disputado"
+        ) {
+
+          acciones += `
+            <button
+              type="button"
+              id="btnEnviarRevisionLiquidacionCierre_${escaparHtml(id)}"
+              onclick="
+                enviarLiquidacionCierreRevisionSuperAdmin(
+                  '${escaparHtml(id)}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+                background:#7a5b00;
+                color:white;
+              "
+            >
+              ⚖️ Enviar a revisión administrativa
+            </button>
+          `;
+        }
+
+
+        if (
+          tipo ===
+          "revision_administrativa"
+        ) {
+
+          acciones += `
+            <div
+              style="
+                margin-top:12px;
+                padding:10px;
+                border:1px solid #ffb000;
+                border-radius:9px;
+                color:#ffd166;
+              "
+            >
+              ⚠️ Resolver este expediente genera
+              el movimiento financiero final y
+              debita el MASS protegido.
+            </div>
+
+            <button
+              type="button"
+              id="btnResolverLiquidacionCierre_${escaparHtml(id)}"
+              onclick="
+                resolverLiquidacionCierreSuperAdmin(
+                  '${escaparHtml(id)}'
+                )
+              "
+              style="
+                width:100%;
+                margin-top:10px;
+                background:#8b1e1e;
+                color:white;
+              "
+            >
+              ✅ Resolver administrativamente
+            </button>
+          `;
+        }
+
+
+        return `
+          <div
+            class="card"
+            style="
+              text-align:left;
+              margin:14px auto;
+              border:1px solid ${
+                tipo === "disputado"
+                  ? "#facc15"
+                  : tipo ===
+                    "revision_administrativa"
+                    ? "#ff9f1c"
+                    : "#39ff14"
+              };
+            "
+          >
+
+            <h3
+              style="
+                margin-top:0;
+                color:${
+                  tipo === "resuelto_admin"
+                    ? "#39ff14"
+                    : "#facc15"
+                };
+              "
+            >
+              ${
+                tipo === "disputado"
+                  ? "⚠️ Disputa pendiente"
+                  : tipo ===
+                    "revision_administrativa"
+                    ? "⚖️ Revisión administrativa"
+                    : "✅ Expediente resuelto"
+              }
+            </h3>
+
+
+            <p>
+              <b>Organizador:</b>
+              ${escaparHtml(
+                item.organizador_nombre ||
+                "Organizador"
+              )}
+            </p>
+
+
+            <p>
+              <b>MASS ID:</b>
+              ${escaparHtml(
+                item.mass_id ||
+                "MASS ID no disponible"
+              )}
+            </p>
+
+
+            <p>
+              <b>Monto:</b>
+              ${Number(
+                item.monto_mass ||
+                0
+              )}
+              MASS
+              ${escaparHtml(
+                unidad
+              )}
+            </p>
+
+
+            ${
+              item.referencia_pago
+                ? `
+                  <p>
+                    <b>Referencia:</b>
+                    ${escaparHtml(
+                      item.referencia_pago
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaPago
+                ? `
+                  <p>
+                    <b>Pago reportado:</b>
+                    ${escaparHtml(
+                      fechaPago
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaDisputa
+                ? `
+                  <p>
+                    <b>Disputa registrada:</b>
+                    ${escaparHtml(
+                      fechaDisputa
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              item.motivo_disputa
+                ? `
+                  <div
+                    style="
+                      padding:10px;
+                      border:1px solid #facc15;
+                      border-radius:9px;
+                      color:#ffd166;
+                    "
+                  >
+                    <b>Motivo del Usuario MASS:</b>
+                    <br>
+
+                    ${escaparHtml(
+                      item.motivo_disputa
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaRevision
+                ? `
+                  <p>
+                    <b>En revisión desde:</b>
+                    ${escaparHtml(
+                      fechaRevision
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              fechaResolucion
+                ? `
+                  <p>
+                    <b>Resuelta:</b>
+                    ${escaparHtml(
+                      fechaResolucion
+                    )}
+                  </p>
+                `
+                : ""
+            }
+
+
+            ${
+              item.resolucion_admin
+                ? `
+                  <div
+                    style="
+                      padding:10px;
+                      border:1px solid #39ff14;
+                      border-radius:9px;
+                    "
+                  >
+                    <b>Resolución administrativa:</b>
+                    <br>
+
+                    ${escaparHtml(
+                      item.resolucion_admin
+                    )}
+                  </div>
+                `
+                : ""
+            }
+
+
+            ${acciones}
+
+          </div>
+        `;
+      };
+
+
+    let html = `
+      <h2>⚖️ Liquidaciones en disputa</h2>
+
+      <div
+        style="
+          margin:12px 0 18px;
+          padding:12px;
+          border:1px solid #39ff14;
+          border-radius:12px;
+          text-align:left;
+        "
+      >
+        <b>Disputadas:</b>
+        ${disputadas.length}
+
+        <br>
+
+        <b>En revisión administrativa:</b>
+        ${enRevision.length}
+
+        <br>
+
+        <b>Resueltas:</b>
+        ${resueltas.length}
+      </div>
+
+      <button
+        type="button"
+        onclick="volverPanelSuperAdmin()"
+      >
+        👑 Volver al menú Súper Admin
+      </button>
+    `;
+
+
+    if (
+      disputadas.length === 0 &&
+      enRevision.length === 0 &&
+      resueltas.length === 0
+    ) {
+
+      html += `
+        <div
+          style="
+            margin-top:18px;
+            padding:16px;
+            border:1px solid #555;
+            border-radius:12px;
+          "
+        >
+          ✅ No existen liquidaciones
+          de cierre en disputa o revisión.
+        </div>
+      `;
+
+      cont.innerHTML =
+        html;
+
+      return;
+    }
+
+
+    if (
+      disputadas.length > 0
+    ) {
+
+      html += `
+        <h3 style="color:#facc15;">
+          ⚠️ Disputas pendientes
+        </h3>
+      `;
+
+
+      disputadas.forEach(
+        item => {
+
+          html +=
+            construirTarjeta(
+              item,
+              "disputado"
+            );
+        }
+      );
+    }
+
+
+    if (
+      enRevision.length > 0
+    ) {
+
+      html += `
+        <h3 style="color:#ff9f1c;">
+          ⚖️ En revisión administrativa
+        </h3>
+      `;
+
+
+      enRevision.forEach(
+        item => {
+
+          html +=
+            construirTarjeta(
+              item,
+              "revision_administrativa"
+            );
+        }
+      );
+    }
+
+
+    if (
+      resueltas.length > 0
+    ) {
+
+      html += `
+        <h3 style="color:#39ff14;">
+          📚 Historial resuelto
+        </h3>
+      `;
+
+
+      resueltas.forEach(
+        item => {
+
+          html +=
+            construirTarjeta(
+              item,
+              "resuelto_admin"
+            );
+        }
+      );
+    }
+
+
+    cont.innerHTML =
+      html;
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR INESPERADO EN LIQUIDACIONES SUPER ADMIN:",
+      error
+    );
+
+
+    cont.innerHTML = `
+      <h2>⚖️ Liquidaciones en disputa</h2>
+
+      <p style="color:#ff6b6b;">
+        ❌ Ocurrió un error cargando
+        los expedientes.
+      </p>
+
+      <button
+        type="button"
+        onclick="volverPanelSuperAdmin()"
+      >
+        👑 Volver
+      </button>
+    `;
+  }
+}
+
+
+// ============================================================
+// DISPUTADO → REVISIÓN ADMINISTRATIVA
+// ============================================================
+
+async function enviarLiquidacionCierreRevisionSuperAdmin(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  if (
+    !id ||
+    MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.has(
+      id
+    )
+  ) {
+    return;
+  }
+
+
+  const motivoIngresado =
+    window.prompt(
+`⚖️ REVISIÓN ADMINISTRATIVA
+
+Puedes escribir una nota para el expediente.
+
+Si la dejas vacía, el servidor registrará
+la razón oficial predeterminada.
+
+Máximo: 2000 caracteres.`
+    );
+
+
+  if (
+    motivoIngresado === null
+  ) {
+    return;
+  }
+
+
+  const motivo =
+    String(
+      motivoIngresado || ""
+    ).trim();
+
+
+  if (
+    motivo.length >
+    2000
+  ) {
+
+    alert(
+      "⚠️ La nota no puede superar 2000 caracteres."
+    );
+
+    return;
+  }
+
+
+  if (
+    !window.confirm(
+`⚖️ ENVIAR A REVISIÓN ADMINISTRATIVA
+
+Esta acción NO debita la Wallet MASS.
+
+La disputa y el comprobante permanecerán
+conservados para revisión.
+
+¿Deseas continuar?`
+    )
+  ) {
+    return;
+  }
+
+
+  MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.add(
+    id
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "enviar_liquidacion_cierre_revision_admin_segura",
+        {
+          p_liquidacion_id:
+            id,
+
+          p_motivo_revision:
+            motivo || null
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.estado || ""
+      ) !==
+        "revision_administrativa"
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó correctamente la revisión administrativa."
+      );
+    }
+
+
+    alert(
+      "✅ Liquidación enviada a revisión administrativa."
+    );
+
+
+    await mostrarLiquidacionesCierreSuperAdmin();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR ENVIANDO LIQUIDACIÓN A REVISIÓN:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible enviar la liquidación a revisión.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+  } finally {
+
+    MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.delete(
+      id
+    );
+  }
+}
+
+
+// ============================================================
+// REVISIÓN ADMINISTRATIVA → RESUELTO ADMIN
+// ============================================================
+
+async function resolverLiquidacionCierreSuperAdmin(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  if (
+    !id ||
+    MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.has(
+      id
+    )
+  ) {
+    return;
+  }
+
+
+  const resolucionIngresada =
+    window.prompt(
+`⚖️ RESOLUCIÓN ADMINISTRATIVA
+
+Describe la conclusión oficial del expediente.
+
+Esta explicación quedará en el historial
+del Usuario MASS y del Organizador.
+
+Máximo: 2000 caracteres.`
+    );
+
+
+  if (
+    resolucionIngresada === null
+  ) {
+    return;
+  }
+
+
+  const resolucion =
+    String(
+      resolucionIngresada || ""
+    ).trim();
+
+
+  if (!resolucion) {
+
+    alert(
+      "⚠️ La resolución es obligatoria."
+    );
+
+    return;
+  }
+
+
+  if (
+    resolucion.length >
+    2000
+  ) {
+
+    alert(
+      "⚠️ La resolución no puede superar 2000 caracteres."
+    );
+
+    return;
+  }
+
+
+  const confirmar =
+    window.confirm(
+`⚠️ RESOLUCIÓN FINANCIERA FINAL
+
+Continúa únicamente si ya verificaste:
+
+• la disputa del Usuario MASS;
+• el comprobante privado;
+• la devolución realizada por el Organizador;
+• que corresponde cerrar esta obligación.
+
+Al continuar, el servidor:
+
+• creará el movimiento liquidacion_cierre;
+• debitará el MASS protegido de la Wallet;
+• marcará el expediente como RESUELTO.
+
+¿Confirmas la resolución administrativa?`
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.add(
+    id
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "resolver_liquidacion_cierre_super_admin_segura",
+        {
+          p_liquidacion_id:
+            id,
+
+          p_resolucion:
+            resolucion
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    const resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      String(
+        resultado.estado || ""
+      ) !==
+        "resuelto_admin"
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó correctamente la resolución."
+      );
+    }
+
+
+    alert(
+`✅ Liquidación resuelta administrativamente.
+
+Monto:
+${Number(
+  resultado.monto_mass || 0
+)} MASS ${String(
+  resultado.unidad_mass || ""
+)}
+
+Saldo anterior:
+${Number(
+  resultado.saldo_anterior || 0
+)} MASS
+
+Saldo nuevo:
+${Number(
+  resultado.saldo_nuevo || 0
+)} MASS`
+    );
+
+
+    await mostrarLiquidacionesCierreSuperAdmin();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR RESOLVIENDO LIQUIDACIÓN:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible resolver la liquidación.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+  } finally {
+
+    MASS_LIQUIDACIONES_CIERRE_SUPER_ADMIN_EN_CURSO.delete(
+      id
+    );
+  }
+}		
 
 // ============================================================
 // MASS — COMPRAS / REVERSIONES — PANEL ADMIN
