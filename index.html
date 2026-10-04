@@ -33263,6 +33263,87 @@ async function construirPanelLiquidacionesCierreOrganizador(
                 }
               </div>
 
+              ${
+                estado === "pendiente_pago"
+                  ? `
+                    <div
+                      style="
+                        margin-top:12px;
+                        padding-top:12px;
+                        border-top:1px solid rgba(255,255,255,.15);
+                      "
+                    >
+                      <div
+                        style="
+                          font-weight:bold;
+                          margin-bottom:8px;
+                        "
+                      >
+                        🧾 Registrar devolución externa
+                      </div>
+
+                      <input
+                        type="text"
+                        id="referenciaPagoLiquidacionCierre_${escaparHtml(item?.liquidacion_id || "")}"
+                        maxlength="500"
+                        placeholder="Referencia de pago (opcional)"
+                        style="
+                          width:100%;
+                          box-sizing:border-box;
+                          margin:0 0 8px 0;
+                        "
+                      >
+
+                      <input
+                        type="file"
+                        id="archivoComprobanteLiquidacionCierre_${escaparHtml(item?.liquidacion_id || "")}"
+                        accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+                        onchange="validarComprobanteLiquidacionCierreOrganizador('${escaparHtml(item?.liquidacion_id || "")}')"
+                        style="
+                          width:100%;
+                          box-sizing:border-box;
+                          margin:0 0 8px 0;
+                        "
+                      >
+
+                      <button
+                        type="button"
+                        id="btnSubirComprobanteLiquidacionCierre_${escaparHtml(item?.liquidacion_id || "")}"
+                        data-mass-id="${escaparHtml(item?.mass_id || "")}"
+                        data-monto="${escaparHtml(item?.monto_mass ?? 0)}"
+                        data-unidad="${escaparHtml(item?.unidad_mass || "")}"
+                        onclick="subirComprobanteLiquidacionCierreOrganizador('${escaparHtml(item?.liquidacion_id || "")}')"
+                        disabled
+                        style="
+                          width:100%;
+                          padding:11px;
+                          border:1px solid #666;
+                          border-radius:9px;
+                          background:#2b2b2b;
+                          color:white;
+                          font-weight:bold;
+                          opacity:.55;
+                          cursor:not-allowed;
+                        "
+                      >
+                        🔒 Subir comprobante y reportar pago
+                      </button>
+
+                      <div
+                        id="estadoComprobanteLiquidacionCierre_${escaparHtml(item?.liquidacion_id || "")}"
+                        style="
+                          margin-top:8px;
+                          color:#aaa;
+                          font-size:12px;
+                        "
+                      >
+                        Selecciona el comprobante real de la devolución.
+                      </div>
+                    </div>
+                  `
+                  : ""
+              }	
+
             </div>
           `;
         }
@@ -33372,6 +33453,753 @@ async function construirPanelLiquidacionesCierreOrganizador(
 
     </div>
   `;
+}
+
+function resolverMimeLiquidacionCierre(archivo) {
+
+  if (!archivo) return "";
+
+  const directo =
+    String(
+      archivo.type || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const permitidos =
+    new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+      "application/pdf"
+    ]);
+
+  if (permitidos.has(directo)) {
+    return directo;
+  }
+
+  const extension =
+    String(
+      archivo.name || ""
+    )
+      .trim()
+      .toLowerCase()
+      .split(".")
+      .pop();
+
+  return ({
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    png: "image/png",
+    webp: "image/webp",
+    heic: "image/heic",
+    heif: "image/heif",
+    pdf: "application/pdf"
+  })[extension] || "";
+}
+
+
+function validarComprobanteLiquidacionCierreOrganizador(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+  const input =
+    document.getElementById(
+      `archivoComprobanteLiquidacionCierre_${id}`
+    );
+
+  const boton =
+    document.getElementById(
+      `btnSubirComprobanteLiquidacionCierre_${id}`
+    );
+
+  const estado =
+    document.getElementById(
+      `estadoComprobanteLiquidacionCierre_${id}`
+    );
+
+  if (
+    !id ||
+    !input ||
+    !boton ||
+    !estado
+  ) {
+    return;
+  }
+
+  const bloquear = (
+    mensaje,
+    color = "#aaa"
+  ) => {
+
+    boton.disabled = true;
+    boton.style.opacity = "0.55";
+    boton.style.cursor = "not-allowed";
+
+    estado.style.color = color;
+    estado.textContent = mensaje;
+  };
+
+
+  const archivo =
+    input.files?.[0] ||
+    null;
+
+
+  if (!archivo) {
+
+    bloquear(
+      "Selecciona el comprobante real de la devolución."
+    );
+
+    return;
+  }
+
+
+  const mime =
+    resolverMimeLiquidacionCierre(
+      archivo
+    );
+
+
+  const tamano =
+    Number(
+      archivo.size
+    );
+
+
+  const permitidos =
+    new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+      "application/pdf"
+    ]);
+
+
+  if (!permitidos.has(mime)) {
+
+    input.value = "";
+
+    bloquear(
+      "❌ Tipo no permitido. Usa JPG, PNG, WEBP, HEIC, HEIF o PDF.",
+      "#ff8a8a"
+    );
+
+    return;
+  }
+
+
+  if (
+    !Number.isFinite(tamano) ||
+    tamano < 1 ||
+    tamano > 10485760
+  ) {
+
+    input.value = "";
+
+    bloquear(
+      tamano > 10485760
+        ? "❌ El comprobante excede 10 MB."
+        : "❌ El archivo está vacío o no es válido.",
+      "#ff8a8a"
+    );
+
+    return;
+  }
+
+
+  boton.disabled = false;
+  boton.style.opacity = "1";
+  boton.style.cursor = "pointer";
+
+  estado.style.color = "#39ff14";
+  estado.textContent =
+    `✅ Archivo válido: ${archivo.name}`;
+}
+
+
+async function subirComprobanteLiquidacionCierreOrganizador(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  const input =
+    document.getElementById(
+      `archivoComprobanteLiquidacionCierre_${id}`
+    );
+
+  const referenciaInput =
+    document.getElementById(
+      `referenciaPagoLiquidacionCierre_${id}`
+    );
+
+  const boton =
+    document.getElementById(
+      `btnSubirComprobanteLiquidacionCierre_${id}`
+    );
+
+  const estado =
+    document.getElementById(
+      `estadoComprobanteLiquidacionCierre_${id}`
+    );
+
+
+  if (
+    !id ||
+    !input ||
+    !referenciaInput ||
+    !boton ||
+    !estado
+  ) {
+
+    alert(
+      "❌ No fue posible identificar los controles de esta liquidación."
+    );
+
+    return;
+  }
+
+
+  if (
+    boton.dataset.operacionEnCurso ===
+    "1"
+  ) {
+    return;
+  }
+
+
+  const archivo =
+    input.files?.[0] ||
+    null;
+
+
+  const mime =
+    resolverMimeLiquidacionCierre(
+      archivo
+    );
+
+
+  const tamano =
+    Number(
+      archivo?.size
+    );
+
+
+  const permitidos =
+    new Set([
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+      "application/pdf"
+    ]);
+
+
+  if (
+    !archivo ||
+    !permitidos.has(mime) ||
+    !Number.isFinite(tamano) ||
+    tamano < 1 ||
+    tamano > 10485760
+  ) {
+
+    validarComprobanteLiquidacionCierreOrganizador(
+      id
+    );
+
+    return;
+  }
+
+
+  const referencia =
+    String(
+      referenciaInput.value || ""
+    ).trim();
+
+
+  if (referencia.length > 500) {
+
+    estado.style.color =
+      "#ff8a8a";
+
+    estado.textContent =
+      "❌ La referencia no puede exceder 500 caracteres.";
+
+    return;
+  }
+
+
+  const massId =
+    String(
+      boton.dataset.massId || ""
+    ).trim();
+
+  const monto =
+    String(
+      boton.dataset.monto || "0"
+    ).trim();
+
+  const unidad =
+    String(
+      boton.dataset.unidad || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const confirmar =
+    window.confirm(
+      "CONFIRMACIÓN DE DEVOLUCIÓN MASS\n\n" +
+
+      "Usuario: " +
+      (massId || "—") +
+      "\n" +
+
+      "Monto: " +
+      monto +
+      " MASS " +
+      unidad +
+      "\n\n" +
+
+      "Continúa únicamente si YA realizaste la devolución externa real al usuario y este archivo corresponde a esa devolución.\n\n" +
+
+      "TE-TO-KA MASS no realiza la transferencia bancaria por ti."
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  boton.dataset.operacionEnCurso =
+    "1";
+
+  input.disabled = true;
+  referenciaInput.disabled = true;
+
+  boton.disabled = true;
+  boton.style.opacity = "0.55";
+  boton.style.cursor = "not-allowed";
+  boton.textContent =
+    "⏳ Procesando...";
+
+
+  let reservaCreada =
+    false;
+
+  let archivoSubido =
+    false;
+
+  let requiereRevision =
+    false;
+
+
+  const mostrar = (
+    mensaje,
+    color
+  ) => {
+
+    estado.style.color =
+      color;
+
+    estado.textContent =
+      mensaje;
+  };
+
+
+  const reportar =
+    () =>
+      supabaseClient.rpc(
+        "reportar_pago_liquidacion_wallet_cierre_admin_segura",
+        {
+          p_liquidacion_id:
+            id,
+
+          p_referencia_pago:
+            referencia || null
+        }
+      );
+
+
+  try {
+
+    mostrar(
+      "⏳ Reservando ruta segura...",
+      "#ffd700"
+    );
+
+
+    const {
+      data: reserva,
+      error: errorReserva
+    } =
+      await supabaseClient.rpc(
+        "reservar_comprobante_liquidacion_wallet_cierre_seguro",
+        {
+          p_liquidacion_id:
+            id,
+
+          p_mime_type:
+            mime,
+
+          p_tamano:
+            tamano
+        }
+      );
+
+
+    if (errorReserva) {
+      throw errorReserva;
+    }
+
+
+    if (
+      !reserva ||
+      reserva.ok !== true
+    ) {
+
+      throw new Error(
+        "Reserva de comprobante inválida."
+      );
+    }
+
+
+    reservaCreada =
+      true;
+
+
+    const bucket =
+      String(
+        reserva.bucket || ""
+      ).trim();
+
+
+    const path =
+      String(
+        reserva.storage_path || ""
+      ).trim();
+
+
+    const mimeReservado =
+      String(
+        reserva.mime_type || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const tamanoReservado =
+      Number(
+        reserva.tamano_esperado
+      );
+
+
+    const liquidacionReservada =
+      String(
+        reserva.liquidacion_id || ""
+      ).trim();
+
+
+    const objetoYaExiste =
+      reserva.objeto_ya_existe ===
+      true;
+
+
+    if (
+      bucket !==
+        "liquidaciones-cierre-mass" ||
+
+      !path ||
+
+      liquidacionReservada !==
+        id ||
+
+      mimeReservado !==
+        mime ||
+
+      tamanoReservado !==
+        tamano
+    ) {
+
+      throw new Error(
+        "La reserva privada no coincide con el archivo validado."
+      );
+    }
+
+
+    if (!objetoYaExiste) {
+
+      mostrar(
+        "⏳ Subiendo comprobante a la bóveda privada...",
+        "#ffd700"
+      );
+
+
+      const {
+        error: errorUpload
+      } =
+        await supabaseClient
+          .storage
+          .from(bucket)
+          .upload(
+            path,
+            archivo,
+            {
+              cacheControl:
+                "3600",
+
+              upsert:
+                false,
+
+              contentType:
+                mime
+            }
+          );
+
+
+      if (errorUpload) {
+
+        mostrar(
+          "⏳ Verificando si Storage recibió el archivo...",
+          "#ffd700"
+        );
+
+
+        const {
+          error: errorLiberacion
+        } =
+          await supabaseClient.rpc(
+            "liberar_reserva_comprobante_liquidacion_wallet_cierre_seguro",
+            {
+              p_liquidacion_id:
+                id
+            }
+          );
+
+
+        if (!errorLiberacion) {
+
+          reservaCreada =
+            false;
+
+          throw errorUpload;
+        }
+
+
+        const {
+          data: recuperacion,
+          error: errorRecuperacion
+        } =
+          await reportar();
+
+
+        if (
+          !errorRecuperacion &&
+          recuperacion?.ok === true &&
+          String(
+            recuperacion?.estado || ""
+          ) === "pago_reportado"
+        ) {
+
+          archivoSubido =
+            true;
+
+        } else {
+
+          requiereRevision =
+            true;
+
+          throw new Error(
+            "No fue posible confirmar si Storage recibió el comprobante. No vuelvas a subir otro archivo hasta revisar esta liquidación."
+          );
+        }
+
+      } else {
+
+        archivoSubido =
+          true;
+      }
+
+    } else {
+
+      archivoSubido =
+        true;
+    }
+
+
+    let reporte =
+      await reportar();
+
+
+    if (
+      reporte.error ||
+      reporte.data?.ok !== true ||
+      String(
+        reporte.data?.estado || ""
+      ) !== "pago_reportado"
+    ) {
+
+      reporte =
+        await reportar();
+    }
+
+
+    if (
+      reporte.error ||
+      reporte.data?.ok !== true ||
+      String(
+        reporte.data?.estado || ""
+      ) !== "pago_reportado"
+    ) {
+
+      requiereRevision =
+        true;
+
+      throw new Error(
+        "El comprobante puede haber quedado cargado, pero el pago no pudo confirmarse de forma segura. No vuelvas a subir otro archivo."
+      );
+    }
+
+
+    mostrar(
+      "✅ Pago reportado. Esperando confirmación del usuario.",
+      "#39ff14"
+    );
+
+
+    alert(
+      "✅ PAGO REPORTADO\n\n" +
+
+      "Usuario: " +
+      (massId || "—") +
+      "\n" +
+
+      "Monto: " +
+      monto +
+      " MASS " +
+      unidad +
+      "\n\n" +
+
+      "El comprobante privado quedó registrado.\n\n" +
+
+      "La Wallet todavía NO se debita; falta la confirmación del usuario."
+    );
+
+
+    await cargarEstadoCierreOrganizadorPerfil();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR REPORTANDO PAGO DE LIQUIDACIÓN:",
+      error
+    );
+
+
+    if (
+      reservaCreada &&
+      !archivoSubido &&
+      !requiereRevision
+    ) {
+
+      try {
+
+        const {
+          error: errorLiberacionFinal
+        } =
+          await supabaseClient.rpc(
+            "liberar_reserva_comprobante_liquidacion_wallet_cierre_seguro",
+            {
+              p_liquidacion_id:
+                id
+            }
+          );
+
+
+        if (errorLiberacionFinal) {
+
+          requiereRevision =
+            true;
+        }
+
+      } catch (
+        errorLiberacionFinal
+      ) {
+
+        console.error(
+          "ERROR LIBERANDO RESERVA DE COMPROBANTE:",
+          errorLiberacionFinal
+        );
+
+        requiereRevision =
+          true;
+      }
+    }
+
+
+    if (requiereRevision) {
+
+      mostrar(
+        "⚠️ Requiere revisión. No subas otro archivo para esta liquidación.",
+        "#ffcc66"
+      );
+
+      return;
+    }
+
+
+    boton.dataset.operacionEnCurso =
+      "0";
+
+    input.disabled =
+      false;
+
+    referenciaInput.disabled =
+      false;
+
+    input.value =
+      "";
+
+    boton.disabled =
+      true;
+
+    boton.style.opacity =
+      "0.55";
+
+    boton.style.cursor =
+      "not-allowed";
+
+    boton.textContent =
+      "🔒 Subir comprobante y reportar pago";
+
+
+    mostrar(
+      "❌ " +
+      String(
+        error?.message ||
+        "No fue posible reportar el pago."
+      ),
+      "#ff8a8a"
+    );
+  }
 }	
 
 async function solicitarCierreCuentaOrganizadorDesdePerfil() {
