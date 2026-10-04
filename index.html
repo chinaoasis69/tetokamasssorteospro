@@ -32518,7 +32518,19 @@ async function cargarEstadoCierreOrganizadorPerfil() {
         `;
       }
     }
+	  
+    let detalleLiquidacionHtml = "";
 
+
+    if (estado === "liquidacion") {
+
+      detalleLiquidacionHtml =
+        await construirPanelLiquidacionesCierreOrganizador(
+          cierre.id,
+          organizadorId,
+          escaparHtml
+        );
+    }
 
     const etiquetas = {
 
@@ -32725,6 +32737,12 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             : ""
         }
 
+	        ${
+          estado === "liquidacion"
+            ? detalleLiquidacionHtml
+            : ""
+        }
+
 	      </div>
     `;
 
@@ -32761,6 +32779,599 @@ async function cargarEstadoCierreOrganizadorPerfil() {
       </div>
     `;
   }
+}
+
+async function construirPanelLiquidacionesCierreOrganizador(
+  cierreId,
+  organizadorId,
+  escaparHtml
+) {
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_liquidaciones_wallet_cierre_admin_segura",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_cierre_id:
+          cierreId,
+
+        p_estado:
+          null,
+
+        p_limite:
+          100,
+
+        p_offset:
+          0
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO LIQUIDACIONES DEL CIERRE:",
+      error
+    );
+
+
+    return `
+      <div
+        style="
+          margin-top:14px;
+          padding:12px;
+          border:1px solid #ff5252;
+          border-radius:10px;
+          background:#240b0b;
+          color:#ffb3b3;
+        "
+      >
+        ❌ No fue posible consultar las
+        liquidaciones Wallet del cierre.
+
+        <br><br>
+
+        Por seguridad no se muestran
+        acciones financieras.
+      </div>
+    `;
+  }
+
+
+  const liquidaciones =
+    Array.isArray(data)
+      ? data
+      : [];
+
+
+  const estadosTerminales =
+    new Set([
+      "confirmado_usuario",
+      "resuelto_admin"
+    ]);
+
+
+  const etiquetas = {
+
+    pendiente_pago:
+      "⏳ PENDIENTE DE PAGO",
+
+    pago_reportado:
+      "🧾 PAGO REPORTADO",
+
+    confirmado_usuario:
+      "✅ CONFIRMADO POR USUARIO",
+
+    disputado:
+      "⚠️ PAGO DISPUTADO",
+
+    revision_administrativa:
+      "🛡️ REVISIÓN ADMINISTRATIVA",
+
+    resuelto_admin:
+      "✅ RESUELTO POR SUPER ADMIN"
+  };
+
+
+  const formatearFecha =
+    valor => {
+
+      if (!valor) {
+        return "";
+      }
+
+
+      const fecha =
+        new Date(valor);
+
+
+      return Number.isNaN(
+        fecha.getTime()
+      )
+        ? ""
+        : fecha.toLocaleString();
+    };
+
+
+  const abiertas =
+    liquidaciones.filter(
+      item =>
+        !estadosTerminales.has(
+          String(
+            item?.liquidacion_estado ||
+            ""
+          )
+            .trim()
+            .toLowerCase()
+        )
+    ).length;
+
+
+  const terminales =
+    liquidaciones.length -
+    abiertas;
+
+
+  const montoTotal =
+    liquidaciones.reduce(
+      (total, item) => {
+
+        const monto =
+          Number(
+            item?.monto_mass
+          );
+
+
+        return total +
+          (
+            Number.isFinite(monto)
+              ? monto
+              : 0
+          );
+      },
+      0
+    );
+
+
+  const unidad =
+    String(
+      liquidaciones[0]
+        ?.unidad_mass ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  const totalRegistros =
+    liquidaciones.length > 0
+      ? Number(
+          liquidaciones[0]
+            ?.total_registros ??
+          liquidaciones.length
+        )
+      : 0;
+
+
+  const tarjetas =
+    liquidaciones
+      .map(
+        item => {
+
+          const estado =
+            String(
+              item?.liquidacion_estado ||
+              ""
+            )
+              .trim()
+              .toLowerCase();
+
+
+          const terminal =
+            estadosTerminales.has(
+              estado
+            );
+
+
+          const referencia =
+            String(
+              item?.referencia_pago ||
+              ""
+            ).trim();
+
+
+          const motivoDisputa =
+            String(
+              item?.motivo_disputa ||
+              ""
+            ).trim();
+
+
+          const resolucionAdmin =
+            String(
+              item?.resolucion_admin ||
+              ""
+            ).trim();
+
+
+          const fechaCreada =
+            formatearFecha(
+              item?.creado_at
+            );
+
+
+          const fechaPago =
+            formatearFecha(
+              item?.pago_reportado_at
+            );
+
+
+          const fechaDisputa =
+            formatearFecha(
+              item?.disputado_at
+            );
+
+
+          const fechaRevision =
+            formatearFecha(
+              item?.revision_administrativa_at
+            );
+
+
+          const fechaConfirmacion =
+            formatearFecha(
+              item?.confirmado_at
+            );
+
+
+          const fechaResolucion =
+            formatearFecha(
+              item?.resuelto_admin_at
+            );
+
+
+          return `
+            <div
+              style="
+                margin-top:12px;
+                padding:12px;
+                border:1px solid
+                  ${
+                    terminal
+                      ? "#39ff14"
+                      : "#facc15"
+                  };
+                border-radius:10px;
+                background:
+                  ${
+                    terminal
+                      ? "#0d2b10"
+                      : "#211b06"
+                  };
+              "
+            >
+
+              <div
+                style="
+                  font-weight:bold;
+                  color:
+                    ${
+                      terminal
+                        ? "#39ff14"
+                        : "#facc15"
+                    };
+                  margin-bottom:8px;
+                "
+              >
+                ${escaparHtml(
+                  etiquetas[estado] ||
+                  estado.toUpperCase()
+                )}
+              </div>
+
+
+              <div>
+                <b>MASS ID:</b>
+                ${escaparHtml(
+                  item?.mass_id ||
+                  "No disponible"
+                )}
+              </div>
+
+
+              <div>
+                <b>Monto:</b>
+                ${escaparHtml(
+                  Number(
+                    item?.monto_mass ||
+                    0
+                  )
+                )}
+                MASS
+                ${escaparHtml(
+                  item?.unidad_mass ||
+                  ""
+                )}
+              </div>
+
+
+              <div>
+                <b>Comprobante:</b>
+                ${
+                  item?.comprobante_disponible ===
+                  true
+                    ? "🧾 Disponible"
+                    : "Pendiente"
+                }
+              </div>
+
+
+              ${
+                referencia
+                  ? `
+                    <div>
+                      <b>Referencia de pago:</b>
+                      ${escaparHtml(
+                        referencia
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaCreada
+                  ? `
+                    <div>
+                      <b>Creada:</b>
+                      ${escaparHtml(
+                        fechaCreada
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaPago
+                  ? `
+                    <div>
+                      <b>Pago reportado:</b>
+                      ${escaparHtml(
+                        fechaPago
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                motivoDisputa
+                  ? `
+                    <div
+                      style="
+                        margin-top:8px;
+                        color:#ffb3b3;
+                      "
+                    >
+                      <b>Motivo de disputa:</b>
+                      ${escaparHtml(
+                        motivoDisputa
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaDisputa
+                  ? `
+                    <div>
+                      <b>Disputada:</b>
+                      ${escaparHtml(
+                        fechaDisputa
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaRevision
+                  ? `
+                    <div>
+                      <b>En revisión desde:</b>
+                      ${escaparHtml(
+                        fechaRevision
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                resolucionAdmin
+                  ? `
+                    <div>
+                      <b>Resolución administrativa:</b>
+                      ${escaparHtml(
+                        resolucionAdmin
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaConfirmacion
+                  ? `
+                    <div>
+                      <b>Confirmada:</b>
+                      ${escaparHtml(
+                        fechaConfirmacion
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              ${
+                fechaResolucion
+                  ? `
+                    <div>
+                      <b>Resuelta:</b>
+                      ${escaparHtml(
+                        fechaResolucion
+                      )}
+                    </div>
+                  `
+                  : ""
+              }
+
+
+              <div
+                style="
+                  margin-top:10px;
+                  color:#ddd;
+                "
+              >
+                ${
+                  estado === "pendiente_pago"
+                    ? "Falta realizar la devolución externa y registrar el comprobante privado."
+                    : estado === "pago_reportado"
+                      ? "Esperando confirmación de recepción por parte del usuario."
+                      : estado === "disputado"
+                        ? "El usuario reportó que no recibió el reembolso. El saldo continúa protegido."
+                        : estado === "revision_administrativa"
+                          ? "La liquidación está bajo revisión del Super Admin."
+                          : terminal
+                            ? "Liquidación finalizada. El historial permanece disponible."
+                            : "Estado financiero pendiente de revisión."
+                }
+              </div>
+
+            </div>
+          `;
+        }
+      )
+      .join("");
+
+
+  return `
+    <div
+      style="
+        margin-top:14px;
+        padding-top:14px;
+        border-top:
+          1px solid rgba(250,204,21,.45);
+        text-align:left;
+      "
+    >
+
+      <div
+        style="
+          color:#facc15;
+          font-weight:bold;
+          margin-bottom:10px;
+        "
+      >
+        💰 Liquidaciones Wallet del cierre
+      </div>
+
+
+      <div
+        style="
+          padding:12px;
+          border:1px solid #555;
+          border-radius:10px;
+          background:#151515;
+          margin-bottom:12px;
+        "
+      >
+        <div>
+          <b>Total:</b>
+          ${escaparHtml(
+            Number.isFinite(
+              totalRegistros
+            )
+              ? totalRegistros
+              : liquidaciones.length
+          )}
+        </div>
+
+        <div>
+          <b>Abiertas:</b>
+          ${escaparHtml(
+            abiertas
+          )}
+        </div>
+
+        <div>
+          <b>Terminales:</b>
+          ${escaparHtml(
+            terminales
+          )}
+        </div>
+
+        <div>
+          <b>Monto total:</b>
+          ${escaparHtml(
+            montoTotal
+          )}
+          MASS
+          ${escaparHtml(
+            unidad
+          )}
+        </div>
+      </div>
+
+
+      ${
+        liquidaciones.length > 0
+          ? tarjetas
+          : `
+            <div
+              style="
+                padding:12px;
+                border:1px solid #ff5252;
+                border-radius:10px;
+                background:#240b0b;
+                color:#ffb3b3;
+              "
+            >
+              ⚠️ El cierre está en LIQUIDACIÓN,
+              pero el servidor no devolvió
+              liquidaciones Wallet.
+            </div>
+          `
+      }
+
+
+      <div
+        style="
+          margin-top:12px;
+          color:#ddd;
+        "
+      >
+        🔒 En LIQUIDACIÓN ya no existe
+        cancelación simple del cierre.
+      </div>
+
+    </div>
+  `;
 }	
 
 async function solicitarCierreCuentaOrganizadorDesdePerfil() {
