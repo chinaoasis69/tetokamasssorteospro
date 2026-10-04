@@ -32045,6 +32045,480 @@ async function cargarEstadoCierreOrganizadorPerfil() {
         .trim()
         .toLowerCase();
 
+    let respuestaSnapshotCierre = null;
+    let snapshotVivoCierre = null;
+    let puedeIniciarLiquidacion = false;
+    let errorSnapshotVivoCierre = null;
+
+
+    if (estado === "saneamiento") {
+
+      const {
+        data: snapshotData,
+        error: snapshotError
+      } =
+        await supabaseClient.rpc(
+          "obtener_snapshot_cierre_organizador_seguro",
+          {
+            p_cierre_id:
+              cierre.id
+          }
+        );
+
+
+      if (snapshotError) {
+
+        console.error(
+          "ERROR CARGANDO SNAPSHOT VIVO DEL CIERRE:",
+          snapshotError
+        );
+
+        errorSnapshotVivoCierre =
+          snapshotError;
+
+      } else {
+
+        let respuestaNormalizada =
+          snapshotData;
+
+
+        if (
+          typeof respuestaNormalizada ===
+          "string"
+        ) {
+
+          try {
+
+            respuestaNormalizada =
+              JSON.parse(
+                respuestaNormalizada
+              );
+
+          } catch (errorParseSnapshot) {
+
+            console.error(
+              "ERROR INTERPRETANDO SNAPSHOT DEL CIERRE:",
+              errorParseSnapshot
+            );
+
+            respuestaNormalizada =
+              null;
+          }
+        }
+
+
+        if (
+          respuestaNormalizada &&
+          typeof respuestaNormalizada ===
+            "object" &&
+          !Array.isArray(
+            respuestaNormalizada
+          )
+        ) {
+
+          respuestaSnapshotCierre =
+            respuestaNormalizada;
+
+
+          if (
+            respuestaNormalizada.snapshot &&
+            typeof respuestaNormalizada.snapshot ===
+              "object" &&
+            !Array.isArray(
+              respuestaNormalizada.snapshot
+            )
+          ) {
+
+            snapshotVivoCierre =
+              respuestaNormalizada.snapshot;
+          }
+
+
+          puedeIniciarLiquidacion =
+            respuestaNormalizada
+              .puede_iniciar_liquidacion ===
+            true;
+        }
+
+
+        if (!snapshotVivoCierre) {
+
+          errorSnapshotVivoCierre =
+            new Error(
+              "SNAPSHOT_VIVO_INVALIDO"
+            );
+        }
+      }
+    }
+
+
+    const numeroSnapshot = valor => {
+
+      const numero =
+        Number(valor);
+
+      return Number.isFinite(numero)
+        ? numero
+        : 0;
+    };
+
+
+    const agregarBloqueadorSnapshot = (
+      lista,
+      cantidad,
+      etiqueta
+    ) => {
+
+      const total =
+        numeroSnapshot(cantidad);
+
+      if (total > 0) {
+
+        lista.push(`
+          <div>
+            • ${escaparHtml(etiqueta)}:
+            <b>${escaparHtml(total)}</b>
+          </div>
+        `);
+      }
+    };
+
+
+    let detalleSaneamientoHtml = "";
+
+
+    if (estado === "saneamiento") {
+
+      if (
+        errorSnapshotVivoCierre ||
+        !snapshotVivoCierre
+      ) {
+
+        detalleSaneamientoHtml = `
+          <div
+            style="
+              margin:12px 0;
+              padding:12px;
+              border:1px solid #ff5252;
+              border-radius:10px;
+              background:#240b0b;
+              color:#ffb3b3;
+            "
+          >
+            ⚠️ No fue posible verificar
+            el estado vivo de las obligaciones.
+            <br><br>
+            Por seguridad, la etapa de
+            <b>LIQUIDACIÓN</b> permanece bloqueada.
+          </div>
+        `;
+
+        puedeIniciarLiquidacion =
+          false;
+
+      } else {
+
+        const bloqueadores = [];
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.dinamicas
+            ?.bloqueantes_cierre,
+          "Dinámicas bloqueantes"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.dinamicas
+            ?.pendientes_reprogramacion,
+          "Dinámicas pendientes de reprogramación"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.premios
+            ?.pre_sorteos_abiertos,
+          "Pre-sorteos abiertos"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.premios
+            ?.lucky_spin_no_cerrados,
+          "Lucky Spin no cerrados"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.premios
+            ?.principales_no_entregados,
+          "Premios principales no entregados"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.lucky_spin_derechos
+            ?.giros_pendientes_vigentes,
+          "Giros Lucky Spin pendientes"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.boletos_apartados,
+          "Boletos apartados"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.boletos_estado_inesperado,
+          "Boletos con estado inesperado"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.recargas_no_cerradas,
+          "Recargas no cerradas"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.reembolsos_abiertos,
+          "Reembolsos abiertos"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.revisiones_compra_abiertas,
+          "Revisiones de compra abiertas"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.operaciones
+            ?.retenciones_reembolso_activas,
+          "Retenciones de reembolso activas"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.punto_mass
+            ?.fichas_efectivo_abiertas,
+          "Fichas de efectivo abiertas"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.punto_mass
+            ?.entregas_fondos_abiertas,
+          "Entregas de fondos abiertas"
+        );
+
+
+        agregarBloqueadorSnapshot(
+          bloqueadores,
+          snapshotVivoCierre
+            ?.continuidades_cierre
+            ?.inconsistentes,
+          "Continuidades inconsistentes"
+        );
+
+
+        const walletsPositivas =
+          numeroSnapshot(
+            snapshotVivoCierre
+              ?.wallet
+              ?.wallets_con_saldo_positivo
+          );
+
+
+        const saldoDisponibleTotal =
+          numeroSnapshot(
+            snapshotVivoCierre
+              ?.wallet
+              ?.saldo_disponible_total
+          );
+
+
+        const unidadMass =
+          String(
+            snapshotVivoCierre
+              ?.unidad_mass_principal ||
+            ""
+          )
+            .trim()
+            .toUpperCase();
+
+
+        let bloqueadoresHtml = "";
+
+
+        if (bloqueadores.length > 0) {
+
+          bloqueadoresHtml = `
+            <div
+              style="
+                margin-top:8px;
+                color:#ffd6d6;
+              "
+            >
+              <b>
+                Obligaciones que todavía
+                impiden iniciar LIQUIDACIÓN:
+              </b>
+
+              <div
+                style="
+                  margin-top:6px;
+                  line-height:1.6;
+                "
+              >
+                ${bloqueadores.join("")}
+              </div>
+            </div>
+          `;
+
+        } else if (
+          puedeIniciarLiquidacion
+        ) {
+
+          bloqueadoresHtml = `
+            <div
+              style="
+                margin-top:8px;
+                color:#a7f3a1;
+              "
+            >
+              ✅ El snapshot vivo no reporta
+              bloqueadores pendientes.
+            </div>
+          `;
+
+        } else {
+
+          bloqueadoresHtml = `
+            <div
+              style="
+                margin-top:8px;
+                color:#ffe59a;
+              "
+            >
+              ⚠️ El servidor todavía no autoriza
+              iniciar LIQUIDACIÓN.
+            </div>
+          `;
+        }
+
+
+        detalleSaneamientoHtml = `
+          <div
+            style="
+              margin:12px 0;
+              padding:12px;
+              border:1px solid
+                ${
+                  puedeIniciarLiquidacion
+                    ? "#39ff14"
+                    : "#facc15"
+                };
+              border-radius:10px;
+              background:
+                ${
+                  puedeIniciarLiquidacion
+                    ? "#0d2b10"
+                    : "#211b06"
+                };
+              text-align:left;
+            "
+          >
+
+            <div
+              style="
+                font-weight:bold;
+                color:
+                  ${
+                    puedeIniciarLiquidacion
+                      ? "#39ff14"
+                      : "#facc15"
+                  };
+              "
+            >
+              ${
+                puedeIniciarLiquidacion
+                  ? "✅ Saneamiento completado"
+                  : "⚠️ Saneamiento pendiente"
+              }
+            </div>
+
+
+            ${bloqueadoresHtml}
+
+
+            <div
+              style="
+                margin-top:10px;
+                padding-top:10px;
+                border-top:
+                  1px solid rgba(255,255,255,.15);
+                color:#ddd;
+              "
+            >
+              <b>Wallets con saldo positivo:</b>
+              ${escaparHtml(walletsPositivas)}
+              <br>
+
+              <b>Saldo a futura liquidación:</b>
+              ${escaparHtml(saldoDisponibleTotal)}
+              MASS
+              ${escaparHtml(unidadMass)}
+
+              <br>
+
+              <small>
+                Las Wallets positivas no bloquean
+                el inicio de LIQUIDACIÓN; se convierten
+                en liquidaciones individuales en la
+                siguiente etapa.
+              </small>
+            </div>
+
+          </div>
+        `;
+      }
+    }
+
 
     const etiquetas = {
 
@@ -32118,7 +32592,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             : ""
         }
 
-               ${
+        ${
           estado === "saneamiento"
             ? `
               <div
@@ -32129,6 +32603,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
                     1px solid rgba(250,204,21,.45);
                 "
               >
+
                 <div
                   style="
                     color:#ddd;
@@ -32139,12 +32614,17 @@ async function cargarEstadoCierreOrganizadorPerfil() {
                   Mientras el proceso permanezca
                   en <b>SANEAMIENTO</b> todavía puede
                   cancelarse de forma auditada.
+
                   <br><br>
-                  Cuando todas las obligaciones
-                  existentes hayan sido resueltas,
-                  podrás intentar avanzar a
-                  <b>LIQUIDACIÓN</b>.
+
+                  🔒 Durante el cierre no pueden
+                  generarse nuevas obligaciones
+                  incompatibles con el proceso.
                 </div>
+
+
+                ${detalleSaneamientoHtml}
+
 
                 <div
                   style="
@@ -32153,33 +32633,78 @@ async function cargarEstadoCierreOrganizadorPerfil() {
                     flex-wrap:wrap;
                   "
                 >
+
                   <button
                     type="button"
+
+                    ${
+                      puedeIniciarLiquidacion
+                        ? ""
+                        : "disabled"
+                    }
+
                     onclick="
                       iniciarLiquidacionCierreOrganizadorDesdePerfil(
                         '${escaparHtml(cierre.id)}'
                       )
                     "
+
                     style="
                       padding:10px 15px;
-                      border:1px solid #39ff14;
+
+                      border:1px solid
+                        ${
+                          puedeIniciarLiquidacion
+                            ? "#39ff14"
+                            : "#666"
+                        };
+
                       border-radius:9px;
-                      background:#123b16;
+
+                      background:
+                        ${
+                          puedeIniciarLiquidacion
+                            ? "#123b16"
+                            : "#2b2b2b"
+                        };
+
                       color:white;
                       font-weight:bold;
-                      cursor:pointer;
+
+                      opacity:
+                        ${
+                          puedeIniciarLiquidacion
+                            ? "1"
+                            : "0.60"
+                        };
+
+                      cursor:
+                        ${
+                          puedeIniciarLiquidacion
+                            ? "pointer"
+                            : "not-allowed"
+                        };
                     "
                   >
-                    💰 Intentar iniciar liquidación
+
+                    ${
+                      puedeIniciarLiquidacion
+                        ? "💰 Iniciar liquidación"
+                        : "🔒 Liquidación bloqueada"
+                    }
+
                   </button>
+
 
                   <button
                     type="button"
+
                     onclick="
                       cancelarCierreCuentaOrganizadorDesdePerfil(
                         '${escaparHtml(cierre.id)}'
                       )
                     "
+
                     style="
                       padding:10px 15px;
                       border:1px solid #facc15;
@@ -32192,15 +32717,13 @@ async function cargarEstadoCierreOrganizadorPerfil() {
                   >
                     ↩️ Cancelar proceso de cierre
                   </button>
+
                 </div>
+
               </div>
             `
             : ""
         }
-
-      </div>
-    `;
-
 
     boton.disabled = true;
 
