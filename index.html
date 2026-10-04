@@ -32520,6 +32520,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
     }
 	  
     let detalleLiquidacionHtml = "";
+    let historialLiquidacionesCerradoHtml = "";
 
 
     if (estado === "liquidacion") {
@@ -32528,9 +32529,221 @@ async function cargarEstadoCierreOrganizadorPerfil() {
         await construirPanelLiquidacionesCierreOrganizador(
           cierre.id,
           organizadorId,
-          escaparHtml
+          escaparHtml,
+          false
         );
     }
+
+
+    if (estado === "cerrado") {
+
+      historialLiquidacionesCerradoHtml =
+        await construirPanelLiquidacionesCierreOrganizador(
+          cierre.id,
+          organizadorId,
+          escaparHtml,
+          true
+        );
+    }
+
+    let detalleListoCierreHtml = "";
+    let detalleCerradoHtml = "";
+
+
+    if (estado === "listo_cierre") {
+
+      const fechaListo =
+        cierre.listo_cierre_at
+          ? new Date(
+              cierre.listo_cierre_at
+            ).toLocaleString()
+          : "";
+
+
+      detalleListoCierreHtml = `
+        <div
+          style="
+            margin-top:14px;
+            padding:14px;
+            border:2px solid #39ff14;
+            border-radius:12px;
+            background:#0d2b10;
+            color:white;
+            line-height:1.55;
+          "
+        >
+
+          <div
+            style="
+              color:#39ff14;
+              font-weight:bold;
+              margin-bottom:10px;
+            "
+          >
+            ✅ Todas las obligaciones fueron liquidadas
+          </div>
+
+
+          ${
+            fechaListo
+              ? `
+                <div>
+                  <b>Listo para cierre:</b>
+                  ${escaparHtml(
+                    fechaListo
+                  )}
+                </div>
+              `
+              : ""
+          }
+
+
+          <div
+            style="
+              margin-top:10px;
+            "
+          >
+            El expediente superó la validación
+            financiera final y se encuentra
+            <b>LISTO PARA CIERRE</b>.
+          </div>
+
+
+          <div
+            style="
+              margin-top:10px;
+              color:#ddd;
+            "
+          >
+            Ya no existe cancelación simple.
+            El cierre definitivo desactivará la
+            operación pública del Organizador,
+            pero conservará el acceso administrativo
+            histórico, expedientes y comprobantes.
+          </div>
+
+
+          <button
+            type="button"
+
+            id="btnCerrarOrganizadorDefinitivamente_${escaparHtml(
+              cierre.id
+            )}"
+
+            onclick="
+              cerrarOrganizadorDefinitivamenteDesdePerfil(
+                '${escaparHtml(cierre.id)}'
+              )
+            "
+
+            style="
+              width:100%;
+              margin-top:14px;
+              padding:12px;
+              border:1px solid #ff5252;
+              border-radius:9px;
+              background:#5a1111;
+              color:white;
+              font-weight:bold;
+              cursor:pointer;
+            "
+          >
+            🔒 Cerrar cuenta de Organizador definitivamente
+          </button>
+
+        </div>
+      `;
+    }
+
+
+    if (estado === "cerrado") {
+
+      const fechaCerrado =
+        cierre.cerrado_at
+          ? new Date(
+              cierre.cerrado_at
+            ).toLocaleString()
+          : "";
+
+
+      detalleCerradoHtml = `
+        <div
+          style="
+            margin-top:14px;
+            padding:14px;
+            border:2px solid #777;
+            border-radius:12px;
+            background:#171717;
+            color:white;
+            line-height:1.55;
+          "
+        >
+
+          <div
+            style="
+              color:#ddd;
+              font-weight:bold;
+              margin-bottom:10px;
+            "
+          >
+            🔒 Cuenta de Organizador cerrada
+          </div>
+
+
+          ${
+            fechaCerrado
+              ? `
+                <div>
+                  <b>Cerrada:</b>
+                  ${escaparHtml(
+                    fechaCerrado
+                  )}
+                </div>
+              `
+              : ""
+          }
+
+
+          <div
+            style="
+              margin-top:10px;
+            "
+          >
+            La operación pública de este
+            Organizador quedó desactivada
+            definitivamente.
+          </div>
+
+
+          <div
+            style="
+              margin-top:10px;
+              color:#bbb;
+            "
+          >
+            El historial financiero,
+            las liquidaciones, los comprobantes
+            y los expedientes permanecen
+            archivados para consulta autorizada.
+          </div>
+
+
+          <div
+            style="
+              margin-top:10px;
+              color:#bbb;
+            "
+          >
+            Esta cuenta no puede reactivarse
+            mediante una edición normal del
+            Organizador.
+          </div>
+
+	          ${historialLiquidacionesCerradoHtml}
+
+        </div>
+      `;
+    }	
 
     const etiquetas = {
 
@@ -32576,7 +32789,13 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             margin-bottom:8px;
           "
         >
-          🔒 Proceso de cierre activo
+          ${
+            estado === "cerrado"
+              ? "🔒 Cuenta de Organizador cerrada"
+              : estado === "listo_cierre"
+                ? "✅ Cierre listo para finalizar"
+                : "🔒 Proceso de cierre activo"
+          }
         </div>
 
         <div>
@@ -32743,15 +32962,33 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             : ""
         }
 
+		        ${
+          estado === "listo_cierre"
+            ? detalleListoCierreHtml
+            : ""
+        }
+
+        ${
+          estado === "cerrado"
+            ? detalleCerradoHtml
+            : ""
+        }
+
 	      </div>
     `;
 
     boton.disabled = true;
 
-    boton.textContent =
+        boton.textContent =
       estado === "saneamiento"
         ? "🔒 Cierre en saneamiento"
-        : "🔒 Proceso de cierre activo";
+        : estado === "liquidacion"
+          ? "💰 Cierre en liquidación"
+          : estado === "listo_cierre"
+            ? "✅ Cierre listo para finalizar"
+            : estado === "cerrado"
+              ? "🔒 Cuenta de Organizador cerrada"
+              : "🔒 Proceso de cierre activo";
 
     boton.style.opacity = "0.65";
     boton.style.cursor = "not-allowed";
@@ -32784,7 +33021,8 @@ async function cargarEstadoCierreOrganizadorPerfil() {
 async function construirPanelLiquidacionesCierreOrganizador(
   cierreId,
   organizadorId,
-  escaparHtml
+  escaparHtml,
+  modoHistorial = false
 ) {
 
   const {
@@ -33684,7 +33922,8 @@ async function construirPanelLiquidacionesCierreOrganizador(
               </div>
 
               ${
-                estado === "pendiente_pago"
+                estado === "pendiente_pago" &&
+                !modoHistorial
                   ? `
                     <div
                       style="
@@ -33769,7 +34008,82 @@ async function construirPanelLiquidacionesCierreOrganizador(
         }
       )
       .join("");
+	
+  const tituloPanelLiquidaciones =
+    modoHistorial
+      ? "📚 Historial de liquidaciones Wallet"
+      : "💰 Liquidaciones Wallet del cierre";
 
+
+  const mensajeSinLiquidacionesHtml =
+    modoHistorial
+      ? `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #555;
+            border-radius:10px;
+            background:#151515;
+            color:#bbb;
+          "
+        >
+          ℹ️ Este expediente no tiene
+          liquidaciones Wallet archivadas.
+        </div>
+      `
+      : `
+        <div
+          style="
+            padding:12px;
+            border:1px solid #ff5252;
+            border-radius:10px;
+            background:#240b0b;
+            color:#ffb3b3;
+          "
+        >
+          ⚠️ El cierre está en LIQUIDACIÓN,
+          pero el servidor no devolvió
+          liquidaciones Wallet.
+        </div>
+      `;
+
+
+  const piePanelLiquidacionesHtml =
+    modoHistorial
+      ? `
+        <div
+          style="
+            margin-top:12px;
+            padding:10px;
+            border:1px solid #555;
+            border-radius:9px;
+            background:#111;
+            color:#bbb;
+          "
+        >
+          📚 Historial de solo lectura.
+
+          <br><br>
+
+          Las liquidaciones y sus comprobantes
+          permanecen archivados. No existen
+          acciones financieras disponibles
+          después del cierre definitivo.
+        </div>
+      `
+      : `
+        ${panelAvanceLiquidacionHtml}
+
+        <div
+          style="
+            margin-top:12px;
+            color:#ddd;
+          "
+        >
+          🔒 En LIQUIDACIÓN ya no existe
+          cancelación simple del cierre.
+        </div>
+      `;
 
   return `
     <div
@@ -33789,7 +34103,7 @@ async function construirPanelLiquidacionesCierreOrganizador(
           margin-bottom:10px;
         "
       >
-        💰 Liquidaciones Wallet del cierre
+        ${tituloPanelLiquidaciones}
       </div>
 
 
@@ -33843,34 +34157,10 @@ async function construirPanelLiquidacionesCierreOrganizador(
       ${
         liquidaciones.length > 0
           ? tarjetas
-          : `
-            <div
-              style="
-                padding:12px;
-                border:1px solid #ff5252;
-                border-radius:10px;
-                background:#240b0b;
-                color:#ffb3b3;
-              "
-            >
-              ⚠️ El cierre está en LIQUIDACIÓN,
-              pero el servidor no devolvió
-              liquidaciones Wallet.
-            </div>
-          `
+          : mensajeSinLiquidacionesHtml
       }
 	  
-      ${panelAvanceLiquidacionHtml}
-
-      <div
-        style="
-          margin-top:12px;
-          color:#ddd;
-        "
-      >
-        🔒 En LIQUIDACIÓN ya no existe
-        cancelación simple del cierre.
-      </div>
+      ${piePanelLiquidacionesHtml}
 
     </div>
   `;
@@ -35165,6 +35455,238 @@ async function marcarCierreOrganizadorListoDesdePerfil(
 
     alert(
       "❌ No fue posible marcar el expediente como LISTO_CIERRE.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+    if (boton) {
+
+      boton.disabled =
+        false;
+
+      boton.style.opacity =
+        "1";
+
+      boton.style.cursor =
+        "pointer";
+
+      boton.textContent =
+        textoOriginal;
+    }
+  }
+}
+
+async function cerrarOrganizadorDefinitivamenteDesdePerfil(
+  cierreId
+) {
+
+  const id =
+    String(
+      cierreId || ""
+    ).trim();
+
+
+  if (!id) {
+
+    alert(
+      "❌ No fue posible identificar el expediente de cierre."
+    );
+
+    return;
+  }
+
+
+  const boton =
+    document.getElementById(
+      `btnCerrarOrganizadorDefinitivamente_${id}`
+    );
+
+
+  const confirmar =
+    window.confirm(
+      "🔒 CIERRE DEFINITIVO DEL ORGANIZADOR\n\n" +
+
+      "Esta acción finalizará definitivamente la operación pública del Organizador.\n\n" +
+
+      "Se desactivarán su operación pública, su aparición en inicio y el convertidor MASS.\n\n" +
+
+      "El historial administrativo, las liquidaciones y los comprobantes permanecerán archivados.\n\n" +
+
+      "¿Deseas continuar?"
+    );
+
+
+  if (!confirmar) {
+    return;
+  }
+
+
+  const confirmacionEscrita =
+    String(
+      window.prompt(
+        "Para confirmar el cierre definitivo escribe exactamente:\n\nCERRAR CUENTA"
+      ) || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    confirmacionEscrita !==
+    "CERRAR CUENTA"
+  ) {
+
+    alert(
+      "ℹ️ No se realizó el cierre definitivo."
+    );
+
+    return;
+  }
+
+
+  const textoOriginal =
+    boton?.textContent ||
+    "🔒 Cerrar cuenta de Organizador definitivamente";
+
+
+  if (boton) {
+
+    boton.disabled =
+      true;
+
+    boton.style.opacity =
+      "0.55";
+
+    boton.style.cursor =
+      "not-allowed";
+
+    boton.textContent =
+      "⏳ Cerrando Organizador...";
+  }
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.rpc(
+        "cerrar_organizador_definitivamente_seguro",
+        {
+          p_cierre_id:
+            id
+        }
+      );
+
+
+    if (error) {
+
+      const mensajeServidor =
+        String(
+          error?.message ||
+          ""
+        );
+
+
+      if (
+        mensajeServidor.includes(
+          "CIERRE_NO_ESTA_LISTO_PARA_CERRARSE"
+        )
+      ) {
+
+        alert(
+          "⚠️ El expediente ya no cumple las condiciones necesarias para el cierre definitivo."
+        );
+
+        await cargarEstadoCierreOrganizadorPerfil();
+
+        return;
+      }
+
+
+      throw error;
+    }
+
+
+    let resultado =
+      Array.isArray(data)
+        ? data[0]
+        : data;
+
+
+    if (
+      typeof resultado ===
+      "string"
+    ) {
+
+      try {
+
+        resultado =
+          JSON.parse(
+            resultado
+          );
+
+      } catch (_) {
+
+        resultado =
+          null;
+      }
+    }
+
+
+    const estadoResultado =
+      String(
+        resultado?.estado ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      estadoResultado !==
+        "cerrado" ||
+      resultado.organizador_activo !==
+        false ||
+      resultado.mostrar_en_inicio !==
+        false ||
+      resultado.convertidor_mass_activo !==
+        false ||
+      !resultado.cerrado_at
+    ) {
+
+      throw new Error(
+        "El servidor no confirmó completamente el cierre definitivo."
+      );
+    }
+
+
+    alert(
+      resultado?.ya_cerrado === true
+        ? "ℹ️ La cuenta de Organizador ya se encontraba cerrada."
+        : "✅ CIERRE DEFINITIVO COMPLETADO\n\nLa operación pública del Organizador quedó desactivada. El historial administrativo permanece disponible."
+    );
+
+
+    await cargarEstadoCierreOrganizadorPerfil();
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR CERRANDO ORGANIZADOR DEFINITIVAMENTE:",
+      error
+    );
+
+
+    alert(
+      "❌ No fue posible completar el cierre definitivo.\n\n" +
       String(
         error?.message ||
         ""
