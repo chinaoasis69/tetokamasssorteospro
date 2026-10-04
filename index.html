@@ -33109,7 +33109,39 @@ async function construirPanelLiquidacionesCierreOrganizador(
                     : "Pendiente"
                 }
               </div>
-
+			  
+              ${
+                item?.comprobante_disponible === true
+                  ? `
+                    <button
+                      type="button"
+                      id="btnVerComprobanteLiquidacionCierre_${escaparHtml(
+                        item?.liquidacion_id || ""
+                      )}"
+                      onclick="
+                        abrirComprobanteLiquidacionCierreOrganizador(
+                          '${escaparHtml(
+                            item?.liquidacion_id || ""
+                          )}'
+                        )
+                      "
+                      style="
+                        width:100%;
+                        margin:10px 0 4px 0;
+                        padding:10px;
+                        border:1px solid #39ff14;
+                        border-radius:9px;
+                        background:#123b16;
+                        color:white;
+                        font-weight:bold;
+                        cursor:pointer;
+                      "
+                    >
+                      🧾 Ver comprobante privado
+                    </button>
+                  `
+                  : ""
+              }
 
               ${
                 referencia
@@ -34200,7 +34232,369 @@ async function subirComprobanteLiquidacionCierreOrganizador(
       "#ff8a8a"
     );
   }
-}	
+}
+
+async function abrirComprobanteLiquidacionCierreOrganizador(
+  liquidacionId
+) {
+
+  const id =
+    String(
+      liquidacionId || ""
+    ).trim();
+
+
+  if (!id) {
+
+    alert(
+      "❌ No fue posible identificar la liquidación."
+    );
+
+    return;
+  }
+
+
+  const boton =
+    document.getElementById(
+      `btnVerComprobanteLiquidacionCierre_${id}`
+    );
+
+
+  const textoOriginal =
+    boton?.textContent ||
+    "🧾 Ver comprobante privado";
+
+
+  /* ========================================================
+     ABRIR VENTANA INMEDIATAMENTE
+
+     Debe ocurrir antes del primer await para evitar que
+     el navegador bloquee la ventana emergente.
+     ======================================================== */
+
+  const ventanaComprobante =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  if (!ventanaComprobante) {
+
+    alert(
+      "❌ El navegador bloqueó la ventana del comprobante. Permite ventanas emergentes e inténtalo nuevamente."
+    );
+
+    return;
+  }
+
+
+  try {
+
+    ventanaComprobante.opener =
+      null;
+
+
+    if (boton) {
+
+      boton.disabled =
+        true;
+
+      boton.style.opacity =
+        "0.55";
+
+      boton.style.cursor =
+        "not-allowed";
+
+      boton.textContent =
+        "⏳ Abriendo comprobante...";
+    }
+
+
+    /* ========================================================
+       1. PEDIR REFERENCIA SEGURA AL BACKEND
+
+       El backend vuelve a validar:
+       - actor
+       - liquidación
+       - estado
+       - objeto físico
+       - owner
+       - MIME
+       - tamaño
+       - evidencia
+       ======================================================== */
+
+    const {
+      data: respuesta,
+      error
+    } =
+      await supabaseClient.rpc(
+        "obtener_comprobante_liquidacion_wallet_cierre_seguro",
+        {
+          p_liquidacion_id:
+            id
+        }
+      );
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    let comprobante =
+      Array.isArray(respuesta)
+        ? respuesta[0]
+        : respuesta;
+
+
+    if (
+      typeof comprobante ===
+      "string"
+    ) {
+
+      try {
+
+        comprobante =
+          JSON.parse(
+            comprobante
+          );
+
+      } catch (_) {
+
+        throw new Error(
+          "El servidor devolvió una respuesta de comprobante inválida."
+        );
+      }
+    }
+
+
+    if (
+      !comprobante ||
+      comprobante.ok !== true ||
+      comprobante.comprobante_disponible !== true
+    ) {
+
+      throw new Error(
+        "El comprobante privado no está disponible."
+      );
+    }
+
+
+    const liquidacionRespuesta =
+      String(
+        comprobante.liquidacion_id ||
+        ""
+      ).trim();
+
+
+    const bucket =
+      String(
+        comprobante.comprobante_bucket ||
+        ""
+      ).trim();
+
+
+    const path =
+      String(
+        comprobante.comprobante_path ||
+        ""
+      ).trim();
+
+
+    const mimeEsperado =
+      String(
+        comprobante.comprobante_mime_type ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const tamanoEsperado =
+      Number(
+        comprobante.comprobante_tamano
+      );
+
+
+    const mimePermitidos =
+      new Set([
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/heic",
+        "image/heif",
+        "application/pdf"
+      ]);
+
+
+    if (
+      liquidacionRespuesta !== id ||
+
+      bucket !==
+        "liquidaciones-cierre-mass" ||
+
+      !path ||
+
+      !mimePermitidos.has(
+        mimeEsperado
+      ) ||
+
+      !Number.isFinite(
+        tamanoEsperado
+      ) ||
+
+      tamanoEsperado < 1 ||
+
+      tamanoEsperado >
+        10485760
+    ) {
+
+      throw new Error(
+        "La referencia privada del comprobante no es válida."
+      );
+    }
+
+
+    /* ========================================================
+       2. DESCARGAR DESDE STORAGE PRIVADO
+
+       NO getPublicUrl.
+       NO URL pública permanente.
+       ======================================================== */
+
+    const {
+      data: archivo,
+      error: errorDescarga
+    } =
+      await supabaseClient
+        .storage
+        .from(bucket)
+        .download(path);
+
+
+    if (errorDescarga) {
+      throw errorDescarga;
+    }
+
+
+    if (
+      !(archivo instanceof Blob)
+    ) {
+
+      throw new Error(
+        "Storage no devolvió un archivo válido."
+      );
+    }
+
+
+    const mimeRecibido =
+      String(
+        archivo.type || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const tamanoRecibido =
+      Number(
+        archivo.size
+      );
+
+
+    if (
+      mimeRecibido !==
+      mimeEsperado
+    ) {
+
+      throw new Error(
+        "El tipo del comprobante descargado no coincide con el registro."
+      );
+    }
+
+
+    if (
+      tamanoRecibido !==
+      tamanoEsperado
+    ) {
+
+      throw new Error(
+        "El tamaño del comprobante descargado no coincide con el registro."
+      );
+    }
+
+
+    /* ========================================================
+       3. URL LOCAL TEMPORAL DEL BROWSER
+
+       No es una URL pública de Supabase.
+       ======================================================== */
+
+    const urlTemporal =
+      URL.createObjectURL(
+        archivo
+      );
+
+
+    ventanaComprobante.location.href =
+      urlTemporal;
+
+
+    setTimeout(
+      () => {
+
+        URL.revokeObjectURL(
+          urlTemporal
+        );
+
+      },
+      300000
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "ERROR ABRIENDO COMPROBANTE DE LIQUIDACIÓN:",
+      error
+    );
+
+
+    try {
+
+      ventanaComprobante.close();
+
+    } catch (_) {}
+
+
+    alert(
+      "❌ No fue posible abrir el comprobante privado.\n\n" +
+      String(
+        error?.message ||
+        ""
+      )
+    );
+
+
+  } finally {
+
+    if (boton) {
+
+      boton.disabled =
+        false;
+
+      boton.style.opacity =
+        "1";
+
+      boton.style.cursor =
+        "pointer";
+
+      boton.textContent =
+        textoOriginal;
+    }
+  }
+}	  
 
 async function solicitarCierreCuentaOrganizadorDesdePerfil() {
 
