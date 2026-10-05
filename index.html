@@ -56674,6 +56674,8 @@ if (abriendoListadoOrganizadores) {
         "organizador_publico_id"
     );
 
+	restablecerTemaVisualOrganizadorPublico();
+
     metodoPagoRecargaSeleccionado = null;
 
     if (
@@ -57395,10 +57397,569 @@ function aplicarTemaVisualOrganizadorPublico(
                 !important;
         }
 
-    `;
+       `;
 
+    completarTemaVisualOrganizadorPublico();
 
     return colorMarca;
+}
+
+/* =========================================================
+   MASS — TEMA COMPLETO DEL ORGANIZADOR
+   MI PERFIL V2
+   MPV2-F2E2
+========================================================= */
+
+function completarTemaVisualOrganizadorPublico() {
+
+    /* =====================================================
+       1. IDENTIFICAR TARJETAS QUE PERTENECEN
+          AL ORGANIZADOR ACTUAL
+    ===================================================== */
+
+    const selectoresTarjetasOrganizador = [
+
+        "#saldoBox",
+
+        "#walletHeader",
+
+        'button[onclick*="abrirModalGanadores"]',
+
+        "#contadorMisBoletos",
+
+        'button[onclick*="abrirModalMisRecargasMass"]',
+
+        'button[onclick*="abrirModalMisComprasMass"]',
+
+        'button[onclick*="abrirModalMisLiquidacionesMass"]',
+
+        "#contadorPremios",
+
+        "#contadorBeneficios"
+    ];
+
+
+    selectoresTarjetasOrganizador.forEach(
+        selector => {
+
+            const elemento =
+                document.querySelector(
+                    selector
+                );
+
+            const tarjeta =
+                elemento?.closest(
+                    ".card"
+                );
+
+            if (tarjeta) {
+
+                tarjeta.classList.add(
+                    "mass-org-theme-card"
+                );
+            }
+        }
+    );
+
+
+    const patrocinadoresCard =
+        document.getElementById(
+            "patrocinadoresSorteoCard"
+        );
+
+    if (patrocinadoresCard) {
+
+        patrocinadoresCard.classList.add(
+            "mass-org-theme-card"
+        );
+    }
+
+
+    /* =====================================================
+       2. CREAR / ACTUALIZAR CSS COMPLEMENTARIO
+    ===================================================== */
+
+    let styleCompleto =
+        document.getElementById(
+            "massTemaOrganizadorPublicoCompleto"
+        );
+
+
+    if (!styleCompleto) {
+
+        styleCompleto =
+            document.createElement(
+                "style"
+            );
+
+        styleCompleto.id =
+            "massTemaOrganizadorPublicoCompleto";
+
+        document.head.appendChild(
+            styleCompleto
+        );
+    }
+
+
+    styleCompleto.textContent = `
+
+        /* =============================================
+           TARJETAS DEL ORGANIZADOR
+        ============================================= */
+
+        .mass-org-theme-card {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .28
+                )
+                !important;
+        }
+
+
+        .mass-org-theme-card > h2,
+        .mass-org-theme-card > h3 {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+
+            text-shadow:
+                0 0 12px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .35
+                );
+        }
+
+
+        .mass-org-theme-card
+        button:not(#btnComprarMass):
+        not(#btnCancelarRecargaMass) {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           IMAGEN / CARRUSEL DEL PREMIO
+        ============================================= */
+
+        #imagenRifa {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 20px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .55
+                )
+                !important;
+        }
+
+
+        #controlesCarruselPremio button {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           PAGINACIÓN
+        ============================================= */
+
+        #paginacionBoletos {
+
+            border-color:
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .65
+                )
+                !important;
+
+            box-shadow:
+                0 0 14px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .25
+                )
+                !important;
+        }
+
+
+        /* =============================================
+           CENTRO DE COMPRA
+        ============================================= */
+
+        #saldoBox {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .38
+                )
+                !important;
+        }
+
+
+        #saldoBox .wallet-amount,
+        #totalCompra {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #btnReservarBoletos {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /*
+          Comprar con MASS conserva su color
+          funcional propio.
+        */
+
+
+        /* =============================================
+           WALLET MASS
+        ============================================= */
+
+        #walletHeader .walletTitulo {
+
+            text-shadow:
+                0 0 8px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .45
+                ),
+                0 0 16px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .22
+                )
+                !important;
+        }
+
+
+        #walletHeader
+        div[style*="color:#39ff14"] {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           MÉTODOS DE PAGO
+        ============================================= */
+
+        #metodosPagoUsuarioMass {
+
+            border-color:
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .55
+                )
+                !important;
+        }
+
+
+        #metodosPagoUsuarioMass
+        > div[style*="color:#39ff14"] {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #detalleMetodoPagoUsuarioMass {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           RECARGA PREPARADA
+        ============================================= */
+
+        #tarjetaRecargaPreparada {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .45
+                )
+                !important;
+        }
+
+
+        #tarjetaRecargaPreparada h3 {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #btnSubirComprobanteMass {
+
+            background:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #btnCambiarCambiarMass {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           SUBIR COMPROBANTE
+        ============================================= */
+
+        #boxSubirComprobanteMass {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 14px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .40
+                )
+                !important;
+        }
+
+
+        #nombreComprobante {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           CONVERTIDOR MASS
+        ============================================= */
+
+        #tarjetaConvertidorMass {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 14px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .35
+                )
+                !important;
+
+            background:
+                radial-gradient(
+                    circle at top,
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .10
+                    ),
+                    transparent 58%
+                ),
+                #111
+                !important;
+        }
+
+
+        #tarjetaConvertidorMass
+        div[style*="color:#39ff14"] {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #tarjetaConvertidorMass
+        div[style*="background:#39ff14"] {
+
+            background:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #mensajeSaldoDisponibleMass p {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           CHAT CON EL ORGANIZADOR
+        ============================================= */
+
+        #panelChatOrganizadorUsuario {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 16px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .35
+                )
+                !important;
+        }
+
+
+        #tituloChatOrganizadorUsuario {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        #btnEnviarMensajeChatOrganizadorUsuario {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+
+        /* =============================================
+           PATROCINADORES — BORDE EXTERIOR
+        ============================================= */
+
+        #patrocinadoresSorteoCard {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .28
+                )
+                !important;
+        }
+
+
+        /* =============================================
+           MODALES DEL USUARIO DENTRO DEL ORGANIZADOR
+        ============================================= */
+
+        .modal-premios-contenido {
+
+            border-color:
+                var(--mass-org-accent)
+                !important;
+
+            box-shadow:
+                0 0 25px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .45
+                )
+                !important;
+        }
+
+
+        .modal-premios-contenido h2,
+        .modal-premios-contenido h3 {
+
+            color:
+                var(--mass-org-accent)
+                !important;
+        }
+
+    `;
+}
+
+
+/* =========================================================
+   MASS — SALIR DEL TEMA DEL ORGANIZADOR
+========================================================= */
+
+function restablecerTemaVisualOrganizadorPublico() {
+
+    const styleBase =
+        document.getElementById(
+            "massTemaOrganizadorPublico"
+        );
+
+    const styleCompleto =
+        document.getElementById(
+            "massTemaOrganizadorPublicoCompleto"
+        );
+
+
+    styleBase?.remove();
+    styleCompleto?.remove();
+
+
+    document
+        .querySelectorAll(
+            ".mass-org-theme-card"
+        )
+        .forEach(
+            tarjeta => {
+
+                tarjeta.classList.remove(
+                    "mass-org-theme-card"
+                );
+            }
+        );
 }	
 
 async function verSorteosDeOrganizador(orgId){
