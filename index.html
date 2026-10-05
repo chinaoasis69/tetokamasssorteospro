@@ -62196,6 +62196,176 @@ function () {
 };
 
 /* =========================================================
+   MASS — PATROCINADORES EN PERFIL PÚBLICO
+   MPV2-F7C
+========================================================= */
+
+async function cargarPatrocinadoresPerfilPublicoOrganizador(
+    organizadorId,
+    contenedor
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (
+        !idLimpio ||
+        !contenedor
+    ) {
+        return;
+    }
+
+
+    contenedor.innerHTML = `
+        <div
+            class="mass-sponsor-empty"
+        >
+            Cargando patrocinadores...
+        </div>
+    `;
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "patrocinadores"
+        )
+        .select("*")
+        .eq(
+            "activo",
+            true
+        )
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .is(
+            "rifa_id",
+            null
+        )
+        .order(
+            "created_at",
+            {
+                ascending: false
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO PATROCINADORES DEL PERFIL:",
+            error
+        );
+
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    border:1px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    border-radius:14px;
+                    background:#101010;
+                    padding:18px;
+                    text-align:center;
+                    color:#aaa;
+                "
+            >
+                🤝 No fue posible cargar
+                los patrocinadores.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    if (
+        !Array.isArray(data) ||
+        data.length === 0
+    ) {
+
+        contenedor.innerHTML = `
+            <div
+                style="
+                    border:1px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    border-radius:14px;
+                    background:#101010;
+                    padding:18px;
+                    text-align:center;
+                "
+            >
+
+                <div
+                    style="
+                        color:
+                            var(
+                                --mass-org-accent,
+                                #39ff14
+                            );
+                        font-size:18px;
+                        font-weight:bold;
+                        margin-bottom:8px;
+                    "
+                >
+                    🤝 Patrocinadores del Organizador
+                </div>
+
+                <div
+                    style="
+                        color:#aaa;
+                        font-size:14px;
+                    "
+                >
+                    Próximamente...
+                </div>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    contenedor.innerHTML =
+        massCrearCarruselPatrocinadores(
+            data,
+            {
+                titulo:
+                    "🤝 Patrocinadores del Organizador",
+
+                subtitulo:
+                    "Conoce los negocios y promociones disponibles con este Organizador.",
+
+                clave:
+                    `perfil-patrocinadores-${idLimpio}`
+            }
+        );
+
+
+    requestAnimationFrame(
+        () => {
+
+            massInicializarCarruselesPatrocinadores(
+                contenedor
+            );
+        }
+    );
+}
+
+/* =========================================================
    MASS — PERFIL PÚBLICO PROFESIONAL DEL ORGANIZADOR
    MPV2-F7A
 ========================================================= */
@@ -62876,6 +63046,17 @@ if (contenidoGeneralUsuario) {
                     : ""
             }
 
+            <div
+    id="patrocinadoresPerfilPublicoOrganizadorBox"
+    style="
+        margin-top:20px;
+    "
+>
+    <div class="mass-sponsor-empty">
+        Cargando patrocinadores...
+    </div>
+</div>
+
 
             ${
                 contactoSoporteHtml
@@ -62903,6 +63084,17 @@ if (contenidoGeneralUsuario) {
         contenedor,
         idLimpio
     );
+
+    const patrocinadoresPerfilBox =
+    document.getElementById(
+        "patrocinadoresPerfilPublicoOrganizadorBox"
+    );
+
+
+await cargarPatrocinadoresPerfilPublicoOrganizador(
+    idLimpio,
+    patrocinadoresPerfilBox
+);
 
 
     setTimeout(
