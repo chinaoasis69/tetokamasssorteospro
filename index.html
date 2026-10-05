@@ -59604,6 +59604,13 @@ function renderOrganizadoresPaginados(){
             String(r.organizador_id) === String(org.id)
         ).length;
 
+        const nombre =
+    massEscaparHTML(
+        org.nombre_publico ||
+        org.nombre ||
+        "Organizador"
+    );
+
         return `
     <div
         class="card"
