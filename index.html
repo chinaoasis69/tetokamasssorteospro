@@ -33119,7 +33119,150 @@ async function guardarRedesSocialesOrganizadorV2() {
 
 
     await mostrarConfigAdmin();
-}	
+}
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   NAVEGACIÓN CONFIGURACIÓN DEL NEGOCIO
+   MPV2-F5B
+========================================================= */
+
+async function abrirModuloConfiguracionNegocioPerfil(
+    modulo
+) {
+
+    const acciones = {
+
+        divisas:
+            mostrarDivisasAdmin,
+
+        metodos_pago:
+            mostrarMetodosPagoAdmin,
+
+        puntos_mass:
+            mostrarMisPuntosMassAdmin,
+
+        convertidor_mass:
+            mostrarConvertidorMassAdmin
+    };
+
+
+    const accion =
+        acciones[
+            String(
+                modulo || ""
+            ).trim()
+        ];
+
+
+    if (
+        typeof accion !==
+        "function"
+    ) {
+
+        console.error(
+            "MÓDULO DE NEGOCIO NO DISPONIBLE:",
+            modulo
+        );
+
+        return;
+    }
+
+
+    await accion();
+
+
+    const contenedor =
+        document.getElementById(
+            "adminContenido"
+        );
+
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    const botonExistente =
+        document.getElementById(
+            "btnVolverConfiguracionNegocioPerfil"
+        );
+
+
+    if (botonExistente) {
+        return;
+    }
+
+
+    const barraVolver =
+        document.createElement(
+            "div"
+        );
+
+
+    barraVolver.id =
+        "btnVolverConfiguracionNegocioPerfil";
+
+
+    barraVolver.style.cssText = `
+        width:100%;
+        text-align:center;
+        margin:0 auto 18px auto;
+    `;
+
+
+    barraVolver.innerHTML = `
+        <button
+            type="button"
+            onclick="volverConfiguracionNegocioPerfil()"
+            style="
+                padding:11px 18px;
+                border:2px solid #39ff14;
+                border-radius:10px;
+                background:#111;
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            ← Volver a Configuración del Negocio
+        </button>
+    `;
+
+
+    contenedor.prepend(
+        barraVolver
+    );
+}
+
+
+window.volverConfiguracionNegocioPerfil =
+async function () {
+
+    await mostrarConfigAdmin();
+
+
+    setTimeout(
+        () => {
+
+            const destino =
+                document.getElementById(
+                    "configuracionNegocioPerfilBox"
+                );
+
+
+            if (destino) {
+
+                destino.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+        },
+        150
+    );
+};	
 
 async function mostrarConfigAdmin(){
 
@@ -33830,6 +33973,7 @@ ${[
 ].includes(adminRol) ? `
 
 <div
+   id="configuracionNegocioPerfilBox" 
     style="
         border:2px solid #39ff14;
         border-radius:16px;
@@ -33879,7 +34023,7 @@ ${[
 
         <button
             type="button"
-            onclick="mostrarDivisasAdmin()"
+            onclick="abrirModuloConfiguracionNegocioPerfil('divisas')"
             style="
                 min-height:72px;
                 padding:14px;
@@ -33903,7 +34047,7 @@ ${[
 
         <button
             type="button"
-            onclick="mostrarMetodosPagoAdmin()"
+            onclick="abrirModuloConfiguracionNegocioPerfil('metodos_pago')"
             style="
                 min-height:72px;
                 padding:14px;
@@ -33927,7 +34071,7 @@ ${[
 
         <button
             type="button"
-            onclick="mostrarMisPuntosMassAdmin()"
+            onclick="abrirModuloConfiguracionNegocioPerfil('puntos_mass')"
             style="
                 min-height:72px;
                 padding:14px;
@@ -33951,7 +34095,7 @@ ${[
 
         <button
             type="button"
-            onclick="mostrarConvertidorMassAdmin()"
+            onclick="abrirModuloConfiguracionNegocioPerfil('convertidor_mass')"
             style="
                 min-height:72px;
                 padding:14px;
