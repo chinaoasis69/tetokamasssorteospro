@@ -59258,6 +59258,58 @@ if (listaOrg) {
 
   await cargarPatrocinadoresPlataforma();
 
+  // =====================================================
+// MASS — ABRIR PERFIL PÚBLICO DESDE ENLACE COMPARTIDO
+// MPV2-F8C
+// =====================================================
+
+const parametrosPerfilCompartido =
+    new URLSearchParams(
+        window.location.search
+    );
+
+
+const organizadorCompartidoId =
+    String(
+        parametrosPerfilCompartido.get(
+            "organizador"
+        ) || ""
+    ).trim();
+
+
+const patronUuidPerfilCompartido =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+
+if (
+    organizadorCompartidoId &&
+    patronUuidPerfilCompartido.test(
+        organizadorCompartidoId
+    ) &&
+    mapaOrganizadores?.[
+        organizadorCompartidoId
+    ]
+) {
+
+    sessionStorage.removeItem(
+        "rifa_actual_id"
+    );
+
+
+    sessionStorage.setItem(
+        "vista_publica_mass",
+        "perfil_organizador"
+    );
+
+
+    await mostrarPerfilPublicoOrganizador(
+        organizadorCompartidoId
+    );
+
+
+    return;
+}
+
 // =====================================================
 // MASS - RESTAURAR DINÁMICA DESPUÉS DE REFRESH
 // =====================================================
@@ -62727,6 +62779,172 @@ async function (
 };
 
 /* =========================================================
+   MASS — COMPARTIR PERFIL PÚBLICO DEL ORGANIZADOR
+   MPV2-F8C
+========================================================= */
+
+function construirEnlacePerfilPublicoOrganizador(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return "";
+    }
+
+
+    const url =
+        new URL(
+            window.location.origin +
+            window.location.pathname
+        );
+
+
+    url.searchParams.set(
+        "organizador",
+        idLimpio
+    );
+
+
+    return url.toString();
+}
+
+
+window.compartirPerfilPublicoOrganizador =
+async function (
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const organizador =
+        mapaOrganizadores?.[
+            idLimpio
+        ];
+
+
+    if (
+        !idLimpio ||
+        !organizador
+    ) {
+
+        alert(
+            "❌ No fue posible identificar el Organizador."
+        );
+
+        return;
+    }
+
+
+    const nombre =
+        String(
+            organizador.nombre_publico ||
+            organizador.nombre ||
+            "Organizador MASS"
+        ).trim();
+
+
+    const enlace =
+        construirEnlacePerfilPublicoOrganizador(
+            idLimpio
+        );
+
+
+    if (!enlace) {
+        return;
+    }
+
+
+    const datosCompartir = {
+
+        title:
+            ${nombre} | TE-TO-KA MASS SORTEOS PRO,
+
+        text:
+            Conoce el perfil de ${nombre} en TE-TO-KA MASS SORTEOS PRO.,
+
+        url:
+            enlace
+    };
+
+
+    if (
+        typeof navigator.share ===
+        "function"
+    ) {
+
+        try {
+
+            await navigator.share(
+                datosCompartir
+            );
+
+            return;
+
+        } catch (error) {
+
+            if (
+                error?.name ===
+                "AbortError"
+            ) {
+                return;
+            }
+
+
+            console.warn(
+                "No fue posible usar el menú nativo de compartir:",
+                error
+            );
+        }
+    }
+
+
+    try {
+
+        if (
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText ===
+                "function"
+        ) {
+
+            await navigator.clipboard.writeText(
+                enlace
+            );
+
+
+            alert(
+                "🔗 Enlace del perfil copiado."
+            );
+
+
+            return;
+        }
+
+    } catch (errorClipboard) {
+
+        console.warn(
+            "No fue posible copiar automáticamente el enlace:",
+            errorClipboard
+        );
+    }
+
+
+    prompt(
+        "Copia este enlace del perfil:",
+        enlace
+    );
+};
+
+/* =========================================================
    MASS — PERFIL PÚBLICO PROFESIONAL DEL ORGANIZADOR
    MPV2-F7A
 ========================================================= */
@@ -62776,6 +62994,32 @@ async function mostrarPerfilPublicoOrganizador(
         "organizador_actual_id",
         idLimpio
     );
+
+    const urlPerfilPublico =
+    construirEnlacePerfilPublicoOrganizador(
+        idLimpio
+    );
+
+
+if (urlPerfilPublico) {
+
+    window.history.replaceState(
+        null,
+        "",
+        urlPerfilPublico
+    );
+}
+
+
+sessionStorage.setItem(
+    "vista_publica_mass",
+    "perfil_organizador"
+);
+
+
+sessionStorage.removeItem(
+    "rifa_actual_id"
+);
 
 
     aplicarTemaVisualOrganizadorPublico(
@@ -63252,6 +63496,31 @@ if (contenidoGeneralUsuario) {
         Cargando seguidores...
     </div>
 
+    <button
+    id="btnCompartirOrganizadorPerfil"
+    type="button"
+    onclick="
+        compartirPerfilPublicoOrganizador(
+            '${idLimpio}'
+        )
+    "
+    style="
+        padding:10px 18px;
+        border:2px solid
+            var(
+                --mass-org-accent,
+                #39ff14
+            );
+        border-radius:999px;
+        background:#111;
+        color:white;
+        font-weight:bold;
+        cursor:pointer;
+    "
+>
+    📤 Compartir
+</button>
+
 </div>
 
 
@@ -63578,9 +63847,24 @@ function () {
         "organizador_actual_id"
     );
 
-    localStorage.removeItem(
-        "organizador_publico_id"
+    const urlBaseMass =
+    new URL(
+        window.location.origin +
+        window.location.pathname
     );
+
+
+window.history.replaceState(
+    null,
+    "",
+    urlBaseMass.toString()
+);
+
+
+sessionStorage.setItem(
+    "vista_publica_mass",
+    "organizadores_activos"
+);
 
 
     restablecerTemaVisualOrganizadorPublico();
@@ -63630,6 +63914,19 @@ async function verSorteosDeOrganizador(orgId){
 
     localStorage.setItem("organizador_publico_id", orgId);
 	localStorage.setItem("organizador_actual_id", orgId);
+
+    const urlBaseMass =
+    new URL(
+        window.location.origin +
+        window.location.pathname
+    );
+
+
+window.history.replaceState(
+    null,
+    "",
+    urlBaseMass.toString()
+);
 
     const perfilPublicoBox =
     document.getElementById(
