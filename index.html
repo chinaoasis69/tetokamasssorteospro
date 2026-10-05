@@ -1054,20 +1054,6 @@ margin:0 auto 10px auto;
 
 </div>
 
-<!-- ===================================================== -->
-<!-- MASS — CONTACTO Y SOPORTE PÚBLICO DEL ORGANIZADOR -->
-<!-- MPV2-F3B1 -->
-<!-- ===================================================== -->
-
-<div
-  id="contactoSoporteOrganizadorRifaBox"
-  style="
-    display:none;
-    width:100%;
-    max-width:520px;
-    margin:12px auto 18px auto;
-  "
-></div>	
 
 <!-- ===================================================== -->
 <!-- MASS - BOTÓN CHAT CON EL ORGANIZADOR -->
@@ -1232,8 +1218,37 @@ Selecciona una rifa
   <button class="btn-dark" onclick="abrirRecargaWalletDesdeRifa();">💰 Recarga tu Wallet MASS</button>
   <button class="btn-dark" onclick="mostrarSoloDisponibles()">🟢 Solo disponibles</button>
   <button class="btn-dark" onclick="mostrarTodos()">👁️ Ver todos</button>
-  <button class="btn-dark" onclick="abrirReglasOficialesRifa(RIFA_ID, true)">⚖️ Ver Reglas Oficiales</button>
-  <br>
+
+<button
+  class="btn-dark"
+  onclick="abrirReglasOficialesRifa(RIFA_ID, true)"
+>
+  ⚖️ Ver Reglas Oficiales
+</button>
+
+<button
+  id="btnContactoSoporteRifa"
+  type="button"
+  class="btn-dark"
+  onclick="toggleContactoSoporteRifa()"
+  aria-expanded="false"
+  aria-controls="contactoSoporteOrganizadorRifaBox"
+  style="display:none;"
+>
+  🛟 Contacto y Soporte
+</button>
+
+<br>
+
+<div
+  id="contactoSoporteOrganizadorRifaBox"
+  style="
+    display:none;
+    width:100%;
+    max-width:620px;
+    margin:14px auto 18px auto;
+  "
+></div>	  
 
 <div id="selectorSuerte" style="display:none; margin:16px auto; max-width:420px; padding:18px; border:2px solid #39ff14; border-radius:18px; background:#111; box-shadow:0 0 18px rgba(57,255,20,.35);">
 
@@ -59685,7 +59700,8 @@ async function cargarCanalesSoportePublicosOrganizador(
 
 function crearContactoSoportePublicoOrganizador(
     organizadorId,
-    canales
+    canales,
+    modo = "completo"
 ) {
 
     const org =
@@ -59694,48 +59710,41 @@ function crearContactoSoportePublicoOrganizador(
         ] || {};
 
 
+    const modoCompacto =
+        String(modo || "") ===
+        "compacto";
+
+
     const configuracionTipos = {
 
         chat_mass: {
-            icono:
-                "💬",
-            titulo:
-                "Chat MASS"
+            icono: "💬",
+            titulo: "Chat MASS"
         },
 
         whatsapp_negocio: {
-            icono:
-                "📱",
-            titulo:
-                "WhatsApp del negocio"
+            icono: "📱",
+            titulo: "WhatsApp del negocio"
         },
 
         whatsapp_soporte: {
-            icono:
-                "🛟",
-            titulo:
-                "WhatsApp de soporte"
+            icono: "🛟",
+            titulo: "WhatsApp de soporte"
         },
 
         email_soporte: {
-            icono:
-                "✉️",
-            titulo:
-                "Email de soporte"
+            icono: "✉️",
+            titulo: "Email de soporte"
         },
 
         telefono_soporte: {
-            icono:
-                "☎️",
-            titulo:
-                "Teléfono de soporte"
+            icono: "☎️",
+            titulo: "Teléfono de soporte"
         },
 
         sitio_web_ayuda: {
-            icono:
-                "🌐",
-            titulo:
-                "Sitio web / ayuda"
+            icono: "🌐",
+            titulo: "Sitio web / ayuda"
         }
     };
 
@@ -59787,7 +59796,6 @@ function crearContactoSoportePublicoOrganizador(
                 tipo !== "chat_mass" &&
                 !valor
             ) {
-
                 return;
             }
 
@@ -59817,6 +59825,59 @@ function crearContactoSoportePublicoOrganizador(
                 massEscaparHTML(
                     valor
                 );
+
+
+            const textoBoton =
+                tipo === "chat_mass"
+                    ? "Abrir Chat MASS"
+
+                : (
+                    tipo ===
+                    "whatsapp_negocio" ||
+                    tipo ===
+                    "whatsapp_soporte"
+                )
+                    ? etiqueta
+
+                : tipo ===
+                  "email_soporte"
+                    ? "Enviar email"
+
+                : tipo ===
+                  "telefono_soporte"
+                    ? "Llamar"
+
+                : "Abrir sitio";
+
+
+            if (modoCompacto) {
+
+                tarjetas.push(`
+                    <button
+                        type="button"
+                        data-mass-soporte-tipo="${tipo}"
+                        data-mass-soporte-valor="${valorSeguro}"
+                        style="
+                            border:1px solid
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            background:#151515;
+                            color:white;
+                            padding:10px 14px;
+                            border-radius:10px;
+                            font-weight:bold;
+                            cursor:pointer;
+                        "
+                    >
+                        ${configuracion.icono}
+                        ${textoBoton}
+                    </button>
+                `);
+
+                return;
+            }
 
 
             tarjetas.push(`
@@ -59902,6 +59963,7 @@ function crearContactoSoportePublicoOrganizador(
                             padding:11px 16px;
                             border-radius:10px;
                             font-weight:bold;
+                            cursor:pointer;
                         "
                     >
                         ${
@@ -59937,7 +59999,6 @@ function crearContactoSoportePublicoOrganizador(
     if (
         tarjetas.length === 0
     ) {
-
         return "";
     }
 
@@ -59950,10 +60011,74 @@ function crearContactoSoportePublicoOrganizador(
         );
 
 
+    if (modoCompacto) {
+
+        return `
+            <div
+                class="mass-contacto-soporte-publico"
+                style="
+                    border:1px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    border-radius:14px;
+                    background:#101010;
+                    padding:14px;
+                    box-shadow:
+                        0 0 14px
+                        rgba(
+                            var(--mass-org-accent-rgb),
+                            .18
+                        );
+                "
+            >
+
+                <div
+                    style="
+                        color:
+                            var(
+                                --mass-org-accent,
+                                #39ff14
+                            );
+                        font-size:17px;
+                        font-weight:bold;
+                        margin-bottom:6px;
+                    "
+                >
+                    🛟 Contacto y Soporte
+                </div>
+
+                <div
+                    style="
+                        color:#aaa;
+                        font-size:13px;
+                        margin-bottom:10px;
+                    "
+                >
+                    Comunícate con
+                    <b>${nombreOrganizador}</b>.
+                </div>
+
+                <div
+                    style="
+                        display:flex;
+                        justify-content:center;
+                        flex-wrap:wrap;
+                        gap:8px;
+                    "
+                >
+                    ${tarjetas.join("")}
+                </div>
+
+            </div>
+        `;
+    }
+
+
     return `
         <div
-            <div
-    class="card mass-contacto-soporte-publico"
+            class="card mass-contacto-soporte-publico"
             style="
                 border:2px solid
                     var(
@@ -60028,6 +60153,45 @@ function crearContactoSoportePublicoOrganizador(
     `;
 }
 
+
+window.toggleContactoSoporteRifa = function () {
+
+    const box =
+        document.getElementById(
+            "contactoSoporteOrganizadorRifaBox"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnContactoSoporteRifa"
+        );
+
+
+    if (!box) {
+        return;
+    }
+
+
+    const abrir =
+        box.style.display !== "block";
+
+
+    box.style.display =
+        abrir
+            ? "block"
+            : "none";
+
+
+    if (boton) {
+
+        boton.setAttribute(
+            "aria-expanded",
+            abrir
+                ? "true"
+                : "false"
+        );
+    }
+};
 
 function inicializarContactoSoportePublicoOrganizador(
     contenedor,
@@ -67685,12 +67849,17 @@ aplicarTemaVisualOrganizadorPublico(
 /* =====================================================
    MASS — CONTACTO Y SOPORTE PÚBLICO
    DENTRO DE LA DINÁMICA
-   MPV2-F3B1
+   MPV2-F3B2
 ===================================================== */
 
 const contactoSoporteRifaBox =
     document.getElementById(
         "contactoSoporteOrganizadorRifaBox"
+    );
+
+const btnContactoSoporteRifa =
+    document.getElementById(
+        "btnContactoSoporteRifa"
     );
 
 
@@ -67705,7 +67874,8 @@ if (contactoSoporteRifaBox) {
     const contactoSoporteRifaHtml =
         crearContactoSoportePublicoOrganizador(
             rifa.organizador_id,
-            canalesSoporteRifa
+            canalesSoporteRifa,
+            "compacto"
         );
 
 
@@ -67714,9 +67884,21 @@ if (contactoSoporteRifaBox) {
 
 
     contactoSoporteRifaBox.style.display =
-        contactoSoporteRifaHtml
-            ? "block"
-            : "none";
+        "none";
+
+
+    if (btnContactoSoporteRifa) {
+
+        btnContactoSoporteRifa.style.display =
+            contactoSoporteRifaHtml
+                ? "inline-block"
+                : "none";
+
+        btnContactoSoporteRifa.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
 
 
     if (contactoSoporteRifaHtml) {
