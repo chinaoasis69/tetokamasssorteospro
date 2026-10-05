@@ -32123,22 +32123,152 @@ document.getElementById("adminContenido").innerHTML = `
     >
 
 
-    <label>
-        <b>🎨 Color principal</b>
-    </label>
+   <label>
+    <b>🎨 Color de tu marca</b>
+</label>
+
+<div style="
+    color:#888;
+    font-size:13px;
+    line-height:1.45;
+    margin:6px 0 12px 0;
+">
+    Este color se utilizará en tu perfil público
+    y en elementos visuales de tus dinámicas.
+</div>
+
+
+<div style="
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+">
 
     <input
         type="color"
         id="cfgColorPrincipal"
         value="#7CFF00"
+        aria-label="Seleccionar color de tu marca"
+        oninput="
+            const colorMarca =
+                this.value || '#7CFF00';
+
+            const codigoColor =
+                document.getElementById(
+                    'cfgColorMarcaCodigo'
+                );
+
+            const vistaPrevia =
+                document.getElementById(
+                    'cfgColorMarcaPreview'
+                );
+
+            const tituloPreview =
+                document.getElementById(
+                    'cfgColorMarcaPreviewTitulo'
+                );
+
+            const lineaPreview =
+                document.getElementById(
+                    'cfgColorMarcaPreviewLinea'
+                );
+
+            if (codigoColor) {
+                codigoColor.textContent =
+                    colorMarca.toUpperCase();
+            }
+
+            if (vistaPrevia) {
+                vistaPrevia.style.borderColor =
+                    colorMarca;
+            }
+
+            if (tituloPreview) {
+                tituloPreview.style.color =
+                    colorMarca;
+            }
+
+            if (lineaPreview) {
+                lineaPreview.style.background =
+                    colorMarca;
+            }
+        "
         style="
-            width:100%;
-            height:48px;
+            width:80px;
+            height:52px;
             padding:4px;
-            margin:8px 0 18px 0;
+            margin:0;
             cursor:pointer;
+            flex:0 0 auto;
         "
     >
+
+
+    <div
+        id="cfgColorMarcaCodigo"
+        style="
+            flex:1;
+            padding:13px;
+            border:1px solid #555;
+            border-radius:10px;
+            background:#151515;
+            color:#fff;
+            text-align:center;
+            font-family:monospace;
+            font-weight:bold;
+        "
+    >
+        #7CFF00
+    </div>
+
+</div>
+
+
+<div
+    id="cfgColorMarcaPreview"
+    style="
+        border:2px solid #7CFF00;
+        border-radius:14px;
+        padding:15px;
+        margin-bottom:20px;
+        background:#101010;
+        text-align:center;
+    "
+>
+
+    <div
+        id="cfgColorMarcaPreviewTitulo"
+        style="
+            color:#7CFF00;
+            font-size:18px;
+            font-weight:bold;
+            margin-bottom:8px;
+        "
+    >
+        ✨ Vista previa de tu marca
+    </div>
+
+    <div style="
+        color:#bbb;
+        font-size:13px;
+        line-height:1.4;
+    ">
+        Así podrán verse algunos detalles
+        del perfil público de tu negocio.
+    </div>
+
+    <div
+        id="cfgColorMarcaPreviewLinea"
+        style="
+            height:5px;
+            border-radius:999px;
+            background:#7CFF00;
+            margin-top:14px;
+        "
+    ></div>
+
+</div>
 
 
     <label>
@@ -32286,6 +32416,50 @@ document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
 document.getElementById("cfgLogoUrl").value = cfg.logo_url || "";
 document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
 document.getElementById("cfgColorPrincipal").value = cfg.color_principal || "#7CFF00";
+
+const colorMarcaInicial =
+    cfg.color_principal ||
+    "#7CFF00";
+
+const codigoColorMarca =
+    document.getElementById(
+        "cfgColorMarcaCodigo"
+    );
+
+const previewColorMarca =
+    document.getElementById(
+        "cfgColorMarcaPreview"
+    );
+
+const tituloColorMarca =
+    document.getElementById(
+        "cfgColorMarcaPreviewTitulo"
+    );
+
+const lineaColorMarca =
+    document.getElementById(
+        "cfgColorMarcaPreviewLinea"
+    );
+
+if (codigoColorMarca) {
+    codigoColorMarca.textContent =
+        colorMarcaInicial.toUpperCase();
+}
+
+if (previewColorMarca) {
+    previewColorMarca.style.borderColor =
+        colorMarcaInicial;
+}
+
+if (tituloColorMarca) {
+    tituloColorMarca.style.color =
+        colorMarcaInicial;
+}
+
+if (lineaColorMarca) {
+    lineaColorMarca.style.background =
+        colorMarcaInicial;
+}	
 
 	await cargarEstadoCierreOrganizadorPerfil();
 
