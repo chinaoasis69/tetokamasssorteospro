@@ -59593,6 +59593,593 @@ function restablecerTemaVisualOrganizadorPublico() {
                 );
             }
         );
+}
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   CONTACTO Y SOPORTE PÚBLICO
+   MPV2-F3B
+========================================================= */
+
+async function cargarCanalesSoportePublicosOrganizador(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return [];
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_canales_soporte"
+        )
+        .select(`
+            tipo,
+            valor,
+            etiqueta_publica,
+            horario_atencion,
+            texto_atencion,
+            orden
+        `)
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .eq(
+            "activo",
+            true
+        )
+        .eq(
+            "mostrar_publico",
+            true
+        )
+        .order(
+            "orden",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO CONTACTO Y SOPORTE PÚBLICO:",
+            error
+        );
+
+        return [];
+    }
+
+
+    return Array.isArray(data)
+        ? data
+        : [];
+}
+
+
+function crearContactoSoportePublicoOrganizador(
+    organizadorId,
+    canales
+) {
+
+    const org =
+        mapaOrganizadores?.[
+            organizadorId
+        ] || {};
+
+
+    const configuracionTipos = {
+
+        chat_mass: {
+            icono:
+                "💬",
+            titulo:
+                "Chat MASS"
+        },
+
+        whatsapp_negocio: {
+            icono:
+                "📱",
+            titulo:
+                "WhatsApp del negocio"
+        },
+
+        whatsapp_soporte: {
+            icono:
+                "🛟",
+            titulo:
+                "WhatsApp de soporte"
+        },
+
+        email_soporte: {
+            icono:
+                "✉️",
+            titulo:
+                "Email de soporte"
+        },
+
+        telefono_soporte: {
+            icono:
+                "☎️",
+            titulo:
+                "Teléfono de soporte"
+        },
+
+        sitio_web_ayuda: {
+            icono:
+                "🌐",
+            titulo:
+                "Sitio web / ayuda"
+        }
+    };
+
+
+    const tarjetas = [];
+
+
+    (canales || []).forEach(
+        canal => {
+
+            const tipo =
+                String(
+                    canal?.tipo || ""
+                ).trim();
+
+
+            const configuracion =
+                configuracionTipos[
+                    tipo
+                ];
+
+
+            if (!configuracion) {
+                return;
+            }
+
+
+            let valor =
+                String(
+                    canal?.valor || ""
+                ).trim();
+
+
+            if (
+                tipo ===
+                "whatsapp_negocio"
+            ) {
+
+                valor =
+                    String(
+                        org.whatsapp_publico ||
+                        org.whatsapp ||
+                        ""
+                    ).trim();
+            }
+
+
+            if (
+                tipo !== "chat_mass" &&
+                !valor
+            ) {
+
+                return;
+            }
+
+
+            const etiqueta =
+                massEscaparHTML(
+                    canal?.etiqueta_publica ||
+                    configuracion.titulo
+                );
+
+
+            const horario =
+                massEscaparHTML(
+                    canal?.horario_atencion ||
+                    ""
+                );
+
+
+            const texto =
+                massEscaparHTML(
+                    canal?.texto_atencion ||
+                    ""
+                );
+
+
+            const valorSeguro =
+                massEscaparHTML(
+                    valor
+                );
+
+
+            tarjetas.push(`
+                <div
+                    style="
+                        padding:15px;
+                        border:1px solid
+                            rgba(
+                                var(--mass-org-accent-rgb),
+                                .45
+                            );
+                        border-radius:14px;
+                        background:#111;
+                        text-align:center;
+                    "
+                >
+
+                    <div
+                        style="
+                            color:
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            font-size:17px;
+                            font-weight:bold;
+                            margin-bottom:8px;
+                        "
+                    >
+                        ${configuracion.icono}
+                        ${etiqueta}
+                    </div>
+
+
+                    ${
+                        texto
+                            ? `
+                                <div
+                                    style="
+                                        color:#ddd;
+                                        font-size:14px;
+                                        line-height:1.45;
+                                        margin-bottom:8px;
+                                    "
+                                >
+                                    ${texto}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        horario
+                            ? `
+                                <div
+                                    style="
+                                        color:#999;
+                                        font-size:12px;
+                                        line-height:1.4;
+                                        margin-bottom:12px;
+                                    "
+                                >
+                                    🕒 ${horario}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    <button
+                        type="button"
+                        data-mass-soporte-tipo="${tipo}"
+                        data-mass-soporte-valor="${valorSeguro}"
+                        style="
+                            border:1px solid
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            background:#222;
+                            color:white;
+                            padding:11px 16px;
+                            border-radius:10px;
+                            font-weight:bold;
+                        "
+                    >
+                        ${
+                            tipo === "chat_mass"
+                                ? "💬 Abrir Chat MASS"
+
+                            : (
+                                tipo ===
+                                "whatsapp_negocio" ||
+                                tipo ===
+                                "whatsapp_soporte"
+                            )
+                                ? "📱 Abrir WhatsApp"
+
+                            : tipo ===
+                              "email_soporte"
+                                ? "✉️ Enviar email"
+
+                            : tipo ===
+                              "telefono_soporte"
+                                ? "☎️ Llamar"
+
+                            : "🌐 Abrir sitio"
+                        }
+                    </button>
+
+                </div>
+            `);
+        }
+    );
+
+
+    if (
+        tarjetas.length === 0
+    ) {
+
+        return "";
+    }
+
+
+    const nombreOrganizador =
+        massEscaparHTML(
+            org.nombre_publico ||
+            org.nombre ||
+            "Organizador"
+        );
+
+
+    return `
+        <div
+            id="contactoSoporteOrganizadorPublico"
+            class="card"
+            style="
+                border:2px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+                box-shadow:
+                    0 0 18px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .25
+                    );
+                margin-bottom:24px;
+            "
+        >
+
+            <h2
+                style="
+                    color:
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    margin-bottom:8px;
+                "
+            >
+                🛟 Contacto y Soporte
+            </h2>
+
+
+            <p
+                style="
+                    color:#bbb;
+                    line-height:1.5;
+                    margin-top:0;
+                    margin-bottom:18px;
+                "
+            >
+                Comunícate directamente con
+                <b>${nombreOrganizador}</b>.
+            </p>
+
+
+            <div
+                style="
+                    display:grid;
+                    grid-template-columns:
+                        repeat(
+                            auto-fit,
+                            minmax(210px, 1fr)
+                        );
+                    gap:12px;
+                "
+            >
+                ${tarjetas.join("")}
+            </div>
+
+
+            <div
+                style="
+                    margin-top:16px;
+                    color:#888;
+                    font-size:12px;
+                    line-height:1.4;
+                "
+            >
+                Estos canales pertenecen al Organizador.
+                El soporte de TE-TO-KA es independiente.
+            </div>
+
+        </div>
+    `;
+}
+
+
+function inicializarContactoSoportePublicoOrganizador(
+    contenedor,
+    organizadorId
+) {
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    contenedor
+        .querySelectorAll(
+            "[data-mass-soporte-tipo]"
+        )
+        .forEach(
+            boton => {
+
+                boton.addEventListener(
+                    "click",
+                    async () => {
+
+                        const tipo =
+                            String(
+                                boton.dataset
+                                    .massSoporteTipo ||
+                                ""
+                            ).trim();
+
+
+                        const valor =
+                            String(
+                                boton.dataset
+                                    .massSoporteValor ||
+                                ""
+                            ).trim();
+
+
+                        if (
+                            tipo ===
+                            "chat_mass"
+                        ) {
+
+                            CHAT_ORGANIZADOR_USUARIO_ID =
+                                organizadorId;
+
+
+                            if (
+                                typeof window
+                                    .actualizarContadorChatUsuario ===
+                                "function"
+                            ) {
+
+                                await window
+                                    .actualizarContadorChatUsuario();
+                            }
+
+
+                            if (
+                                typeof window
+                                    .abrirChatConOrganizador ===
+                                "function"
+                            ) {
+
+                                await window
+                                    .abrirChatConOrganizador();
+                            }
+
+                            return;
+                        }
+
+
+                        if (
+                            tipo ===
+                                "whatsapp_negocio" ||
+                            tipo ===
+                                "whatsapp_soporte"
+                        ) {
+
+                            const numero =
+                                valor.replace(
+                                    /\D/g,
+                                    ""
+                                );
+
+
+                            if (!numero) {
+                                return;
+                            }
+
+
+                            window.open(
+                                `https://wa.me/${numero}`,
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+
+                            return;
+                        }
+
+
+                        if (
+                            tipo ===
+                            "email_soporte"
+                        ) {
+
+                            if (!valor) {
+                                return;
+                            }
+
+
+                            window.location.href =
+                                `mailto:${valor}`;
+
+                            return;
+                        }
+
+
+                        if (
+                            tipo ===
+                            "telefono_soporte"
+                        ) {
+
+                            const telefono =
+                                valor.replace(
+                                    /[^\d+]/g,
+                                    ""
+                                );
+
+
+                            if (!telefono) {
+                                return;
+                            }
+
+
+                            window.location.href =
+                                `tel:${telefono}`;
+
+                            return;
+                        }
+
+
+                        if (
+                            tipo ===
+                            "sitio_web_ayuda"
+                        ) {
+
+                            if (
+                                !/^https?:\/\//i.test(
+                                    valor
+                                )
+                            ) {
+
+                                return;
+                            }
+
+
+                            window.open(
+                                valor,
+                                "_blank",
+                                "noopener,noreferrer"
+                            );
+                        }
+                    }
+                );
+            }
+        );
 }	
 
 async function verSorteosDeOrganizador(orgId){
@@ -59615,6 +60202,18 @@ aplicarTemaVisualOrganizadorPublico(
 	const rifasOrg = (rifas || []).filter(r =>
   String(r.organizador_id) === String(orgId)
 );
+
+const canalesSoportePublicos =
+    await cargarCanalesSoportePublicosOrganizador(
+        orgId
+    );
+
+
+const contactoSoporteHtml =
+    crearContactoSoportePublicoOrganizador(
+        orgId,
+        canalesSoportePublicos
+    );	
 
 	if (rifasOrg.length === 0) {
 
@@ -59661,7 +60260,10 @@ console.log(
   )
 );
 
-    box.innerHTML = `
+box.innerHTML = `
+
+        ${contactoSoporteHtml}
+
         <h2>🎯 Sorteos de este organizador</h2>
 
         ${
@@ -59681,6 +60283,11 @@ console.log(
             : "<p>No hay sorteos activos de este organizador.</p>"
         }
     `;
+
+inicializarContactoSoportePublicoOrganizador(
+    box,
+    orgId
+);	
 
 await cargarDinamicasConResultados();	
 
