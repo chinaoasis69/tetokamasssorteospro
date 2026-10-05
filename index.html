@@ -57599,7 +57599,7 @@ function completarTemaVisualOrganizadorPublico() {
                 !important;
         }
 
-	        /* =============================================
+	    /* =============================================
            AVANCE — BORDE DEL ORGANIZADOR
         ============================================= */
 
@@ -57655,11 +57655,30 @@ function completarTemaVisualOrganizadorPublico() {
         */
 
 
-        /* =============================================
+          /* =============================================
            WALLET MASS
+           Mantiene el pulso de atención usando
+           el color del Organizador actual
         ============================================= */
 
+        #walletHeader.wallet-header {
+
+            animation:
+                massOrgWalletPulse
+                3s
+                infinite
+                !important;
+        }
+
+
         #walletHeader .walletTitulo {
+
+            animation:
+                massOrgWalletTituloGlow
+                2.4s
+                ease-in-out
+                infinite
+                !important;
 
             text-shadow:
                 0 0 8px
@@ -57683,6 +57702,95 @@ function completarTemaVisualOrganizadorPublico() {
                 var(--mass-org-accent)
                 !important;
         }
+
+
+        @keyframes massOrgWalletPulse {
+
+            0% {
+
+                box-shadow:
+                    0 0 0
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        0
+                    );
+            }
+
+            50% {
+
+                box-shadow:
+                    0 0 10px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .35
+                    ),
+
+                    0 0 22px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .18
+                    );
+            }
+
+            100% {
+
+                box-shadow:
+                    0 0 0
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        0
+                    );
+            }
+        }
+
+
+        @keyframes massOrgWalletTituloGlow {
+
+            0% {
+
+                opacity:
+                    .72;
+
+                text-shadow:
+                    0 0 4px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .20
+                    );
+            }
+
+            50% {
+
+                opacity:
+                    1;
+
+                text-shadow:
+                    0 0 10px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .95
+                    ),
+
+                    0 0 25px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .55
+                    );
+            }
+
+            100% {
+
+                opacity:
+                    .72;
+
+                text-shadow:
+                    0 0 4px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .20
+                    );
+            }
+        }     
 
 
         /* =============================================
