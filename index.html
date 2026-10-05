@@ -32452,6 +32452,651 @@ function aplicarCanalSoporteFormularioAdmin(
                     ordenDefault || 0
                 );
     }
+}
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   REDES SOCIALES ADMIN
+   MPV2-F4A
+========================================================= */
+
+const MASS_REDES_SOCIALES_ADMIN = [
+    {
+        tipo: "facebook",
+        prefijo: "Facebook",
+        icono: "📘",
+        titulo: "Facebook",
+        orden: 10
+    },
+    {
+        tipo: "instagram",
+        prefijo: "Instagram",
+        icono: "📸",
+        titulo: "Instagram",
+        orden: 20
+    },
+    {
+        tipo: "tiktok",
+        prefijo: "Tiktok",
+        icono: "🎵",
+        titulo: "TikTok",
+        orden: 30
+    },
+    {
+        tipo: "youtube",
+        prefijo: "Youtube",
+        icono: "▶️",
+        titulo: "YouTube",
+        orden: 40
+    },
+    {
+        tipo: "x",
+        prefijo: "X",
+        icono: "𝕏",
+        titulo: "X",
+        orden: 50
+    },
+    {
+        tipo: "linkedin",
+        prefijo: "Linkedin",
+        icono: "💼",
+        titulo: "LinkedIn",
+        orden: 60
+    },
+    {
+        tipo: "sitio_web",
+        prefijo: "SitioWeb",
+        icono: "🌐",
+        titulo: "Sitio web",
+        orden: 70
+    }
+];
+
+
+async function cargarRedesSocialesOrganizadorAdmin(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const redes = {};
+
+
+    MASS_REDES_SOCIALES_ADMIN.forEach(
+        definicion => {
+
+            redes[
+                definicion.tipo
+            ] = {
+                id: null,
+                organizador_id:
+                    idLimpio || null,
+                tipo:
+                    definicion.tipo,
+                url: "",
+                activo: false,
+                mostrar_publico: false,
+                orden:
+                    definicion.orden
+            };
+        }
+    );
+
+
+    if (!idLimpio) {
+        return redes;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_redes_sociales"
+        )
+        .select(`
+            id,
+            organizador_id,
+            tipo,
+            url,
+            activo,
+            mostrar_publico,
+            orden
+        `)
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .order(
+            "orden",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO REDES SOCIALES:",
+            error
+        );
+
+        return redes;
+    }
+
+
+    (data || []).forEach(
+        red => {
+
+            if (
+                red?.tipo &&
+                redes[red.tipo]
+            ) {
+
+                redes[red.tipo] = {
+                    ...redes[red.tipo],
+                    ...red,
+                    url:
+                        red.url || "",
+                    activo:
+                        red.activo === true,
+                    mostrar_publico:
+                        red.mostrar_publico === true,
+                    orden:
+                        Number(
+                            red.orden || 0
+                        )
+                };
+            }
+        }
+    );
+
+
+    return redes;
+}
+
+
+function crearTarjetaRedSocialAdmin(
+    definicion
+) {
+
+    return `
+        <details
+            style="
+                border:1px solid #444;
+                border-radius:12px;
+                padding:12px;
+                margin:12px 0;
+                background:#111;
+            "
+        >
+
+            <summary
+                style="
+                    cursor:pointer;
+                    font-weight:bold;
+                    font-size:16px;
+                    color:white;
+                "
+            >
+                ${definicion.icono}
+                ${definicion.titulo}
+            </summary>
+
+
+            <div
+                style="
+                    display:flex;
+                    gap:18px;
+                    flex-wrap:wrap;
+                    margin:16px 0;
+                "
+            >
+
+                <label
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:6px;
+                    "
+                >
+                    <input
+                        id="cfgRed${definicion.prefijo}Activo"
+                        type="checkbox"
+                        style="
+                            width:auto;
+                            margin:0;
+                        "
+                    >
+                    Red activa
+                </label>
+
+
+                <label
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:6px;
+                    "
+                >
+                    <input
+                        id="cfgRed${definicion.prefijo}Publico"
+                        type="checkbox"
+                        style="
+                            width:auto;
+                            margin:0;
+                        "
+                    >
+                    Mostrar públicamente
+                </label>
+
+            </div>
+
+
+            <label>
+                <b>🔗 URL oficial</b>
+            </label>
+
+            <input
+                id="cfgRed${definicion.prefijo}Url"
+                type="url"
+                placeholder="https://..."
+                autocomplete="off"
+                style="
+                    width:100%;
+                    margin:8px 0 16px 0;
+                "
+            >
+
+
+            <label>
+                <b>↕️ Orden / prioridad</b>
+            </label>
+
+            <input
+                id="cfgRed${definicion.prefijo}Orden"
+                type="number"
+                min="0"
+                max="999"
+                step="1"
+                style="
+                    width:140px;
+                    display:block;
+                    margin:8px 0 6px 0;
+                "
+            >
+
+            <div
+                style="
+                    color:#888;
+                    font-size:12px;
+                "
+            >
+                Los números menores aparecen primero.
+            </div>
+
+        </details>
+    `;
+}
+
+
+function crearRedesSocialesAdminHtml() {
+
+    return MASS_REDES_SOCIALES_ADMIN
+        .map(
+            definicion =>
+                crearTarjetaRedSocialAdmin(
+                    definicion
+                )
+        )
+        .join("");
+}
+
+
+function aplicarRedesSocialesFormularioAdmin(
+    redes
+) {
+
+    MASS_REDES_SOCIALES_ADMIN.forEach(
+        definicion => {
+
+            const red =
+                redes?.[
+                    definicion.tipo
+                ] || {};
+
+
+            const activo =
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Activo`
+                );
+
+
+            const publico =
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Publico`
+                );
+
+
+            const url =
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Url`
+                );
+
+
+            const orden =
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Orden`
+                );
+
+
+            if (activo) {
+                activo.checked =
+                    red.activo === true;
+            }
+
+
+            if (publico) {
+                publico.checked =
+                    red.mostrar_publico ===
+                    true;
+            }
+
+
+            if (url) {
+                url.value =
+                    red.url || "";
+            }
+
+
+            if (orden) {
+                orden.value =
+                    red.id
+                        ? Number(
+                            red.orden || 0
+                        )
+                        : definicion.orden;
+            }
+        }
+    );
+}
+
+
+async function guardarRedesSocialesOrganizadorV2() {
+
+    const adminActual =
+        await obtenerAdminActual();
+
+
+    if (!adminActual) {
+
+        alert(
+            "❌ No hay una sesión administrativa válida."
+        );
+
+        return;
+    }
+
+
+    let organizadorId = null;
+
+
+    if (
+        adminActual.rol ===
+        "super_admin"
+    ) {
+
+        organizadorId =
+            localStorage.getItem(
+                "admin_organizador_id"
+            ) ||
+            localStorage.getItem(
+                "organizador_admin_id"
+            ) ||
+            adminActual.organizador_id;
+
+    } else {
+
+        organizadorId =
+            adminActual.organizador_id;
+    }
+
+
+    organizadorId =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!organizadorId) {
+
+        alert(
+            "❌ No se encontró el Organizador autorizado."
+        );
+
+        return;
+    }
+
+
+    const actuales =
+        await cargarRedesSocialesOrganizadorAdmin(
+            organizadorId
+        );
+
+
+    for (
+        const definicion
+        of MASS_REDES_SOCIALES_ADMIN
+    ) {
+
+        const actual =
+            actuales[
+                definicion.tipo
+            ] || {};
+
+
+        const activo =
+            document.getElementById(
+                `cfgRed${definicion.prefijo}Activo`
+            )?.checked === true;
+
+
+        const mostrarPublico =
+            document.getElementById(
+                `cfgRed${definicion.prefijo}Publico`
+            )?.checked === true;
+
+
+        const url =
+            String(
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Url`
+                )?.value || ""
+            ).trim();
+
+
+        const ordenTexto =
+            String(
+                document.getElementById(
+                    `cfgRed${definicion.prefijo}Orden`
+                )?.value || ""
+            ).trim();
+
+
+        const orden =
+            ordenTexto === ""
+                ? definicion.orden
+                : Number(
+                    ordenTexto
+                );
+
+
+        const tieneConfiguracion =
+            Boolean(
+                actual.id ||
+                activo ||
+                mostrarPublico ||
+                url
+            );
+
+
+        if (!tieneConfiguracion) {
+            continue;
+        }
+
+
+        if (
+            !Number.isInteger(
+                orden
+            ) ||
+            orden < 0 ||
+            orden > 999
+        ) {
+
+            alert(
+                `❌ El orden de ${definicion.titulo} debe estar entre 0 y 999.`
+            );
+
+            return;
+        }
+
+
+        if (
+            mostrarPublico &&
+            !activo
+        ) {
+
+            alert(
+                `❌ Para mostrar ${definicion.titulo} públicamente primero debes marcarla como activa.`
+            );
+
+            return;
+        }
+
+
+        if (!url) {
+
+            alert(
+                `❌ Completa la URL de ${definicion.titulo}.`
+            );
+
+            return;
+        }
+
+
+        if (
+            url.length > 1000 ||
+            !/^https?:\/\//i.test(
+                url
+            )
+        ) {
+
+            alert(
+                `❌ La URL de ${definicion.titulo} debe comenzar con http:// o https://.`
+            );
+
+            return;
+        }
+
+
+        const datosGuardar = {
+
+            organizador_id:
+                organizadorId,
+
+            tipo:
+                definicion.tipo,
+
+            url:
+                url,
+
+            activo:
+                activo,
+
+            mostrar_publico:
+                mostrarPublico,
+
+            orden:
+                orden
+        };
+
+
+        let errorGuardado = null;
+
+
+        if (actual.id) {
+
+            const {
+                error
+            } = await supabaseClient
+                .from(
+                    "organizador_redes_sociales"
+                )
+                .update(
+                    datosGuardar
+                )
+                .eq(
+                    "id",
+                    actual.id
+                )
+                .eq(
+                    "organizador_id",
+                    organizadorId
+                );
+
+            errorGuardado =
+                error;
+
+        } else {
+
+            const {
+                error
+            } = await supabaseClient
+                .from(
+                    "organizador_redes_sociales"
+                )
+                .insert(
+                    datosGuardar
+                );
+
+            errorGuardado =
+                error;
+        }
+
+
+        if (errorGuardado) {
+
+            console.error(
+                "ERROR GUARDANDO RED SOCIAL:",
+                definicion.tipo,
+                errorGuardado
+            );
+
+            alert(
+                "❌ No fue posible guardar Redes Sociales.\n\n" +
+                (
+                    errorGuardado.message ||
+                    "Error desconocido."
+                )
+            );
+
+            return;
+        }
+    }
+
+
+    alert(
+        "✅ Redes Sociales guardadas correctamente."
+    );
+
+
+    await mostrarConfigAdmin();
 }	
 
 async function mostrarConfigAdmin(){
@@ -32493,6 +33138,11 @@ const perfilPublico =
 
 const canalesSoporte =
     await cargarCanalesSoporteOrganizadorAdmin(
+        organizadorIdPerfil
+    );
+
+const redesSociales =
+    await cargarRedesSocialesOrganizadorAdmin(
         organizadorIdPerfil
     );	
 
@@ -33090,6 +33740,60 @@ document.getElementById("adminContenido").innerHTML = `
         al soporte ofrecido por tu negocio.
     </div>
 
+</div>
+
+<!-- =====================================================
+     MASS — MI PERFIL V2
+     REDES SOCIALES
+     MPV2-F4A
+====================================================== -->
+
+<div style="
+    border:2px solid #39ff14;
+    border-radius:16px;
+    padding:18px;
+    margin-top:22px;
+    margin-bottom:22px;
+    background:#0b0b0b;
+    text-align:left;
+">
+
+    <h3 style="
+        color:#39ff14;
+        margin-top:0;
+        text-align:center;
+    ">
+        📣 Redes Sociales
+    </h3>
+
+
+    <p style="
+        color:#aaa;
+        text-align:center;
+        line-height:1.5;
+        margin-bottom:20px;
+    ">
+        Agrega los enlaces oficiales de tu negocio
+        y decide cuáles deseas mostrar públicamente.
+    </p>
+
+
+    ${crearRedesSocialesAdminHtml()}
+
+
+    <button
+        type="button"
+        onclick="guardarRedesSocialesOrganizadorV2()"
+        style="
+            width:100%;
+            padding:14px;
+            margin-top:18px;
+            font-size:16px;
+        "
+    >
+        💾 Guardar Redes Sociales
+    </button>
+
 </div>	
 
 <br> 
@@ -33284,6 +33988,10 @@ aplicarCanalSoporteFormularioAdmin(
     "SitioWebAyuda",
     canalesSoporte.sitio_web_ayuda,
     60
+);
+
+aplicarRedesSocialesFormularioAdmin(
+    redesSociales
 );	
 
 	await cargarEstadoCierreOrganizadorPerfil();
