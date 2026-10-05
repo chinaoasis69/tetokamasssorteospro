@@ -33816,9 +33816,188 @@ document.getElementById("adminContenido").innerHTML = `
         💾 Guardar Redes Sociales
     </button>
 
-</div>	
+</div>
 
-<br> 
+<!-- =====================================================
+     MASS — MI PERFIL V2
+     CONFIGURACIÓN DEL NEGOCIO
+     MPV2-F5A
+====================================================== -->
+
+${[
+    "organizador",
+    "super_admin"
+].includes(adminRol) ? `
+
+<div
+    style="
+        border:2px solid #39ff14;
+        border-radius:16px;
+        padding:18px;
+        margin-top:22px;
+        margin-bottom:22px;
+        background:#0b0b0b;
+        text-align:left;
+    "
+>
+
+    <h3
+        style="
+            color:#39ff14;
+            margin-top:0;
+            text-align:center;
+        "
+    >
+        💼 Configuración del Negocio
+    </h3>
+
+
+    <p
+        style="
+            color:#aaa;
+            text-align:center;
+            line-height:1.5;
+            margin-bottom:20px;
+        "
+    >
+        Administra las principales configuraciones
+        operativas de tu negocio desde un solo lugar.
+    </p>
+
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px, 1fr)
+                );
+            gap:12px;
+        "
+    >
+
+        <button
+            type="button"
+            onclick="mostrarDivisasAdmin()"
+            style="
+                min-height:72px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            💱 Divisas
+            <br>
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Moneda MASS principal
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            onclick="mostrarMetodosPagoAdmin()"
+            style="
+                min-height:72px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            💳 Métodos de pago
+            <br>
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Formas de pago por país
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            onclick="mostrarMisPuntosMassAdmin()"
+            style="
+                min-height:72px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            🏪 Puntos MASS
+            <br>
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Administra tus puntos autorizados
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            onclick="mostrarConvertidorMassAdmin()"
+            style="
+                min-height:72px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            🌐 Convertidor MASS
+            <br>
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Activar o desactivar
+            </span>
+        </button>
+
+    </div>
+
+
+    <div
+        style="
+            margin-top:16px;
+            padding:11px;
+            border:1px solid #333;
+            border-radius:10px;
+            background:#151515;
+            color:#888;
+            font-size:12px;
+            line-height:1.45;
+            text-align:center;
+        "
+    >
+        Estos accesos utilizan los módulos
+        administrativos existentes del Organizador.
+    </div>
+
+</div>
+
+` : ""}
+
+
+<br>
 
 ${adminRol === "organizador" ? `
 
