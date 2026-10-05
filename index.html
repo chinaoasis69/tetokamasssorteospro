@@ -31882,6 +31882,546 @@ async function cargarPerfilPublicoOrganizadorAdmin(
         horario_comercial: "",
         activo: true
     };
+}
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   CONTACTO Y SOPORTE
+   MPV2-F3A
+========================================================= */
+
+async function cargarCanalesSoporteOrganizadorAdmin(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const tiposPermitidos = [
+        "chat_mass",
+        "whatsapp_negocio",
+        "whatsapp_soporte",
+        "email_soporte",
+        "telefono_soporte",
+        "sitio_web_ayuda"
+    ];
+
+
+    const canales = {};
+
+
+    tiposPermitidos.forEach(
+        tipo => {
+
+            canales[tipo] = {
+                id: null,
+                organizador_id: idLimpio || null,
+                tipo: tipo,
+                valor: "",
+                etiqueta_publica: "",
+                horario_atencion: "",
+                texto_atencion: "",
+                activo: false,
+                mostrar_publico: false,
+                orden: 0
+            };
+        }
+    );
+
+
+    if (!idLimpio) {
+        return canales;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_canales_soporte"
+        )
+        .select(`
+            id,
+            organizador_id,
+            tipo,
+            valor,
+            etiqueta_publica,
+            horario_atencion,
+            texto_atencion,
+            activo,
+            mostrar_publico,
+            orden
+        `)
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .order(
+            "orden",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO CANALES DE SOPORTE:",
+            error
+        );
+
+        return canales;
+    }
+
+
+    (data || []).forEach(
+        canal => {
+
+            if (
+                canal?.tipo &&
+                canales[canal.tipo]
+            ) {
+
+                canales[canal.tipo] = {
+                    ...canales[canal.tipo],
+                    ...canal,
+                    valor:
+                        canal.valor || "",
+                    etiqueta_publica:
+                        canal.etiqueta_publica || "",
+                    horario_atencion:
+                        canal.horario_atencion || "",
+                    texto_atencion:
+                        canal.texto_atencion || "",
+                    activo:
+                        canal.activo === true,
+                    mostrar_publico:
+                        canal.mostrar_publico === true,
+                    orden:
+                        Number(
+                            canal.orden || 0
+                        )
+                };
+            }
+        }
+    );
+
+
+    return canales;
+}
+
+
+function crearTarjetaCanalSoporteAdmin(
+    configuracion
+) {
+
+    const cfg =
+        configuracion || {};
+
+
+    const prefijo =
+        String(
+            cfg.prefijo || ""
+        );
+
+
+    const icono =
+        String(
+            cfg.icono || "📞"
+        );
+
+
+    const titulo =
+        String(
+            cfg.titulo || "Canal"
+        );
+
+
+    const descripcion =
+        String(
+            cfg.descripcion || ""
+        );
+
+
+    const modoValor =
+        String(
+            cfg.modoValor || "editable"
+        );
+
+
+    const etiquetaValor =
+        String(
+            cfg.etiquetaValor ||
+            "Dato de contacto"
+        );
+
+
+    const placeholderValor =
+        String(
+            cfg.placeholderValor || ""
+        );
+
+
+    let campoValor = "";
+
+
+    if (modoValor === "ninguno") {
+
+        campoValor = `
+            <div style="
+                padding:12px;
+                margin:12px 0;
+                border:1px solid #333;
+                border-radius:10px;
+                background:#151515;
+                color:#bbb;
+                line-height:1.45;
+            ">
+                Este canal utiliza una función interna
+                de MASS y no requiere un dato adicional.
+            </div>
+        `;
+
+    } else {
+
+        const soloLectura =
+            modoValor === "solo_lectura";
+
+
+        campoValor = `
+            <label>
+                <b>${etiquetaValor}</b>
+            </label>
+
+            <input
+                id="cfgSoporte${prefijo}Valor"
+                type="text"
+                placeholder="${placeholderValor}"
+                ${soloLectura ? "readonly" : ""}
+                style="
+                    width:100%;
+                    margin:8px 0 16px 0;
+                    ${soloLectura
+                        ? "background:#191919;color:#bbb;"
+                        : ""}
+                "
+            >
+
+            ${soloLectura ? `
+                <div style="
+                    color:#888;
+                    font-size:12px;
+                    line-height:1.4;
+                    margin-top:-10px;
+                    margin-bottom:16px;
+                ">
+                    Este dato se administra desde
+                    Información pública.
+                </div>
+            ` : ""}
+        `;
+    }
+
+
+    return `
+        <details
+            style="
+                border:1px solid #444;
+                border-radius:12px;
+                padding:12px;
+                margin:12px 0;
+                background:#111;
+            "
+        >
+
+            <summary
+                style="
+                    cursor:pointer;
+                    font-weight:bold;
+                    font-size:16px;
+                    color:#fff;
+                "
+            >
+                ${icono} ${titulo}
+            </summary>
+
+
+            <div style="
+                margin-top:14px;
+                color:#aaa;
+                font-size:13px;
+                line-height:1.45;
+            ">
+                ${descripcion}
+            </div>
+
+
+            <div style="
+                display:flex;
+                gap:18px;
+                flex-wrap:wrap;
+                margin:16px 0;
+            ">
+
+                <label style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                ">
+                    <input
+                        id="cfgSoporte${prefijo}Activo"
+                        type="checkbox"
+                        style="
+                            width:auto;
+                            margin:0;
+                        "
+                    >
+                    Canal activo
+                </label>
+
+
+                <label style="
+                    display:flex;
+                    align-items:center;
+                    gap:6px;
+                ">
+                    <input
+                        id="cfgSoporte${prefijo}Publico"
+                        type="checkbox"
+                        style="
+                            width:auto;
+                            margin:0;
+                        "
+                    >
+                    Mostrar públicamente
+                </label>
+
+            </div>
+
+
+            ${campoValor}
+
+
+            <label>
+                <b>🏷️ Etiqueta pública</b>
+            </label>
+
+            <input
+                id="cfgSoporte${prefijo}Etiqueta"
+                type="text"
+                maxlength="80"
+                placeholder="Ej. Atención al cliente"
+                style="
+                    width:100%;
+                    margin:8px 0 16px 0;
+                "
+            >
+
+
+            <label>
+                <b>🕒 Horario de atención</b>
+            </label>
+
+            <textarea
+                id="cfgSoporte${prefijo}Horario"
+                maxlength="300"
+                placeholder="Ej. Lun–Vie 8:00 AM–6:00 PM"
+                style="
+                    width:100%;
+                    min-height:70px;
+                    padding:12px;
+                    margin:8px 0 16px 0;
+                    border-radius:10px;
+                    resize:vertical;
+                "
+            ></textarea>
+
+
+            <label>
+                <b>💬 Texto de atención</b>
+            </label>
+
+            <textarea
+                id="cfgSoporte${prefijo}Texto"
+                maxlength="500"
+                placeholder="Ej. Escríbenos y con gusto te ayudamos."
+                style="
+                    width:100%;
+                    min-height:80px;
+                    padding:12px;
+                    margin:8px 0 16px 0;
+                    border-radius:10px;
+                    resize:vertical;
+                "
+            ></textarea>
+
+
+            <label>
+                <b>↕️ Orden / prioridad</b>
+            </label>
+
+            <input
+                id="cfgSoporte${prefijo}Orden"
+                type="number"
+                min="0"
+                max="999"
+                step="1"
+                style="
+                    width:140px;
+                    display:block;
+                    margin:8px 0 6px 0;
+                "
+            >
+
+            <div style="
+                color:#888;
+                font-size:12px;
+            ">
+                Los números menores aparecen primero.
+            </div>
+
+        </details>
+    `;
+}
+
+
+function aplicarCanalSoporteFormularioAdmin(
+    prefijo,
+    canal,
+    ordenDefault,
+    valorFijo
+) {
+
+    const configuracion =
+        canal || {};
+
+
+    const existe =
+        Boolean(
+            configuracion.id
+        );
+
+
+    const obtener =
+        sufijo =>
+            document.getElementById(
+                `cfgSoporte${prefijo}${sufijo}`
+            );
+
+
+    const activo =
+        obtener(
+            "Activo"
+        );
+
+
+    const publico =
+        obtener(
+            "Publico"
+        );
+
+
+    const valor =
+        obtener(
+            "Valor"
+        );
+
+
+    const etiqueta =
+        obtener(
+            "Etiqueta"
+        );
+
+
+    const horario =
+        obtener(
+            "Horario"
+        );
+
+
+    const texto =
+        obtener(
+            "Texto"
+        );
+
+
+    const orden =
+        obtener(
+            "Orden"
+        );
+
+
+    if (activo) {
+
+        activo.checked =
+            existe
+                ? configuracion.activo === true
+                : false;
+    }
+
+
+    if (publico) {
+
+        publico.checked =
+            existe
+                ? configuracion.mostrar_publico === true
+                : false;
+    }
+
+
+    if (valor) {
+
+        valor.value =
+            valorFijo !== undefined
+                ? String(
+                    valorFijo || ""
+                )
+                : String(
+                    configuracion.valor || ""
+                );
+    }
+
+
+    if (etiqueta) {
+
+        etiqueta.value =
+            configuracion.etiqueta_publica ||
+            "";
+    }
+
+
+    if (horario) {
+
+        horario.value =
+            configuracion.horario_atencion ||
+            "";
+    }
+
+
+    if (texto) {
+
+        texto.value =
+            configuracion.texto_atencion ||
+            "";
+    }
+
+
+    if (orden) {
+
+        orden.value =
+            existe
+                ? Number(
+                    configuracion.orden || 0
+                )
+                : Number(
+                    ordenDefault || 0
+                );
+    }
 }	
 
 async function mostrarConfigAdmin(){
@@ -31918,6 +32458,11 @@ const organizadorIdPerfil =
 
 const perfilPublico =
     await cargarPerfilPublicoOrganizadorAdmin(
+        organizadorIdPerfil
+    );
+
+const canalesSoporte =
+    await cargarCanalesSoporteOrganizadorAdmin(
         organizadorIdPerfil
     );	
 
@@ -32309,6 +32854,214 @@ document.getElementById("adminContenido").innerHTML = `
 
 </div>
 
+<!-- =====================================================
+     MASS — MI PERFIL V2
+     CONTACTO Y SOPORTE
+     MPV2-F3A
+====================================================== -->
+
+<div style="
+    border:2px solid #39ff14;
+    border-radius:16px;
+    padding:18px;
+    margin-top:22px;
+    margin-bottom:22px;
+    background:#0b0b0b;
+    text-align:left;
+">
+
+    <h3 style="
+        color:#39ff14;
+        margin-top:0;
+        text-align:center;
+    ">
+        📱 Contacto y Soporte
+    </h3>
+
+
+    <p style="
+        color:#aaa;
+        text-align:center;
+        line-height:1.5;
+        margin-bottom:20px;
+    ">
+        Configura cómo pueden comunicarse contigo
+        tus usuarios. Cada canal puede activarse,
+        ocultarse públicamente y ordenarse de forma
+        independiente.
+    </p>
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "ChatMass",
+
+        icono:
+            "💬",
+
+        titulo:
+            "Chat MASS",
+
+        descripcion:
+            "Permite ofrecer el chat interno de MASS como canal de atención del Organizador.",
+
+        modoValor:
+            "ninguno"
+    })}
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "WhatsappNegocio",
+
+        icono:
+            "📱",
+
+        titulo:
+            "WhatsApp del negocio",
+
+        descripcion:
+            "Usa el WhatsApp principal configurado arriba en Información pública. Aquí solamente controlas su visibilidad y presentación.",
+
+        modoValor:
+            "solo_lectura",
+
+        etiquetaValor:
+            "Número configurado",
+
+        placeholderValor:
+            "Sin WhatsApp configurado"
+    })}
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "WhatsappSoporte",
+
+        icono:
+            "🛟",
+
+        titulo:
+            "WhatsApp de soporte",
+
+        descripcion:
+            "Número independiente para atención o soporte del Organizador.",
+
+        modoValor:
+            "editable",
+
+        etiquetaValor:
+            "Número de WhatsApp de soporte",
+
+        placeholderValor:
+            "Ej. +19561234567"
+    })}
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "EmailSoporte",
+
+        icono:
+            "✉️",
+
+        titulo:
+            "Email de soporte",
+
+        descripcion:
+            "Correo que tus usuarios podrán utilizar para solicitar ayuda.",
+
+        modoValor:
+            "editable",
+
+        etiquetaValor:
+            "Correo de soporte",
+
+        placeholderValor:
+            "Ej. soporte@tunegocio.com"
+    })}
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "TelefonoSoporte",
+
+        icono:
+            "☎️",
+
+        titulo:
+            "Teléfono de soporte",
+
+        descripcion:
+            "Número telefónico para atención directa del Organizador.",
+
+        modoValor:
+            "editable",
+
+        etiquetaValor:
+            "Teléfono de soporte",
+
+        placeholderValor:
+            "Ej. +19561234567"
+    })}
+
+
+    ${crearTarjetaCanalSoporteAdmin({
+        prefijo:
+            "SitioWebAyuda",
+
+        icono:
+            "🌐",
+
+        titulo:
+            "Sitio web / ayuda",
+
+        descripcion:
+            "Página web, centro de ayuda o página de contacto del Organizador.",
+
+        modoValor:
+            "editable",
+
+        etiquetaValor:
+            "URL de ayuda",
+
+        placeholderValor:
+            "https://..."
+    })}
+
+
+    <button
+        type="button"
+        onclick="guardarCanalesSoporteOrganizadorV2()"
+        style="
+            width:100%;
+            padding:14px;
+            margin-top:18px;
+            font-size:16px;
+        "
+    >
+        💾 Guardar Contacto y Soporte
+    </button>
+
+
+    <div style="
+        margin-top:18px;
+        padding:12px;
+        border:1px solid #333;
+        border-radius:10px;
+        background:#151515;
+        color:#aaa;
+        font-size:13px;
+        line-height:1.5;
+        text-align:center;
+    ">
+        📞 <b>Soporte TE-TO-KA</b> permanece separado.
+        Estos datos corresponden exclusivamente
+        al soporte ofrecido por tu negocio.
+    </div>
+
+</div>	
+
 <br> 
 
 ${adminRol === "organizador" ? `
@@ -32459,7 +33212,49 @@ if (tituloColorMarca) {
 if (lineaColorMarca) {
     lineaColorMarca.style.background =
         colorMarcaInicial;
-}	
+}
+
+aplicarCanalSoporteFormularioAdmin(
+    "ChatMass",
+    canalesSoporte.chat_mass,
+    10
+);
+
+
+aplicarCanalSoporteFormularioAdmin(
+    "WhatsappNegocio",
+    canalesSoporte.whatsapp_negocio,
+    20,
+    cfg.whatsapp || ""
+);
+
+
+aplicarCanalSoporteFormularioAdmin(
+    "WhatsappSoporte",
+    canalesSoporte.whatsapp_soporte,
+    30
+);
+
+
+aplicarCanalSoporteFormularioAdmin(
+    "EmailSoporte",
+    canalesSoporte.email_soporte,
+    40
+);
+
+
+aplicarCanalSoporteFormularioAdmin(
+    "TelefonoSoporte",
+    canalesSoporte.telefono_soporte,
+    50
+);
+
+
+aplicarCanalSoporteFormularioAdmin(
+    "SitioWebAyuda",
+    canalesSoporte.sitio_web_ayuda,
+    60
+);	
 
 	await cargarEstadoCierreOrganizadorPerfil();
 
@@ -39826,6 +40621,526 @@ async function guardarConfigCliente() {
 
     await mostrarConfigAdmin();
 }
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   GUARDAR CONTACTO Y SOPORTE
+   MPV2-F3A
+========================================================= */
+
+async function guardarCanalesSoporteOrganizadorV2() {
+
+    const adminActual =
+        await obtenerAdminActual();
+
+
+    if (!adminActual) {
+
+        alert(
+            "❌ No hay una sesión administrativa válida."
+        );
+
+        return;
+    }
+
+
+    let organizadorId = null;
+
+
+    if (
+        adminActual.rol ===
+        "super_admin"
+    ) {
+
+        organizadorId =
+            localStorage.getItem(
+                "admin_organizador_id"
+            ) ||
+            localStorage.getItem(
+                "organizador_admin_id"
+            ) ||
+            adminActual.organizador_id;
+
+    } else {
+
+        organizadorId =
+            adminActual.organizador_id;
+    }
+
+
+    organizadorId =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!organizadorId) {
+
+        alert(
+            "❌ No se encontró el Organizador autorizado."
+        );
+
+        return;
+    }
+
+
+    const actuales =
+        await cargarCanalesSoporteOrganizadorAdmin(
+            organizadorId
+        );
+
+
+    const leerTexto =
+        id =>
+            String(
+                document.getElementById(
+                    id
+                )?.value || ""
+            ).trim();
+
+
+    const leerCheck =
+        id =>
+            document.getElementById(
+                id
+            )?.checked === true;
+
+
+    const definiciones = [
+        {
+            tipo:
+                "chat_mass",
+
+            prefijo:
+                "ChatMass",
+
+            ordenDefault:
+                10,
+
+            permiteValorNulo:
+                true
+        },
+
+        {
+            tipo:
+                "whatsapp_negocio",
+
+            prefijo:
+                "WhatsappNegocio",
+
+            ordenDefault:
+                20,
+
+            permiteValorNulo:
+                true
+        },
+
+        {
+            tipo:
+                "whatsapp_soporte",
+
+            prefijo:
+                "WhatsappSoporte",
+
+            ordenDefault:
+                30,
+
+            permiteValorNulo:
+                false
+        },
+
+        {
+            tipo:
+                "email_soporte",
+
+            prefijo:
+                "EmailSoporte",
+
+            ordenDefault:
+                40,
+
+            permiteValorNulo:
+                false
+        },
+
+        {
+            tipo:
+                "telefono_soporte",
+
+            prefijo:
+                "TelefonoSoporte",
+
+            ordenDefault:
+                50,
+
+            permiteValorNulo:
+                false
+        },
+
+        {
+            tipo:
+                "sitio_web_ayuda",
+
+            prefijo:
+                "SitioWebAyuda",
+
+            ordenDefault:
+                60,
+
+            permiteValorNulo:
+                false
+        }
+    ];
+
+
+    const filas = [];
+
+
+    for (
+        const definicion
+        of definiciones
+    ) {
+
+        const actual =
+            actuales[
+                definicion.tipo
+            ] || {};
+
+
+        const prefijo =
+            definicion.prefijo;
+
+
+        const activo =
+            leerCheck(
+                `cfgSoporte${prefijo}Activo`
+            );
+
+
+        const mostrarPublico =
+            leerCheck(
+                `cfgSoporte${prefijo}Publico`
+            );
+
+
+        const etiqueta =
+            leerTexto(
+                `cfgSoporte${prefijo}Etiqueta`
+            );
+
+
+        const horario =
+            leerTexto(
+                `cfgSoporte${prefijo}Horario`
+            );
+
+
+        const texto =
+            leerTexto(
+                `cfgSoporte${prefijo}Texto`
+            );
+
+
+        let valor = null;
+
+
+        if (
+            !definicion.permiteValorNulo
+        ) {
+
+            valor =
+                leerTexto(
+                    `cfgSoporte${prefijo}Valor`
+                );
+        }
+
+
+        const ordenTexto =
+            leerTexto(
+                `cfgSoporte${prefijo}Orden`
+            );
+
+
+        const orden =
+            ordenTexto === ""
+                ? definicion.ordenDefault
+                : Number(
+                    ordenTexto
+                );
+
+
+        if (
+            !Number.isInteger(
+                orden
+            ) ||
+            orden < 0 ||
+            orden > 999
+        ) {
+
+            alert(
+                "❌ El orden de los canales debe estar entre 0 y 999."
+            );
+
+            return;
+        }
+
+
+        if (
+            mostrarPublico &&
+            !activo
+        ) {
+
+            alert(
+                "❌ Para mostrar un canal públicamente primero debes marcarlo como activo."
+            );
+
+            return;
+        }
+
+
+        if (
+            etiqueta &&
+            (
+                etiqueta.length < 2 ||
+                etiqueta.length > 80
+            )
+        ) {
+
+            alert(
+                "❌ La etiqueta pública debe tener entre 2 y 80 caracteres."
+            );
+
+            return;
+        }
+
+
+        if (
+            horario &&
+            (
+                horario.length < 2 ||
+                horario.length > 300
+            )
+        ) {
+
+            alert(
+                "❌ El horario de atención debe tener entre 2 y 300 caracteres."
+            );
+
+            return;
+        }
+
+
+        if (
+            texto &&
+            (
+                texto.length < 2 ||
+                texto.length > 500
+            )
+        ) {
+
+            alert(
+                "❌ El texto de atención debe tener entre 2 y 500 caracteres."
+            );
+
+            return;
+        }
+
+
+        const tieneConfiguracion =
+            Boolean(
+                actual.id ||
+                activo ||
+                mostrarPublico ||
+                etiqueta ||
+                horario ||
+                texto ||
+                valor
+            );
+
+
+        if (!tieneConfiguracion) {
+
+            continue;
+        }
+
+
+        if (
+            !definicion.permiteValorNulo
+        ) {
+
+            if (
+                !valor ||
+                valor.length < 3 ||
+                valor.length > 500
+            ) {
+
+                alert(
+                    "❌ Completa el dato de contacto del canal antes de guardarlo."
+                );
+
+                return;
+            }
+        }
+
+
+        if (
+            definicion.tipo ===
+            "email_soporte" &&
+            valor &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                valor
+            )
+        ) {
+
+            alert(
+                "❌ El email de soporte no tiene un formato válido."
+            );
+
+            return;
+        }
+
+
+        if (
+            definicion.tipo ===
+            "sitio_web_ayuda" &&
+            valor &&
+            !/^https?:\/\//i.test(
+                valor
+            )
+        ) {
+
+            alert(
+                "❌ El sitio web de ayuda debe comenzar con http:// o https://."
+            );
+
+            return;
+        }
+
+
+        if (
+            definicion.tipo ===
+            "whatsapp_negocio" &&
+            activo
+        ) {
+
+            const whatsappPrincipal =
+                String(
+                    clienteActual?.whatsapp ||
+                    ""
+                ).trim();
+
+
+            if (!whatsappPrincipal) {
+
+                alert(
+                    "❌ Primero guarda el WhatsApp del negocio en Información pública."
+                );
+
+                return;
+            }
+        }
+
+
+        filas.push({
+            organizador_id:
+                organizadorId,
+
+            tipo:
+                definicion.tipo,
+
+            valor:
+                definicion.permiteValorNulo
+                    ? null
+                    : valor,
+
+            etiqueta_publica:
+                etiqueta || null,
+
+            horario_atencion:
+                horario || null,
+
+            texto_atencion:
+                texto || null,
+
+            activo:
+                activo,
+
+            mostrar_publico:
+                mostrarPublico,
+
+            orden:
+                orden
+        });
+    }
+
+
+    if (
+        filas.length === 0
+    ) {
+
+        alert(
+            "ℹ️ No hay canales configurados para guardar."
+        );
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_canales_soporte"
+        )
+        .upsert(
+            filas,
+            {
+                onConflict:
+                    "organizador_id,tipo"
+            }
+        )
+        .select(`
+            id,
+            tipo,
+            activo,
+            mostrar_publico,
+            orden
+        `);
+
+
+    if (error) {
+
+        console.error(
+            "ERROR GUARDANDO CONTACTO Y SOPORTE:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible guardar Contacto y Soporte.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        return;
+    }
+
+
+    console.log(
+        "CANALES DE SOPORTE GUARDADOS:",
+        data
+    );
+
+
+    alert(
+        "✅ Contacto y Soporte guardado correctamente."
+    );
+
+
+    await mostrarConfigAdmin();
+}	
 
 async function mostrarGestionAccesosOrganizadores() {
 
