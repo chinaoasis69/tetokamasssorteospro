@@ -31800,6 +31800,88 @@ function limpiarConvertidorMass() {
     if (cantidad) cantidad.value = "";
     if (resultado) resultado.innerText = "0 MASS";
     if (texto) texto.textContent = "⏳ Actualizando tipo de cambio...";
+}
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   CARGA DE PERFIL PÚBLICO DEL ORGANIZADOR
+   MPV2-F2A
+========================================================= */
+
+async function cargarPerfilPublicoOrganizadorAdmin(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+    if (!idLimpio) {
+
+        return {
+            id: null,
+            organizador_id: null,
+            descripcion: "",
+            categoria_negocio: "",
+            ubicacion_publica: "",
+            horario_comercial: "",
+            activo: true
+        };
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_perfil_publico"
+        )
+        .select(`
+            id,
+            organizador_id,
+            descripcion,
+            categoria_negocio,
+            ubicacion_publica,
+            horario_comercial,
+            activo
+        `)
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .maybeSingle();
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO PERFIL PÚBLICO DEL ORGANIZADOR:",
+            error
+        );
+
+        return {
+            id: null,
+            organizador_id: idLimpio,
+            descripcion: "",
+            categoria_negocio: "",
+            ubicacion_publica: "",
+            horario_comercial: "",
+            activo: true
+        };
+    }
+
+
+    return data || {
+        id: null,
+        organizador_id: idLimpio,
+        descripcion: "",
+        categoria_negocio: "",
+        ubicacion_publica: "",
+        horario_comercial: "",
+        activo: true
+    };
 }	
 
 async function mostrarConfigAdmin(){
@@ -31818,33 +31900,286 @@ if (adminRol === "organizador" && (!clienteActual || !clienteActual.id)) {
   return;
 }
 
-const cfg = clienteActual || {};	
+const cfg = clienteActual || {};
 
-  document.getElementById("adminContenido").innerHTML = `
-<h3>⚙️ Configuración</h3>
+/* =====================================================
+   MASS — MI PERFIL V2
+   CARGAR INFORMACIÓN PÚBLICA
+   MPV2-F2B
+===================================================== */
 
-<input id="cfgNombre" placeholder="Nombre público"><br><br>
+const organizadorIdPerfil =
+    String(
+        cfg.id ||
+        orgIdGuardado ||
+        idGuardado ||
+        ""
+    ).trim();
 
-<input id="cfgSlogan" placeholder="Slogan"><br><br>
+const perfilPublico =
+    await cargarPerfilPublicoOrganizadorAdmin(
+        organizadorIdPerfil
+    );	
 
-<input id="cfgWhatsapp" placeholder="WhatsApp"><br><br>
+document.getElementById("adminContenido").innerHTML = `
 
-<label>📷 Logo del organizador</label><br>
-<input type="file" id="fileLogo" accept="image/*" onchange="subirImagenOrganizador('logo')"><br><br>
+<h2 style="
+    color:#39ff14;
+    margin-bottom:6px;
+">
+    ⚙️ Mi Perfil
+</h2>
 
-<label>🖼️ Banner del organizador</label><br>
-<input type="file" id="fileBanner" accept="image/*" onchange="subirImagenOrganizador('banner')"><br><br>
+<p style="
+    color:#bbb;
+    margin-top:0;
+    margin-bottom:22px;
+">
+    Administra la identidad pública y configuración
+    de tu negocio en MASS SORTEOS PRO.
+</p>
 
-<input id="cfgLogoUrl" placeholder="Logo URL" style="display:none;"><br>
-<input id="cfgBannerUrl" placeholder="Banner URL" style="display:none;"><br>
 
-<input id="cfgColorPrincipal" placeholder="Color Principal (#7CFF00)"><br><br>
+<!-- =====================================================
+     MASS — MI PERFIL V2
+     INFORMACIÓN PÚBLICA
+     MPV2-F2C
+====================================================== -->
 
-<button onclick="guardarConfigCliente()">
-💾 Guardar cambios
-</button>
+<div style="
+    border:2px solid #39ff14;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:22px;
+    background:#0b0b0b;
+    text-align:left;
+">
 
-<br><br>
+    <h3 style="
+        color:#39ff14;
+        margin-top:0;
+        text-align:center;
+    ">
+        🏢 Información pública
+    </h3>
+
+    <p style="
+        color:#aaa;
+        text-align:center;
+        line-height:1.5;
+        margin-bottom:22px;
+    ">
+        Esta información podrá mostrarse a tus clientes
+        en el perfil público de tu negocio.
+    </p>
+
+
+    <label>
+        <b>🏪 Nombre público</b>
+    </label>
+
+    <input
+        id="cfgNombre"
+        placeholder="Nombre público"
+        style="
+            width:100%;
+            margin:8px 0 16px 0;
+        "
+    >
+
+
+    <label>
+        <b>✨ Slogan</b>
+    </label>
+
+    <input
+        id="cfgSlogan"
+        placeholder="Ej. Las mejores herramientas para tu trabajo"
+        style="
+            width:100%;
+            margin:8px 0 16px 0;
+        "
+    >
+
+
+    <label>
+        <b>📝 Acerca de nosotros</b>
+    </label>
+
+    <textarea
+        id="cfgDescripcion"
+        placeholder="Describe brevemente tu negocio..."
+        maxlength="1500"
+        style="
+            width:100%;
+            min-height:110px;
+            padding:12px;
+            margin:8px 0 16px 0;
+            border-radius:10px;
+            resize:vertical;
+        "
+    ></textarea>
+
+
+    <label>
+        <b>🏷️ Categoría del negocio</b>
+    </label>
+
+    <input
+        id="cfgCategoriaNegocio"
+        placeholder="Ej. Ferretería, herramientas, servicios..."
+        maxlength="100"
+        style="
+            width:100%;
+            margin:8px 0 16px 0;
+        "
+    >
+
+
+    <label>
+        <b>📍 Ubicación pública</b>
+    </label>
+
+    <input
+        id="cfgUbicacionPublica"
+        placeholder="Ej. Brownsville, Texas"
+        maxlength="180"
+        style="
+            width:100%;
+            margin:8px 0 6px 0;
+        "
+    >
+
+    <div style="
+        color:#888;
+        font-size:13px;
+        margin-bottom:16px;
+        line-height:1.4;
+    ">
+        No es tu dirección legal. Es solamente la zona
+        que deseas mostrar públicamente.
+    </div>
+
+
+    <label>
+        <b>🕒 Horario comercial</b>
+    </label>
+
+    <textarea
+        id="cfgHorarioComercial"
+        placeholder="Ej. Lun–Vie 8:00 AM–6:00 PM"
+        maxlength="500"
+        style="
+            width:100%;
+            min-height:75px;
+            padding:12px;
+            margin:8px 0 16px 0;
+            border-radius:10px;
+            resize:vertical;
+        "
+    ></textarea>
+
+
+    <label>
+        <b>📷 Logo del Organizador</b>
+    </label>
+
+    <input
+        type="file"
+        id="fileLogo"
+        accept="image/*"
+        onchange="subirImagenOrganizador('logo')"
+        style="
+            width:100%;
+            margin:8px 0 16px 0;
+        "
+    >
+
+
+    <label>
+        <b>🖼️ Banner del Organizador</b>
+    </label>
+
+    <input
+        type="file"
+        id="fileBanner"
+        accept="image/*"
+        onchange="subirImagenOrganizador('banner')"
+        style="
+            width:100%;
+            margin:8px 0 16px 0;
+        "
+    >
+
+
+    <input
+        id="cfgLogoUrl"
+        style="display:none;"
+    >
+
+    <input
+        id="cfgBannerUrl"
+        style="display:none;"
+    >
+
+
+    <label>
+        <b>🎨 Color principal</b>
+    </label>
+
+    <input
+        type="color"
+        id="cfgColorPrincipal"
+        value="#7CFF00"
+        style="
+            width:100%;
+            height:48px;
+            padding:4px;
+            margin:8px 0 18px 0;
+            cursor:pointer;
+        "
+    >
+
+
+    <label>
+        <b>📱 WhatsApp del negocio</b>
+    </label>
+
+    <input
+        id="cfgWhatsapp"
+        placeholder="Ej. 19561234567"
+        style="
+            width:100%;
+            margin:8px 0 6px 0;
+        "
+    >
+
+    <div style="
+        color:#888;
+        font-size:13px;
+        margin-bottom:18px;
+        line-height:1.4;
+    ">
+        Más adelante podrás decidir desde Canales de Soporte
+        si este WhatsApp se muestra públicamente.
+    </div>
+
+
+    <button
+        type="button"
+        onclick="guardarConfigCliente()"
+        style="
+            width:100%;
+            padding:14px;
+            font-size:16px;
+        "
+    >
+        💾 Guardar información pública
+    </button>
+
+</div>
+
+<br> 
 
 ${adminRol === "organizador" ? `
 
@@ -31934,6 +32269,19 @@ document.getElementById("cfgNombre").value =
   cfg.nombre ||
   "";
 document.getElementById("cfgSlogan").value = cfg.slogan || "";
+
+document.getElementById("cfgDescripcion").value =
+    perfilPublico.descripcion || "";
+
+document.getElementById("cfgCategoriaNegocio").value =
+    perfilPublico.categoria_negocio || "";
+
+document.getElementById("cfgUbicacionPublica").value =
+    perfilPublico.ubicacion_publica || "";
+
+document.getElementById("cfgHorarioComercial").value =
+    perfilPublico.horario_comercial || "";
+	
 document.getElementById("cfgWhatsapp").value = cfg.whatsapp || "";
 document.getElementById("cfgLogoUrl").value = cfg.logo_url || "";
 document.getElementById("cfgBannerUrl").value = cfg.banner_url || "";
