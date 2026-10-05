@@ -39536,81 +39536,295 @@ async function reactivarDivisaOrganizadorAdmin(
   }
 }	
 
-async function guardarConfigCliente(){
+/* =========================================================
+   MASS — MI PERFIL V2
+   GUARDAR INFORMACIÓN PÚBLICA
+   MPV2-F2D2
+========================================================= */
 
-const adminActual = await obtenerAdminActual();
+async function guardarConfigCliente() {
 
-if (!adminActual) {
-    alert("❌ No hay una sesión administrativa válida.");
-    return;
-}
+    const adminActual =
+        await obtenerAdminActual();
 
-let idPermitido = null;
 
-if (adminActual.rol === "super_admin") {
+    if (!adminActual) {
+
+        alert(
+            "❌ No hay una sesión administrativa válida."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       1. RESOLVER ORGANIZADOR AUTORIZADO
+    ===================================================== */
+
+    let idPermitido = null;
+
+
+    if (adminActual.rol === "super_admin") {
+
+        idPermitido =
+            localStorage.getItem(
+                "admin_organizador_id"
+            ) ||
+            localStorage.getItem(
+                "organizador_admin_id"
+            ) ||
+            adminActual.organizador_id;
+
+    } else {
+
+        idPermitido =
+            adminActual.organizador_id;
+    }
+
+
     idPermitido =
-        localStorage.getItem("admin_organizador_id") ||
-        localStorage.getItem("organizador_admin_id") ||
-        adminActual.organizador_id;
-} else {
-    idPermitido = adminActual.organizador_id;
-}
+        String(
+            idPermitido || ""
+        ).trim();
 
-if (!idPermitido) {
-    alert("❌ No se encontró el organizador autorizado.");
-    return;
-}
 
-const { data, error: errorCliente } = await supabaseClient
-    .from("organizadores")
-    .select("*")
-    .eq("id", idPermitido)
-    .maybeSingle();
+    if (!idPermitido) {
 
-if (errorCliente || !data) {
-    console.error("Error cargando organizador:", errorCliente);
-    alert("❌ No se pudo cargar el organizador autorizado.");
-    return;
-}
+        alert(
+            "❌ No se encontró el Organizador autorizado."
+        );
 
-clienteActual = data;	
+        return;
+    }
 
-  if(!clienteActual || !clienteActual.id){
-    alert("❌ No hay cliente cargado. Cierra y abre el panel otra vez.");
-    console.log("clienteActual:", clienteActual);
-    return;
-  }
 
-  const { data: organizadorActualizado, error } = await supabaseClient
-    .from("organizadores")
-    .update({
-      nombre: document.getElementById("cfgNombre").value.trim(),
-      slogan: document.getElementById("cfgSlogan").value.trim(),
-      whatsapp: document.getElementById("cfgWhatsapp").value.trim(),
-      logo_url: document.getElementById("cfgLogoUrl").value.trim(),
-      banner_url: document.getElementById("cfgBannerUrl").value.trim(),
-      color_principal: document.getElementById("cfgColorPrincipal").value.trim() || "#7CFF00"	
-    })
-    .eq("id", idPermitido)
-.select("*")
-.maybeSingle();
+    /* =====================================================
+       2. LEER CAMPOS DEL FORMULARIO
+    ===================================================== */
 
-	console.log("ORGANIZADOR ACTUALIZADO:", organizadorActualizado);
+    const nombre =
+        String(
+            document.getElementById(
+                "cfgNombre"
+            )?.value || ""
+        ).trim();
 
-if (!organizadorActualizado) {
-    alert("❌ Supabase no permitió actualizar este organizador.");
-    return;
-}
 
-  if(error){
-    console.error("ERROR GUARDANDO CONFIG:", error);
-    alert("❌ Error guardando configuración: " + error.message);
-    return;
-  }
+    const slogan =
+        String(
+            document.getElementById(
+                "cfgSlogan"
+            )?.value || ""
+        ).trim();
 
-  alert("✅ Configuración actualizada");
 
-  await cargarClienteActual();
+    const descripcion =
+        String(
+            document.getElementById(
+                "cfgDescripcion"
+            )?.value || ""
+        ).trim();
+
+
+    const categoriaNegocio =
+        String(
+            document.getElementById(
+                "cfgCategoriaNegocio"
+            )?.value || ""
+        ).trim();
+
+
+    const ubicacionPublica =
+        String(
+            document.getElementById(
+                "cfgUbicacionPublica"
+            )?.value || ""
+        ).trim();
+
+
+    const horarioComercial =
+        String(
+            document.getElementById(
+                "cfgHorarioComercial"
+            )?.value || ""
+        ).trim();
+
+
+    const whatsapp =
+        String(
+            document.getElementById(
+                "cfgWhatsapp"
+            )?.value || ""
+        ).trim();
+
+
+    const logoUrl =
+        String(
+            document.getElementById(
+                "cfgLogoUrl"
+            )?.value || ""
+        ).trim();
+
+
+    const bannerUrl =
+        String(
+            document.getElementById(
+                "cfgBannerUrl"
+            )?.value || ""
+        ).trim();
+
+
+    const colorPrincipal =
+        String(
+            document.getElementById(
+                "cfgColorPrincipal"
+            )?.value || "#7CFF00"
+        )
+        .trim()
+        .toUpperCase();
+
+
+    /* =====================================================
+       3. VALIDACIÓN BÁSICA DEL FRONTEND
+
+       El servidor vuelve a validar todo.
+    ===================================================== */
+
+    if (
+        nombre.length < 2 ||
+        nombre.length > 200
+    ) {
+
+        alert(
+            "❌ El nombre público debe tener " +
+            "entre 2 y 200 caracteres."
+        );
+
+        return;
+    }
+
+
+    if (
+        !/^#[0-9A-F]{6}$/.test(
+            colorPrincipal
+        )
+    ) {
+
+        alert(
+            "❌ El color de tu marca no es válido."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       4. GUARDADO ATÓMICO EN SUPABASE
+    ===================================================== */
+
+    const {
+        data: resultado,
+        error
+    } = await supabaseClient.rpc(
+        "guardar_mi_perfil_organizador_v2_seguro",
+        {
+            p_organizador_id:
+                idPermitido,
+
+            p_nombre:
+                nombre,
+
+            p_slogan:
+                slogan,
+
+            p_whatsapp:
+                whatsapp,
+
+            p_logo_url:
+                logoUrl,
+
+            p_banner_url:
+                bannerUrl,
+
+            p_color_principal:
+                colorPrincipal,
+
+            p_descripcion:
+                descripcion,
+
+            p_categoria_negocio:
+                categoriaNegocio,
+
+            p_ubicacion_publica:
+                ubicacionPublica,
+
+            p_horario_comercial:
+                horarioComercial
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR GUARDANDO MI PERFIL V2:",
+            error
+        );
+
+        alert(
+            "❌ No fue posible guardar tu perfil.\n\n" +
+            (
+                error.message ||
+                "Error desconocido."
+            )
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       5. VALIDAR RESPUESTA DEL SERVIDOR
+    ===================================================== */
+
+    if (
+        !resultado ||
+        resultado.ok !== true
+    ) {
+
+        console.error(
+            "RESPUESTA INESPERADA GUARDANDO MI PERFIL V2:",
+            resultado
+        );
+
+        alert(
+            "❌ El servidor no confirmó " +
+            "el guardado del perfil."
+        );
+
+        return;
+    }
+
+
+    /* =====================================================
+       6. RECARGAR ESTADO REAL
+    ===================================================== */
+
+    await cargarClienteActual();
+
+
+    alert(
+        "✅ Información pública guardada correctamente."
+    );
+
+
+    /*
+      Volvemos a construir Mi Perfil con los
+      datos confirmados por la base de datos.
+    */
+
+    await mostrarConfigAdmin();
 }
 
 async function mostrarGestionAccesosOrganizadores() {
