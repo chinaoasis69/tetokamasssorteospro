@@ -1557,7 +1557,14 @@ Selecciona una rifa
     text-align:center;
     box-shadow:0 0 14px rgba(57,255,20,.18);
   "
-></div>	
+></div>
+
+<!-- ===================================================== -->
+<!-- MASS — CONTENIDO GENERAL DEL USUARIO -->
+<!-- MPV2-F7A2 -->
+<!-- ===================================================== -->
+
+<div id="contenidoGeneralUsuarioMass">
 
 <div
   id="sesionActivaBox"
@@ -2413,6 +2420,9 @@ Cargando historial...
     </p>
     <p>Términos y condiciones · Aviso de privacidad · Política de uso aceptable</p>
   </div>
+
+  </div>
+<!-- FIN contenidoGeneralUsuarioMass -->
 
 <!--
 <button onclick="abrirAdmin()" style="opacity:0.25; font-size:12px; margin:20px;">
@@ -62290,6 +62300,17 @@ async function mostrarPerfilPublicoOrganizador(
         false
     );
 
+    const contenidoGeneralUsuario =
+    document.getElementById(
+        "contenidoGeneralUsuarioMass"
+    );
+
+if (contenidoGeneralUsuario) {
+
+    contenidoGeneralUsuario.style.display =
+        "none";
+}
+
 
     const [
         canalesSoporte,
@@ -62943,6 +62964,17 @@ function () {
         true
     );
 
+    const contenidoGeneralUsuario =
+    document.getElementById(
+        "contenidoGeneralUsuarioMass"
+    );
+
+if (contenidoGeneralUsuario) {
+
+    contenidoGeneralUsuario.style.display =
+        "";
+}
+
 
     setTimeout(
         () => {
@@ -62971,6 +63003,17 @@ if (perfilPublicoBox) {
 
     perfilPublicoBox.style.display =
         "none";
+}
+
+const contenidoGeneralUsuario =
+    document.getElementById(
+        "contenidoGeneralUsuarioMass"
+    );
+
+if (contenidoGeneralUsuario) {
+
+    contenidoGeneralUsuario.style.display =
+        "";
 }
 
 aplicarTemaVisualOrganizadorPublico(
