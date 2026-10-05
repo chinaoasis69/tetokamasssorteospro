@@ -55450,15 +55450,144 @@ async function cargarRifasPublicas(){
   .select("*")
   .in("estado", ["activa","programada"]);
 
-const { data: organizadores } = await supabaseClient
-  .from("organizadores")
-  .select("*");
+/* =====================================================
+   MASS — ORGANIZADORES PÚBLICOS SEGUROS
+   MPV2-F1
+===================================================== */
 
-mapaOrganizadores = {};
+const {
+    data: organizadoresPublicos,
+    error: errorOrganizadoresPublicos
+} = await supabaseClient.rpc(
+    "listar_organizadores_publicos_segura",
+    {
+        p_organizador_id: null
+    }
+);
 
-(organizadores || []).forEach(o => {
-  mapaOrganizadores[o.id] = o;
-});	
+if (errorOrganizadoresPublicos) {
+
+    console.error(
+        "ERROR CARGANDO ORGANIZADORES PÚBLICOS:",
+        errorOrganizadoresPublicos
+    );
+
+    mapaOrganizadores = {};
+
+} else {
+
+    mapaOrganizadores = {};
+
+    (organizadoresPublicos || []).forEach(
+        organizadorPublico => {
+
+            const organizadorId =
+                String(
+                    organizadorPublico.organizador_id ||
+                    ""
+                ).trim();
+
+            if (!organizadorId) {
+                return;
+            }
+
+
+            /*
+              Normalizamos la respuesta segura para
+              conservar compatibilidad con el frontend
+              existente mientras migramos Mi Perfil V2.
+            */
+
+            const organizadorNormalizado = {
+
+                id:
+                    organizadorId,
+
+                organizador_id:
+                    organizadorId,
+
+                nombre:
+                    organizadorPublico.nombre || "",
+
+                nombre_publico:
+                    organizadorPublico.nombre || "",
+
+                nombre_empresa:
+                    organizadorPublico.nombre || "",
+
+                slug:
+                    organizadorPublico.slug || "",
+
+                slogan:
+                    organizadorPublico.slogan || "",
+
+                logo_url:
+                    organizadorPublico.logo_url || "",
+
+                banner_url:
+                    organizadorPublico.banner_url || "",
+
+                color_principal:
+                    organizadorPublico.color_principal ||
+                    "#7CFF00",
+
+                descripcion:
+                    organizadorPublico.descripcion || "",
+
+                categoria_negocio:
+                    organizadorPublico.categoria_negocio ||
+                    "",
+
+                ubicacion_publica:
+                    organizadorPublico.ubicacion_publica ||
+                    "",
+
+                horario_comercial:
+                    organizadorPublico.horario_comercial ||
+                    "",
+
+                whatsapp:
+                    organizadorPublico.whatsapp_publico ||
+                    "",
+
+                whatsapp_publico:
+                    organizadorPublico.whatsapp_publico ||
+                    "",
+
+                convertidor_mass_activo:
+                    organizadorPublico
+                        .convertidor_mass_activo === true,
+
+                mostrar_en_inicio:
+                    organizadorPublico
+                        .mostrar_en_inicio !== false,
+
+                orden_inicio:
+                    Number.isFinite(
+                        Number(
+                            organizadorPublico.orden_inicio
+                        )
+                    )
+                        ? Number(
+                            organizadorPublico.orden_inicio
+                        )
+                        : 0,
+
+                /*
+                  La RPC solamente devuelve
+                  Organizadores activos.
+                */
+
+                activo: true
+            };
+
+
+            mapaOrganizadores[
+                organizadorId
+            ] = organizadorNormalizado;
+        }
+    );
+}	
 
   if(error){
     console.error(error);
