@@ -1055,6 +1055,21 @@ margin:0 auto 10px auto;
 </div>
 
 <!-- ===================================================== -->
+<!-- MASS — CONTACTO Y SOPORTE PÚBLICO DEL ORGANIZADOR -->
+<!-- MPV2-F3B1 -->
+<!-- ===================================================== -->
+
+<div
+  id="contactoSoporteOrganizadorRifaBox"
+  style="
+    display:none;
+    width:100%;
+    max-width:520px;
+    margin:12px auto 18px auto;
+  "
+></div>	
+
+<!-- ===================================================== -->
 <!-- MASS - BOTÓN CHAT CON EL ORGANIZADOR -->
 <!-- ===================================================== -->
 
@@ -59937,8 +59952,8 @@ function crearContactoSoportePublicoOrganizador(
 
     return `
         <div
-            id="contactoSoporteOrganizadorPublico"
-            class="card"
+            <div
+    class="card mass-contacto-soporte-publico"
             style="
                 border:2px solid
                     var(
@@ -67665,7 +67680,53 @@ const org = mapaOrganizadores[rifa.organizador_id];
 
 aplicarTemaVisualOrganizadorPublico(
     rifa.organizador_id
-);	
+);
+
+/* =====================================================
+   MASS — CONTACTO Y SOPORTE PÚBLICO
+   DENTRO DE LA DINÁMICA
+   MPV2-F3B1
+===================================================== */
+
+const contactoSoporteRifaBox =
+    document.getElementById(
+        "contactoSoporteOrganizadorRifaBox"
+    );
+
+
+if (contactoSoporteRifaBox) {
+
+    const canalesSoporteRifa =
+        await cargarCanalesSoportePublicosOrganizador(
+            rifa.organizador_id
+        );
+
+
+    const contactoSoporteRifaHtml =
+        crearContactoSoportePublicoOrganizador(
+            rifa.organizador_id,
+            canalesSoporteRifa
+        );
+
+
+    contactoSoporteRifaBox.innerHTML =
+        contactoSoporteRifaHtml;
+
+
+    contactoSoporteRifaBox.style.display =
+        contactoSoporteRifaHtml
+            ? "block"
+            : "none";
+
+
+    if (contactoSoporteRifaHtml) {
+
+        inicializarContactoSoportePublicoOrganizador(
+            contactoSoporteRifaBox,
+            rifa.organizador_id
+        );
+    }
+}	
 
 document.getElementById("nombreOrganizadorSorteo").innerText =
 "👥 " + (org?.nombre_publico || org?.nombre || "");
