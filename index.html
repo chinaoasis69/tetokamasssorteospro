@@ -1238,10 +1238,32 @@ Selecciona una rifa
   🛟 Contacto y Soporte
 </button>
 
+<button
+  id="btnRedesSocialesRifa"
+  type="button"
+  class="btn-dark"
+  onclick="toggleRedesSocialesRifa()"
+  aria-expanded="false"
+  aria-controls="redesSocialesOrganizadorRifaBox"
+  style="display:none;"
+>
+  ✨ Síguenos
+</button>
+
 <br>
 
 <div
   id="contactoSoporteOrganizadorRifaBox"
+  style="
+    display:none;
+    width:100%;
+    max-width:620px;
+    margin:14px auto 18px auto;
+  "
+></div>
+
+<div
+  id="redesSocialesOrganizadorRifaBox"
   style="
     display:none;
     width:100%;
@@ -60899,6 +60921,34 @@ window.toggleContactoSoporteRifa = function () {
                 : "false"
         );
     }
+
+if (abrir) {
+
+    const redesBox =
+        document.getElementById(
+            "redesSocialesOrganizadorRifaBox"
+        );
+
+    const redesBoton =
+        document.getElementById(
+            "btnRedesSocialesRifa"
+        );
+
+
+    if (redesBox) {
+        redesBox.style.display =
+            "none";
+    }
+
+
+    if (redesBoton) {
+
+        redesBoton.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+    }
+  }	
 };
 
 function inicializarContactoSoportePublicoOrganizador(
@@ -61067,7 +61117,338 @@ function inicializarContactoSoportePublicoOrganizador(
                 );
             }
         );
-}	
+}
+
+/* =========================================================
+   MASS — REDES SOCIALES PÚBLICAS DEL ORGANIZADOR
+   MPV2-F4B
+========================================================= */
+
+async function cargarRedesSocialesPublicasOrganizador(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return [];
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient
+        .from(
+            "organizador_redes_sociales"
+        )
+        .select(`
+            tipo,
+            url,
+            orden
+        `)
+        .eq(
+            "organizador_id",
+            idLimpio
+        )
+        .eq(
+            "activo",
+            true
+        )
+        .eq(
+            "mostrar_publico",
+            true
+        )
+        .order(
+            "orden",
+            {
+                ascending: true
+            }
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO REDES SOCIALES PÚBLICAS:",
+            error
+        );
+
+        return [];
+    }
+
+
+    return Array.isArray(data)
+        ? data
+        : [];
+}
+
+
+function crearRedesSocialesPublicasOrganizador(
+    redes
+) {
+
+    const configuracionTipos = {
+
+        facebook: {
+            icono: "📘",
+            titulo: "Facebook"
+        },
+
+        instagram: {
+            icono: "📸",
+            titulo: "Instagram"
+        },
+
+        tiktok: {
+            icono: "🎵",
+            titulo: "TikTok"
+        },
+
+        youtube: {
+            icono: "▶️",
+            titulo: "YouTube"
+        },
+
+        x: {
+            icono: "𝕏",
+            titulo: "X"
+        },
+
+        linkedin: {
+            icono: "💼",
+            titulo: "LinkedIn"
+        },
+
+        sitio_web: {
+            icono: "🌐",
+            titulo: "Sitio web"
+        }
+    };
+
+
+    const enlaces = [];
+
+
+    (redes || []).forEach(
+        red => {
+
+            const tipo =
+                String(
+                    red?.tipo || ""
+                ).trim();
+
+
+            const url =
+                String(
+                    red?.url || ""
+                ).trim();
+
+
+            const configuracion =
+                configuracionTipos[
+                    tipo
+                ];
+
+
+            if (
+                !configuracion ||
+                !/^https?:\/\//i.test(
+                    url
+                )
+            ) {
+                return;
+            }
+
+
+            const urlSegura =
+                massEscaparHTML(
+                    url
+                );
+
+
+            enlaces.push(`
+                <a
+                    href="${urlSegura}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style="
+                        display:inline-flex;
+                        align-items:center;
+                        justify-content:center;
+                        gap:7px;
+                        text-decoration:none;
+                        border:1px solid
+                            var(
+                                --mass-org-accent,
+                                #39ff14
+                            );
+                        background:#151515;
+                        color:white;
+                        padding:10px 14px;
+                        border-radius:10px;
+                        font-weight:bold;
+                    "
+                >
+                    <span>
+                        ${configuracion.icono}
+                    </span>
+
+                    <span>
+                        ${configuracion.titulo}
+                    </span>
+                </a>
+            `);
+        }
+    );
+
+
+    if (
+        enlaces.length === 0
+    ) {
+        return "";
+    }
+
+
+    return `
+        <div
+            class="mass-redes-sociales-publicas"
+            style="
+                border:1px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+                border-radius:14px;
+                background:#101010;
+                padding:14px;
+                box-shadow:
+                    0 0 14px
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .18
+                    );
+                text-align:center;
+            "
+        >
+
+            <div
+                style="
+                    color:
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    font-size:17px;
+                    font-weight:bold;
+                    margin-bottom:7px;
+                "
+            >
+                ✨ Síguenos en nuestras redes
+            </div>
+
+
+            <div
+                style="
+                    color:#aaa;
+                    font-size:13px;
+                    margin-bottom:12px;
+                "
+            >
+                Conoce más y visita nuestros
+                canales oficiales.
+            </div>
+
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:center;
+                    align-items:center;
+                    flex-wrap:wrap;
+                    gap:8px;
+                "
+            >
+                ${enlaces.join("")}
+            </div>
+
+        </div>
+    `;
+}
+
+
+window.toggleRedesSocialesRifa =
+function () {
+
+    const box =
+        document.getElementById(
+            "redesSocialesOrganizadorRifaBox"
+        );
+
+    const boton =
+        document.getElementById(
+            "btnRedesSocialesRifa"
+        );
+
+
+    if (!box) {
+        return;
+    }
+
+
+    const abrir =
+        box.style.display !== "block";
+
+
+    box.style.display =
+        abrir
+            ? "block"
+            : "none";
+
+
+    if (boton) {
+
+        boton.setAttribute(
+            "aria-expanded",
+            abrir
+                ? "true"
+                : "false"
+        );
+    }
+
+
+    if (abrir) {
+
+        const contactoBox =
+            document.getElementById(
+                "contactoSoporteOrganizadorRifaBox"
+            );
+
+        const contactoBoton =
+            document.getElementById(
+                "btnContactoSoporteRifa"
+            );
+
+
+        if (contactoBox) {
+            contactoBox.style.display =
+                "none";
+        }
+
+
+        if (contactoBoton) {
+
+            contactoBoton.setAttribute(
+                "aria-expanded",
+                "false"
+            );
+        }
+    }
+};	
 
 async function verSorteosDeOrganizador(orgId){
 
@@ -68614,6 +68995,60 @@ if (contactoSoporteRifaBox) {
         inicializarContactoSoportePublicoOrganizador(
             contactoSoporteRifaBox,
             rifa.organizador_id
+        );
+    }
+}
+
+/* =====================================================
+   MASS — REDES SOCIALES PÚBLICAS
+   DENTRO DE LA DINÁMICA
+   MPV2-F4B
+===================================================== */
+
+const redesSocialesRifaBox =
+    document.getElementById(
+        "redesSocialesOrganizadorRifaBox"
+    );
+
+const btnRedesSocialesRifa =
+    document.getElementById(
+        "btnRedesSocialesRifa"
+    );
+
+
+if (redesSocialesRifaBox) {
+
+    const redesSocialesRifa =
+        await cargarRedesSocialesPublicasOrganizador(
+            rifa.organizador_id
+        );
+
+
+    const redesSocialesRifaHtml =
+        crearRedesSocialesPublicasOrganizador(
+            redesSocialesRifa
+        );
+
+
+    redesSocialesRifaBox.innerHTML =
+        redesSocialesRifaHtml;
+
+
+    redesSocialesRifaBox.style.display =
+        "none";
+
+
+    if (btnRedesSocialesRifa) {
+
+        btnRedesSocialesRifa.style.display =
+            redesSocialesRifaHtml
+                ? "inline-block"
+                : "none";
+
+
+        btnRedesSocialesRifa.setAttribute(
+            "aria-expanded",
+            "false"
         );
     }
 }	
