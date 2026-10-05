@@ -33262,6 +33262,141 @@ async function () {
         },
         150
     );
+};
+
+/* =========================================================
+   MASS — MI PERFIL V2
+   OPERACIÓN Y CUMPLIMIENTO
+   MPV2-F6A
+========================================================= */
+
+async function abrirModuloOperacionCumplimientoPerfil(
+    modulo
+) {
+
+    const acciones = {
+
+        resumen:
+            mostrarDashboardOrganizador,
+
+        reglas:
+            mostrarSorteosAdmin
+    };
+
+
+    const accion =
+        acciones[
+            String(
+                modulo || ""
+            ).trim()
+        ];
+
+
+    if (
+        typeof accion !==
+        "function"
+    ) {
+
+        console.error(
+            "MÓDULO DE OPERACIÓN NO DISPONIBLE:",
+            modulo
+        );
+
+        return;
+    }
+
+
+    await accion();
+
+
+    const contenedor =
+        document.getElementById(
+            "adminContenido"
+        );
+
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    if (
+        document.getElementById(
+            "btnVolverOperacionCumplimientoPerfil"
+        )
+    ) {
+        return;
+    }
+
+
+    const barraVolver =
+        document.createElement(
+            "div"
+        );
+
+
+    barraVolver.id =
+        "btnVolverOperacionCumplimientoPerfil";
+
+
+    barraVolver.style.cssText = `
+        width:100%;
+        text-align:center;
+        margin:0 auto 18px auto;
+    `;
+
+
+    barraVolver.innerHTML = `
+        <button
+            type="button"
+            onclick="volverOperacionCumplimientoPerfil()"
+            style="
+                padding:11px 18px;
+                border:2px solid #39ff14;
+                border-radius:10px;
+                background:#111;
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            ← Volver a Operación y Cumplimiento
+        </button>
+    `;
+
+
+    contenedor.prepend(
+        barraVolver
+    );
+}
+
+
+window.volverOperacionCumplimientoPerfil =
+async function () {
+
+    await mostrarConfigAdmin();
+
+
+    setTimeout(
+        () => {
+
+            const destino =
+                document.getElementById(
+                    "operacionCumplimientoPerfilBox"
+                );
+
+
+            if (destino) {
+
+                destino.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            }
+
+        },
+        150
+    );
 };	
 
 async function mostrarConfigAdmin(){
@@ -34134,6 +34269,200 @@ ${[
     >
         Estos accesos utilizan los módulos
         administrativos existentes del Organizador.
+    </div>
+
+</div>
+
+` : ""}
+
+<!-- =====================================================
+     MASS — MI PERFIL V2
+     OPERACIÓN Y CUMPLIMIENTO
+     MPV2-F6A
+====================================================== -->
+
+${[
+    "organizador",
+    "super_admin"
+].includes(adminRol) ? `
+
+<div
+    id="operacionCumplimientoPerfilBox"
+    style="
+        border:2px solid #39ff14;
+        border-radius:16px;
+        padding:18px;
+        margin-top:22px;
+        margin-bottom:22px;
+        background:#0b0b0b;
+        text-align:left;
+    "
+>
+
+    <h3
+        style="
+            color:#39ff14;
+            margin-top:0;
+            text-align:center;
+        "
+    >
+        📋 Operación y Cumplimiento
+    </h3>
+
+
+    <p
+        style="
+            color:#aaa;
+            text-align:center;
+            line-height:1.5;
+            margin-bottom:20px;
+        "
+    >
+        Consulta la operación de tu negocio
+        y administra la documentación de tus dinámicas.
+    </p>
+
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px,1fr)
+                );
+            gap:12px;
+        "
+    >
+
+        <button
+            type="button"
+            onclick="
+                abrirModuloOperacionCumplimientoPerfil(
+                    'reglas'
+                )
+            "
+            style="
+                min-height:82px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            📜 Reglas Oficiales
+
+            <br>
+
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Se administran por dinámica
+            </span>
+        </button>
+
+
+        <button
+            type="button"
+            onclick="
+                abrirModuloOperacionCumplimientoPerfil(
+                    'resumen'
+                )
+            "
+            style="
+                min-height:82px;
+                padding:14px;
+                font-size:16px;
+                font-weight:bold;
+            "
+        >
+            📊 Resumen de operación
+
+            <br>
+
+            <span
+                style="
+                    font-size:12px;
+                    font-weight:normal;
+                    color:#bbb;
+                "
+            >
+                Dashboard del Organizador
+            </span>
+        </button>
+
+    </div>
+
+
+    <div
+        style="
+            margin-top:14px;
+            padding:14px;
+            border:1px solid #444;
+            border-radius:12px;
+            background:#111;
+        "
+    >
+
+        <div
+            style="
+                color:white;
+                font-weight:bold;
+                margin-bottom:6px;
+            "
+        >
+            🔐 Accesos administrativos
+        </div>
+
+
+        <div
+            style="
+                color:#aaa;
+                font-size:13px;
+                line-height:1.5;
+            "
+        >
+            ${
+                adminRol === "super_admin"
+                    ? `
+                        La asignación, suspensión,
+                        reactivación y retiro de accesos
+                        se administra desde
+                        <b>Accesos de Organizadores</b>
+                        en el Panel Súper Admin.
+                    `
+                    : `
+                        Los accesos administrativos
+                        del Organizador son gestionados
+                        exclusivamente por el
+                        <b>Súper Admin</b>.
+                    `
+            }
+        </div>
+
+    </div>
+
+
+    <div
+        style="
+            margin-top:16px;
+            padding:11px;
+            border:1px solid #333;
+            border-radius:10px;
+            background:#151515;
+            color:#888;
+            font-size:12px;
+            line-height:1.45;
+            text-align:center;
+        "
+    >
+        📜 Las Reglas Oficiales pertenecen
+        individualmente a cada dinámica.
+        No existen Reglas Oficiales globales
+        del Organizador.
     </div>
 
 </div>
