@@ -59163,7 +59163,20 @@ console.log(
   <div id="listaOrganizadoresActivos">
     Cargando organizadores...
   </div>
-</div>
+  </div>
+
+<!-- ===================================================== -->
+<!-- MASS — PERFIL PÚBLICO PROFESIONAL DEL ORGANIZADOR -->
+<!-- MPV2-F7A -->
+<!-- ===================================================== -->
+
+<div
+  id="perfilPublicoOrganizadorBox"
+  style="
+    display:none;
+    margin-top:15px;
+  "
+></div>
 
     <div id="sorteosActivosBox" style="display:none; margin-top:15px;">
       <h2>🎯 Sorteos Activos</h2>
@@ -59591,23 +59604,82 @@ function renderOrganizadoresPaginados(){
             String(r.organizador_id) === String(org.id)
         ).length;
 
-        const nombre = org.nombre_publico || org.nombre || "Organizador";
-
         return `
-            <div class="card" style="margin:10px 0;">
-                <h3>👥 ${nombre}</h3>
-                <p>${total} sorteo(s) activo(s)</p>
-                <button onclick="verSorteosDeOrganizador('${org.id}')">
-                  ${
-  total === 0
-    ? "👥 Entrar al organizador"
-    : total === 1
-      ? "🎯 Ver sorteo"
-      : "🎯 Ver sorteos"
-}
-                </button>
-            </div>
-        `;
+    <div
+        class="card"
+        style="
+            margin:10px 0;
+        "
+    >
+
+        <h3>
+            👥 ${nombre}
+        </h3>
+
+
+        ${
+            org.slogan
+                ? `
+                    <p
+                        style="
+                            color:#bbb;
+                            margin-top:-4px;
+                        "
+                    >
+                        ${massEscaparHTML(
+                            org.slogan
+                        )}
+                    </p>
+                `
+                : ""
+        }
+
+
+        <p>
+            🎯 ${total}
+            ${
+                total === 1
+                    ? "dinámica activa"
+                    : "dinámicas activas"
+            }
+        </p>
+
+
+        <button
+            type="button"
+            onclick="
+                mostrarPerfilPublicoOrganizador(
+                    '${org.id}'
+                )
+            "
+        >
+            👤 Ver perfil
+        </button>
+
+
+        ${
+            total > 0
+                ? `
+                    <button
+                        type="button"
+                        onclick="
+                            verSorteosDeOrganizador(
+                                '${org.id}'
+                            )
+                        "
+                    >
+                        ${
+                            total === 1
+                                ? "🎯 Ver dinámica"
+                                : "🎯 Ver dinámicas"
+                        }
+                    </button>
+                `
+                : ""
+        }
+
+    </div>
+`;
 
     }).join("");
 
@@ -62100,12 +62172,799 @@ function () {
             );
         }
     }
-};	
+};
+
+/* =========================================================
+   MASS — PERFIL PÚBLICO PROFESIONAL DEL ORGANIZADOR
+   MPV2-F7A
+========================================================= */
+
+async function mostrarPerfilPublicoOrganizador(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const organizador =
+        mapaOrganizadores?.[
+            idLimpio
+        ];
+
+
+    const contenedor =
+        document.getElementById(
+            "perfilPublicoOrganizadorBox"
+        );
+
+
+    if (
+        !idLimpio ||
+        !organizador ||
+        !contenedor
+    ) {
+
+        console.error(
+            "No fue posible abrir el Perfil Público del Organizador."
+        );
+
+        return;
+    }
+
+
+    localStorage.setItem(
+        "organizador_publico_id",
+        idLimpio
+    );
+
+    localStorage.setItem(
+        "organizador_actual_id",
+        idLimpio
+    );
+
+
+    aplicarTemaVisualOrganizadorPublico(
+        idLimpio
+    );
+
+
+    const organizadoresBox =
+        document.getElementById(
+            "organizadoresActivosBox"
+        );
+
+
+    const sorteosBox =
+        document.getElementById(
+            "sorteosActivosBox"
+        );
+
+
+    const sorteoSeleccionado =
+        document.getElementById(
+            "sorteoSeleccionadoBox"
+        );
+
+
+    const zonaRifa =
+        document.getElementById(
+            "zonaRifaActiva"
+        );
+
+
+    if (organizadoresBox) {
+        organizadoresBox.style.display =
+            "none";
+    }
+
+
+    if (sorteosBox) {
+        sorteosBox.style.display =
+            "none";
+    }
+
+
+    if (sorteoSeleccionado) {
+        sorteoSeleccionado.style.display =
+            "none";
+    }
+
+
+    if (zonaRifa) {
+        zonaRifa.style.display =
+            "none";
+    }
+
+
+    mostrarPatrocinadorPlataforma(
+        false
+    );
+
+
+    const [
+        canalesSoporte,
+        redesSociales
+    ] = await Promise.all([
+
+        cargarCanalesSoportePublicosOrganizador(
+            idLimpio
+        ),
+
+        cargarRedesSocialesPublicasOrganizador(
+            idLimpio
+        )
+
+    ]);
+
+
+    const contactoSoporteHtml =
+        crearContactoSoportePublicoOrganizador(
+            idLimpio,
+            canalesSoporte
+        );
+
+
+    const redesSocialesHtml =
+        crearRedesSocialesPublicasOrganizador(
+            redesSociales
+        );
+
+
+    const rifasOrganizador =
+        (rifas || []).filter(
+            rifa =>
+                String(
+                    rifa.organizador_id
+                ) ===
+                idLimpio
+        );
+
+
+    const totalDinamicas =
+        rifasOrganizador.length;
+
+
+    const nombre =
+        massEscaparHTML(
+            organizador.nombre_publico ||
+            organizador.nombre ||
+            "Organizador"
+        );
+
+
+    const slogan =
+        massEscaparHTML(
+            organizador.slogan || ""
+        );
+
+
+    const descripcion =
+        massEscaparHTML(
+            organizador.descripcion || ""
+        );
+
+
+    const categoria =
+        massEscaparHTML(
+            organizador.categoria_negocio ||
+            ""
+        );
+
+
+    const ubicacion =
+        massEscaparHTML(
+            organizador.ubicacion_publica ||
+            ""
+        );
+
+
+    const horario =
+        massEscaparHTML(
+            organizador.horario_comercial ||
+            ""
+        );
+
+
+    const logoUrl =
+        massEscaparHTML(
+            organizador.logo_url || ""
+        );
+
+
+    const bannerUrl =
+        massEscaparHTML(
+            organizador.banner_url || ""
+        );
+
+
+    const whatsapp =
+        String(
+            organizador.whatsapp_publico ||
+            organizador.whatsapp ||
+            ""
+        ).trim();
+
+
+    const whatsappSeguro =
+        massEscaparHTML(
+            whatsapp
+        );
+
+
+    const canalChatPublico =
+        (canalesSoporte || [])
+            .some(
+                canal =>
+                    canal?.tipo ===
+                    "chat_mass"
+            );
+
+
+    const canalWhatsappPublico =
+        whatsapp &&
+        (canalesSoporte || [])
+            .some(
+                canal =>
+                    canal?.tipo ===
+                    "whatsapp_negocio"
+            );
+
+
+    const inicial =
+        massEscaparHTML(
+            String(
+                nombre || "M"
+            )
+            .trim()
+            .charAt(0)
+            .toUpperCase() ||
+            "M"
+        );
+
+
+    contenedor.innerHTML = `
+
+        <div
+            style="
+                width:100%;
+                max-width:900px;
+                margin:0 auto;
+            "
+        >
+
+            <button
+                type="button"
+                onclick="volverListaOrganizadoresDesdePerfil()"
+                style="
+                    margin-bottom:14px;
+                    padding:10px 16px;
+                "
+            >
+                ← Volver a Organizadores
+            </button>
+
+
+            <div
+                style="
+                    overflow:hidden;
+                    border:2px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+                    border-radius:20px;
+                    background:#0b0b0b;
+                    box-shadow:
+                        0 0 20px
+                        rgba(
+                            var(--mass-org-accent-rgb),
+                            .28
+                        );
+                "
+            >
+
+                ${
+                    bannerUrl
+                        ? `
+                            <img
+                                src="${bannerUrl}"
+                                alt="Banner de ${nombre}"
+                                style="
+                                    display:block;
+                                    width:100%;
+                                    height:220px;
+                                    object-fit:cover;
+                                "
+                            >
+                        `
+                        : `
+                            <div
+                                style="
+                                    height:180px;
+                                    background:
+                                        linear-gradient(
+                                            135deg,
+                                            rgba(
+                                                var(--mass-org-accent-rgb),
+                                                .38
+                                            ),
+                                            #080808 70%
+                                        );
+                                "
+                            ></div>
+                        `
+                }
+
+
+                <div
+                    style="
+                        padding:
+                            0 20px
+                            22px 20px;
+                        text-align:center;
+                    "
+                >
+
+                    <div
+                        style="
+                            width:110px;
+                            height:110px;
+                            margin:
+                                -55px auto
+                                12px auto;
+                            border-radius:50%;
+                            border:4px solid
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            background:#111;
+                            overflow:hidden;
+                            display:flex;
+                            align-items:center;
+                            justify-content:center;
+                            position:relative;
+                            z-index:2;
+                            box-shadow:
+                                0 0 18px
+                                rgba(
+                                    var(--mass-org-accent-rgb),
+                                    .35
+                                );
+                        "
+                    >
+
+                        ${
+                            logoUrl
+                                ? `
+                                    <img
+                                        src="${logoUrl}"
+                                        alt="Logo de ${nombre}"
+                                        style="
+                                            width:100%;
+                                            height:100%;
+                                            object-fit:cover;
+                                        "
+                                    >
+                                `
+                                : `
+                                    <div
+                                        style="
+                                            color:
+                                                var(
+                                                    --mass-org-accent,
+                                                    #39ff14
+                                                );
+                                            font-size:42px;
+                                            font-weight:bold;
+                                        "
+                                    >
+                                        ${inicial}
+                                    </div>
+                                `
+                        }
+
+                    </div>
+
+
+                    <h2
+                        style="
+                            color:
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            margin:
+                                6px 0;
+                            font-size:28px;
+                        "
+                    >
+                        ${nombre}
+                    </h2>
+
+
+                    ${
+                        slogan
+                            ? `
+                                <div
+                                    style="
+                                        color:#ddd;
+                                        font-size:16px;
+                                        margin-bottom:10px;
+                                    "
+                                >
+                                    ${slogan}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    <div
+                        style="
+                            display:inline-block;
+                            padding:7px 12px;
+                            border:1px solid
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            border-radius:999px;
+                            color:
+                                var(
+                                    --mass-org-accent,
+                                    #39ff14
+                                );
+                            font-size:13px;
+                            font-weight:bold;
+                            margin-bottom:18px;
+                        "
+                    >
+                        ✓ Organizador MASS
+                    </div>
+
+
+                    ${
+                        descripcion
+                            ? `
+                                <div
+                                    style="
+                                        max-width:700px;
+                                        margin:
+                                            0 auto
+                                            18px auto;
+                                        color:#ddd;
+                                        line-height:1.6;
+                                    "
+                                >
+                                    ${descripcion}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:center;
+                            flex-wrap:wrap;
+                            gap:9px;
+                            margin-bottom:18px;
+                        "
+                    >
+
+                        ${
+                            categoria
+                                ? `
+                                    <span
+                                        style="
+                                            padding:8px 11px;
+                                            background:#151515;
+                                            border:1px solid #444;
+                                            border-radius:999px;
+                                            color:#ddd;
+                                        "
+                                    >
+                                        🏷️ ${categoria}
+                                    </span>
+                                `
+                                : ""
+                        }
+
+
+                        ${
+                            ubicacion
+                                ? `
+                                    <span
+                                        style="
+                                            padding:8px 11px;
+                                            background:#151515;
+                                            border:1px solid #444;
+                                            border-radius:999px;
+                                            color:#ddd;
+                                        "
+                                    >
+                                        📍 ${ubicacion}
+                                    </span>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+
+                    ${
+                        horario
+                            ? `
+                                <div
+                                    style="
+                                        margin:
+                                            0 auto
+                                            18px auto;
+                                        padding:12px;
+                                        max-width:620px;
+                                        border:1px solid #333;
+                                        border-radius:12px;
+                                        background:#111;
+                                        color:#bbb;
+                                        white-space:pre-line;
+                                    "
+                                >
+                                    🕒 <b>Horario comercial</b>
+                                    <br>
+                                    ${horario}
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:center;
+                            flex-wrap:wrap;
+                            gap:10px;
+                            margin-bottom:18px;
+                        "
+                    >
+
+                        ${
+                            totalDinamicas > 0
+                                ? `
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            verSorteosDeOrganizador(
+                                                '${idLimpio}'
+                                            )
+                                        "
+                                    >
+                                        🎯 ${
+                                            totalDinamicas === 1
+                                                ? "Ver dinámica"
+                                                : "Ver dinámicas"
+                                        }
+                                        (${totalDinamicas})
+                                    </button>
+                                `
+                                : `
+                                    <button
+                                        type="button"
+                                        disabled
+                                    >
+                                        🎯 Sin dinámicas activas
+                                    </button>
+                                `
+                        }
+
+
+                        ${
+                            canalWhatsappPublico
+                                ? `
+                                    <button
+                                        type="button"
+                                        data-mass-soporte-tipo="whatsapp_negocio"
+                                        data-mass-soporte-valor="${whatsappSeguro}"
+                                    >
+                                        📱 WhatsApp
+                                    </button>
+                                `
+                                : ""
+                        }
+
+
+                        ${
+                            canalChatPublico
+                                ? `
+                                    <button
+                                        type="button"
+                                        data-mass-soporte-tipo="chat_mass"
+                                        data-mass-soporte-valor=""
+                                    >
+                                        💬 Chat MASS
+                                    </button>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+
+                    ${
+                        organizador
+                            .convertidor_mass_activo ===
+                        true
+                            ? `
+                                <div
+                                    style="
+                                        display:inline-block;
+                                        margin-bottom:18px;
+                                        color:#bbb;
+                                        font-size:13px;
+                                    "
+                                >
+                                    🌐 Convertidor MASS disponible
+                                </div>
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            </div>
+
+
+            ${
+                redesSocialesHtml
+                    ? `
+                        <div
+                            style="
+                                margin-top:20px;
+                            "
+                        >
+                            ${redesSocialesHtml}
+                        </div>
+                    `
+                    : ""
+            }
+
+
+            ${
+                contactoSoporteHtml
+                    ? `
+                        <div
+                            style="
+                                margin-top:20px;
+                            "
+                        >
+                            ${contactoSoporteHtml}
+                        </div>
+                    `
+                    : ""
+            }
+
+        </div>
+    `;
+
+
+    contenedor.style.display =
+        "block";
+
+
+    inicializarContactoSoportePublicoOrganizador(
+        contenedor,
+        idLimpio
+    );
+
+
+    setTimeout(
+        () => {
+
+            contenedor.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        },
+        100
+    );
+}
+
+
+window.volverListaOrganizadoresDesdePerfil =
+function () {
+
+    const perfil =
+        document.getElementById(
+            "perfilPublicoOrganizadorBox"
+        );
+
+
+    const organizadores =
+        document.getElementById(
+            "organizadoresActivosBox"
+        );
+
+
+    const sorteos =
+        document.getElementById(
+            "sorteosActivosBox"
+        );
+
+
+    if (perfil) {
+
+        perfil.style.display =
+            "none";
+
+        perfil.innerHTML =
+            "";
+    }
+
+
+    if (sorteos) {
+        sorteos.style.display =
+            "none";
+    }
+
+
+    if (organizadores) {
+
+        organizadores.style.display =
+            "block";
+    }
+
+
+    localStorage.removeItem(
+        "organizador_actual_id"
+    );
+
+    localStorage.removeItem(
+        "organizador_publico_id"
+    );
+
+
+    restablecerTemaVisualOrganizadorPublico();
+
+
+    mostrarPatrocinadorPlataforma(
+        true
+    );
+
+
+    setTimeout(
+        () => {
+
+            organizadores?.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+
+        },
+        100
+    );
+};
 
 async function verSorteosDeOrganizador(orgId){
 
     localStorage.setItem("organizador_publico_id", orgId);
 	localStorage.setItem("organizador_actual_id", orgId);
+
+    const perfilPublicoBox =
+    document.getElementById(
+        "perfilPublicoOrganizadorBox"
+    );
+
+if (perfilPublicoBox) {
+
+    perfilPublicoBox.style.display =
+        "none";
+}
 
 aplicarTemaVisualOrganizadorPublico(
     orgId
