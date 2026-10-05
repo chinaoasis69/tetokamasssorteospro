@@ -59129,7 +59129,11 @@ console.log(
   const cont = document.getElementById("listaRifas");
 
   cont.innerHTML = `
-    <div class="card" style="text-align:center; margin-bottom:25px;">
+    <div
+  id="portadaPlataformaPublicaMass"
+  class="card"
+  style="text-align:center; margin-bottom:25px;"
+>
       <h2>TE-TO-KA MASS SORTEOS PRO</h2>
       <p>La plataforma profesional para administrar sorteos en línea.</p>
       <p><b>Powered by TE-TO-KA SOLUTIONS, LLC</b></p>
@@ -62300,6 +62304,17 @@ async function mostrarPerfilPublicoOrganizador(
         false
     );
 
+    const portadaPlataforma =
+    document.getElementById(
+        "portadaPlataformaPublicaMass"
+    );
+
+if (portadaPlataforma) {
+
+    portadaPlataforma.style.display =
+        "none";
+}
+
     const contenidoGeneralUsuario =
     document.getElementById(
         "contenidoGeneralUsuarioMass"
@@ -62964,6 +62979,17 @@ function () {
         true
     );
 
+    const portadaPlataforma =
+    document.getElementById(
+        "portadaPlataformaPublicaMass"
+    );
+
+if (portadaPlataforma) {
+
+    portadaPlataforma.style.display =
+        "";
+}
+
     const contenidoGeneralUsuario =
     document.getElementById(
         "contenidoGeneralUsuarioMass"
@@ -63013,6 +63039,17 @@ const contenidoGeneralUsuario =
 if (contenidoGeneralUsuario) {
 
     contenidoGeneralUsuario.style.display =
+        "";
+}
+
+const portadaPlataforma =
+    document.getElementById(
+        "portadaPlataformaPublicaMass"
+    );
+
+if (portadaPlataforma) {
+
+    portadaPlataforma.style.display =
         "";
 }
 
