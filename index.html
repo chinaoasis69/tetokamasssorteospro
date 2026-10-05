@@ -57539,11 +57539,11 @@ function completarTemaVisualOrganizadorPublico() {
         }
 
 
-        .mass-org-theme-card
-        button:not(#btnComprarMass):
-        not(#btnCancelarRecargaMass) {
+                .mass-org-theme-card:not(#patrocinadoresSorteoCard)
+        button:not(#btnComprarMass):not(#btnCancelarRecargaMass) {
 
-            border-color:
+            border:
+                1px solid
                 var(--mass-org-accent)
                 !important;
         }
@@ -57596,6 +57596,18 @@ function completarTemaVisualOrganizadorPublico() {
                     var(--mass-org-accent-rgb),
                     .25
                 )
+                !important;
+        }
+
+	        /* =============================================
+           AVANCE — BORDE DEL ORGANIZADOR
+        ============================================= */
+
+        #zonaRifaActiva
+        #porcentajeRifa + div {
+
+            border-color:
+                var(--mass-org-accent)
                 !important;
         }
 
@@ -57890,6 +57902,192 @@ function completarTemaVisualOrganizadorPublico() {
                 rgba(
                     var(--mass-org-accent-rgb),
                     .28
+                )
+                !important;
+        }
+
+	        /* =============================================
+           PATROCINADORES — ACENTOS INTERNOS
+        ============================================= */
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-section {
+
+            box-shadow:
+                0 14px 35px
+                rgba(0, 0, 0, .45),
+
+                inset 0 0 22px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .025
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-section-title {
+
+            text-shadow:
+                0 0 8px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .50
+                ),
+
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .20
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-card {
+
+            box-shadow:
+                0 10px 24px
+                rgba(0, 0, 0, .38),
+
+                0 0 14px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .07
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-card::before {
+
+            background:
+                linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--mass-org-accent),
+                    transparent
+                )
+                !important;
+
+            box-shadow:
+                0 0 15px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .75
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-logo-box {
+
+            box-shadow:
+                0 0 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .14
+                ),
+
+                inset 0 0 12px
+                rgba(255, 255, 255, .04)
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-contact {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .34
+                    ),
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .14
+                    )
+                )
+                !important;
+
+            box-shadow:
+                0 5px 14px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .12
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-contact:hover {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .48
+                    ),
+                    rgba(
+                        var(--mass-org-accent-rgb),
+                        .20
+                    )
+                )
+                !important;
+
+            box-shadow:
+                0 7px 18px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .22
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-arrow {
+
+            box-shadow:
+                0 0 16px
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .20
+                ),
+
+                0 6px 16px
+                rgba(0, 0, 0, .40)
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-arrow:hover {
+
+            background:
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .18
+                )
+                !important;
+        }
+
+
+        #patrocinadoresSorteoCard
+        .mass-sponsor-empty {
+
+            border-color:
+                rgba(
+                    var(--mass-org-accent-rgb),
+                    .35
                 )
                 !important;
         }
