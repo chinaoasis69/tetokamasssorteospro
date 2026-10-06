@@ -60269,6 +60269,227 @@ function aplicarTemaVisualOrganizadorPublico(
                 !important;
         }
 
+        /* =============================================
+   PATROCINADORES DEL PERFIL PÚBLICO
+============================================= */
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-section {
+
+    border-color:
+        rgba(
+            var(--mass-org-accent-rgb),
+            .55
+        )
+        !important;
+
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(
+                var(--mass-org-accent-rgb),
+                .10
+            ),
+            transparent 48%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(18,18,18,.98),
+            rgba(5,5,5,.98)
+        )
+        !important;
+
+    box-shadow:
+        0 14px 35px
+        rgba(0,0,0,.45),
+        inset 0 0 22px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .05
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-section-title,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-logo-placeholder,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-arrow {
+
+    color:
+        var(--mass-org-accent)
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-section-title {
+
+    text-shadow:
+        0 0 8px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .50
+        ),
+        0 0 18px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .20
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-card,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-logo-box,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-promo,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-contact,
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-arrow {
+
+    border-color:
+        rgba(
+            var(--mass-org-accent-rgb),
+            .70
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-card::before {
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            var(--mass-org-accent),
+            transparent
+        )
+        !important;
+
+    box-shadow:
+        0 0 15px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .75
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-card:hover {
+
+    border-color:
+        rgba(
+            var(--mass-org-accent-rgb),
+            .85
+        )
+        !important;
+
+    box-shadow:
+        0 14px 30px
+        rgba(0,0,0,.50),
+        0 0 20px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .18
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-logo-box {
+
+    box-shadow:
+        0 0 18px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .20
+        ),
+        inset 0 0 12px
+        rgba(255,255,255,.04)
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-promo {
+
+    color:
+        var(--mass-org-accent)
+        !important;
+
+    background:
+        rgba(
+            var(--mass-org-accent-rgb),
+            .075
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-contact {
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(
+                var(--mass-org-accent-rgb),
+                .32
+            ),
+            rgba(
+                var(--mass-org-accent-rgb),
+                .12
+            )
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-arrow:hover {
+
+    background:
+        rgba(
+            var(--mass-org-accent-rgb),
+            .20
+        )
+        !important;
+}
+
+
+#patrocinadoresPerfilPublicoOrganizadorBox
+.mass-sponsor-dot.active {
+
+    background:
+        var(--mass-org-accent)
+        !important;
+
+    box-shadow:
+        0 0 10px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .70
+        )
+        !important;
+}
+
        `;
 
     completarTemaVisualOrganizadorPublico();
@@ -64743,13 +64964,21 @@ if (contenidoGeneralUsuario) {
 
 
     <div
-        id="contadorSeguidoresOrganizadorPerfil"
-        style="
-            color:#bbb;
-            font-size:14px;
-            font-weight:bold;
-        "
-    >
+    id="contadorSeguidoresOrganizadorPerfil"
+    style="
+        padding:8px 12px;
+        border:1px solid
+            rgba(
+                var(--mass-org-accent-rgb),
+                .55
+            );
+        border-radius:999px;
+        background:#151515;
+        color:#ddd;
+        font-size:14px;
+        font-weight:bold;
+    "
+>
         Cargando seguidores...
     </div>
 
@@ -64822,13 +65051,21 @@ if (contenidoGeneralUsuario) {
 
 
     <div
-        id="contadorMeGustaOrganizadorPerfil"
-        style="
-            color:#bbb;
-            font-size:14px;
-            font-weight:bold;
-        "
-    >
+    id="contadorMeGustaOrganizadorPerfil"
+    style="
+        padding:8px 12px;
+        border:1px solid
+            rgba(
+                var(--mass-org-accent-rgb),
+                .55
+            );
+        border-radius:999px;
+        background:#151515;
+        color:#ddd;
+        font-size:14px;
+        font-weight:bold;
+    "
+>
         Cargando Me gusta...
     </div>
 
@@ -64872,7 +65109,11 @@ if (contenidoGeneralUsuario) {
                                         style="
                                             padding:8px 11px;
                                             background:#151515;
-                                            border:1px solid #444;
+                                            border:1px solid
+    var(
+        --mass-org-accent,
+        #39ff14
+    );
                                             border-radius:999px;
                                             color:#ddd;
                                         "
@@ -64891,7 +65132,11 @@ if (contenidoGeneralUsuario) {
                                         style="
                                             padding:8px 11px;
                                             background:#151515;
-                                            border:1px solid #444;
+                                            border:1px solid
+    var(
+        --mass-org-accent,
+        #39ff14
+    );
                                             border-radius:999px;
                                             color:#ddd;
                                         "
@@ -64915,7 +65160,11 @@ if (contenidoGeneralUsuario) {
                                             18px auto;
                                         padding:12px;
                                         max-width:620px;
-                                        border:1px solid #333;
+                                        border:1px solid
+    var(
+        --mass-org-accent,
+        #39ff14
+    );
                                         border-radius:12px;
                                         background:#111;
                                         color:#bbb;
