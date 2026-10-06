@@ -33551,19 +33551,106 @@ async function mostrarModeracionComentariosOrganizador() {
             </p>
 
 
-            <div
-                id="contenidoModeracionComentariosOrganizadorPerfil"
+                        <div
                 style="
-                    color:#bbb;
-                    text-align:center;
-                    padding:20px;
+                    display:flex;
+                    justify-content:center;
+                    gap:10px;
+                    flex-wrap:wrap;
+                    margin-bottom:18px;
                 "
             >
-                ⏳ Cargando moderación...
+
+                <button
+                    id="btnTabModeracionComentariosPerfil"
+                    type="button"
+                    onclick="
+                        cambiarVistaModeracionComentariosOrganizador(
+                            'perfil'
+                        )
+                    "
+                    style="
+                        padding:10px 16px;
+                        border:1px solid #39ff14;
+                        border-radius:999px;
+                        background:#173117;
+                        color:white;
+                        font-weight:bold;
+                        cursor:pointer;
+                    "
+                >
+                    👤 Perfil del Organizador
+                </button>
+
+
+                <button
+                    id="btnTabModeracionComentariosDinamicas"
+                    type="button"
+                    onclick="
+                        cambiarVistaModeracionComentariosOrganizador(
+                            'dinamicas'
+                        )
+                    "
+                    style="
+                        padding:10px 16px;
+                        border:1px solid #555;
+                        border-radius:999px;
+                        background:#111;
+                        color:#bbb;
+                        font-weight:bold;
+                        cursor:pointer;
+                    "
+                >
+                    🎟️ Dinámicas
+                </button>
+
+            </div>
+
+
+            <div
+                id="seccionModeracionComentariosPerfil"
+            >
+
+                <div
+                    id="contenidoModeracionComentariosOrganizadorPerfil"
+                    style="
+                        color:#bbb;
+                        text-align:center;
+                        padding:20px;
+                    "
+                >
+                    ⏳ Cargando moderación...
+                </div>
+
+            </div>
+
+
+            <div
+                id="seccionModeracionComentariosDinamicas"
+                style="
+                    display:none;
+                "
+            >
+
+                <div
+                    id="contenidoModeracionComentariosDinamicasOrganizadorPerfil"
+                    style="
+                        color:#bbb;
+                        text-align:center;
+                        padding:20px;
+                    "
+                >
+                    ⏳ Cargando moderación de dinámicas...
+                </div>
+
             </div>
 
         </div>
     `;
+
+        cargarModeracionComentariosDinamicasOrganizador(
+        organizadorId
+    );
 
 
     const {
@@ -34385,6 +34472,1178 @@ async function (
 
         console.error(
             "ERROR INESPERADO MODERANDO COMENTARIO:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+    } finally {
+
+        MASS_MODERACION_COMENTARIOS_EN_PROCESO =
+            false;
+    }
+};
+
+/* =========================================================
+   MASS — MODERACIÓN DE COMENTARIOS DE DINÁMICAS
+   DYN-F4D
+========================================================= */
+
+window.cambiarVistaModeracionComentariosOrganizador =
+function (
+    vista
+) {
+
+    const perfil =
+        document.getElementById(
+            "seccionModeracionComentariosPerfil"
+        );
+
+    const dinamicas =
+        document.getElementById(
+            "seccionModeracionComentariosDinamicas"
+        );
+
+    const btnPerfil =
+        document.getElementById(
+            "btnTabModeracionComentariosPerfil"
+        );
+
+    const btnDinamicas =
+        document.getElementById(
+            "btnTabModeracionComentariosDinamicas"
+        );
+
+
+    if (
+        !perfil ||
+        !dinamicas ||
+        !btnPerfil ||
+        !btnDinamicas
+    ) {
+        return;
+    }
+
+
+    const mostrarDinamicas =
+        String(
+            vista || ""
+        ).trim() ===
+        "dinamicas";
+
+
+    perfil.style.display =
+        mostrarDinamicas
+            ? "none"
+            : "block";
+
+
+    dinamicas.style.display =
+        mostrarDinamicas
+            ? "block"
+            : "none";
+
+
+    btnPerfil.style.borderColor =
+        mostrarDinamicas
+            ? "#555"
+            : "#39ff14";
+
+    btnPerfil.style.background =
+        mostrarDinamicas
+            ? "#111"
+            : "#173117";
+
+    btnPerfil.style.color =
+        mostrarDinamicas
+            ? "#bbb"
+            : "white";
+
+
+    btnDinamicas.style.borderColor =
+        mostrarDinamicas
+            ? "#39ff14"
+            : "#555";
+
+    btnDinamicas.style.background =
+        mostrarDinamicas
+            ? "#173117"
+            : "#111";
+
+    btnDinamicas.style.color =
+        mostrarDinamicas
+            ? "white"
+            : "#bbb";
+};
+
+
+async function cargarModeracionComentariosDinamicasOrganizador(
+    organizadorId
+) {
+
+    const contenido =
+        document.getElementById(
+            "contenidoModeracionComentariosDinamicasOrganizadorPerfil"
+        );
+
+
+    if (!contenido) {
+        return;
+    }
+
+
+    const organizadorIdLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!organizadorIdLimpio) {
+
+        contenido.innerHTML = `
+            <div
+                style="
+                    padding:18px;
+                    border:1px solid #ff5252;
+                    border-radius:12px;
+                    color:#ff8a80;
+                "
+            >
+                ❌ No fue posible identificar el Organizador.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    contenido.innerHTML = `
+        <div
+            style="
+                padding:20px;
+                color:#aaa;
+                text-align:center;
+            "
+        >
+            ⏳ Cargando moderación de dinámicas...
+        </div>
+    `;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "listar_comentarios_reportados_rifa_seguro",
+            {
+                p_organizador_id:
+                    organizadorIdLimpio,
+
+                p_limite:
+                    20,
+
+                p_offset:
+                    0
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR CARGANDO MODERACIÓN DE DINÁMICAS:",
+                error || data
+            );
+
+
+            contenido.innerHTML = `
+                <div
+                    style="
+                        padding:18px;
+                        border:1px solid #ff5252;
+                        border-radius:12px;
+                        color:#ff8a80;
+                    "
+                >
+                    ❌ No fue posible cargar
+                    la moderación de comentarios
+                    de las dinámicas.
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const pendientes =
+            Array.isArray(
+                data.comentarios
+            )
+                ? data.comentarios
+                : [];
+
+
+        const ocultos =
+            Array.isArray(
+                data.ocultos
+            )
+                ? data.ocultos
+                : [];
+
+
+        const totalPendientes =
+            Math.max(
+                0,
+                Number(
+                    data.total_pendientes ||
+                    0
+                )
+            );
+
+
+        const totalOcultos =
+            Math.max(
+                0,
+                Number(
+                    data.total_ocultos ||
+                    0
+                )
+            );
+
+
+        const pendientesHtml =
+            pendientes.length
+
+                ? pendientes.map(
+                    comentario => {
+
+                        const foto =
+                            resolverFotoComentarioOrganizadorPerfil(
+                                comentario
+                                    .autor_foto_perfil_url
+                            );
+
+
+                        const avatarHtml =
+                            foto
+                                ? `
+                                    <div
+                                        style="
+                                            width:42px;
+                                            height:42px;
+                                            border-radius:50%;
+                                            overflow:hidden;
+                                            background:#222;
+                                            flex:0 0 42px;
+                                        "
+                                    >
+                                        <img
+                                            src="${
+                                                massEscaparHTML(
+                                                    foto
+                                                )
+                                            }"
+                                            alt="Foto de perfil"
+                                            style="
+                                                width:100%;
+                                                height:100%;
+                                                object-fit:cover;
+                                            "
+                                        >
+                                    </div>
+                                `
+                                : `
+                                    <div
+                                        style="
+                                            width:42px;
+                                            height:42px;
+                                            border-radius:50%;
+                                            background:#222;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;
+                                            flex:0 0 42px;
+                                        "
+                                    >
+                                        👤
+                                    </div>
+                                `;
+
+
+                        const detalle =
+                            String(
+                                comentario.detalle ||
+                                ""
+                            ).trim();
+
+
+                        return `
+                            <div
+                                style="
+                                    margin-bottom:16px;
+                                    padding:16px;
+                                    border:1px solid #ffb300;
+                                    border-radius:14px;
+                                    background:#111;
+                                    text-align:left;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        margin-bottom:12px;
+                                        color:#39ff14;
+                                        font-weight:bold;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >
+                                    🎟️ ${
+                                        massEscaparHTML(
+                                            comentario.rifa_titulo ||
+                                            "Dinámica"
+                                        )
+                                    }
+                                </div>
+
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        align-items:center;
+                                        gap:10px;
+                                    "
+                                >
+
+                                    ${avatarHtml}
+
+                                    <div
+                                        style="
+                                            min-width:0;
+                                            flex:1;
+                                        "
+                                    >
+
+                                        <div
+                                            style="
+                                                color:white;
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    comentario.autor_mass_id ||
+                                                    "Usuario MASS"
+                                                )
+                                            }
+                                        </div>
+
+                                        <div
+                                            style="
+                                                margin-top:3px;
+                                                color:#888;
+                                                font-size:12px;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    formatearFechaModeracionComentariosPerfil(
+                                                        comentario.comentario_creado_at
+                                                    )
+                                                )
+                                            }
+                                        </div>
+
+                                    </div>
+
+
+                                    <div
+                                        style="
+                                            padding:6px 10px;
+                                            border:1px solid #ffb300;
+                                            border-radius:999px;
+                                            color:#ffca28;
+                                            font-size:12px;
+                                            font-weight:bold;
+                                        "
+                                    >
+                                        🚩 ${
+                                            Number(
+                                                comentario.total_reportes ||
+                                                0
+                                            )
+                                        } reporte(s)
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    style="
+                                        margin-top:14px;
+                                        padding:12px;
+                                        border-radius:10px;
+                                        background:#181818;
+                                        color:#eee;
+                                        line-height:1.5;
+                                        white-space:pre-wrap;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >${
+                                    massEscaparHTML(
+                                        comentario.comentario ||
+                                        ""
+                                    )
+                                }</div>
+
+
+                                <div
+                                    style="
+                                        margin-top:12px;
+                                        padding:10px;
+                                        border:1px solid #444;
+                                        border-radius:10px;
+                                        background:#151515;
+                                    "
+                                >
+
+                                    <div
+                                        style="
+                                            color:#ddd;
+                                            font-weight:bold;
+                                        "
+                                    >
+                                        🚩 ${
+                                            massEscaparHTML(
+                                                etiquetaMotivoReporteComentarioPerfil(
+                                                    comentario.motivo
+                                                )
+                                            )
+                                        }
+                                    </div>
+
+
+                                    ${
+                                        detalle
+                                            ? `
+                                                <div
+                                                    style="
+                                                        margin-top:6px;
+                                                        color:#bbb;
+                                                        font-size:13px;
+                                                        white-space:pre-wrap;
+                                                        overflow-wrap:anywhere;
+                                                    "
+                                                >${
+                                                    massEscaparHTML(
+                                                        detalle
+                                                    )
+                                                }</div>
+                                            `
+                                            : ""
+                                    }
+
+
+                                    <div
+                                        style="
+                                            margin-top:6px;
+                                            color:#777;
+                                            font-size:11px;
+                                        "
+                                    >
+                                        ${
+                                            massEscaparHTML(
+                                                formatearFechaModeracionComentariosPerfil(
+                                                    comentario.reporte_creado_at
+                                                )
+                                            )
+                                        }
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        justify-content:center;
+                                        flex-wrap:wrap;
+                                        gap:10px;
+                                        margin-top:16px;
+                                    "
+                                >
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            moderarComentarioRifaOrganizadorPerfil(
+                                                '${
+                                                    comentario.comentario_id
+                                                }',
+                                                'mantener',
+                                                '${
+                                                    organizadorIdLimpio
+                                                }'
+                                            )
+                                        "
+                                        style="
+                                            padding:10px 14px;
+                                            border:1px solid #39ff14;
+                                            border-radius:999px;
+                                            background:#111;
+                                            color:white;
+                                            font-weight:bold;
+                                            cursor:pointer;
+                                        "
+                                    >
+                                        ✅ Mantener público
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            moderarComentarioRifaOrganizadorPerfil(
+                                                '${
+                                                    comentario.comentario_id
+                                                }',
+                                                'ocultar',
+                                                '${
+                                                    organizadorIdLimpio
+                                                }'
+                                            )
+                                        "
+                                        style="
+                                            padding:10px 14px;
+                                            border:1px solid #ff5252;
+                                            border-radius:999px;
+                                            background:#211;
+                                            color:#ff8a80;
+                                            font-weight:bold;
+                                            cursor:pointer;
+                                        "
+                                    >
+                                        🚫 Ocultar comentario
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        `;
+                    }
+                ).join("")
+
+                : `
+                    <div
+                        style="
+                            padding:18px;
+                            border:1px solid #333;
+                            border-radius:12px;
+                            background:#111;
+                            color:#888;
+                            text-align:center;
+                        "
+                    >
+                        ✅ No hay reportes pendientes
+                        en las dinámicas.
+                    </div>
+                `;
+
+
+        const ocultosHtml =
+            ocultos.length
+
+                ? ocultos.map(
+                    comentario => {
+
+                        const foto =
+                            resolverFotoComentarioOrganizadorPerfil(
+                                comentario
+                                    .autor_foto_perfil_url
+                            );
+
+
+                        const avatarHtml =
+                            foto
+                                ? `
+                                    <div
+                                        style="
+                                            width:42px;
+                                            height:42px;
+                                            border-radius:50%;
+                                            overflow:hidden;
+                                            background:#222;
+                                            flex:0 0 42px;
+                                        "
+                                    >
+                                        <img
+                                            src="${
+                                                massEscaparHTML(
+                                                    foto
+                                                )
+                                            }"
+                                            alt="Foto de perfil"
+                                            style="
+                                                width:100%;
+                                                height:100%;
+                                                object-fit:cover;
+                                            "
+                                        >
+                                    </div>
+                                `
+                                : `
+                                    <div
+                                        style="
+                                            width:42px;
+                                            height:42px;
+                                            border-radius:50%;
+                                            background:#222;
+                                            display:flex;
+                                            align-items:center;
+                                            justify-content:center;
+                                            flex:0 0 42px;
+                                        "
+                                    >
+                                        👤
+                                    </div>
+                                `;
+
+
+                        return `
+                            <div
+                                style="
+                                    margin-bottom:14px;
+                                    padding:16px;
+                                    border:1px solid #666;
+                                    border-radius:14px;
+                                    background:#111;
+                                    text-align:left;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        margin-bottom:12px;
+                                        color:#39ff14;
+                                        font-weight:bold;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >
+                                    🎟️ ${
+                                        massEscaparHTML(
+                                            comentario.rifa_titulo ||
+                                            "Dinámica"
+                                        )
+                                    }
+                                </div>
+
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        align-items:center;
+                                        gap:10px;
+                                    "
+                                >
+
+                                    ${avatarHtml}
+
+                                    <div
+                                        style="
+                                            min-width:0;
+                                            flex:1;
+                                        "
+                                    >
+
+                                        <div
+                                            style="
+                                                color:white;
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    comentario.autor_mass_id ||
+                                                    "Usuario MASS"
+                                                )
+                                            }
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                margin-top:3px;
+                                                color:#888;
+                                                font-size:12px;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    formatearFechaModeracionComentariosPerfil(
+                                                        comentario.comentario_creado_at
+                                                    )
+                                                )
+                                            }
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div
+                                    style="
+                                        margin-top:14px;
+                                        padding:12px;
+                                        border-radius:10px;
+                                        background:#181818;
+                                        color:#eee;
+                                        line-height:1.5;
+                                        white-space:pre-wrap;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >${
+                                    massEscaparHTML(
+                                        comentario.comentario ||
+                                        ""
+                                    )
+                                }</div>
+
+
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        color:#999;
+                                        font-size:12px;
+                                    "
+                                >
+                                    Ocultado:
+                                    ${
+                                        massEscaparHTML(
+                                            formatearFechaModeracionComentariosPerfil(
+                                                comentario.ocultado_at
+                                            )
+                                        )
+                                    }
+                                </div>
+
+
+                                ${
+                                    comentario.motivo_moderacion
+                                        ? `
+                                            <div
+                                                style="
+                                                    margin-top:5px;
+                                                    color:#aaa;
+                                                    font-size:12px;
+                                                    overflow-wrap:anywhere;
+                                                "
+                                            >
+                                                Motivo:
+                                                ${
+                                                    massEscaparHTML(
+                                                        comentario.motivo_moderacion
+                                                    )
+                                                }
+                                            </div>
+                                        `
+                                        : ""
+                                }
+
+
+                                <div
+                                    style="
+                                        text-align:center;
+                                        margin-top:14px;
+                                    "
+                                >
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            moderarComentarioRifaOrganizadorPerfil(
+                                                '${
+                                                    comentario.comentario_id
+                                                }',
+                                                'restaurar',
+                                                '${
+                                                    organizadorIdLimpio
+                                                }'
+                                            )
+                                        "
+                                        style="
+                                            padding:10px 14px;
+                                            border:1px solid #39ff14;
+                                            border-radius:999px;
+                                            background:#111;
+                                            color:white;
+                                            font-weight:bold;
+                                            cursor:pointer;
+                                        "
+                                    >
+                                        ↩️ Restaurar comentario
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        `;
+                    }
+                ).join("")
+
+                : `
+                    <div
+                        style="
+                            padding:18px;
+                            border:1px solid #333;
+                            border-radius:12px;
+                            background:#111;
+                            color:#888;
+                            text-align:center;
+                        "
+                    >
+                        No hay comentarios ocultos
+                        en las dinámicas.
+                    </div>
+                `;
+
+
+        contenido.innerHTML = `
+
+            <div
+                style="
+                    display:grid;
+                    grid-template-columns:
+                        repeat(
+                            auto-fit,
+                            minmax(180px,1fr)
+                        );
+                    gap:12px;
+                    margin-bottom:22px;
+                "
+            >
+
+                <div
+                    style="
+                        padding:14px;
+                        border:1px solid #ffb300;
+                        border-radius:12px;
+                        background:#17130a;
+                        text-align:center;
+                    "
+                >
+                    <div
+                        style="
+                            font-size:24px;
+                            font-weight:bold;
+                            color:#ffca28;
+                        "
+                    >
+                        ${totalPendientes}
+                    </div>
+
+                    <div
+                        style="
+                            color:#bbb;
+                            font-size:13px;
+                        "
+                    >
+                        Reportes pendientes
+                    </div>
+                </div>
+
+
+                <div
+                    style="
+                        padding:14px;
+                        border:1px solid #777;
+                        border-radius:12px;
+                        background:#151515;
+                        text-align:center;
+                    "
+                >
+                    <div
+                        style="
+                            font-size:24px;
+                            font-weight:bold;
+                            color:#ddd;
+                        "
+                    >
+                        ${totalOcultos}
+                    </div>
+
+                    <div
+                        style="
+                            color:#bbb;
+                            font-size:13px;
+                        "
+                    >
+                        Comentarios ocultos
+                    </div>
+                </div>
+
+            </div>
+
+
+            <h3
+                style="
+                    color:#ffca28;
+                    margin-top:0;
+                "
+            >
+                🚩 Reportes pendientes
+            </h3>
+
+            ${pendientesHtml}
+
+
+            <h3
+                style="
+                    color:#bbb;
+                    margin-top:26px;
+                "
+            >
+                🚫 Comentarios ocultos
+            </h3>
+
+            ${ocultosHtml}
+        `;
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO CARGANDO MODERACIÓN DE DINÁMICAS:",
+            errorInesperado
+        );
+
+
+        contenido.innerHTML = `
+            <div
+                style="
+                    padding:18px;
+                    border:1px solid #ff5252;
+                    border-radius:12px;
+                    color:#ff8a80;
+                "
+            >
+                ❌ Ocurrió un error inesperado
+                al cargar la moderación
+                de las dinámicas.
+            </div>
+        `;
+    }
+}
+
+
+window.moderarComentarioRifaOrganizadorPerfil =
+async function (
+    comentarioId,
+    accion,
+    organizadorId
+) {
+
+    if (
+        MASS_MODERACION_COMENTARIOS_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const comentarioIdLimpio =
+        String(
+            comentarioId || ""
+        ).trim();
+
+
+    const accionLimpia =
+        String(
+            accion || ""
+        ).trim();
+
+
+    const organizadorIdLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (
+        !comentarioIdLimpio ||
+        !organizadorIdLimpio ||
+        ![
+            "ocultar",
+            "mantener",
+            "restaurar"
+        ].includes(
+            accionLimpia
+        )
+    ) {
+        return;
+    }
+
+
+    const mensajes = {
+
+        ocultar:
+            "Escribe el motivo para ocultar este comentario de la dinámica:",
+
+        mantener:
+            "Escribe el motivo para mantener público este comentario de la dinámica:",
+
+        restaurar:
+            "Escribe el motivo para restaurar este comentario en la dinámica:"
+    };
+
+
+    const motivo =
+        prompt(
+            mensajes[
+                accionLimpia
+            ],
+            ""
+        );
+
+
+    if (motivo === null) {
+        return;
+    }
+
+
+    const motivoLimpio =
+        String(
+            motivo || ""
+        ).trim();
+
+
+    if (
+        motivoLimpio.length < 1 ||
+        motivoLimpio.length > 500
+    ) {
+
+        alert(
+            "🛡️ El motivo debe tener entre 1 y 500 caracteres."
+        );
+
+        return;
+    }
+
+
+    const confirmaciones = {
+
+        ocultar:
+            "¿Confirmas que quieres ocultar este comentario de la dinámica?",
+
+        mantener:
+            "¿Confirmas que el comentario permanecerá público y sus reportes serán resueltos?",
+
+        restaurar:
+            "¿Confirmas que quieres restaurar este comentario en la dinámica?"
+    };
+
+
+    if (
+        !confirm(
+            confirmaciones[
+                accionLimpia
+            ]
+        )
+    ) {
+        return;
+    }
+
+
+    MASS_MODERACION_COMENTARIOS_EN_PROCESO =
+        true;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "moderar_comentario_rifa_seguro",
+            {
+                p_comentario_id:
+                    comentarioIdLimpio,
+
+                p_accion:
+                    accionLimpia,
+
+                p_motivo:
+                    motivoLimpio
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR MODERANDO COMENTARIO DE DINÁMICA:",
+                error || data
+            );
+
+
+            alert(
+                "❌ No fue posible completar la moderación."
+            );
+
+            return;
+        }
+
+
+        const mensajesExito = {
+
+            ocultar:
+                "✅ Comentario de la dinámica ocultado.",
+
+            mantener:
+                "✅ Comentario mantenido público.",
+
+            restaurar:
+                "✅ Comentario restaurado."
+        };
+
+
+        alert(
+            mensajesExito[
+                accionLimpia
+            ]
+        );
+
+
+        await cargarModeracionComentariosDinamicasOrganizador(
+            organizadorIdLimpio
+        );
+
+
+        cambiarVistaModeracionComentariosOrganizador(
+            "dinamicas"
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO MODERANDO COMENTARIO DE DINÁMICA:",
             errorInesperado
         );
 
