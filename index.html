@@ -60573,7 +60573,7 @@ function toggleSorteosActivos(){
 function toggleOrganizadoresActivos(modo = "activos"){
 
     ocultarBarraSocialRifa();
-    
+
     const box = document.getElementById("organizadoresActivosBox");
     if(!box) return;
 
@@ -75166,6 +75166,14 @@ function mostrarBarraSocialRifa() {
 
 function ocultarBarraSocialRifa() {
 
+    if (
+        typeof cerrarComentariosRifa ===
+        "function"
+    ) {
+
+        cerrarComentariosRifa();
+    }
+
     const barra =
         document.getElementById(
             "barraSocialRifa"
@@ -75627,6 +75635,1112 @@ async function (
     }
 };
 
+// =========================================================
+// MASS — COMENTARIOS PÚBLICOS POR DINÁMICA
+// DYN-F3B3
+// =========================================================
+
+let MASS_COMENTARIOS_RIFA_EN_PROCESO =
+    false;
+
+
+function asegurarPanelComentariosRifa() {
+
+    let panel =
+        document.getElementById(
+            "panelComentariosRifa"
+        );
+
+
+    if (panel) {
+        return panel;
+    }
+
+
+    panel =
+        document.createElement(
+            "div"
+        );
+
+
+    panel.id =
+        "panelComentariosRifa";
+
+
+    panel.style.cssText = `
+        display:none;
+        position:fixed;
+        inset:0;
+        z-index:100002;
+        background:rgba(0,0,0,.82);
+        padding:18px 12px;
+        box-sizing:border-box;
+        overflow-y:auto;
+    `;
+
+
+    panel.innerHTML = `
+
+        <div
+            style="
+                width:100%;
+                max-width:600px;
+                margin:25px auto;
+                padding:18px;
+                box-sizing:border-box;
+
+                border:2px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+
+                border-radius:20px;
+
+                background:#0b0b0b;
+                color:white;
+
+                box-shadow:
+                    0 0 24px
+                    rgba(
+                        var(
+                            --mass-org-accent-rgb,
+                            57,255,20
+                        ),
+                        .38
+                    );
+            "
+        >
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:12px;
+                    margin-bottom:8px;
+                "
+            >
+
+                <h2
+                    style="
+                        margin:0;
+                        color:
+                            var(
+                                --mass-org-accent,
+                                #39ff14
+                            );
+                    "
+                >
+                    💬 Comentarios
+                </h2>
+
+
+                <button
+                    type="button"
+                    onclick="cerrarComentariosRifa()"
+                    aria-label="Cerrar comentarios"
+                    style="
+                        padding:8px 12px;
+                        border:1px solid #777;
+                        border-radius:10px;
+                        background:#222;
+                        color:white;
+                        cursor:pointer;
+                    "
+                >
+                    ✕
+                </button>
+
+            </div>
+
+
+            <div
+                id="totalComentariosRifa"
+                style="
+                    color:#aaa;
+                    font-size:13px;
+                    margin-bottom:16px;
+                "
+            >
+                0 comentarios
+            </div>
+
+
+            <textarea
+                id="comentarioRifaTexto"
+                maxlength="500"
+                placeholder="Escribe un comentario sobre esta dinámica..."
+                oninput="actualizarContadorCaracteresComentarioRifa()"
+                style="
+                    width:100%;
+                    min-height:90px;
+                    padding:12px;
+                    box-sizing:border-box;
+
+                    border:1px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+
+                    border-radius:12px;
+
+                    background:#151515;
+                    color:white;
+                    font-size:16px;
+                    resize:vertical;
+                    outline:none;
+                "
+            ></textarea>
+
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:10px;
+                    margin-top:7px;
+                    margin-bottom:15px;
+                "
+            >
+
+                <span
+                    id="contadorCaracteresComentarioRifa"
+                    style="
+                        color:#888;
+                        font-size:12px;
+                    "
+                >
+                    0/500
+                </span>
+
+
+                <button
+                    id="btnPublicarComentarioRifa"
+                    type="button"
+                    onclick="publicarComentarioRifa()"
+                    style="
+                        padding:10px 15px;
+
+                        border:1px solid
+                            var(
+                                --mass-org-accent,
+                                #39ff14
+                            );
+
+                        border-radius:10px;
+
+                        background:#111;
+                        color:white;
+                        font-weight:bold;
+                        cursor:pointer;
+                    "
+                >
+                    💬 Publicar
+                </button>
+
+            </div>
+
+
+            <div
+                id="listaComentariosRifa"
+                style="
+                    width:100%;
+                "
+            >
+                ⏳ Cargando comentarios...
+            </div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(
+        panel
+    );
+
+
+    return panel;
+}
+
+
+window.actualizarContadorCaracteresComentarioRifa =
+function () {
+
+    const textarea =
+        document.getElementById(
+            "comentarioRifaTexto"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorCaracteresComentarioRifa"
+        );
+
+
+    if (
+        !textarea ||
+        !contador
+    ) {
+        return;
+    }
+
+
+    contador.textContent =
+        `${textarea.value.length}/500`;
+};
+
+
+window.cerrarComentariosRifa =
+function () {
+
+    const panel =
+        document.getElementById(
+            "panelComentariosRifa"
+        );
+
+
+    if (panel) {
+
+        panel.style.display =
+            "none";
+    }
+};
+
+
+function renderizarComentariosRifa(
+    respuesta = {}
+) {
+
+    const lista =
+        document.getElementById(
+            "listaComentariosRifa"
+        );
+
+
+    const totalTexto =
+        document.getElementById(
+            "totalComentariosRifa"
+        );
+
+
+    if (
+        !lista ||
+        !totalTexto
+    ) {
+        return;
+    }
+
+
+    const comentarios =
+        Array.isArray(
+            respuesta.comentarios
+        )
+            ? respuesta.comentarios
+            : [];
+
+
+    const total =
+        Math.max(
+            0,
+            Number(
+                respuesta.total_comentarios ||
+                0
+            )
+        );
+
+
+    totalTexto.textContent =
+        `${total} ${
+            total === 1
+                ? "comentario"
+                : "comentarios"
+        }`;
+
+
+    lista.innerHTML =
+        "";
+
+
+    if (!comentarios.length) {
+
+        const vacio =
+            document.createElement(
+                "div"
+            );
+
+
+        vacio.style.cssText = `
+            padding:22px;
+            border:1px solid #333;
+            border-radius:14px;
+            background:#111;
+            color:#aaa;
+            text-align:center;
+        `;
+
+
+        vacio.textContent =
+            "Sé el primero en comentar esta dinámica.";
+
+
+        lista.appendChild(
+            vacio
+        );
+
+
+        return;
+    }
+
+
+    comentarios.forEach(
+        comentario => {
+
+            const tarjeta =
+                document.createElement(
+                    "div"
+                );
+
+
+            tarjeta.style.cssText = `
+                padding:14px;
+                margin-bottom:12px;
+
+                border:1px solid
+                    rgba(
+                        var(
+                            --mass-org-accent-rgb,
+                            57,255,20
+                        ),
+                        .34
+                    );
+
+                border-radius:14px;
+
+                background:#111;
+                color:white;
+            `;
+
+
+            const encabezado =
+                document.createElement(
+                    "div"
+                );
+
+
+            encabezado.style.cssText =
+                "display:flex;align-items:center;gap:10px;margin-bottom:10px;";
+
+
+            const avatar =
+                document.createElement(
+                    "div"
+                );
+
+
+            avatar.style.cssText =
+                "width:40px;height:40px;border-radius:50%;overflow:hidden;background:#222;display:flex;align-items:center;justify-content:center;flex:0 0 40px;";
+
+
+            const foto =
+                resolverFotoComentarioOrganizadorPerfil(
+                    comentario
+                        .autor_foto_perfil_url
+                );
+
+
+            if (foto) {
+
+                const imagen =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                imagen.src =
+                    foto;
+
+
+                imagen.alt =
+                    "Foto de perfil";
+
+
+                imagen.style.cssText =
+                    "width:100%;height:100%;object-fit:cover;";
+
+
+                avatar.appendChild(
+                    imagen
+                );
+
+
+            } else {
+
+                avatar.textContent =
+                    "👤";
+            }
+
+
+            const datosAutor =
+                document.createElement(
+                    "div"
+                );
+
+
+            datosAutor.style.cssText =
+                "min-width:0;flex:1;";
+
+
+            const autor =
+                document.createElement(
+                    "div"
+                );
+
+
+            autor.style.cssText =
+                "font-weight:bold;color:white;";
+
+
+            autor.textContent =
+                String(
+                    comentario.autor_mass_id ||
+                    "Usuario MASS"
+                );
+
+
+            const fecha =
+                document.createElement(
+                    "div"
+                );
+
+
+            fecha.style.cssText =
+                "font-size:12px;color:#888;margin-top:2px;";
+
+
+            fecha.textContent =
+                formatearFechaComentarioOrganizadorPerfil(
+                    comentario.creado_at
+                );
+
+
+            datosAutor.appendChild(
+                autor
+            );
+
+
+            datosAutor.appendChild(
+                fecha
+            );
+
+
+            encabezado.appendChild(
+                avatar
+            );
+
+
+            encabezado.appendChild(
+                datosAutor
+            );
+
+
+            if (
+                comentario.es_mio ===
+                true
+            ) {
+
+                const retirar =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                retirar.type =
+                    "button";
+
+
+                retirar.textContent =
+                    "🗑️";
+
+
+                retirar.title =
+                    "Retirar comentario";
+
+
+                retirar.setAttribute(
+                    "aria-label",
+                    "Retirar comentario"
+                );
+
+
+                retirar.style.cssText = `
+                    padding:7px 9px;
+                    border:1px solid #777;
+                    border-radius:9px;
+                    background:#222;
+                    color:white;
+                    cursor:pointer;
+                `;
+
+
+                retirar.onclick =
+                    () => {
+
+                        retirarComentarioRifa(
+                            comentario.id
+                        );
+                    };
+
+
+                encabezado.appendChild(
+                    retirar
+                );
+            }
+
+
+            const texto =
+                document.createElement(
+                    "div"
+                );
+
+
+            texto.style.cssText =
+                "white-space:pre-wrap;word-break:break-word;line-height:1.48;color:#ddd;";
+
+
+            texto.textContent =
+                String(
+                    comentario.comentario ||
+                    ""
+                );
+
+
+            tarjeta.appendChild(
+                encabezado
+            );
+
+
+            tarjeta.appendChild(
+                texto
+            );
+
+
+            lista.appendChild(
+                tarjeta
+            );
+        }
+    );
+}
+
+
+async function cargarComentariosRifa(
+    rifaId,
+    renderizarLista = false
+) {
+
+    const idLimpio =
+        String(
+            rifaId ||
+            ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return null;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.rpc(
+            "listar_comentarios_rifa_seguro",
+            {
+                p_rifa_id:
+                    idLimpio,
+
+                p_limite:
+                    renderizarLista
+                        ? 20
+                        : 1,
+
+                p_offset:
+                    0
+            }
+        );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO COMENTARIOS DE LA DINÁMICA:",
+            error || data
+        );
+
+
+        if (renderizarLista) {
+
+            const lista =
+                document.getElementById(
+                    "listaComentariosRifa"
+                );
+
+
+            if (lista) {
+
+                lista.textContent =
+                    "Comentarios no disponibles.";
+            }
+        }
+
+
+        return null;
+    }
+
+
+    const total =
+        Math.max(
+            0,
+            Number(
+                data.total_comentarios ||
+                0
+            )
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorComentariosRifa"
+        );
+
+
+    if (contador) {
+
+        contador.textContent =
+            String(total);
+    }
+
+
+    if (renderizarLista) {
+
+        renderizarComentariosRifa(
+            data
+        );
+    }
+
+
+    return data;
+}
+
+
+window.abrirComentariosRifa =
+async function () {
+
+    const rifaId =
+        String(
+            RIFA_ID ||
+            window.rifaSeleccionada?.id ||
+            ""
+        ).trim();
+
+
+    if (!rifaId) {
+
+        alert(
+            "❌ No fue posible identificar la dinámica."
+        );
+
+        return;
+    }
+
+
+    const panel =
+        asegurarPanelComentariosRifa();
+
+
+    panel.style.display =
+        "block";
+
+
+    const lista =
+        document.getElementById(
+            "listaComentariosRifa"
+        );
+
+
+    if (lista) {
+
+        lista.textContent =
+            "⏳ Cargando comentarios...";
+    }
+
+
+    await cargarComentariosRifa(
+        rifaId,
+        true
+    );
+};
+
+
+window.publicarComentarioRifa =
+async function () {
+
+    if (
+        MASS_COMENTARIOS_RIFA_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const rifaId =
+        String(
+            RIFA_ID ||
+            window.rifaSeleccionada?.id ||
+            ""
+        ).trim();
+
+
+    const textarea =
+        document.getElementById(
+            "comentarioRifaTexto"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnPublicarComentarioRifa"
+        );
+
+
+    if (
+        !rifaId ||
+        !textarea ||
+        !boton
+    ) {
+        return;
+    }
+
+
+    const comentario =
+        textarea.value.trim();
+
+
+    if (
+        comentario.length < 1 ||
+        comentario.length > 500
+    ) {
+
+        alert(
+            "💬 Escribe un comentario de 1 a 500 caracteres."
+        );
+
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    if (
+        errorSesion ||
+        !datosSesion?.session?.user?.id
+    ) {
+
+        alert(
+            "🔐 Inicia sesión con tu MASS ID para comentar."
+        );
+
+        return;
+    }
+
+
+    MASS_COMENTARIOS_RIFA_EN_PROCESO =
+        true;
+
+
+    boton.disabled =
+        true;
+
+
+    const textoAnterior =
+        boton.textContent;
+
+
+    boton.textContent =
+        "Publicando...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                "crear_comentario_rifa_seguro",
+                {
+                    p_rifa_id:
+                        rifaId,
+
+                    p_comentario:
+                        comentario
+                }
+            );
+
+
+        if (error) {
+
+            console.error(
+                "ERROR PUBLICANDO COMENTARIO DE LA DINÁMICA:",
+                error
+            );
+
+
+            const mensaje =
+                String(
+                    error.message ||
+                    ""
+                );
+
+
+            if (
+                mensaje.includes(
+                    "ESPERA_ANTES_DE_COMENTAR"
+                )
+            ) {
+
+                alert(
+                    "⏳ Espera unos segundos antes de publicar otro comentario."
+                );
+
+
+            } else if (
+                mensaje.includes(
+                    "COMENTARIO_DUPLICADO_RECIENTE"
+                )
+            ) {
+
+                alert(
+                    "💬 Ese mismo comentario ya fue publicado recientemente."
+                );
+
+
+            } else if (
+                mensaje.includes(
+                    "COMENTARIO_LONGITUD_INVALIDA"
+                )
+            ) {
+
+                alert(
+                    "💬 El comentario debe tener entre 1 y 500 caracteres."
+                );
+
+
+            } else if (
+                mensaje.includes(
+                    "USUARIO_MASS_NO_ACTIVO"
+                )
+            ) {
+
+                alert(
+                    "❌ Necesitas un MASS ID activo para comentar."
+                );
+
+
+            } else {
+
+                alert(
+                    "❌ No fue posible publicar el comentario."
+                );
+            }
+
+
+            return;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            alert(
+                "❌ El servidor no confirmó el comentario."
+            );
+
+            return;
+        }
+
+
+        textarea.value =
+            "";
+
+
+        actualizarContadorCaracteresComentarioRifa();
+
+
+        await cargarComentariosRifa(
+            rifaId,
+            true
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO PUBLICANDO COMENTARIO DE LA DINÁMICA:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+    } finally {
+
+        MASS_COMENTARIOS_RIFA_EN_PROCESO =
+            false;
+
+
+        boton.disabled =
+            false;
+
+
+        boton.textContent =
+            textoAnterior;
+    }
+};
+
+
+window.retirarComentarioRifa =
+async function (
+    comentarioId
+) {
+
+    if (
+        MASS_COMENTARIOS_RIFA_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const comentarioIdLimpio =
+        String(
+            comentarioId ||
+            ""
+        ).trim();
+
+
+    const rifaId =
+        String(
+            RIFA_ID ||
+            window.rifaSeleccionada?.id ||
+            ""
+        ).trim();
+
+
+    if (
+        !comentarioIdLimpio ||
+        !rifaId
+    ) {
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "¿Quieres retirar este comentario?"
+        )
+    ) {
+        return;
+    }
+
+
+    MASS_COMENTARIOS_RIFA_EN_PROCESO =
+        true;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                "retirar_mi_comentario_rifa_seguro",
+                {
+                    p_comentario_id:
+                        comentarioIdLimpio
+                }
+            );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR RETIRANDO COMENTARIO DE LA DINÁMICA:",
+                error || data
+            );
+
+
+            alert(
+                "❌ No fue posible retirar el comentario."
+            );
+
+
+            return;
+        }
+
+
+        await cargarComentariosRifa(
+            rifaId,
+            true
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO RETIRANDO COMENTARIO DE LA DINÁMICA:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+    } finally {
+
+        MASS_COMENTARIOS_RIFA_EN_PROCESO =
+            false;
+    }
+};
+
 async function abrirRifa(rifaId){
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
@@ -75726,6 +76840,13 @@ aplicarTemaVisualOrganizadorPublico(
 await cargarEstadoReaccionesRifa(
     rifa.id
 );
+
+
+await cargarComentariosRifa(
+    rifa.id,
+    false
+);
+
 
 mostrarBarraSocialRifa();
 
@@ -103898,6 +105019,55 @@ font-family:Arial, sans-serif;">
 
     <span
       id="contadorNoMeGustaRifa"
+      style="
+        font-size:11px;
+        line-height:1;
+        font-weight:bold;
+      "
+    >
+      0
+    </span>
+  </button>
+
+    <button
+    id="btnComentariosRifa"
+    type="button"
+    aria-label="Comentarios de esta dinámica"
+    title="Comentarios"
+    onclick="abrirComentariosRifa()"
+    style="
+      width:48px;
+      min-width:48px;
+      height:58px;
+      padding:4px 2px;
+
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:1px;
+
+      border:1px solid
+        rgba(
+          var(--mass-org-accent-rgb, 57,255,20),
+          .48
+        );
+
+      border-radius:16px;
+
+      background:rgba(8,8,8,.58);
+
+      color:white;
+      cursor:pointer;
+      opacity:.78;
+    "
+  >
+    <span style="font-size:23px;line-height:1;">
+      💬
+    </span>
+
+    <span
+      id="contadorComentariosRifa"
       style="
         font-size:11px;
         line-height:1;
