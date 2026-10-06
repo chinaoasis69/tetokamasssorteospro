@@ -65016,12 +65016,22 @@ if (contenidoGeneralUsuario) {
 <div
     id="comentariosOrganizadorPerfilBox"
     style="
-        margin-top:20px;
-        padding:18px;
-        background:#0b0b0b;
-        border:1px solid #333;
-        border-radius:18px;
-    "
+    margin-top:20px;
+    padding:18px;
+    background:#101010;
+    border:1px solid
+        var(
+            --mass-org-accent,
+            #39ff14
+        );
+    border-radius:18px;
+    box-shadow:
+        0 0 14px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .18
+        );
+"
 >
 
     <div
@@ -65036,13 +65046,18 @@ if (contenidoGeneralUsuario) {
     >
 
         <div
-            style="
-                font-size:18px;
-                font-weight:bold;
-            "
-        >
-            💬 Comentarios
-        </div>
+    style="
+        color:
+            var(
+                --mass-org-accent,
+                #39ff14
+            );
+        font-size:18px;
+        font-weight:bold;
+    "
+>
+    💬 Comentarios
+</div>
 
 
         <div
