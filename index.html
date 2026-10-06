@@ -901,6 +901,120 @@ input{
 
 </style>
 
+<style id="massEstiloInfoDinamica">
+
+/* =========================================================
+   MASS — INFORMACIÓN PÚBLICA DE LA DINÁMICA
+   DYN-F2
+========================================================= */
+
+#nombreRifa,
+#precioRifa,
+#fechaRifa {
+    width:100%;
+    max-width:640px;
+    margin-left:auto;
+    margin-right:auto;
+    box-sizing:border-box;
+}
+
+
+.mass-rifa-titulo-publico {
+    width:100%;
+    margin:0 auto 16px auto;
+    text-align:center;
+    font-size:28px;
+    line-height:1.18;
+    font-weight:900;
+    color:white;
+}
+
+
+.mass-rifa-resumen-publico {
+    width:100%;
+    display:grid;
+    gap:7px;
+    box-sizing:border-box;
+    text-align:left;
+}
+
+
+.mass-rifa-fila-publica {
+    width:100%;
+    display:grid;
+    grid-template-columns:30px minmax(0,1fr);
+    gap:7px;
+    align-items:start;
+    box-sizing:border-box;
+
+    color:white;
+    font-size:16px;
+    line-height:1.4;
+}
+
+
+.mass-rifa-icono-publico {
+    width:30px;
+    text-align:center;
+    line-height:1.4;
+}
+
+
+.mass-rifa-acento-publico {
+    color:
+        var(
+            --mass-org-accent,
+            #39ff14
+        );
+
+    font-weight:800;
+}
+
+
+#precioRifa,
+#fechaRifa {
+    margin-top:8px !important;
+}
+
+
+#avanceRifa:empty,
+#premioActual:empty {
+    display:none;
+}
+
+
+@media (max-width:600px) {
+
+    #nombreRifa,
+    #precioRifa,
+    #fechaRifa {
+        width:94%;
+        max-width:94%;
+    }
+
+
+    .mass-rifa-titulo-publico {
+        font-size:27px;
+        line-height:1.18;
+        margin-bottom:15px;
+    }
+
+
+    .mass-rifa-fila-publica {
+        grid-template-columns:28px minmax(0,1fr);
+        gap:6px;
+        font-size:16px;
+        line-height:1.42;
+    }
+
+
+    .mass-rifa-icono-publico {
+        width:28px;
+    }
+}
+
+</style>
+
 <link rel="stylesheet" href="mass-id.css">
 
 <script
@@ -75321,51 +75435,123 @@ if (logoOrg) {
             rifa.premio || rifa.titulo || "Sorteo seleccionado";
 
 	document.getElementById("nombreRifa").innerHTML = `
-  <div style="font-size:28px;font-weight:bold;">
+
+  <div class="mass-rifa-titulo-publico">
     ${rifa.titulo || "Sorteo seleccionado"}
   </div>
 
-  <div style="font-size:20px;margin-top:6px;color:white;">
-    🎁 Premio: ${rifa.premio || ""}
-  </div>
 
-  <div style="font-size:16px;margin-top:6px;color:#ccc;">
-    📢 ${rifa.aviso || ""}
-  </div>
+  <div class="mass-rifa-resumen-publico">
 
-  <div style="font-size:16px;margin-top:6px;color:#7CFF00;">
-   📊 Mínimo para sortear: ${rifa.minimo_venta || rifa.minimo_sorteo || rifa.minimo_porcentaje || rifa.porcentaje_minimo || 0}% 
-  </div>
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        🎁
+      </span>
 
-  <div style="font-size:16px;margin-top:6px;color:white;">
-  🎲 Se jugará con: ${rifa.metodo_sorteo || "Pendiente"}
-</div>
+      <span>
+        <strong>Premio:</strong>
+        ${rifa.premio || ""}
+      </span>
+    </div>
 
-<div style="font-size:16px;margin-top:6px;color:white;">
-  ${
-    [
-      "aleatorio automático",
-      "aleatorio automatico"
-    ].includes(
-      String(rifa.metodo_sorteo || "")
-        .trim()
-        .toLowerCase()
-    )
-      ? `
-        🎟️ Modalidad:
-        ${Number(rifa.modalidad || 1)}
+
+    ${
+      rifa.aviso
+        ? `
+          <div class="mass-rifa-fila-publica">
+            <span class="mass-rifa-icono-publico">
+              📢
+            </span>
+
+            <span style="color:#ccc;">
+              ${rifa.aviso}
+            </span>
+          </div>
+        `
+        : ""
+    }
+
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        📊
+      </span>
+
+      <span class="mass-rifa-acento-publico">
+        <strong>Mínimo para sortear:</strong>
         ${
-          Number(rifa.modalidad || 1) === 1
-            ? "número por boleto"
-            : "números por boleto"
+          rifa.minimo_venta ||
+          rifa.minimo_sorteo ||
+          rifa.minimo_porcentaje ||
+          rifa.porcentaje_minimo ||
+          0
+        }%
+      </span>
+    </div>
+
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        🎲
+      </span>
+
+      <span>
+        <strong>Se jugará con:</strong>
+        ${rifa.metodo_sorteo || "Pendiente"}
+      </span>
+    </div>
+
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        ${
+          [
+            "aleatorio automático",
+            "aleatorio automatico"
+          ].includes(
+            String(
+              rifa.metodo_sorteo || ""
+            )
+              .trim()
+              .toLowerCase()
+          )
+            ? "🎟️"
+            : "🔢"
         }
-      `
-      : `
-        🔢 Modalidad:
-        Últimas ${rifa.cifras_sorteo || 0} cifras
-      `
-  }
-</div>
+      </span>
+
+      <span>
+        <strong>Modalidad:</strong>
+
+        ${
+          [
+            "aleatorio automático",
+            "aleatorio automatico"
+          ].includes(
+            String(
+              rifa.metodo_sorteo || ""
+            )
+              .trim()
+              .toLowerCase()
+          )
+            ? `
+                ${Number(rifa.modalidad || 1)}
+                ${
+                  Number(rifa.modalidad || 1) === 1
+                    ? "número por boleto"
+                    : "números por boleto"
+                }
+              `
+            : `
+                Últimas
+                ${rifa.cifras_sorteo || 0}
+                cifras
+              `
+        }
+      </span>
+    </div>
+
+  </div>
 `;
 
         const unidadMass =
@@ -75439,9 +75625,35 @@ const textoDivisasPublicas =
         "Sin configurar"
       );
 
-document.getElementById("precioRifa").innerHTML =
-  `💰 Precio por boleto: ${textoPreciosPublicos}<br>` +
-  `🌎 Divisas aceptadas: ${textoDivisasPublicas}`;
+document.getElementById("precioRifa").innerHTML = `
+
+  <div class="mass-rifa-resumen-publico">
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        💰
+      </span>
+
+      <span>
+        <strong>Precio por boleto:</strong>
+        ${textoPreciosPublicos}
+      </span>
+    </div>
+
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        🌎
+      </span>
+
+      <span>
+        <strong>Divisas aceptadas:</strong>
+        ${textoDivisasPublicas}
+      </span>
+    </div>
+
+  </div>
+`;
 
 		window.precioBoletoActual = Number(precioMass);
 
@@ -75500,24 +75712,65 @@ const zonaHorariaPublica =
   rifa.zona_horaria ||
   "";
 
-document.getElementById("fechaRifa").innerHTML =
-  `📅 Sorteo: ${
-    formatearFechaCorta(
-      rifa.fecha_sorteo ||
-      rifa.fecha ||
-      ""
-    )
-  }` +
-  (
-    horaSorteoPublica
-      ? `<br>🕗 Hora: ${horaSorteoPublica}`
-      : ""
-  ) +
-  (
-    zonaHorariaPublica
-      ? `<br>🌎 Zona horaria: ${zonaHorariaPublica}`
-      : ""
-  );
+document.getElementById("fechaRifa").innerHTML = `
+
+  <div class="mass-rifa-resumen-publico">
+
+    <div class="mass-rifa-fila-publica">
+      <span class="mass-rifa-icono-publico">
+        📅
+      </span>
+
+      <span>
+        <strong>Sorteo:</strong>
+        ${
+          formatearFechaCorta(
+            rifa.fecha_sorteo ||
+            rifa.fecha ||
+            ""
+          )
+        }
+      </span>
+    </div>
+
+
+    ${
+      horaSorteoPublica
+        ? `
+          <div class="mass-rifa-fila-publica">
+            <span class="mass-rifa-icono-publico">
+              🕗
+            </span>
+
+            <span>
+              <strong>Hora:</strong>
+              ${horaSorteoPublica}
+            </span>
+          </div>
+        `
+        : ""
+    }
+
+
+    ${
+      zonaHorariaPublica
+        ? `
+          <div class="mass-rifa-fila-publica">
+            <span class="mass-rifa-icono-publico">
+              🌎
+            </span>
+
+            <span>
+              <strong>Zona horaria:</strong>
+              ${zonaHorariaPublica}
+            </span>
+          </div>
+        `
+        : ""
+    }
+
+  </div>
+`;
 
         document.getElementById("premioActual").innerText = "";
 
