@@ -1250,6 +1250,15 @@ Selecciona una rifa
   ✨ Síguenos
 </button>
 
+<button
+  id="btnPerfilOrganizadorRifa"
+  type="button"
+  class="btn-dark"
+  onclick="abrirPerfilOrganizadorDesdeRifa()"
+>
+  👤 Perfil del Organizador
+</button>
+
 <br>
 
 <div
@@ -66076,6 +66085,75 @@ async function (
     );
 };
 
+window.abrirPerfilOrganizadorDesdeRifa =
+async function () {
+
+    const rifaActual =
+        window.rifaSeleccionada ||
+        null;
+
+
+    const rifaId =
+        String(
+            rifaActual?.id ||
+            (
+                typeof RIFA_ID !== "undefined"
+                    ? RIFA_ID
+                    : ""
+            ) ||
+            sessionStorage.getItem(
+                "rifa_actual_id"
+            ) ||
+            ""
+        ).trim();
+
+
+    const organizadorId =
+        String(
+            rifaActual?.organizador_id ||
+            localStorage.getItem(
+                "organizador_actual_id"
+            ) ||
+            ""
+        ).trim();
+
+
+    if (!organizadorId) {
+
+        alert(
+            "❌ No fue posible identificar el Organizador."
+        );
+
+        return;
+    }
+
+
+    sessionStorage.setItem(
+        "perfil_organizador_origen",
+        "dinamica"
+    );
+
+
+    if (rifaId) {
+
+        sessionStorage.setItem(
+            "perfil_organizador_dinamica_origen_id",
+            rifaId
+        );
+
+    } else {
+
+        sessionStorage.removeItem(
+            "perfil_organizador_dinamica_origen_id"
+        );
+    }
+
+
+    await mostrarPerfilPublicoOrganizador(
+        organizadorId
+    );
+};
+
 /* =========================================================
    MASS — PERFIL PÚBLICO PROFESIONAL DEL ORGANIZADOR
    MPV2-F7A
@@ -66374,6 +66452,23 @@ if (contenidoGeneralUsuario) {
             "M"
         );
 
+        const volverADinamicaDesdePerfil =
+    sessionStorage.getItem(
+        "perfil_organizador_origen"
+    ) === "dinamica" &&
+    String(
+        sessionStorage.getItem(
+            "perfil_organizador_dinamica_origen_id"
+        ) ||
+        ""
+    ).trim() !== "";
+
+
+const textoVolverPerfil =
+    volverADinamicaDesdePerfil
+        ? "← Volver a la dinámica"
+        : "← Volver a Organizadores";
+
 
     contenedor.innerHTML = `
 
@@ -66387,13 +66482,13 @@ if (contenidoGeneralUsuario) {
 
             <button
                 type="button"
-                onclick="volverListaOrganizadoresDesdePerfil()"
+                onclick="volverDesdePerfilPublicoOrganizador()"
                 style="
                     margin-bottom:14px;
                     padding:10px 16px;
                 "
             >
-                ← Volver a Organizadores
+                ${textoVolverPerfil}
             </button>
 
 
@@ -67167,6 +67262,54 @@ await cargarComentariosOrganizadorPerfil(
         100
     );
 }
+
+window.volverDesdePerfilPublicoOrganizador =
+async function () {
+
+    const origen =
+        String(
+            sessionStorage.getItem(
+                "perfil_organizador_origen"
+            ) ||
+            ""
+        ).trim();
+
+
+    const rifaId =
+        String(
+            sessionStorage.getItem(
+                "perfil_organizador_dinamica_origen_id"
+            ) ||
+            ""
+        ).trim();
+
+
+    sessionStorage.removeItem(
+        "perfil_organizador_origen"
+    );
+
+    sessionStorage.removeItem(
+        "perfil_organizador_dinamica_origen_id"
+    );
+
+
+    if (
+        origen === "dinamica" &&
+        rifaId
+    ) {
+
+        volverListaOrganizadoresDesdePerfil();
+
+        await abrirRifa(
+            rifaId
+        );
+
+        return;
+    }
+
+
+    volverListaOrganizadoresDesdePerfil();
+};
 
 
 window.volverListaOrganizadoresDesdePerfil =
