@@ -62779,6 +62779,396 @@ async function (
 };
 
 /* =========================================================
+   MASS — ME GUSTA AL ORGANIZADOR
+   PERFIL PÚBLICO PROFESIONAL
+   MPV2-F9A
+========================================================= */
+
+let MASS_REACCION_ORGANIZADOR_EN_PROCESO =
+    false;
+
+
+function pintarEstadoMeGustaOrganizadorPerfil(
+    estado = {}
+) {
+
+    const boton =
+        document.getElementById(
+            "btnMeGustaOrganizadorPerfil"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorMeGustaOrganizadorPerfil"
+        );
+
+
+    if (
+        !boton ||
+        !contador
+    ) {
+        return;
+    }
+
+
+    const reaccionUsuario =
+        String(
+            estado.reaccion_usuario || ""
+        ).trim();
+
+
+    const meGustaActivo =
+        reaccionUsuario ===
+        "me_gusta";
+
+
+    const autenticado =
+        estado.autenticado === true;
+
+
+    const total =
+        Math.max(
+            0,
+            Number(
+                estado.total_me_gusta ||
+                0
+            )
+        );
+
+
+    boton.dataset.meGusta =
+        meGustaActivo
+            ? "true"
+            : "false";
+
+
+    boton.textContent =
+        meGustaActivo
+            ? "👍 Te gusta"
+            : "👍 Me gusta";
+
+
+    boton.setAttribute(
+        "aria-pressed",
+        meGustaActivo
+            ? "true"
+            : "false"
+    );
+
+
+    boton.title =
+        autenticado
+            ? (
+                meGustaActivo
+                    ? "Quitar Me gusta"
+                    : "Indicar que te gusta este Organizador"
+            )
+            : "Inicia sesión con tu MASS ID para indicar Me gusta";
+
+
+    boton.style.background =
+        meGustaActivo
+            ? "var(--mass-org-accent, #39ff14)"
+            : "#111";
+
+
+    boton.style.color =
+        meGustaActivo
+            ? "#111"
+            : "white";
+
+
+    contador.textContent =
+        `${total} Me gusta`;
+}
+
+
+async function cargarEstadoMeGustaOrganizadorPerfil(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "obtener_estado_reaccion_organizador_seguro",
+        {
+            p_organizador_id:
+                idLimpio
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO REACCIONES DEL ORGANIZADOR:",
+            error || data
+        );
+
+
+        const contador =
+            document.getElementById(
+                "contadorMeGustaOrganizadorPerfil"
+            );
+
+
+        if (contador) {
+            contador.textContent =
+                "Me gusta no disponible";
+        }
+
+
+        return;
+    }
+
+
+    pintarEstadoMeGustaOrganizadorPerfil(
+        data
+    );
+}
+
+
+window.alternarMeGustaOrganizadorPerfil =
+async function (
+    organizadorId
+) {
+
+    if (
+        MASS_REACCION_ORGANIZADOR_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const boton =
+        document.getElementById(
+            "btnMeGustaOrganizadorPerfil"
+        );
+
+
+    if (
+        !idLimpio ||
+        !boton
+    ) {
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    const session =
+        datosSesion?.session ||
+        null;
+
+
+    if (
+        errorSesion ||
+        !session?.user?.id
+    ) {
+
+        alert(
+            "🔐 Inicia sesión con tu MASS ID para indicar Me gusta."
+        );
+
+        return;
+    }
+
+
+    const meGustaActualmente =
+        boton.dataset.meGusta ===
+        "true";
+
+
+    const rpc =
+        meGustaActualmente
+            ? "quitar_reaccion_organizador_seguro"
+            : "reaccionar_organizador_seguro";
+
+
+    const parametrosRpc =
+        meGustaActualmente
+            ? {
+                p_organizador_id:
+                    idLimpio
+            }
+            : {
+                p_organizador_id:
+                    idLimpio,
+
+                p_reaccion:
+                    "me_gusta"
+            };
+
+
+    MASS_REACCION_ORGANIZADOR_EN_PROCESO =
+        true;
+
+
+    const textoAnterior =
+        boton.textContent;
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Actualizando...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            rpc,
+            parametrosRpc
+        );
+
+
+        if (error) {
+
+            console.error(
+                "ERROR CAMBIANDO REACCIÓN DEL ORGANIZADOR:",
+                error
+            );
+
+
+            const mensaje =
+                String(
+                    error.message || ""
+                );
+
+
+            if (
+                mensaje.includes(
+                    "NO_AUTORIZADO"
+                )
+            ) {
+
+                alert(
+                    "🔐 Inicia sesión con tu MASS ID para continuar."
+                );
+
+            } else if (
+                mensaje.includes(
+                    "USUARIO_MASS_NO_ENCONTRADO"
+                )
+            ) {
+
+                alert(
+                    "❌ Tu sesión no tiene un MASS ID disponible."
+                );
+
+            } else {
+
+                alert(
+                    "❌ No fue posible actualizar tu reacción."
+                );
+            }
+
+
+            boton.textContent =
+                textoAnterior;
+
+
+            return;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "RESPUESTA INVÁLIDA DE REACCIÓN:",
+                data
+            );
+
+
+            alert(
+                "❌ El servidor no confirmó la reacción."
+            );
+
+
+            boton.textContent =
+                textoAnterior;
+
+
+            return;
+        }
+
+
+        pintarEstadoMeGustaOrganizadorPerfil({
+            ...data,
+            autenticado: true
+        });
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO CAMBIANDO REACCIÓN:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+        boton.textContent =
+            textoAnterior;
+
+
+    } finally {
+
+        MASS_REACCION_ORGANIZADOR_EN_PROCESO =
+            false;
+
+
+        if (boton.isConnected) {
+            boton.disabled =
+                false;
+        }
+    }
+};
+
+/* =========================================================
    MASS — COMPARTIR PERFIL PÚBLICO DEL ORGANIZADOR
    MPV2-F8C
 ========================================================= */
@@ -63523,6 +63913,60 @@ if (contenidoGeneralUsuario) {
 
 </div>
 
+<div
+    style="
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:12px;
+        margin:
+            -8px auto
+            20px auto;
+    "
+>
+
+    <button
+        id="btnMeGustaOrganizadorPerfil"
+        type="button"
+        data-me-gusta="false"
+        aria-pressed="false"
+        onclick="
+            alternarMeGustaOrganizadorPerfil(
+                '${idLimpio}'
+            )
+        "
+        style="
+            padding:10px 18px;
+            border:2px solid
+                var(
+                    --mass-org-accent,
+                    #39ff14
+                );
+            border-radius:999px;
+            background:#111;
+            color:white;
+            font-weight:bold;
+            cursor:pointer;
+        "
+    >
+        👍 Me gusta
+    </button>
+
+
+    <div
+        id="contadorMeGustaOrganizadorPerfil"
+        style="
+            color:#bbb;
+            font-size:14px;
+            font-weight:bold;
+        "
+    >
+        Cargando Me gusta...
+    </div>
+
+</div>
+
 
                     ${
                         descripcion
@@ -63764,6 +64208,10 @@ if (contenidoGeneralUsuario) {
         "block";
 
         await cargarEstadoSeguimientoOrganizadorPerfil(
+    idLimpio
+);
+
+await cargarEstadoMeGustaOrganizadorPerfil(
     idLimpio
 );
 
