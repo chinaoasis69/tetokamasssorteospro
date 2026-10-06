@@ -63169,6 +63169,834 @@ async function (
 };
 
 /* =========================================================
+   MASS — COMENTARIOS DEL ORGANIZADOR
+   PERFIL PÚBLICO PROFESIONAL
+   MPV2-F9B
+========================================================= */
+
+let MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO =
+    false;
+
+
+function formatearFechaComentarioOrganizadorPerfil(
+    valor
+) {
+
+    if (!valor) {
+        return "";
+    }
+
+
+    const fecha =
+        new Date(valor);
+
+
+    if (
+        Number.isNaN(
+            fecha.getTime()
+        )
+    ) {
+        return "";
+    }
+
+
+    return new Intl.DateTimeFormat(
+        "es-MX",
+        {
+            dateStyle: "medium",
+            timeStyle: "short"
+        }
+    ).format(fecha);
+}
+
+
+function resolverFotoComentarioOrganizadorPerfil(
+    valor
+) {
+
+    const texto =
+        String(
+            valor || ""
+        ).trim();
+
+
+    if (!texto) {
+        return "";
+    }
+
+
+    try {
+
+        const url =
+            new URL(
+                texto,
+                window.location.origin
+            );
+
+
+        if (
+            ![
+                "http:",
+                "https:"
+            ].includes(
+                url.protocol
+            )
+        ) {
+            return "";
+        }
+
+
+        return url.toString();
+
+
+    } catch {
+
+        return "";
+    }
+}
+
+
+function actualizarContadorComentarioOrganizadorPerfil() {
+
+    const textarea =
+        document.getElementById(
+            "comentarioOrganizadorPerfilTexto"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorCaracteresComentarioOrganizadorPerfil"
+        );
+
+
+    if (
+        !textarea ||
+        !contador
+    ) {
+        return;
+    }
+
+
+    contador.textContent =
+        `${textarea.value.length}/500`;
+}
+
+
+function renderizarComentariosOrganizadorPerfil(
+    respuesta = {},
+    organizadorId = ""
+) {
+
+    const listaBox =
+        document.getElementById(
+            "listaComentariosOrganizadorPerfil"
+        );
+
+
+    const totalBox =
+        document.getElementById(
+            "totalComentariosOrganizadorPerfil"
+        );
+
+
+    if (
+        !listaBox ||
+        !totalBox
+    ) {
+        return;
+    }
+
+
+    const comentarios =
+        Array.isArray(
+            respuesta.comentarios
+        )
+            ? respuesta.comentarios
+            : [];
+
+
+    const total =
+        Math.max(
+            0,
+            Number(
+                respuesta.total ||
+                0
+            )
+        );
+
+
+    totalBox.textContent =
+        `${total} ${
+            total === 1
+                ? "comentario"
+                : "comentarios"
+        }`;
+
+
+    listaBox.innerHTML =
+        "";
+
+
+    if (!comentarios.length) {
+
+        const vacio =
+            document.createElement(
+                "div"
+            );
+
+
+        vacio.style.cssText =
+            "padding:18px;text-align:center;color:#aaa;background:#111;border-radius:14px;";
+
+
+        vacio.textContent =
+            "Sé el primero en comentar.";
+
+
+        listaBox.appendChild(
+            vacio
+        );
+
+
+        return;
+    }
+
+
+    comentarios.forEach(
+        comentario => {
+
+            const tarjeta =
+                document.createElement(
+                    "div"
+                );
+
+
+            tarjeta.style.cssText =
+                "padding:14px;margin-bottom:12px;background:#111;border:1px solid #333;border-radius:14px;";
+
+
+            const encabezado =
+                document.createElement(
+                    "div"
+                );
+
+
+            encabezado.style.cssText =
+                "display:flex;align-items:center;gap:10px;margin-bottom:10px;";
+
+
+            const avatar =
+                document.createElement(
+                    "div"
+                );
+
+
+            avatar.style.cssText =
+                "width:40px;height:40px;border-radius:50%;overflow:hidden;background:#222;display:flex;align-items:center;justify-content:center;flex:0 0 40px;";
+
+
+            const foto =
+                resolverFotoComentarioOrganizadorPerfil(
+                    comentario
+                        .autor_foto_perfil_url
+                );
+
+
+            if (foto) {
+
+                const imagen =
+                    document.createElement(
+                        "img"
+                    );
+
+
+                imagen.src =
+                    foto;
+
+
+                imagen.alt =
+                    "Foto de perfil";
+
+
+                imagen.style.cssText =
+                    "width:100%;height:100%;object-fit:cover;";
+
+
+                avatar.appendChild(
+                    imagen
+                );
+
+
+            } else {
+
+                avatar.textContent =
+                    "👤";
+            }
+
+
+            const datosAutor =
+                document.createElement(
+                    "div"
+                );
+
+
+            datosAutor.style.cssText =
+                "min-width:0;flex:1;";
+
+
+            const autor =
+                document.createElement(
+                    "div"
+                );
+
+
+            autor.style.cssText =
+                "font-weight:bold;color:white;";
+
+
+            autor.textContent =
+                String(
+                    comentario.autor_mass_id ||
+                    "Usuario MASS"
+                );
+
+
+            const fecha =
+                document.createElement(
+                    "div"
+                );
+
+
+            fecha.style.cssText =
+                "font-size:12px;color:#888;margin-top:2px;";
+
+
+            fecha.textContent =
+                formatearFechaComentarioOrganizadorPerfil(
+                    comentario.creado_at
+                );
+
+
+            datosAutor.appendChild(
+                autor
+            );
+
+
+            datosAutor.appendChild(
+                fecha
+            );
+
+
+            encabezado.appendChild(
+                avatar
+            );
+
+
+            encabezado.appendChild(
+                datosAutor
+            );
+
+
+            if (
+                comentario.es_mio ===
+                true
+            ) {
+
+                const retirar =
+                    document.createElement(
+                        "button"
+                    );
+
+
+                retirar.type =
+                    "button";
+
+
+                retirar.textContent =
+                    "🗑️ Retirar";
+
+
+                retirar.style.cssText =
+                    "padding:7px 10px;border:1px solid #555;border-radius:999px;background:#181818;color:#ddd;cursor:pointer;font-size:12px;";
+
+
+                retirar.onclick =
+                    () => {
+
+                        retirarMiComentarioOrganizadorPerfil(
+                            comentario.comentario_id,
+                            organizadorId
+                        );
+                    };
+
+
+                encabezado.appendChild(
+                    retirar
+                );
+            }
+
+
+            const cuerpo =
+                document.createElement(
+                    "div"
+                );
+
+
+            cuerpo.style.cssText =
+                "color:#ddd;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;";
+
+
+            cuerpo.textContent =
+                String(
+                    comentario.comentario ||
+                    ""
+                );
+
+
+            tarjeta.appendChild(
+                encabezado
+            );
+
+
+            tarjeta.appendChild(
+                cuerpo
+            );
+
+
+            listaBox.appendChild(
+                tarjeta
+            );
+        }
+    );
+
+
+    if (
+        total >
+        comentarios.length
+    ) {
+
+        const aviso =
+            document.createElement(
+                "div"
+            );
+
+
+        aviso.style.cssText =
+            "text-align:center;color:#888;font-size:12px;margin-top:8px;";
+
+
+        aviso.textContent =
+            `Mostrando los ${comentarios.length} comentarios más recientes.`;
+
+
+        listaBox.appendChild(
+            aviso
+        );
+    }
+}
+
+
+async function cargarComentariosOrganizadorPerfil(
+    organizadorId
+) {
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return;
+    }
+
+
+    const listaBox =
+        document.getElementById(
+            "listaComentariosOrganizadorPerfil"
+        );
+
+
+    if (listaBox) {
+
+        listaBox.innerHTML =
+            "⏳ Cargando comentarios...";
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_comentarios_organizador_seguro",
+        {
+            p_organizador_id:
+                idLimpio,
+
+            p_limite:
+                20,
+
+            p_offset:
+                0
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO COMENTARIOS DEL ORGANIZADOR:",
+            error || data
+        );
+
+
+        if (listaBox) {
+
+            listaBox.textContent =
+                "Comentarios no disponibles.";
+        }
+
+
+        return;
+    }
+
+
+    renderizarComentariosOrganizadorPerfil(
+        data,
+        idLimpio
+    );
+}
+
+
+window.publicarComentarioOrganizadorPerfil =
+async function (
+    organizadorId
+) {
+
+    if (
+        MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const idLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    const textarea =
+        document.getElementById(
+            "comentarioOrganizadorPerfilTexto"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnEnviarComentarioOrganizadorPerfil"
+        );
+
+
+    if (
+        !idLimpio ||
+        !textarea ||
+        !boton
+    ) {
+        return;
+    }
+
+
+    const comentario =
+        textarea.value.trim();
+
+
+    if (
+        comentario.length < 1 ||
+        comentario.length > 500
+    ) {
+
+        alert(
+            "💬 Escribe un comentario de 1 a 500 caracteres."
+        );
+
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    if (
+        errorSesion ||
+        !datosSesion?.session?.user?.id
+    ) {
+
+        alert(
+            "🔐 Inicia sesión con tu MASS ID para comentar."
+        );
+
+        return;
+    }
+
+
+    MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO =
+        true;
+
+
+    const textoAnterior =
+        boton.textContent;
+
+
+    boton.disabled =
+        true;
+
+
+    boton.textContent =
+        "Publicando...";
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "crear_comentario_organizador_seguro",
+            {
+                p_organizador_id:
+                    idLimpio,
+
+                p_comentario:
+                    comentario
+            }
+        );
+
+
+        if (error) {
+
+            console.error(
+                "ERROR PUBLICANDO COMENTARIO:",
+                error
+            );
+
+
+            const mensaje =
+                String(
+                    error.message || ""
+                );
+
+
+            if (
+                mensaje.includes(
+                    "ESPERA_ANTES_DE_COMENTAR"
+                )
+            ) {
+
+                alert(
+                    "⏳ Espera unos segundos antes de publicar otro comentario."
+                );
+
+            } else if (
+                mensaje.includes(
+                    "COMENTARIO_LONGITUD_INVALIDA"
+                )
+            ) {
+
+                alert(
+                    "💬 El comentario debe tener entre 1 y 500 caracteres."
+                );
+
+            } else {
+
+                alert(
+                    "❌ No fue posible publicar el comentario."
+                );
+            }
+
+
+            return;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            alert(
+                "❌ El servidor no confirmó el comentario."
+            );
+
+            return;
+        }
+
+
+        textarea.value =
+            "";
+
+
+        actualizarContadorComentarioOrganizadorPerfil();
+
+
+        await cargarComentariosOrganizadorPerfil(
+            idLimpio
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO PUBLICANDO COMENTARIO:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+    } finally {
+
+        MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO =
+            false;
+
+
+        if (boton.isConnected) {
+
+            boton.disabled =
+                false;
+
+
+            boton.textContent =
+                textoAnterior;
+        }
+    }
+};
+
+
+window.retirarMiComentarioOrganizadorPerfil =
+async function (
+    comentarioId,
+    organizadorId
+) {
+
+    if (
+        MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const comentarioIdLimpio =
+        String(
+            comentarioId || ""
+        ).trim();
+
+
+    const organizadorIdLimpio =
+        String(
+            organizadorId || ""
+        ).trim();
+
+
+    if (
+        !comentarioIdLimpio ||
+        !organizadorIdLimpio
+    ) {
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "¿Quieres retirar este comentario?"
+        )
+    ) {
+        return;
+    }
+
+
+    MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO =
+        true;
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "retirar_mi_comentario_organizador_seguro",
+            {
+                p_comentario_id:
+                    comentarioIdLimpio
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR RETIRANDO COMENTARIO:",
+                error || data
+            );
+
+
+            alert(
+                "❌ No fue posible retirar el comentario."
+            );
+
+
+            return;
+        }
+
+
+        await cargarComentariosOrganizadorPerfil(
+            organizadorIdLimpio
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO RETIRANDO COMENTARIO:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ Ocurrió un error inesperado."
+        );
+
+
+    } finally {
+
+        MASS_COMENTARIOS_ORGANIZADOR_EN_PROCESO =
+            false;
+    }
+};
+
+/* =========================================================
    MASS — COMPARTIR PERFIL PÚBLICO DEL ORGANIZADOR
    MPV2-F8C
 ========================================================= */
@@ -64185,6 +65013,135 @@ if (contenidoGeneralUsuario) {
     </div>
 </div>
 
+<div
+    id="comentariosOrganizadorPerfilBox"
+    style="
+        margin-top:20px;
+        padding:18px;
+        background:#0b0b0b;
+        border:1px solid #333;
+        border-radius:18px;
+    "
+>
+
+    <div
+        style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+            margin-bottom:14px;
+        "
+    >
+
+        <div
+            style="
+                font-size:18px;
+                font-weight:bold;
+            "
+        >
+            💬 Comentarios
+        </div>
+
+
+        <div
+            id="totalComentariosOrganizadorPerfil"
+            style="
+                color:#aaa;
+                font-size:13px;
+                font-weight:bold;
+            "
+        >
+            0 comentarios
+        </div>
+
+    </div>
+
+
+    <textarea
+        id="comentarioOrganizadorPerfilTexto"
+        maxlength="500"
+        rows="3"
+        placeholder="Escribe un comentario sobre este Organizador..."
+        oninput="
+            actualizarContadorComentarioOrganizadorPerfil()
+        "
+        style="
+            width:100%;
+            box-sizing:border-box;
+            resize:vertical;
+            padding:12px;
+            border:1px solid #444;
+            border-radius:12px;
+            background:#111;
+            color:white;
+            font:inherit;
+        "
+    ></textarea>
+
+
+    <div
+        style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            margin-top:8px;
+            margin-bottom:18px;
+        "
+    >
+
+        <div
+            id="contadorCaracteresComentarioOrganizadorPerfil"
+            style="
+                color:#888;
+                font-size:12px;
+            "
+        >
+            0/500
+        </div>
+
+
+        <button
+            id="btnEnviarComentarioOrganizadorPerfil"
+            type="button"
+            onclick="
+                publicarComentarioOrganizadorPerfil(
+                    '${idLimpio}'
+                )
+            "
+            style="
+                padding:10px 16px;
+                border:2px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+                border-radius:999px;
+                background:#111;
+                color:white;
+                font-weight:bold;
+                cursor:pointer;
+            "
+        >
+            💬 Publicar
+        </button>
+
+    </div>
+
+
+    <div
+        id="listaComentariosOrganizadorPerfil"
+        style="
+            text-align:left;
+        "
+    >
+        ⏳ Cargando comentarios...
+    </div>
+
+</div>
+
 
             ${
                 contactoSoporteHtml
@@ -64230,6 +65187,10 @@ await cargarEstadoMeGustaOrganizadorPerfil(
 await cargarPatrocinadoresPerfilPublicoOrganizador(
     idLimpio,
     patrocinadoresPerfilBox
+);
+
+await cargarComentariosOrganizadorPerfil(
+    idLimpio
 );
 
 
