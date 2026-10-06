@@ -66103,12 +66103,6 @@ function obtenerBloquesDinamicaParaPerfilOrganizador() {
         );
 
 
-    const listaRifas =
-        document.getElementById(
-            "listaRifas"
-        );
-
-
     return [
 
         // Imagen principal y video principal dinámico.
@@ -66139,11 +66133,6 @@ function obtenerBloquesDinamicaParaPerfilOrganizador() {
         document.getElementById(
             "patrocinadoresSorteoCard"
         ),
-
-        // Tarjeta contenedora del listado de rifas.
-        listaRifas?.closest(
-            ".card"
-        ) || null,
 
         // Números / boletos.
         document.getElementById(
@@ -75027,7 +75016,7 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
 async function abrirRifa(rifaId){
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
-    
+
     RIFA_ID = rifaId;
 
 	actualizarBotonesCompraSorteo();
