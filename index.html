@@ -101325,12 +101325,1090 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
 	document.getElementById("panelSuperAdmin").style.display = "block";
 }
 
+/* =========================================================
+   MASS — PLANES PARA ORGANIZADORES
+   MÉTODOS DE COBRO DE LA PLATAFORMA
+   PLAN-F2C2-UI
+========================================================= */
+
+let MASS_METODOS_PAGO_PLANES_SUPER_ADMIN = [];
+
+
+async function cargarMetodosPagoPlanesSuperAdmin() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_metodos_pago_planes_super_admin_segura"
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO MÉTODOS DE COBRO DE PLANES:",
+            error || data
+        );
+
+        MASS_METODOS_PAGO_PLANES_SUPER_ADMIN = [];
+
+        return false;
+    }
+
+
+    MASS_METODOS_PAGO_PLANES_SUPER_ADMIN =
+        Array.isArray(
+            data.metodos
+        )
+            ? data.metodos
+            : [];
+
+
+    return true;
+}
+
+
+function crearHtmlMetodosPagoPlanesSuperAdmin() {
+
+    const metodos =
+        Array.isArray(
+            MASS_METODOS_PAGO_PLANES_SUPER_ADMIN
+        )
+            ? MASS_METODOS_PAGO_PLANES_SUPER_ADMIN
+            : [];
+
+
+    if (!metodos.length) {
+
+        return `
+            <div
+                style="
+                    margin-top:14px;
+                    padding:18px;
+                    border:1px solid #444;
+                    border-radius:12px;
+                    background:#111;
+                    color:#aaa;
+                    text-align:center;
+                "
+            >
+                Todavía no hay métodos de cobro
+                configurados para los planes.
+            </div>
+        `;
+    }
+
+
+    return metodos.map(
+        metodo => {
+
+            const activo =
+                metodo.activo === true;
+
+            const visible =
+                metodo.visible_checkout === true;
+
+
+            return `
+                <div
+                    style="
+                        margin-top:14px;
+                        padding:16px;
+                        border:1px solid ${
+                            activo
+                                ? "#39ff14"
+                                : "#666"
+                        };
+                        border-radius:14px;
+                        background:#111;
+                        text-align:left;
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            gap:12px;
+                            flex-wrap:wrap;
+                        "
+                    >
+
+                        <div>
+
+                            <div
+                                style="
+                                    color:white;
+                                    font-size:18px;
+                                    font-weight:bold;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        metodo.nombre_publico ||
+                                        "Método de pago"
+                                    )
+                                }
+                            </div>
+
+                            <div
+                                style="
+                                    margin-top:4px;
+                                    color:#aaa;
+                                    font-size:13px;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        metodo.codigo || ""
+                                    )
+                                }
+                                ·
+                                ${
+                                    massEscaparHTML(
+                                        metodo.moneda || ""
+                                    )
+                                }
+
+                                ${
+                                    metodo.pais_iso2
+                                        ? ` · ${
+                                            massEscaparHTML(
+                                                metodo.pais_iso2
+                                            )
+                                        }`
+                                        : ""
+                                }
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            style="
+                                display:flex;
+                                gap:6px;
+                                flex-wrap:wrap;
+                            "
+                        >
+
+                            <span
+                                style="
+                                    padding:5px 9px;
+                                    border-radius:999px;
+                                    border:1px solid ${
+                                        activo
+                                            ? "#39ff14"
+                                            : "#777"
+                                    };
+                                    color:${
+                                        activo
+                                            ? "#39ff14"
+                                            : "#aaa"
+                                    };
+                                    font-size:12px;
+                                    font-weight:bold;
+                                "
+                            >
+                                ${
+                                    activo
+                                        ? "Activo"
+                                        : "Inactivo"
+                                }
+                            </span>
+
+
+                            <span
+                                style="
+                                    padding:5px 9px;
+                                    border-radius:999px;
+                                    border:1px solid #777;
+                                    color:#ccc;
+                                    font-size:12px;
+                                    font-weight:bold;
+                                "
+                            >
+                                ${
+                                    visible
+                                        ? "Visible en checkout"
+                                        : "Oculto del checkout"
+                                }
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            margin-top:14px;
+                            color:#ddd;
+                            line-height:1.5;
+                            overflow-wrap:anywhere;
+                        "
+                    >
+                        <b>${
+                            massEscaparHTML(
+                                metodo.destino_etiqueta ||
+                                "Destino"
+                            )
+                        }:</b>
+                        ${
+                            massEscaparHTML(
+                                metodo.destino_valor ||
+                                ""
+                            )
+                        }
+                    </div>
+
+
+                    ${
+                        metodo.titular
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:6px;
+                                        color:#bbb;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >
+                                    <b>Titular:</b>
+                                    ${
+                                        massEscaparHTML(
+                                            metodo.titular
+                                        )
+                                    }
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        metodo.instrucciones
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        padding:10px;
+                                        border-radius:10px;
+                                        background:#181818;
+                                        color:#aaa;
+                                        white-space:pre-wrap;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >${
+                                    massEscaparHTML(
+                                        metodo.instrucciones
+                                    )
+                                }</div>
+                            `
+                            : ""
+                    }
+
+
+                    <div
+                        style="
+                            margin-top:8px;
+                            color:#777;
+                            font-size:12px;
+                        "
+                    >
+                        Versión ${Number(
+                            metodo.version || 1
+                        )}
+                    </div>
+
+
+                    <div
+                        style="
+                            margin-top:14px;
+                            text-align:center;
+                        "
+                    >
+
+                        <button
+                            type="button"
+                            onclick="
+                                abrirFormularioMetodoPagoPlanesSuperAdmin(
+                                    '${
+                                        metodo.id
+                                    }'
+                                )
+                            "
+                        >
+                            ✏️ Editar método
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+        }
+    ).join("");
+}
+
+
+window.abrirFormularioMetodoPagoPlanesSuperAdmin =
+function (
+    metodoId = ""
+) {
+
+    const contenedor =
+        document.getElementById(
+            "formularioMetodoPagoPlanesSuperAdmin"
+        );
+
+
+    if (!contenedor) {
+        return;
+    }
+
+
+    const idLimpio =
+        String(
+            metodoId || ""
+        ).trim();
+
+
+    const metodo =
+        idLimpio
+            ? MASS_METODOS_PAGO_PLANES_SUPER_ADMIN.find(
+                item =>
+                    String(
+                        item.id || ""
+                    ) ===
+                    idLimpio
+            )
+            : null;
+
+
+    const esEdicion =
+        !!metodo;
+
+
+    contenedor.innerHTML = `
+
+        <div
+            class="card"
+            style="
+                margin-top:18px;
+                text-align:left;
+            "
+        >
+
+            <h3
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                "
+            >
+                ${
+                    esEdicion
+                        ? "✏️ Editar método de cobro"
+                        : "➕ Nuevo método de cobro"
+                }
+            </h3>
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Código interno
+            </label>
+
+            <input
+                id="planPagoMetodoCodigo"
+                type="text"
+                maxlength="80"
+                placeholder="Ej. transferencia_mxn"
+                value="${
+                    massEscaparHTML(
+                        metodo?.codigo || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Moneda
+            </label>
+
+            <select
+                id="planPagoMetodoMoneda"
+                style="
+                    width:100%;
+                    padding:12px;
+                    border-radius:10px;
+                    font-size:16px;
+                "
+            >
+                <option
+                    value="MXN"
+                    ${
+                        (
+                            metodo?.moneda ||
+                            "MXN"
+                        ) === "MXN"
+                            ? "selected"
+                            : ""
+                    }
+                >
+                    MXN
+                </option>
+
+                <option
+                    value="USD"
+                    ${
+                        metodo?.moneda ===
+                        "USD"
+                            ? "selected"
+                            : ""
+                    }
+                >
+                    USD
+                </option>
+            </select>
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                País ISO2
+            </label>
+
+            <input
+                id="planPagoMetodoPais"
+                type="text"
+                maxlength="2"
+                placeholder="Ej. MX o US"
+                value="${
+                    massEscaparHTML(
+                        metodo?.pais_iso2 || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    text-transform:uppercase;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Nombre que verá el Organizador
+            </label>
+
+            <input
+                id="planPagoMetodoNombre"
+                type="text"
+                maxlength="120"
+                placeholder="Ej. Transferencia bancaria"
+                value="${
+                    massEscaparHTML(
+                        metodo?.nombre_publico || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Etiqueta del destino
+            </label>
+
+            <input
+                id="planPagoMetodoDestinoEtiqueta"
+                type="text"
+                maxlength="120"
+                placeholder="Ej. Cuenta / CLABE / Zelle"
+                value="${
+                    massEscaparHTML(
+                        metodo?.destino_etiqueta || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Destino del pago
+            </label>
+
+            <input
+                id="planPagoMetodoDestinoValor"
+                type="text"
+                maxlength="500"
+                placeholder="Dato que utilizará el Organizador para pagar"
+                value="${
+                    massEscaparHTML(
+                        metodo?.destino_valor || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Titular
+            </label>
+
+            <input
+                id="planPagoMetodoTitular"
+                type="text"
+                maxlength="250"
+                placeholder="Opcional"
+                value="${
+                    massEscaparHTML(
+                        metodo?.titular || ""
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Instrucciones
+            </label>
+
+            <textarea
+                id="planPagoMetodoInstrucciones"
+                maxlength="2000"
+                rows="5"
+                placeholder="Instrucciones que verá el Organizador..."
+                style="
+                    width:100%;
+                    padding:12px;
+                    border-radius:10px;
+                    background:#111;
+                    color:white;
+                    border:1px solid #555;
+                    font:inherit;
+                    font-size:16px;
+                    resize:vertical;
+                    box-sizing:border-box;
+                "
+            >${
+                massEscaparHTML(
+                    metodo?.instrucciones || ""
+                )
+            }</textarea>
+
+
+            <label
+                style="
+                    display:block;
+                    margin-top:12px;
+                    color:#bbb;
+                "
+            >
+                Orden
+            </label>
+
+            <input
+                id="planPagoMetodoOrden"
+                type="number"
+                step="1"
+                value="${
+                    Number(
+                        metodo?.orden || 0
+                    )
+                }"
+                style="
+                    width:100%;
+                    max-width:100%;
+                    font-size:16px;
+                "
+            >
+
+
+            <div
+                style="
+                    display:flex;
+                    gap:18px;
+                    flex-wrap:wrap;
+                    margin-top:18px;
+                "
+            >
+
+                <label
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:7px;
+                        cursor:pointer;
+                    "
+                >
+                    <input
+                        id="planPagoMetodoActivo"
+                        type="checkbox"
+                        ${
+                            metodo
+                                ? (
+                                    metodo.activo === true
+                                        ? "checked"
+                                        : ""
+                                )
+                                : "checked"
+                        }
+                    >
+                    Activo
+                </label>
+
+
+                <label
+                    style="
+                        display:flex;
+                        align-items:center;
+                        gap:7px;
+                        cursor:pointer;
+                    "
+                >
+                    <input
+                        id="planPagoMetodoVisible"
+                        type="checkbox"
+                        ${
+                            metodo
+                                ? (
+                                    metodo.visible_checkout === true
+                                        ? "checked"
+                                        : ""
+                                )
+                                : "checked"
+                        }
+                    >
+                    Visible en checkout
+                </label>
+
+            </div>
+
+
+            <div
+                style="
+                    margin-top:20px;
+                    display:flex;
+                    justify-content:center;
+                    gap:10px;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <button
+                    type="button"
+                    onclick="
+                        guardarMetodoPagoPlanesSuperAdmin(
+                            '${
+                                metodo?.id || ""
+                            }',
+                            ${
+                                metodo
+                                    ? Number(
+                                        metodo.version || 1
+                                    )
+                                    : "null"
+                            }
+                        )
+                    "
+                >
+                    💾 Guardar método
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="
+                        cerrarFormularioMetodoPagoPlanesSuperAdmin()
+                    "
+                >
+                    ❌ Cancelar
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    contenedor.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+};
+
+
+window.cerrarFormularioMetodoPagoPlanesSuperAdmin =
+function () {
+
+    const contenedor =
+        document.getElementById(
+            "formularioMetodoPagoPlanesSuperAdmin"
+        );
+
+
+    if (contenedor) {
+
+        contenedor.innerHTML =
+            "";
+    }
+};
+
+
+window.guardarMetodoPagoPlanesSuperAdmin =
+async function (
+    metodoId,
+    versionEsperada
+) {
+
+    const codigo =
+        String(
+            document.getElementById(
+                "planPagoMetodoCodigo"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const moneda =
+        String(
+            document.getElementById(
+                "planPagoMetodoMoneda"
+            )?.value || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    const pais =
+        String(
+            document.getElementById(
+                "planPagoMetodoPais"
+            )?.value || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    const nombre =
+        String(
+            document.getElementById(
+                "planPagoMetodoNombre"
+            )?.value || ""
+        ).trim();
+
+
+    const destinoEtiqueta =
+        String(
+            document.getElementById(
+                "planPagoMetodoDestinoEtiqueta"
+            )?.value || ""
+        ).trim();
+
+
+    const destinoValor =
+        String(
+            document.getElementById(
+                "planPagoMetodoDestinoValor"
+            )?.value || ""
+        ).trim();
+
+
+    const titular =
+        String(
+            document.getElementById(
+                "planPagoMetodoTitular"
+            )?.value || ""
+        ).trim();
+
+
+    const instrucciones =
+        String(
+            document.getElementById(
+                "planPagoMetodoInstrucciones"
+            )?.value || ""
+        ).trim();
+
+
+    const orden =
+        Number(
+            document.getElementById(
+                "planPagoMetodoOrden"
+            )?.value || 0
+        );
+
+
+    const activo =
+        document.getElementById(
+            "planPagoMetodoActivo"
+        )?.checked === true;
+
+
+    const visible =
+        document.getElementById(
+            "planPagoMetodoVisible"
+        )?.checked === true;
+
+
+    if (
+        !/^[a-z0-9_]+$/.test(
+            codigo
+        )
+    ) {
+
+        alert(
+            "❌ El código solamente puede contener letras minúsculas, números y guion bajo."
+        );
+
+        return;
+    }
+
+
+    if (
+        !["MXN", "USD"].includes(
+            moneda
+        )
+    ) {
+
+        alert(
+            "❌ Selecciona una moneda válida."
+        );
+
+        return;
+    }
+
+
+    if (
+        pais &&
+        !/^[A-Z]{2}$/.test(
+            pais
+        )
+    ) {
+
+        alert(
+            "❌ El país debe usar código ISO2, por ejemplo MX o US."
+        );
+
+        return;
+    }
+
+
+    if (
+        !nombre ||
+        !destinoEtiqueta ||
+        !destinoValor
+    ) {
+
+        alert(
+            "❌ Completa nombre, etiqueta y destino del pago."
+        );
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "guardar_metodo_pago_planes_super_admin_segura",
+        {
+            p_id:
+                String(
+                    metodoId || ""
+                ).trim() ||
+                null,
+
+            p_codigo:
+                codigo,
+
+            p_moneda:
+                moneda,
+
+            p_pais_iso2:
+                pais ||
+                null,
+
+            p_nombre_publico:
+                nombre,
+
+            p_destino_etiqueta:
+                destinoEtiqueta,
+
+            p_destino_valor:
+                destinoValor,
+
+            p_titular:
+                titular ||
+                null,
+
+            p_instrucciones:
+                instrucciones ||
+                null,
+
+            p_activo:
+                activo,
+
+            p_visible_checkout:
+                visible,
+
+            p_orden:
+                Number.isFinite(
+                    orden
+                )
+                    ? Math.trunc(
+                        orden
+                    )
+                    : 0,
+
+            p_version_esperada:
+                versionEsperada === null
+                    ? null
+                    : Number(
+                        versionEsperada
+                    )
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR GUARDANDO MÉTODO DE COBRO DE PLANES:",
+            error || data
+        );
+
+
+        const codigoError =
+            String(
+                data?.codigo || ""
+            );
+
+
+        if (
+            codigoError ===
+            "CODIGO_MONEDA_DUPLICADO"
+        ) {
+
+            alert(
+                "ℹ️ Ya existe un método con ese código y moneda."
+            );
+
+        } else if (
+            codigoError ===
+            "VERSION_DESACTUALIZADA"
+        ) {
+
+            alert(
+                "ℹ️ Este método fue actualizado en otra sesión. Vuelve a cargar Billing / Cobros antes de editarlo."
+            );
+
+        } else {
+
+            alert(
+                "❌ No fue posible guardar el método de cobro."
+            );
+        }
+
+
+        return;
+    }
+
+
+    alert(
+        data.creado === true
+            ? "✅ Método de cobro creado."
+            : "✅ Método de cobro actualizado."
+    );
+
+
+    await mostrarBillingSuperAdmin();
+};
+
 async function mostrarBillingSuperAdmin(){
 
 	if(!(await verificarAccesoSuperAdmin())) return;
 
     const cont = document.getElementById("superAdminContenido");
     if(!cont) return;
+
+    await cargarMetodosPagoPlanesSuperAdmin();
 
 	const { data: organizadoresBilling, error: errorOrgBilling } = await supabaseClient
   .from("organizadores")
@@ -101412,6 +102490,56 @@ const pagosPendientesBilling = (suscripcionesBilling || [])
     USD
   </div>
   <p style="color:#bbb;">TE-TO-KA SOLUTIONS, LLC · Texas</p>
+</div>
+
+<div
+    class="card"
+    style="
+        max-width:760px;
+    "
+>
+    <h3>
+        🏦 Métodos de cobro de TE-TO-KA
+    </h3>
+
+    <p
+        style="
+            color:#bbb;
+            line-height:1.5;
+        "
+    >
+        Configura cómo los Organizadores
+        pagarán los planes de MASS SORTEOS PRO.
+        Estos métodos son independientes
+        de los métodos con los que cada Organizador
+        cobra sus dinámicas.
+    </p>
+
+
+    <button
+        type="button"
+        onclick="
+            abrirFormularioMetodoPagoPlanesSuperAdmin()
+        "
+    >
+        ➕ Agregar método de cobro
+    </button>
+
+
+    <div
+        id="formularioMetodoPagoPlanesSuperAdmin"
+    ></div>
+
+
+    <div
+        id="listaMetodosPagoPlanesSuperAdmin"
+        style="
+            margin-top:18px;
+        "
+    >
+        ${crearHtmlMetodosPagoPlanesSuperAdmin()}
+    </div>
+
 </div>
 
 <div class="card">
