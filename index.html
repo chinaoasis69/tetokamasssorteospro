@@ -101545,6 +101545,28 @@ function crearHtmlMetodosPagoPlanesSuperAdmin() {
 
                     </div>
 
+                    ${
+    metodo.institucion_financiera
+        ? `
+            <div
+                style="
+                    margin-top:14px;
+                    color:#bbb;
+                    line-height:1.5;
+                    overflow-wrap:anywhere;
+                "
+            >
+                <b>Banco / institución:</b>
+                ${
+                    massEscaparHTML(
+                        metodo.institucion_financiera
+                    )
+                }
+            </div>
+        `
+        : ""
+}
+
 
                     <div
                         style="
@@ -101848,6 +101870,33 @@ function (
                     font-size:16px;
                 "
             >
+
+            <label
+    style="
+        display:block;
+        margin-top:12px;
+        color:#bbb;
+    "
+>
+    Banco / institución financiera
+</label>
+
+<input
+    id="planPagoMetodoInstitucion"
+    type="text"
+    maxlength="120"
+    placeholder="Opcional. Ej. BBVA, Chase, Bank of America"
+    value="${
+        massEscaparHTML(
+            metodo?.institucion_financiera || ""
+        )
+    }"
+    style="
+        width:100%;
+        max-width:100%;
+        font-size:16px;
+    "
+>
 
 
             <label
@@ -102169,6 +102218,13 @@ async function (
             )?.value || ""
         ).trim();
 
+        const institucionFinanciera =
+    String(
+        document.getElementById(
+            "planPagoMetodoInstitucion"
+        )?.value || ""
+    ).trim();
+
 
     const destinoEtiqueta =
         String(
@@ -102301,11 +102357,15 @@ async function (
                 pais ||
                 null,
 
-            p_nombre_publico:
-                nombre,
+           p_nombre_publico:
+    nombre,
 
-            p_destino_etiqueta:
-                destinoEtiqueta,
+p_institucion_financiera:
+    institucionFinanciera ||
+    null,
+
+p_destino_etiqueta:
+    destinoEtiqueta,
 
             p_destino_valor:
                 destinoValor,
