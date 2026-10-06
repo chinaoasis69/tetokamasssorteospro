@@ -99683,6 +99683,76 @@ if (
   await actualizarContadorNotificacionesMass();
 }
 
+/* ================================================
+   MASS — REFRESCAR MODERACIÓN EN TIEMPO REAL
+   DYN-F4E1
+
+   Reutiliza la notificación administrativa existente.
+   No crea un segundo canal Realtime.
+   ================================================ */
+
+if (
+  contexto.modo === "organizador" &&
+  payload?.eventType === "INSERT" &&
+  payload?.new
+) {
+
+  const tipoNotificacion =
+    String(
+      payload.new.tipo || ""
+    ).trim();
+
+
+  const esReporteComentario =
+    [
+      "COMENTARIO_PERFIL_REPORTADO",
+      "COMENTARIO_RIFA_REPORTADO"
+    ].includes(
+      tipoNotificacion
+    );
+
+
+  const moduloModeracionAbierto =
+    document.getElementById(
+      "moderacionComentariosOrganizadorPerfilBox"
+    );
+
+
+  if (
+    esReporteComentario &&
+    moduloModeracionAbierto
+  ) {
+
+    const seccionDinamicas =
+      document.getElementById(
+        "seccionModeracionComentariosDinamicas"
+      );
+
+
+    const estabaEnDinamicas =
+      !!seccionDinamicas &&
+      seccionDinamicas.style.display !==
+        "none";
+
+
+    await abrirModuloOperacionCumplimientoPerfil(
+      "moderacion"
+    );
+
+
+    if (
+      estabaEnDinamicas &&
+      typeof cambiarVistaModeracionComentariosOrganizador ===
+        "function"
+    ) {
+
+      cambiarVistaModeracionComentariosOrganizador(
+        "dinamicas"
+      );
+    }
+  }
+}
+
 
           /* ================================================
              SI LA BANDEJA ESTÁ ABIERTA, REFRESCARLA
