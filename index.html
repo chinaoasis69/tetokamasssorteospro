@@ -35628,9 +35628,24 @@ async function (
         );
 
 
-        await cargarModeracionComentariosDinamicasOrganizador(
+                await cargarModeracionComentariosDinamicasOrganizador(
             organizadorIdLimpio
         );
+
+
+        const rifaActualId =
+            String(
+                RIFA_ID || ""
+            ).trim();
+
+
+        if (rifaActualId) {
+
+            await cargarComentariosRifa(
+                rifaActualId,
+                false
+            );
+        }
 
 
         cambiarVistaModeracionComentariosOrganizador(
