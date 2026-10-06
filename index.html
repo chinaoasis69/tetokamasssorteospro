@@ -62293,14 +62293,10 @@ async function cargarPatrocinadoresPerfilPublicoOrganizador(
             true
         )
         .eq(
-            "organizador_id",
-            idLimpio
-        )
-        .is(
-            "rifa_id",
-            null
-        )
-        .order(
+    "organizador_id",
+    idLimpio
+)
+.order(
             "created_at",
             {
                 ascending: false
@@ -62390,10 +62386,53 @@ async function cargarPatrocinadoresPerfilPublicoOrganizador(
         return;
     }
 
+    const patrocinadoresUnicos = [];
+
+const nombresPatrocinadores =
+    new Set();
+
+
+for (
+    const patrocinador
+    of data
+) {
+
+    const claveNombre =
+        String(
+            patrocinador.nombre || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    if (!claveNombre) {
+        continue;
+    }
+
+
+    if (
+        nombresPatrocinadores.has(
+            claveNombre
+        )
+    ) {
+        continue;
+    }
+
+
+    nombresPatrocinadores.add(
+        claveNombre
+    );
+
+
+    patrocinadoresUnicos.push(
+        patrocinador
+    );
+}
+
 
     contenedor.innerHTML =
         massCrearCarruselPatrocinadores(
-            data,
+            patrocinadoresUnicos,
             {
                 titulo:
                     "🤝 Patrocinadores del Organizador",
