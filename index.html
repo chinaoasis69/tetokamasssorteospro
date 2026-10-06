@@ -61588,10 +61588,25 @@ console.log(
     👥 Ver organizadores activos
 </button>
 
+<button
+    type="button"
+    onclick="mostrarPlanesOrganizadorPublicos()"
+>
+    📦 Planes y precios
+</button>
+
       <button onclick="window.open('https://wa.me/19563724890','_blank')">
         📞 Contactar
       </button>
     </div>
+
+    <div
+    id="planesOrganizadorPublicosBox"
+    style="
+        display:none;
+        margin-top:15px;
+    "
+></div>
 
     <div id="patrocinadoresPlataformaCard" class="card" style="text-align:center; margin-bottom:25px;">
       <h2>🤝 Negocios Patrocinadores</h2>
@@ -61912,6 +61927,1574 @@ if (
   }
  }	  
 }
+
+/* =========================================================
+   MASS — PLANES PÚBLICOS PARA ORGANIZADORES
+   PLAN-F3A
+========================================================= */
+
+window.mostrarPlanesOrganizadorPublicos =
+async function () {
+
+    const box =
+        document.getElementById(
+            "planesOrganizadorPublicosBox"
+        );
+
+
+    if (!box) {
+        return;
+    }
+
+
+    box.style.display =
+        "block";
+
+
+    box.innerHTML = `
+        <div
+            style="
+                padding:24px;
+                text-align:center;
+                color:#aaa;
+            "
+        >
+            ⏳ Cargando planes...
+        </div>
+    `;
+
+
+    const vistasOcultar = [
+
+        "organizadoresActivosBox",
+
+        "perfilPublicoOrganizadorBox",
+
+        "sorteosActivosBox",
+
+        "sorteoSeleccionadoBox",
+
+        "zonaRifaActiva"
+    ];
+
+
+    vistasOcultar.forEach(
+        id => {
+
+            const elemento =
+                document.getElementById(
+                    id
+                );
+
+
+            if (elemento) {
+
+                elemento.style.display =
+                    "none";
+            }
+        }
+    );
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_planes_organizador_publicos_segura"
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO PLANES PÚBLICOS:",
+            error || data
+        );
+
+
+        box.innerHTML = `
+            <div class="card">
+                ❌ No fue posible cargar
+                los planes en este momento.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const planes =
+        Array.isArray(
+            data.planes
+        )
+            ? data.planes
+            : [];
+
+
+    const tarjetas =
+        planes.map(
+            plan => {
+
+                const mensual =
+                    plan.tipo_cobro ===
+                    "mensual";
+
+
+                const precioMxn =
+                    Number(
+                        plan.precio_mxn ||
+                        0
+                    ).toLocaleString(
+                        "es-MX",
+                        {
+                            maximumFractionDigits:
+                                2
+                        }
+                    );
+
+
+                const precioUsd =
+                    Number(
+                        plan.precio_usd ||
+                        0
+                    ).toLocaleString(
+                        "en-US",
+                        {
+                            maximumFractionDigits:
+                                2
+                        }
+                    );
+
+
+                const caracteristicas =
+                    Array.isArray(
+                        plan.caracteristicas
+                    )
+                        ? plan.caracteristicas
+                        : [];
+
+
+                return `
+                    <div
+                        style="
+                            padding:20px;
+                            border:2px solid #39ff14;
+                            border-radius:18px;
+                            background:#111;
+                            text-align:left;
+                            display:flex;
+                            flex-direction:column;
+                            min-height:100%;
+                        "
+                    >
+
+                        <div
+                            style="
+                                color:#39ff14;
+                                font-size:22px;
+                                font-weight:900;
+                                text-align:center;
+                            "
+                        >
+                            ${
+                                massEscaparHTML(
+                                    plan.nombre ||
+                                    "Plan MASS"
+                                )
+                            }
+                        </div>
+
+
+                        <div
+                            style="
+                                margin-top:8px;
+                                color:#bbb;
+                                text-align:center;
+                                line-height:1.45;
+                            "
+                        >
+                            ${
+                                massEscaparHTML(
+                                    plan.descripcion ||
+                                    ""
+                                )
+                            }
+                        </div>
+
+
+                        <div
+                            style="
+                                margin:18px 0;
+                                display:grid;
+                                grid-template-columns:
+                                    repeat(
+                                        2,
+                                        minmax(0,1fr)
+                                    );
+                                gap:10px;
+                            "
+                        >
+
+                            <div
+                                style="
+                                    padding:13px;
+                                    background:#181818;
+                                    border-radius:12px;
+                                    text-align:center;
+                                "
+                            >
+                                <div
+                                    style="
+                                        color:#39ff14;
+                                        font-size:22px;
+                                        font-weight:bold;
+                                    "
+                                >
+                                    ${precioMxn} MXN
+                                </div>
+
+                                <div
+                                    style="
+                                        color:#888;
+                                        font-size:12px;
+                                    "
+                                >
+                                    ${
+                                        mensual
+                                            ? "por mes"
+                                            : "por dinámica"
+                                    }
+                                </div>
+                            </div>
+
+
+                            <div
+                                style="
+                                    padding:13px;
+                                    background:#181818;
+                                    border-radius:12px;
+                                    text-align:center;
+                                "
+                            >
+                                <div
+                                    style="
+                                        color:#39ff14;
+                                        font-size:22px;
+                                        font-weight:bold;
+                                    "
+                                >
+                                    ${precioUsd} USD
+                                </div>
+
+                                <div
+                                    style="
+                                        color:#888;
+                                        font-size:12px;
+                                    "
+                                >
+                                    ${
+                                        mensual
+                                            ? "por mes"
+                                            : "por dinámica"
+                                    }
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            style="
+                                color:#ddd;
+                                line-height:1.6;
+                                flex:1;
+                            "
+                        >
+
+                            ${
+                                caracteristicas.map(
+                                    item => `
+                                        <div
+                                            style="
+                                                margin:6px 0;
+                                            "
+                                        >
+                                            ✅ ${
+                                                massEscaparHTML(
+                                                    item
+                                                )
+                                            }
+                                        </div>
+                                    `
+                                ).join("")
+                            }
+
+                        </div>
+
+
+                        <div
+                            style="
+                                display:grid;
+                                grid-template-columns:
+                                    repeat(
+                                        2,
+                                        minmax(0,1fr)
+                                    );
+                                gap:10px;
+                                margin-top:20px;
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                onclick='
+                                    adquirirPlanOrganizadorPublico(
+                                        ${JSON.stringify(
+                                            String(
+                                                plan.codigo ||
+                                                ""
+                                            )
+                                        )},
+                                        "MXN"
+                                    )
+                                '
+                                style="
+                                    background:#163d16;
+                                    color:white;
+                                    border:1px solid #39ff14;
+                                "
+                            >
+                                Adquirir en MXN
+                            </button>
+
+
+                            <button
+                                type="button"
+                                onclick='
+                                    adquirirPlanOrganizadorPublico(
+                                        ${JSON.stringify(
+                                            String(
+                                                plan.codigo ||
+                                                ""
+                                            )
+                                        )},
+                                        "USD"
+                                    )
+                                '
+                                style="
+                                    background:#163d16;
+                                    color:white;
+                                    border:1px solid #39ff14;
+                                "
+                            >
+                                Adquirir en USD
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+            }
+        ).join("");
+
+
+    box.innerHTML = `
+
+        <div
+            class="card"
+            style="
+                max-width:1100px;
+                text-align:center;
+            "
+        >
+
+            <h2
+                style="
+                    color:#39ff14;
+                    margin-bottom:6px;
+                "
+            >
+                📦 Planes y precios
+            </h2>
+
+            <p
+                style="
+                    color:#bbb;
+                    line-height:1.5;
+                "
+            >
+                Elige el plan que mejor se adapte
+                a tus dinámicas en MASS SORTEOS PRO.
+            </p>
+
+
+            <div
+                style="
+                    display:grid;
+                    grid-template-columns:
+                        repeat(
+                            auto-fit,
+                            minmax(270px,1fr)
+                        );
+                    gap:16px;
+                    margin-top:22px;
+                "
+            >
+                ${
+                    tarjetas ||
+                    `
+                        <div
+                            style="
+                                color:#aaa;
+                                padding:20px;
+                            "
+                        >
+                            No hay planes disponibles.
+                        </div>
+                    `
+                }
+            </div>
+
+        </div>
+    `;
+
+
+    box.scrollIntoView({
+        behavior:
+            "smooth",
+
+        block:
+            "start"
+    });
+};
+
+
+/* =========================================================
+   ADQUIRIR PLAN
+========================================================= */
+
+window.adquirirPlanOrganizadorPublico =
+async function (
+    planCodigo,
+    moneda
+) {
+
+    const codigoLimpio =
+        String(
+            planCodigo || ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const monedaLimpia =
+        String(
+            moneda || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+    if (
+        !codigoLimpio ||
+        ![
+            "MXN",
+            "USD"
+        ].includes(
+            monedaLimpia
+        )
+    ) {
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    const rol =
+        String(
+            localStorage.getItem(
+                "admin_rol"
+            ) || ""
+        ).trim();
+
+
+    const organizadorId =
+        String(
+            localStorage.getItem(
+                "admin_organizador_id"
+            ) ||
+            localStorage.getItem(
+                "organizador_admin_id"
+            ) ||
+            ""
+        ).trim();
+
+
+    if (
+        errorSesion ||
+        !datosSesion?.session?.user?.id ||
+        rol !== "organizador" ||
+        !organizadorId
+    ) {
+
+        sessionStorage.setItem(
+            "mass_plan_compra_pendiente",
+            JSON.stringify({
+                codigo:
+                    codigoLimpio,
+
+                moneda:
+                    monedaLimpia
+            })
+        );
+
+
+        alert(
+            "🔐 Inicia sesión como Organizador para adquirir este plan."
+        );
+
+
+        if (
+            typeof mostrarAccesoOrganizadorV2 ===
+            "function"
+        ) {
+
+            mostrarAccesoOrganizadorV2();
+        }
+
+
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "solicitar_adquisicion_plan_organizador_segura",
+        {
+            p_organizador_id:
+                organizadorId,
+
+            p_plan_codigo:
+                codigoLimpio,
+
+            p_moneda:
+                monedaLimpia
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR ADQUIRIENDO PLAN:",
+            error || data
+        );
+
+
+        const codigoError =
+            String(
+                data?.codigo || ""
+            );
+
+
+        if (
+            codigoError ===
+            "ORGANIZADOR_INACTIVO"
+        ) {
+
+            alert(
+                "⛔ Tu Organizador se encuentra inactivo."
+            );
+
+        } else if (
+            codigoError ===
+            "NO_AUTORIZADO"
+        ) {
+
+            alert(
+                "❌ Esta sesión no puede adquirir planes para ese Organizador."
+            );
+
+        } else {
+
+            alert(
+                "❌ No fue posible preparar la adquisición del plan."
+            );
+        }
+
+
+        return;
+    }
+
+
+    sessionStorage.removeItem(
+        "mass_plan_compra_pendiente"
+    );
+
+
+    if (
+        data.ya_existente ===
+        true &&
+        String(
+            data.moneda || ""
+        ) !==
+        monedaLimpia
+    ) {
+
+        alert(
+            `ℹ️ Ya tienes una adquisición abierta de este plan en ${
+                data.moneda
+            }. Abriremos ese expediente.`
+        );
+    }
+
+
+    await abrirCheckoutPlanOrganizador(
+        data.adquisicion_id
+    );
+};
+
+
+/* =========================================================
+   REANUDAR DESPUÉS DEL LOGIN DE ORGANIZADOR
+========================================================= */
+
+window.reanudarCompraPlanPendiente =
+async function () {
+
+    const guardado =
+        sessionStorage.getItem(
+            "mass_plan_compra_pendiente"
+        );
+
+
+    if (!guardado) {
+        return;
+    }
+
+
+    try {
+
+        const pendiente =
+            JSON.parse(
+                guardado
+            );
+
+
+        if (
+            !pendiente?.codigo ||
+            !pendiente?.moneda
+        ) {
+
+            sessionStorage.removeItem(
+                "mass_plan_compra_pendiente"
+            );
+
+            return;
+        }
+
+
+        await adquirirPlanOrganizadorPublico(
+            pendiente.codigo,
+            pendiente.moneda
+        );
+
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "ERROR REANUDANDO COMPRA DE PLAN:",
+            error
+        );
+    }
+};
+
+
+/* =========================================================
+   CHECKOUT PRIVADO DEL PLAN
+========================================================= */
+
+window.cerrarCheckoutPlanOrganizador =
+function () {
+
+    const modal =
+        document.getElementById(
+            "modalCheckoutPlanOrganizador"
+        );
+
+
+    if (modal) {
+        modal.remove();
+    }
+};
+
+
+window.abrirCheckoutPlanOrganizador =
+async function (
+    adquisicionId
+) {
+
+    const adquisicionIdLimpio =
+        String(
+            adquisicionId || ""
+        ).trim();
+
+
+    if (!adquisicionIdLimpio) {
+        return;
+    }
+
+
+    cerrarCheckoutPlanOrganizador();
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_metodos_pago_plan_organizador_segura",
+        {
+            p_adquisicion_id:
+                adquisicionIdLimpio
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO CHECKOUT DEL PLAN:",
+            error || data
+        );
+
+
+        alert(
+            "❌ No fue posible abrir el pago del plan."
+        );
+
+        return;
+    }
+
+
+    const metodos =
+        Array.isArray(
+            data.metodos
+        )
+            ? data.metodos
+            : [];
+
+
+    const enRevision =
+        data.estado ===
+        "pago_en_revision";
+
+
+    const metodosHtml =
+        metodos.map(
+            (
+                metodo,
+                indice
+            ) => `
+
+                <label
+                    style="
+                        display:block;
+                        margin:12px 0;
+                        padding:15px;
+                        border:1px solid #555;
+                        border-radius:14px;
+                        background:#151515;
+                        cursor:pointer;
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            align-items:center;
+                            gap:10px;
+                        "
+                    >
+
+                        <input
+                            type="radio"
+                            name="metodoPagoPlanOrganizador"
+                            value="${
+                                metodo.id
+                            }"
+                            ${
+                                indice === 0
+                                    ? "checked"
+                                    : ""
+                            }
+                        >
+
+                        <b
+                            style="
+                                color:#39ff14;
+                            "
+                        >
+                            ${
+                                massEscaparHTML(
+                                    metodo.nombre ||
+                                    "Método de pago"
+                                )
+                            }
+                        </b>
+
+                    </div>
+
+
+                    ${
+                        metodo.institucion_financiera
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        color:#bbb;
+                                    "
+                                >
+                                    <b>Banco / institución:</b>
+                                    ${
+                                        massEscaparHTML(
+                                            metodo.institucion_financiera
+                                        )
+                                    }
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    <div
+                        style="
+                            margin-top:7px;
+                            color:#ddd;
+                            overflow-wrap:anywhere;
+                        "
+                    >
+                        <b>${
+                            massEscaparHTML(
+                                metodo.destino_etiqueta ||
+                                "Destino"
+                            )
+                        }:</b>
+                        ${
+                            massEscaparHTML(
+                                metodo.destino_valor ||
+                                ""
+                            )
+                        }
+                    </div>
+
+
+                    ${
+                        metodo.titular
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:7px;
+                                        color:#bbb;
+                                    "
+                                >
+                                    <b>Titular:</b>
+                                    ${
+                                        massEscaparHTML(
+                                            metodo.titular
+                                        )
+                                    }
+                                </div>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        metodo.instrucciones
+                            ? `
+                                <div
+                                    style="
+                                        margin-top:10px;
+                                        color:#aaa;
+                                        white-space:pre-wrap;
+                                        overflow-wrap:anywhere;
+                                    "
+                                >${
+                                    massEscaparHTML(
+                                        metodo.instrucciones
+                                    )
+                                }</div>
+                            `
+                            : ""
+                    }
+
+                </label>
+            `
+        ).join("");
+
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+
+    overlay.id =
+        "modalCheckoutPlanOrganizador";
+
+
+    overlay.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:100000;
+        overflow:auto;
+        padding:18px;
+        background:rgba(0,0,0,.90);
+        box-sizing:border-box;
+    `;
+
+
+    overlay.innerHTML = `
+
+        <div
+            style="
+                width:min(94vw,620px);
+                margin:30px auto;
+                padding:22px;
+                border:2px solid #39ff14;
+                border-radius:20px;
+                background:#0b0b0b;
+                color:white;
+                box-sizing:border-box;
+            "
+        >
+
+            <button
+                type="button"
+                onclick="
+                    cerrarCheckoutPlanOrganizador()
+                "
+                style="
+                    float:right;
+                    background:transparent;
+                    color:white;
+                    border:none;
+                    font-size:26px;
+                "
+            >
+                ×
+            </button>
+
+
+            <h2
+                style="
+                    color:#39ff14;
+                    text-align:center;
+                    margin-top:6px;
+                "
+            >
+                💳 Adquirir plan
+            </h2>
+
+
+            <h3
+                style="
+                    text-align:center;
+                "
+            >
+                ${
+                    massEscaparHTML(
+                        data.plan_nombre ||
+                        "Plan MASS"
+                    )
+                }
+            </h3>
+
+
+            <div
+                style="
+                    margin:18px 0;
+                    padding:16px;
+                    border-radius:14px;
+                    background:#151515;
+                    text-align:center;
+                "
+            >
+
+                <div
+                    style="
+                        color:#aaa;
+                    "
+                >
+                    Total
+                </div>
+
+                <div
+                    style="
+                        margin-top:4px;
+                        color:#39ff14;
+                        font-size:30px;
+                        font-weight:900;
+                    "
+                >
+                    ${
+                        Number(
+                            data.monto ||
+                            0
+                        ).toLocaleString()
+                    }
+                    ${
+                        massEscaparHTML(
+                            data.moneda ||
+                            ""
+                        )
+                    }
+                </div>
+
+            </div>
+
+
+            ${
+                enRevision
+                    ? `
+                        <div
+                            style="
+                                padding:18px;
+                                border:1px solid #ffd60a;
+                                border-radius:14px;
+                                background:#211f0d;
+                                color:#ffe66d;
+                                text-align:center;
+                                line-height:1.5;
+                            "
+                        >
+                            ⏳ Tu pago ya fue reportado
+                            y está en revisión.
+                        </div>
+                    `
+                    : `
+                        ${
+                            metodosHtml
+                            ||
+                            `
+                                <div
+                                    style="
+                                        padding:16px;
+                                        color:#aaa;
+                                        text-align:center;
+                                    "
+                                >
+                                    No hay métodos de pago
+                                    disponibles para ${
+                                        massEscaparHTML(
+                                            data.moneda ||
+                                            ""
+                                        )
+                                    }.
+                                </div>
+                            `
+                        }
+
+
+                        ${
+                            metodos.length
+                                ? `
+                                    <div
+                                        style="
+                                            margin-top:20px;
+                                            padding-top:18px;
+                                            border-top:1px solid #333;
+                                        "
+                                    >
+
+                                        <label
+                                            style="
+                                                display:block;
+                                                margin-bottom:8px;
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            📎 Comprobante de pago
+                                        </label>
+
+                                        <input
+                                            id="archivoComprobantePlanOrganizador"
+                                            type="file"
+                                            accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.pdf,image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf"
+                                            style="
+                                                width:100%;
+                                                max-width:100%;
+                                                font-size:16px;
+                                            "
+                                        >
+
+
+                                        <div
+                                            style="
+                                                margin-top:8px;
+                                                color:#888;
+                                                font-size:12px;
+                                                line-height:1.4;
+                                            "
+                                        >
+                                            JPG, PNG, WEBP, HEIC,
+                                            HEIF o PDF · máximo 10 MB.
+                                        </div>
+
+
+                                        <button
+                                            id="btnReportarPagoPlanOrganizador"
+                                            type="button"
+                                            onclick="
+                                                subirYReportarPagoPlanOrganizador(
+                                                    '${
+                                                        adquisicionIdLimpio
+                                                    }'
+                                                )
+                                            "
+                                            style="
+                                                width:100%;
+                                                margin-top:18px;
+                                                padding:14px;
+                                                background:#163d16;
+                                                color:white;
+                                                border:2px solid #39ff14;
+                                                font-size:16px;
+                                            "
+                                        >
+                                            ✅ Ya realicé el pago
+                                        </button>
+
+                                    </div>
+                                `
+                                : ""
+                        }
+                    `
+            }
+
+        </div>
+    `;
+
+
+    overlay.onclick =
+        evento => {
+
+            if (
+                evento.target ===
+                overlay
+            ) {
+
+                cerrarCheckoutPlanOrganizador();
+            }
+        };
+
+
+    document.body.appendChild(
+        overlay
+    );
+};
+
+
+/* =========================================================
+   SUBIR + REPORTAR COMPROBANTE
+========================================================= */
+
+window.subirYReportarPagoPlanOrganizador =
+async function (
+    adquisicionId
+) {
+
+    const metodoSeleccionado =
+        document.querySelector(
+            'input[name="metodoPagoPlanOrganizador"]:checked'
+        );
+
+
+    const inputArchivo =
+        document.getElementById(
+            "archivoComprobantePlanOrganizador"
+        );
+
+
+    const boton =
+        document.getElementById(
+            "btnReportarPagoPlanOrganizador"
+        );
+
+
+    const archivo =
+        inputArchivo?.files?.[0] ||
+        null;
+
+
+    if (!metodoSeleccionado) {
+
+        alert(
+            "❌ Selecciona un método de pago."
+        );
+
+        return;
+    }
+
+
+    if (!archivo) {
+
+        alert(
+            "❌ Selecciona tu comprobante de pago."
+        );
+
+        return;
+    }
+
+
+    if (
+        archivo.size <= 0 ||
+        archivo.size >
+        10485760
+    ) {
+
+        alert(
+            "❌ El comprobante debe pesar máximo 10 MB."
+        );
+
+        return;
+    }
+
+
+    const extension =
+        String(
+            archivo.name
+                .split(".")
+                .pop() ||
+            ""
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const mimePorExtension = {
+
+        jpg:
+            "image/jpeg",
+
+        jpeg:
+            "image/jpeg",
+
+        png:
+            "image/png",
+
+        webp:
+            "image/webp",
+
+        heic:
+            "image/heic",
+
+        heif:
+            "image/heif",
+
+        pdf:
+            "application/pdf"
+    };
+
+
+    const mime =
+        mimePorExtension[
+            extension
+        ];
+
+
+    if (!mime) {
+
+        alert(
+            "❌ Formato de comprobante no permitido."
+        );
+
+        return;
+    }
+
+
+    if (boton) {
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "⏳ Procesando pago...";
+    }
+
+
+    try {
+
+        /* -----------------------------------------------
+           1. RESERVAR PAGO Y PATH
+           ----------------------------------------------- */
+
+        const {
+            data: preparacion,
+            error: errorPreparacion
+        } = await supabaseClient.rpc(
+            "preparar_pago_plan_organizador_seguro",
+            {
+                p_adquisicion_id:
+                    adquisicionId,
+
+                p_metodo_pago_id:
+                    metodoSeleccionado.value,
+
+                p_extension:
+                    extension
+            }
+        );
+
+
+        if (
+            errorPreparacion ||
+            !preparacion ||
+            preparacion.ok !== true
+        ) {
+
+            console.error(
+                "ERROR PREPARANDO PAGO DEL PLAN:",
+                errorPreparacion ||
+                preparacion
+            );
+
+
+            alert(
+                "❌ No fue posible preparar el pago."
+            );
+
+            return;
+        }
+
+
+        if (
+            preparacion.estado ===
+            "reportado"
+        ) {
+
+            alert(
+                "ℹ️ Este pago ya fue reportado."
+            );
+
+
+            await abrirCheckoutPlanOrganizador(
+                adquisicionId
+            );
+
+            return;
+        }
+
+
+        const bucket =
+            String(
+                preparacion.comprobante_bucket ||
+                ""
+            );
+
+
+        const path =
+            String(
+                preparacion.comprobante_path ||
+                ""
+            );
+
+
+        if (
+            !bucket ||
+            !path
+        ) {
+
+            alert(
+                "❌ No fue posible reservar la ruta del comprobante."
+            );
+
+            return;
+        }
+
+
+        /* -----------------------------------------------
+           2. SUBIR AL BUCKET PRIVADO
+           ----------------------------------------------- */
+
+        const {
+            error: errorUpload
+        } =
+            await supabaseClient.storage
+
+                .from(
+                    bucket
+                )
+
+                .upload(
+                    path,
+                    archivo,
+                    {
+                        contentType:
+                            mime,
+
+                        upsert:
+                            false
+                    }
+                );
+
+
+        if (errorUpload) {
+
+            /*
+              No abortamos inmediatamente:
+              si una carga anterior sí terminó pero
+              la respuesta se perdió, la RPC final
+              podrá reconocer el objeto existente.
+            */
+
+            console.warn(
+                "AVISO SUBIENDO COMPROBANTE DEL PLAN:",
+                errorUpload
+            );
+        }
+
+
+        /* -----------------------------------------------
+           3. REPORTAR AL BACKEND
+           ----------------------------------------------- */
+
+        const reportar =
+            async () => {
+
+                return await supabaseClient.rpc(
+                    "reportar_pago_plan_organizador_seguro",
+                    {
+                        p_pago_id:
+                            preparacion.pago_id
+                    }
+                );
+            };
+
+
+        let {
+            data: resultado,
+            error: errorReporte
+        } = await reportar();
+
+
+        if (
+            !errorReporte &&
+            resultado?.ok !== true &&
+            [
+                "COMPROBANTE_NO_EXISTE_EN_STORAGE",
+                "ETAG_NO_DISPONIBLE"
+            ].includes(
+                String(
+                    resultado?.codigo ||
+                    ""
+                )
+            )
+        ) {
+
+            await new Promise(
+                resolve =>
+                    setTimeout(
+                        resolve,
+                        700
+                    )
+            );
+
+
+            const segundoIntento =
+                await reportar();
+
+
+            resultado =
+                segundoIntento.data;
+
+            errorReporte =
+                segundoIntento.error;
+        }
+
+
+        if (
+            errorReporte ||
+            !resultado ||
+            resultado.ok !== true
+        ) {
+
+            console.error(
+                "ERROR REPORTANDO PAGO DEL PLAN:",
+                errorReporte ||
+                resultado
+            );
+
+
+            if (
+                errorUpload &&
+                resultado?.codigo ===
+                "COMPROBANTE_NO_EXISTE_EN_STORAGE"
+            ) {
+
+                alert(
+                    "❌ No fue posible subir el comprobante. Puedes intentarlo nuevamente desde este mismo expediente."
+                );
+
+            } else {
+
+                alert(
+                    "❌ El comprobante pudo haberse cargado, pero no fue posible finalizar el reporte. No vuelvas a realizar el pago real; intenta nuevamente desde este expediente."
+                );
+            }
+
+
+            return;
+        }
+
+
+        alert(
+            resultado.ya_reportado ===
+            true
+                ? "ℹ️ Este pago ya estaba reportado."
+                : "✅ Pago reportado correctamente. Quedó en revisión."
+        );
+
+
+        await abrirCheckoutPlanOrganizador(
+            adquisicionId
+        );
+
+
+    } finally {
+
+        if (boton) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                "✅ Ya realicé el pago";
+        }
+    }
+};
 
 	
 function toggleSorteosActivos(){
@@ -104090,7 +105673,7 @@ await inicializarNotificacionesMass();
       String(organizadorId)
     );
 
-	// ==========================================================
+// ==========================================================
 // MASS - MOSTRAR BOTÓN DE MENSAJES AL INICIAR COMO ORGANIZADOR
 // ==========================================================
 
@@ -104192,6 +105775,14 @@ if (chatOrganizadorUsuarioBox) {
     alert(
       "✅ Bienvenido al panel de Organizador."
     );
+
+    if (
+  typeof window.reanudarCompraPlanPendiente ===
+  "function"
+) {
+
+  await window.reanudarCompraPlanPendiente();
+}
 
   } catch (error) {
     console.error(
