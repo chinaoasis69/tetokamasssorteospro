@@ -61679,32 +61679,35 @@ function completarTemaVisualOrganizadorPublico() {
         }
 
 
-        /* =============================================
-           IMAGEN / CARRUSEL DEL PREMIO
-        ============================================= */
+/* =============================================
+   IMAGEN / VIDEO / CARRUSEL DEL PREMIO
+============================================= */
 
-        #imagenRifa {
+#imagenRifa,
+#videoRifaPrincipal {
 
-            border-color:
-                var(--mass-org-accent)
-                !important;
+    border-color:
+        var(--mass-org-accent)
+        !important;
 
-            box-shadow:
-                0 0 20px
-                rgba(
-                    var(--mass-org-accent-rgb),
-                    .55
-                )
-                !important;
-        }
+    box-shadow:
+        0 0 20px
+        rgba(
+            var(--mass-org-accent-rgb),
+            .55
+        )
+        !important;
+}
 
 
-        #controlesCarruselPremio button {
+#controlesCarruselPremio button,
+#galeriaRifa button,
+#btnVideoRifa {
 
-            border-color:
-                var(--mass-org-accent)
-                !important;
-        }
+    border-color:
+        var(--mass-org-accent)
+        !important;
+}
 
 
         /* =============================================
@@ -69118,7 +69121,7 @@ window.moverCarruselPremio = function(direccion = 1) {
 
   if (botonActivo) {
     botonActivo.style.boxShadow =
-      "0 0 14px #39ff14";
+    "0 0 14px var(--mass-org-accent, #39ff14)";
 
     botonActivo.scrollIntoView({
       behavior: "smooth",
@@ -69302,7 +69305,7 @@ indiceCarruselPremioActivo =
 
 
     tarjeta.style.boxShadow =
-      "0 0 14px #39ff14";
+    "0 0 14px var(--mass-org-accent, #39ff14)";
 
   };
 
@@ -69315,7 +69318,7 @@ indiceCarruselPremioActivo =
       if (indice === 0) {
 
         tarjeta.style.boxShadow =
-          "0 0 14px #39ff14";
+    "0 0 14px var(--mass-org-accent, #39ff14)";
 
       }
 
