@@ -60571,6 +60571,9 @@ function toggleSorteosActivos(){
 }
 
 function toggleOrganizadoresActivos(modo = "activos"){
+
+    ocultarBarraSocialRifa();
+    
     const box = document.getElementById("organizadoresActivosBox");
     if(!box) return;
 
@@ -66421,6 +66424,8 @@ async function mostrarPerfilPublicoOrganizador(
     organizadorId
 ) {
 
+    ocultarBarraSocialRifa();
+
     const idLimpio =
         String(
             organizadorId || ""
@@ -67686,6 +67691,8 @@ if (contenidoGeneralUsuario) {
 };
 
 async function verSorteosDeOrganizador(orgId){
+
+    ocultarBarraSocialRifa();
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
 
@@ -75125,13 +75132,508 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
   await window.abrirConversacionOrganizadorAdmin(
     conversacionActiva
   );
-};	
+};
+
+// =========================================================
+// MASS — REACCIONES PÚBLICAS POR DINÁMICA
+// DYN-F3A4
+// =========================================================
+
+let MASS_REACCION_RIFA_EN_PROCESO =
+    false;
+
+
+function mostrarBarraSocialRifa() {
+
+    const barra =
+        document.getElementById(
+            "barraSocialRifa"
+        );
+
+
+    if (
+        !barra ||
+        !RIFA_ID
+    ) {
+        return;
+    }
+
+
+    barra.style.display =
+        "flex";
+}
+
+
+function ocultarBarraSocialRifa() {
+
+    const barra =
+        document.getElementById(
+            "barraSocialRifa"
+        );
+
+
+    if (barra) {
+
+        barra.style.display =
+            "none";
+    }
+}
+
+
+function pintarEstadoReaccionesRifa(
+    estado = {}
+) {
+
+    const btnMeGusta =
+        document.getElementById(
+            "btnMeGustaRifa"
+        );
+
+
+    const btnNoMeGusta =
+        document.getElementById(
+            "btnNoMeGustaRifa"
+        );
+
+
+    const contadorMeGusta =
+        document.getElementById(
+            "contadorMeGustaRifa"
+        );
+
+
+    const contadorNoMeGusta =
+        document.getElementById(
+            "contadorNoMeGustaRifa"
+        );
+
+
+    if (
+        !btnMeGusta ||
+        !btnNoMeGusta ||
+        !contadorMeGusta ||
+        !contadorNoMeGusta
+    ) {
+        return;
+    }
+
+
+    const reaccionUsuario =
+        String(
+            estado.reaccion_usuario ||
+            ""
+        ).trim();
+
+
+    const meGustaActivo =
+        reaccionUsuario ===
+        "me_gusta";
+
+
+    const noMeGustaActivo =
+        reaccionUsuario ===
+        "no_me_gusta";
+
+
+    const totalMeGusta =
+        Math.max(
+            0,
+            Number(
+                estado.total_me_gusta ||
+                0
+            )
+        );
+
+
+    const totalNoMeGusta =
+        Math.max(
+            0,
+            Number(
+                estado.total_no_me_gusta ||
+                0
+            )
+        );
+
+
+    contadorMeGusta.textContent =
+        String(totalMeGusta);
+
+
+    contadorNoMeGusta.textContent =
+        String(totalNoMeGusta);
+
+
+    const pintarBoton =
+        (
+            boton,
+            activo
+        ) => {
+
+            boton.dataset.activa =
+                activo
+                    ? "true"
+                    : "false";
+
+
+            boton.setAttribute(
+                "aria-pressed",
+                activo
+                    ? "true"
+                    : "false"
+            );
+
+
+            boton.style.opacity =
+                activo
+                    ? "1"
+                    : ".78";
+
+
+            boton.style.background =
+                activo
+                    ? "rgba(var(--mass-org-accent-rgb, 57,255,20), .24)"
+                    : "rgba(8,8,8,.58)";
+
+
+            boton.style.borderColor =
+                activo
+                    ? "var(--mass-org-accent, #39ff14)"
+                    : "rgba(var(--mass-org-accent-rgb, 57,255,20), .48)";
+
+
+            boton.style.boxShadow =
+                activo
+                    ? "0 0 16px rgba(var(--mass-org-accent-rgb, 57,255,20), .48)"
+                    : "none";
+        };
+
+
+    pintarBoton(
+        btnMeGusta,
+        meGustaActivo
+    );
+
+
+    pintarBoton(
+        btnNoMeGusta,
+        noMeGustaActivo
+    );
+
+
+    btnMeGusta.title =
+        meGustaActivo
+            ? "Quitar Me gusta"
+            : "Me gusta";
+
+
+    btnNoMeGusta.title =
+        noMeGustaActivo
+            ? "Quitar No me gusta"
+            : "No me gusta";
+}
+
+
+async function cargarEstadoReaccionesRifa(
+    rifaId
+) {
+
+    const idLimpio =
+        String(
+            rifaId ||
+            ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return;
+    }
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.rpc(
+            "obtener_estado_reaccion_rifa_seguro",
+            {
+                p_rifa_id:
+                    idLimpio
+            }
+        );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO REACCIONES DE LA DINÁMICA:",
+            error || data
+        );
+
+        return;
+    }
+
+
+    pintarEstadoReaccionesRifa(
+        data
+    );
+}
+
+
+window.alternarReaccionRifa =
+async function (
+    reaccion
+) {
+
+    if (
+        MASS_REACCION_RIFA_EN_PROCESO
+    ) {
+        return;
+    }
+
+
+    const reaccionLimpia =
+        String(
+            reaccion ||
+            ""
+        )
+          .trim()
+          .toLowerCase();
+
+
+    if (
+        ![
+            "me_gusta",
+            "no_me_gusta"
+        ].includes(
+            reaccionLimpia
+        )
+    ) {
+        return;
+    }
+
+
+    const rifaId =
+        String(
+            RIFA_ID ||
+            window.rifaSeleccionada?.id ||
+            ""
+        ).trim();
+
+
+    if (!rifaId) {
+
+        alert(
+            "❌ No fue posible identificar la dinámica."
+        );
+
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    if (
+        errorSesion ||
+        !datosSesion?.session?.user?.id
+    ) {
+
+        alert(
+            "🔐 Inicia sesión con tu MASS ID para reaccionar."
+        );
+
+        return;
+    }
+
+
+    const btnMeGusta =
+        document.getElementById(
+            "btnMeGustaRifa"
+        );
+
+
+    const btnNoMeGusta =
+        document.getElementById(
+            "btnNoMeGustaRifa"
+        );
+
+
+    const botonElegido =
+        reaccionLimpia ===
+        "me_gusta"
+            ? btnMeGusta
+            : btnNoMeGusta;
+
+
+    const yaActiva =
+        botonElegido?.dataset.activa ===
+        "true";
+
+
+    const rpc =
+        yaActiva
+            ? "quitar_reaccion_rifa_seguro"
+            : "reaccionar_rifa_seguro";
+
+
+    const parametros =
+        yaActiva
+            ? {
+                p_rifa_id:
+                    rifaId
+            }
+            : {
+                p_rifa_id:
+                    rifaId,
+
+                p_reaccion:
+                    reaccionLimpia
+            };
+
+
+    MASS_REACCION_RIFA_EN_PROCESO =
+        true;
+
+
+    if (btnMeGusta) {
+        btnMeGusta.disabled =
+            true;
+    }
+
+
+    if (btnNoMeGusta) {
+        btnNoMeGusta.disabled =
+            true;
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient.rpc(
+                rpc,
+                parametros
+            );
+
+
+        if (error) {
+
+            console.error(
+                "ERROR ACTUALIZANDO REACCIÓN DE LA DINÁMICA:",
+                error
+            );
+
+
+            const mensaje =
+                String(
+                    error.message ||
+                    ""
+                );
+
+
+            if (
+                mensaje.includes(
+                    "NO_AUTORIZADO"
+                )
+            ) {
+
+                alert(
+                    "🔐 Inicia sesión con tu MASS ID para continuar."
+                );
+
+            } else if (
+                mensaje.includes(
+                    "USUARIO_MASS_NO_ENCONTRADO"
+                )
+            ) {
+
+                alert(
+                    "❌ Necesitas un MASS ID activo para reaccionar."
+                );
+
+            } else {
+
+                alert(
+                    "❌ No fue posible actualizar tu reacción."
+                );
+            }
+
+
+            return;
+        }
+
+
+        if (
+            !data ||
+            data.ok !== true
+        ) {
+
+            alert(
+                "❌ El servidor no confirmó la reacción."
+            );
+
+            return;
+        }
+
+
+        pintarEstadoReaccionesRifa(
+            data
+        );
+
+
+    } catch (
+        errorInesperado
+    ) {
+
+        console.error(
+            "ERROR INESPERADO EN REACCIONES DE LA DINÁMICA:",
+            errorInesperado
+        );
+
+
+        alert(
+            "❌ No fue posible actualizar tu reacción."
+        );
+
+
+    } finally {
+
+        MASS_REACCION_RIFA_EN_PROCESO =
+            false;
+
+
+        if (btnMeGusta) {
+            btnMeGusta.disabled =
+                false;
+        }
+
+
+        if (btnNoMeGusta) {
+            btnNoMeGusta.disabled =
+                false;
+        }
+    }
+};
 
 async function abrirRifa(rifaId){
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
 
     RIFA_ID = rifaId;
+
+    ocultarBarraSocialRifa();
 
 	actualizarBotonesCompraSorteo();
 
@@ -75220,6 +75722,12 @@ const org = mapaOrganizadores[rifa.organizador_id];
 aplicarTemaVisualOrganizadorPublico(
     rifa.organizador_id
 );
+
+await cargarEstadoReaccionesRifa(
+    rifa.id
+);
+
+mostrarBarraSocialRifa();
 
 /* =====================================================
    MASS — CONTACTO Y SOPORTE PÚBLICO
@@ -75842,6 +76350,8 @@ if (box) {
 }
 
 async function mostrarListaSorteosOrganizador(){
+
+    ocultarBarraSocialRifa();
 
 	const cardSorteo = document.getElementById("patrocinadoresSorteoCard");
 if (cardSorteo) {
@@ -103250,6 +103760,154 @@ font-family:Arial, sans-serif;">
     </div>
 
   </div>
+</div>
+
+<!-- ===================================================== -->
+<!-- MASS — INTERACCIÓN SOCIAL DE LA DINÁMICA -->
+<!-- DYN-F3A4 -->
+<!-- ===================================================== -->
+
+<div
+  id="barraSocialRifa"
+  aria-label="Interacciones de la dinámica"
+  style="
+    display:none;
+    position:fixed;
+    right:14px;
+    bottom:166px;
+    z-index:99997;
+
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+
+    padding:7px 6px;
+
+    border:1px solid
+      rgba(
+        var(--mass-org-accent-rgb, 57,255,20),
+        .42
+      );
+
+    border-radius:22px;
+
+    background:rgba(8,8,8,.46);
+
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+
+    box-shadow:
+      0 0 16px
+      rgba(
+        var(--mass-org-accent-rgb, 57,255,20),
+        .18
+      );
+  "
+>
+
+  <button
+    id="btnMeGustaRifa"
+    type="button"
+    data-activa="false"
+    aria-pressed="false"
+    aria-label="Me gusta esta dinámica"
+    title="Me gusta"
+    onclick="alternarReaccionRifa('me_gusta')"
+    style="
+      width:48px;
+      min-width:48px;
+      height:58px;
+      padding:4px 2px;
+
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:1px;
+
+      border:1px solid
+        rgba(
+          var(--mass-org-accent-rgb, 57,255,20),
+          .48
+        );
+
+      border-radius:16px;
+
+      background:rgba(8,8,8,.58);
+
+      color:white;
+      cursor:pointer;
+      opacity:.78;
+    "
+  >
+    <span style="font-size:23px;line-height:1;">
+      👍
+    </span>
+
+    <span
+      id="contadorMeGustaRifa"
+      style="
+        font-size:11px;
+        line-height:1;
+        font-weight:bold;
+      "
+    >
+      0
+    </span>
+  </button>
+
+
+  <button
+    id="btnNoMeGustaRifa"
+    type="button"
+    data-activa="false"
+    aria-pressed="false"
+    aria-label="No me gusta esta dinámica"
+    title="No me gusta"
+    onclick="alternarReaccionRifa('no_me_gusta')"
+    style="
+      width:48px;
+      min-width:48px;
+      height:58px;
+      padding:4px 2px;
+
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:1px;
+
+      border:1px solid
+        rgba(
+          var(--mass-org-accent-rgb, 57,255,20),
+          .48
+        );
+
+      border-radius:16px;
+
+      background:rgba(8,8,8,.58);
+
+      color:white;
+      cursor:pointer;
+      opacity:.78;
+    "
+  >
+    <span style="font-size:23px;line-height:1;">
+      👎
+    </span>
+
+    <span
+      id="contadorNoMeGustaRifa"
+      style="
+        font-size:11px;
+        line-height:1;
+        font-weight:bold;
+      "
+    >
+      0
+    </span>
+  </button>
+
 </div>
 
 
