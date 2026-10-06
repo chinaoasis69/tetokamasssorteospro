@@ -75962,6 +75962,14 @@ function () {
 window.cerrarComentariosRifa =
 function () {
 
+        if (
+        typeof cerrarModalReporteComentarioRifa ===
+        "function"
+    ) {
+
+        cerrarModalReporteComentarioRifa();
+    }
+
     const panel =
         document.getElementById(
             "panelComentariosRifa"
@@ -76264,6 +76272,60 @@ function renderizarComentariosRifa(
                     retirar
                 );
             }
+
+            if (
+    comentario.es_mio !==
+    true
+) {
+
+    const reportar =
+        document.createElement(
+            "button"
+        );
+
+
+    reportar.type =
+        "button";
+
+
+    reportar.textContent =
+        "🚩 Reportar";
+
+
+    reportar.title =
+        "Reportar comentario";
+
+
+    reportar.setAttribute(
+        "aria-label",
+        "Reportar comentario"
+    );
+
+
+    reportar.style.cssText = `
+        padding:7px 10px;
+        border:1px solid #665;
+        border-radius:999px;
+        background:#181818;
+        color:#ddd;
+        cursor:pointer;
+        font-size:12px;
+    `;
+
+
+    reportar.onclick =
+        () => {
+
+            reportarComentarioRifa(
+                comentario.id
+            );
+        };
+
+
+    encabezado.appendChild(
+        reportar
+    );
+}
 
 
             const texto =
@@ -76804,6 +76866,640 @@ async function (
         MASS_COMENTARIOS_RIFA_EN_PROCESO =
             false;
     }
+};
+
+// =========================================================
+// MASS — REPORTAR COMENTARIO DE DINÁMICA
+// DYN-F4C
+// =========================================================
+
+window.cerrarModalReporteComentarioRifa =
+function () {
+
+    const modal =
+        document.getElementById(
+            "modalReporteComentarioRifa"
+        );
+
+
+    if (modal) {
+
+        modal.remove();
+    }
+};
+
+
+window.reportarComentarioRifa =
+async function (
+    comentarioId
+) {
+
+    const comentarioIdLimpio =
+        String(
+            comentarioId ||
+            ""
+        ).trim();
+
+
+    if (!comentarioIdLimpio) {
+
+        return;
+    }
+
+
+    const {
+        data: datosSesion,
+        error: errorSesion
+    } =
+        await supabaseClient.auth
+            .getSession();
+
+
+    if (
+        errorSesion ||
+        !datosSesion?.session?.user?.id
+    ) {
+
+        alert(
+            "🔐 Inicia sesión con tu MASS ID para reportar un comentario."
+        );
+
+        return;
+    }
+
+
+    cerrarModalReporteComentarioRifa();
+
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+
+    overlay.id =
+        "modalReporteComentarioRifa";
+
+
+    overlay.style.cssText = `
+        position:fixed;
+        inset:0;
+        z-index:100003;
+
+        display:flex;
+        align-items:center;
+        justify-content:center;
+
+        padding:18px;
+
+        background:rgba(0,0,0,.84);
+
+        box-sizing:border-box;
+    `;
+
+
+    const modal =
+        document.createElement(
+            "div"
+        );
+
+
+    modal.style.cssText = `
+        width:min(92vw,520px);
+        max-height:90vh;
+        overflow:auto;
+
+        padding:20px;
+
+        border:2px solid
+            var(
+                --mass-org-accent,
+                #39ff14
+            );
+
+        border-radius:18px;
+
+        background:#0b0b0b;
+
+        box-shadow:
+            0 0 24px
+            rgba(
+                var(
+                    --mass-org-accent-rgb,
+                    57,255,20
+                ),
+                .30
+            );
+
+        color:white;
+
+        box-sizing:border-box;
+    `;
+
+
+    modal.innerHTML = `
+
+        <div
+            style="
+                color:
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+
+                font-size:21px;
+                font-weight:bold;
+                text-align:center;
+
+                margin-bottom:8px;
+            "
+        >
+            🚩 Reportar comentario
+        </div>
+
+
+        <div
+            style="
+                color:#aaa;
+                font-size:13px;
+                line-height:1.5;
+                text-align:center;
+                margin-bottom:18px;
+            "
+        >
+            Selecciona el motivo del reporte.
+            El Organizador no verá tu identidad
+            como reportante.
+        </div>
+
+
+        <label
+            for="motivoReporteComentarioRifa"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Motivo
+        </label>
+
+
+        <select
+            id="motivoReporteComentarioRifa"
+            style="
+                width:100%;
+                padding:12px;
+
+                border:1px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+
+                border-radius:10px;
+
+                background:#111;
+                color:white;
+
+                font:inherit;
+
+                box-sizing:border-box;
+
+                margin-bottom:16px;
+            "
+        >
+            <option value="">
+                Selecciona un motivo
+            </option>
+
+            <option value="spam">
+                Spam
+            </option>
+
+            <option value="ofensivo">
+                Contenido ofensivo
+            </option>
+
+            <option value="acoso">
+                Acoso
+            </option>
+
+            <option value="fraude">
+                Fraude o engaño
+            </option>
+
+            <option value="datos_personales">
+                Datos personales
+            </option>
+
+            <option value="otro">
+                Otro
+            </option>
+        </select>
+
+
+        <label
+            for="detalleReporteComentarioRifa"
+            style="
+                display:block;
+                margin-bottom:6px;
+                font-weight:bold;
+            "
+        >
+            Detalle adicional
+        </label>
+
+
+        <textarea
+            id="detalleReporteComentarioRifa"
+            maxlength="500"
+            rows="4"
+            placeholder="Opcional, excepto si seleccionas Otro..."
+            style="
+                width:100%;
+                padding:12px;
+
+                border:1px solid
+                    var(
+                        --mass-org-accent,
+                        #39ff14
+                    );
+
+                border-radius:10px;
+
+                background:#111;
+                color:white;
+
+                font:inherit;
+
+                resize:vertical;
+
+                box-sizing:border-box;
+            "
+        ></textarea>
+
+
+        <div
+            id="contadorDetalleReporteComentarioRifa"
+            style="
+                margin-top:6px;
+                color:#888;
+                font-size:12px;
+                text-align:right;
+            "
+        >
+            0/500
+        </div>
+
+
+        <div
+            style="
+                display:flex;
+                justify-content:center;
+                flex-wrap:wrap;
+                gap:10px;
+                margin-top:20px;
+            "
+        >
+
+            <button
+                id="btnCancelarReporteComentarioRifa"
+                type="button"
+                style="
+                    padding:10px 16px;
+                    border:1px solid #555;
+                    border-radius:999px;
+                    background:#181818;
+                    color:white;
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                Cancelar
+            </button>
+
+
+            <button
+                id="btnConfirmarReporteComentarioRifa"
+                type="button"
+                style="
+                    padding:10px 16px;
+
+                    border:2px solid
+                        var(
+                            --mass-org-accent,
+                            #39ff14
+                        );
+
+                    border-radius:999px;
+
+                    background:#111;
+                    color:white;
+
+                    cursor:pointer;
+                    font-weight:bold;
+                "
+            >
+                🚩 Enviar reporte
+            </button>
+
+        </div>
+    `;
+
+
+    overlay.appendChild(
+        modal
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    const motivo =
+        document.getElementById(
+            "motivoReporteComentarioRifa"
+        );
+
+
+    const detalle =
+        document.getElementById(
+            "detalleReporteComentarioRifa"
+        );
+
+
+    const contador =
+        document.getElementById(
+            "contadorDetalleReporteComentarioRifa"
+        );
+
+
+    const cancelar =
+        document.getElementById(
+            "btnCancelarReporteComentarioRifa"
+        );
+
+
+    const confirmar =
+        document.getElementById(
+            "btnConfirmarReporteComentarioRifa"
+        );
+
+
+    if (
+        detalle &&
+        contador
+    ) {
+
+        detalle.oninput =
+            () => {
+
+                contador.textContent =
+                    `${detalle.value.length}/500`;
+            };
+    }
+
+
+    if (cancelar) {
+
+        cancelar.onclick =
+            cerrarModalReporteComentarioRifa;
+    }
+
+
+    overlay.onclick =
+        evento => {
+
+            if (
+                evento.target ===
+                overlay
+            ) {
+
+                cerrarModalReporteComentarioRifa();
+            }
+        };
+
+
+    if (!confirmar) {
+
+        return;
+    }
+
+
+    confirmar.onclick =
+    async () => {
+
+        if (
+            MASS_COMENTARIOS_RIFA_EN_PROCESO
+        ) {
+
+            return;
+        }
+
+
+        const motivoValor =
+            String(
+                motivo?.value ||
+                ""
+            ).trim();
+
+
+        const detalleValor =
+            String(
+                detalle?.value ||
+                ""
+            ).trim();
+
+
+        if (!motivoValor) {
+
+            alert(
+                "🚩 Selecciona el motivo del reporte."
+            );
+
+            return;
+        }
+
+
+        if (
+            motivoValor === "otro" &&
+            !detalleValor
+        ) {
+
+            alert(
+                "🚩 Describe brevemente el motivo del reporte."
+            );
+
+            return;
+        }
+
+
+        if (
+            detalleValor.length >
+            500
+        ) {
+
+            alert(
+                "🚩 El detalle no puede superar 500 caracteres."
+            );
+
+            return;
+        }
+
+
+        MASS_COMENTARIOS_RIFA_EN_PROCESO =
+            true;
+
+
+        confirmar.disabled =
+            true;
+
+
+        confirmar.textContent =
+            "Enviando...";
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.rpc(
+                    "reportar_comentario_rifa_seguro",
+                    {
+                        p_comentario_id:
+                            comentarioIdLimpio,
+
+                        p_motivo:
+                            motivoValor,
+
+                        p_detalle:
+                            detalleValor ||
+                            null
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "ERROR REPORTANDO COMENTARIO DE DINÁMICA:",
+                    error
+                );
+
+
+                const mensaje =
+                    String(
+                        error.message ||
+                        ""
+                    );
+
+
+                if (
+                    mensaje.includes(
+                        "NO_PUEDES_REPORTAR_TU_COMENTARIO"
+                    )
+                ) {
+
+                    alert(
+                        "ℹ️ No puedes reportar tu propio comentario."
+                    );
+
+
+                } else if (
+                    mensaje.includes(
+                        "COMENTARIO_NO_DISPONIBLE"
+                    )
+                ) {
+
+                    alert(
+                        "ℹ️ Este comentario ya no está disponible para reportarse."
+                    );
+
+
+                } else {
+
+                    alert(
+                        "❌ No fue posible enviar el reporte."
+                    );
+                }
+
+
+                return;
+            }
+
+
+            if (
+                !data ||
+                data.ok !== true
+            ) {
+
+                alert(
+                    "❌ El servidor no confirmó el reporte."
+                );
+
+                return;
+            }
+
+
+            cerrarModalReporteComentarioRifa();
+
+
+            if (
+                data.ya_reportado ===
+                true
+            ) {
+
+                alert(
+                    "ℹ️ Ya habías reportado este comentario."
+                );
+
+
+            } else {
+
+                alert(
+                    "✅ Reporte enviado para revisión."
+                );
+            }
+
+
+        } catch (
+            errorInesperado
+        ) {
+
+            console.error(
+                "ERROR INESPERADO REPORTANDO COMENTARIO DE DINÁMICA:",
+                errorInesperado
+            );
+
+
+            alert(
+                "❌ Ocurrió un error inesperado."
+            );
+
+
+        } finally {
+
+            MASS_COMENTARIOS_RIFA_EN_PROCESO =
+                false;
+
+
+            if (
+                confirmar.isConnected
+            ) {
+
+                confirmar.disabled =
+                    false;
+
+
+                confirmar.textContent =
+                    "🚩 Enviar reporte";
+            }
+        }
+    };
 };
 
 // =========================================================
