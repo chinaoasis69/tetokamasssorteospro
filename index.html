@@ -46,10 +46,22 @@ button,input{
 button{cursor:pointer}
 .btn-main{background:#38b000;color:white}
 .btn-dark{background:#222;color:white;border:1px solid #38b000}
-input{
-  width:250px;
-  max-width:90%;
-  text-align:center;
+
+/* =====================================================
+   MASS — EVITAR AUTO-ZOOM DE LOGIN EN iPHONE / SAFARI
+   ===================================================== */
+
+@media (max-width:768px){
+
+  #massIdEmailLogin,
+  #massIdPasswordLogin,
+  #organizadorEmailV2,
+  #organizadorPasswordV2,
+  #superAdminEmailV2,
+  #superAdminPasswordV2{
+    font-size:16px !important;
+  }
+
 }
 .stats{
   font-size:18px;
