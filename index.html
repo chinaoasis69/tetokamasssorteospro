@@ -66085,6 +66085,161 @@ async function (
     );
 };
 
+// =========================================================
+// MASS — AISLAMIENTO VISUAL DEL PERFIL DEL ORGANIZADOR
+// DESDE UNA DINÁMICA
+// DYN-F1A
+// =========================================================
+
+const MASS_ESTADOS_VISIBILIDAD_DINAMICA_PERFIL =
+    new Map();
+
+
+function obtenerBloquesDinamicaParaPerfilOrganizador() {
+
+    const imagenRifa =
+        document.getElementById(
+            "imagenRifa"
+        );
+
+
+    const listaRifas =
+        document.getElementById(
+            "listaRifas"
+        );
+
+
+    return [
+
+        // Imagen principal y video principal dinámico.
+        imagenRifa?.parentElement || null,
+
+        document.getElementById(
+            "controlesCarruselPremio"
+        ),
+
+        document.getElementById(
+            "galeriaRifa"
+        ),
+
+        document.getElementById(
+            "btnVideoRifa"
+        ),
+
+        // Información principal de la dinámica.
+        document.getElementById(
+            "sorteoSeleccionadoBox"
+        ),
+
+        document.getElementById(
+            "zonaRifaActiva"
+        ),
+
+        // Patrocinadores exclusivos del sorteo.
+        document.getElementById(
+            "patrocinadoresSorteoCard"
+        ),
+
+        // Tarjeta contenedora del listado de rifas.
+        listaRifas?.closest(
+            ".card"
+        ) || null,
+
+        // Números / boletos.
+        document.getElementById(
+            "tituloNumeros"
+        ),
+
+        document.getElementById(
+            "grid"
+        ),
+
+        document.getElementById(
+            "paginacionBoletos"
+        )
+
+    ].filter(Boolean);
+}
+
+
+function ocultarContenidoDinamicaDurantePerfilOrganizador() {
+
+    const elementos =
+        obtenerBloquesDinamicaParaPerfilOrganizador();
+
+
+    elementos.forEach(
+        elemento => {
+
+            if (
+                !MASS_ESTADOS_VISIBILIDAD_DINAMICA_PERFIL.has(
+                    elemento
+                )
+            ) {
+
+                MASS_ESTADOS_VISIBILIDAD_DINAMICA_PERFIL.set(
+                    elemento,
+                    {
+                        display:
+                            elemento.style.getPropertyValue(
+                                "display"
+                            ),
+
+                        prioridad:
+                            elemento.style.getPropertyPriority(
+                                "display"
+                            )
+                    }
+                );
+            }
+
+
+            elemento.style.setProperty(
+                "display",
+                "none",
+                "important"
+            );
+        }
+    );
+}
+
+
+function restaurarContenidoDinamicaDespuesPerfilOrganizador() {
+
+    MASS_ESTADOS_VISIBILIDAD_DINAMICA_PERFIL.forEach(
+        (
+            estado,
+            elemento
+        ) => {
+
+            if (
+                !elemento ||
+                !elemento.isConnected
+            ) {
+                return;
+            }
+
+
+            elemento.style.removeProperty(
+                "display"
+            );
+
+
+            if (estado.display) {
+
+                elemento.style.setProperty(
+                    "display",
+                    estado.display,
+                    estado.prioridad || ""
+                );
+            }
+        }
+    );
+
+
+    MASS_ESTADOS_VISIBILIDAD_DINAMICA_PERFIL.clear();
+}
+
 window.abrirPerfilOrganizadorDesdeRifa =
 async function () {
 
@@ -66193,6 +66348,8 @@ async function mostrarPerfilPublicoOrganizador(
 
         return;
     }
+
+    ocultarContenidoDinamicaDurantePerfilOrganizador();
 
 
     localStorage.setItem(
@@ -67315,6 +67472,8 @@ async function () {
 window.volverListaOrganizadoresDesdePerfil =
 function () {
 
+    restaurarContenidoDinamicaDespuesPerfilOrganizador();
+
     const perfil =
         document.getElementById(
             "perfilPublicoOrganizadorBox"
@@ -67424,6 +67583,8 @@ if (contenidoGeneralUsuario) {
 };
 
 async function verSorteosDeOrganizador(orgId){
+
+    restaurarContenidoDinamicaDespuesPerfilOrganizador();
 
     localStorage.setItem("organizador_publico_id", orgId);
 	localStorage.setItem("organizador_actual_id", orgId);
@@ -74864,6 +75025,9 @@ window.enviarRespuestaOrganizadorAdmin = async function () {
 };	
 
 async function abrirRifa(rifaId){
+
+    restaurarContenidoDinamicaDespuesPerfilOrganizador();
+    
     RIFA_ID = rifaId;
 
 	actualizarBotonesCompraSorteo();
