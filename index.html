@@ -60418,7 +60418,7 @@ if (listaOrg) {
 
   await cargarPatrocinadoresPlataforma();
 
-  // =====================================================
+// =====================================================
 // MASS — ABRIR PERFIL PÚBLICO DESDE ENLACE COMPARTIDO
 // MPV2-F8C
 // =====================================================
@@ -60439,6 +60439,71 @@ const organizadorCompartidoId =
 
 const patronUuidPerfilCompartido =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+// =====================================================
+// MASS — ABRIR DINÁMICA DESDE ENLACE COMPARTIDO
+// DYN-F3C
+// =====================================================
+
+const rifaCompartidaId =
+    String(
+        parametrosPerfilCompartido.get(
+            "rifa"
+        ) ||
+        ""
+    ).trim();
+
+
+if (
+    rifaCompartidaId &&
+    patronUuidPerfilCompartido.test(
+        rifaCompartidaId
+    )
+) {
+
+    const rifaCompartida =
+        (rifas || []).find(
+            rifa =>
+                String(
+                    rifa.id
+                ) ===
+                    rifaCompartidaId &&
+                [
+                    "activa",
+                    "programada"
+                ].includes(
+                    String(
+                        rifa.estado ||
+                        ""
+                    )
+                      .trim()
+                      .toLowerCase()
+                )
+        );
+
+
+    if (rifaCompartida) {
+
+        sessionStorage.setItem(
+            "rifa_actual_id",
+            rifaCompartidaId
+        );
+
+
+        sessionStorage.setItem(
+            "vista_publica_mass",
+            "rifa"
+        );
+
+
+        await abrirRifa(
+            rifaCompartidaId
+        );
+
+
+        return;
+    }
+}   
 
 
 if (
@@ -76739,6 +76804,189 @@ async function (
         MASS_COMENTARIOS_RIFA_EN_PROCESO =
             false;
     }
+};
+
+// =========================================================
+// MASS — COMPARTIR DINÁMICA
+// DYN-F3C
+// =========================================================
+
+function construirEnlaceRifaCompartida(
+    rifaId
+) {
+
+    const idLimpio =
+        String(
+            rifaId ||
+            ""
+        ).trim();
+
+
+    if (!idLimpio) {
+        return "";
+    }
+
+
+    const url =
+        new URL(
+            window.location.origin +
+            window.location.pathname
+        );
+
+
+    url.searchParams.set(
+        "rifa",
+        idLimpio
+    );
+
+
+    return url.toString();
+}
+
+
+window.compartirRifaActual =
+async function () {
+
+    const rifa =
+        window.rifaSeleccionada ||
+        null;
+
+
+    const rifaId =
+        String(
+            RIFA_ID ||
+            rifa?.id ||
+            ""
+        ).trim();
+
+
+    if (
+        !rifaId ||
+        !rifa
+    ) {
+
+        alert(
+            "❌ No fue posible identificar la dinámica."
+        );
+
+        return;
+    }
+
+
+    const titulo =
+        String(
+            rifa.titulo ||
+            rifa.premio ||
+            "Dinámica MASS"
+        ).trim();
+
+
+    const organizador =
+        mapaOrganizadores?.[
+            rifa.organizador_id
+        ] ||
+        null;
+
+
+    const nombreOrganizador =
+        String(
+            organizador?.nombre_publico ||
+            organizador?.nombre ||
+            "Organizador MASS"
+        ).trim();
+
+
+    const enlace =
+        construirEnlaceRifaCompartida(
+            rifaId
+        );
+
+
+    if (!enlace) {
+        return;
+    }
+
+
+    const datosCompartir = {
+
+        title:
+            `${titulo} | TE-TO-KA MASS SORTEOS PRO`,
+
+        text:
+            `Mira ${titulo} de ${nombreOrganizador} en TE-TO-KA MASS SORTEOS PRO.`,
+
+        url:
+            enlace
+    };
+
+
+    if (
+        typeof navigator.share ===
+        "function"
+    ) {
+
+        try {
+
+            await navigator.share(
+                datosCompartir
+            );
+
+            return;
+
+        } catch (error) {
+
+            if (
+                error?.name ===
+                "AbortError"
+            ) {
+                return;
+            }
+
+
+            console.warn(
+                "No fue posible usar el menú nativo para compartir la dinámica:",
+                error
+            );
+        }
+    }
+
+
+    try {
+
+        if (
+            navigator.clipboard &&
+            typeof navigator.clipboard.writeText ===
+                "function"
+        ) {
+
+            await navigator.clipboard.writeText(
+                enlace
+            );
+
+
+            alert(
+                "🔗 Enlace de la dinámica copiado."
+            );
+
+
+            return;
+        }
+
+    } catch (
+        errorClipboard
+    ) {
+
+        console.warn(
+            "No fue posible copiar automáticamente el enlace de la dinámica:",
+            errorClipboard
+        );
+    }
+
+
+    prompt(
+        "Copia este enlace de la dinámica:",
+        enlace
+    );
 };
 
 async function abrirRifa(rifaId){
@@ -105075,6 +105323,59 @@ font-family:Arial, sans-serif;">
       "
     >
       0
+    </span>
+  </button>
+
+    <button
+    id="btnCompartirRifa"
+    type="button"
+    aria-label="Compartir esta dinámica"
+    title="Compartir"
+    onclick="compartirRifaActual()"
+    style="
+      width:48px;
+      min-width:48px;
+      height:58px;
+      padding:4px 2px;
+
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:1px;
+
+      border:1px solid
+        rgba(
+          var(--mass-org-accent-rgb, 57,255,20),
+          .48
+        );
+
+      border-radius:16px;
+
+      background:rgba(8,8,8,.58);
+
+      color:white;
+      cursor:pointer;
+      opacity:.78;
+    "
+  >
+    <span
+      style="
+        font-size:23px;
+        line-height:1;
+      "
+    >
+      📤
+    </span>
+
+    <span
+      style="
+        font-size:9px;
+        line-height:1;
+        font-weight:bold;
+      "
+    >
+      Compartir
     </span>
   </button>
 
