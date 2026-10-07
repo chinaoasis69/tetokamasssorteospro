@@ -106145,6 +106145,1142 @@ p_destino_etiqueta:
     await mostrarBillingSuperAdmin();
 };
 
+/* =========================================================
+   MASS — REVISIÓN ADMINISTRATIVA DE PAGOS DE PLANES
+   SÚPER ADMIN
+   PLAN-F4A2
+========================================================= */
+
+let MASS_PAGOS_PLANES_SUPER_ADMIN = [];
+
+let MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN =
+    "reportado";
+
+
+/* =========================================================
+   CARGAR PAGOS
+========================================================= */
+
+async function cargarPagosPlanesSuperAdmin(
+    estado =
+        MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN
+) {
+
+    const estadoLimpio =
+        String(
+            estado || "reportado"
+        )
+        .trim()
+        .toLowerCase();
+
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_pagos_planes_super_admin_segura",
+        {
+            p_estado:
+                estadoLimpio,
+
+            p_limite:
+                100
+        }
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO PAGOS DE PLANES:",
+            error || data
+        );
+
+
+        MASS_PAGOS_PLANES_SUPER_ADMIN =
+            [];
+
+
+        return false;
+
+    }
+
+
+    MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN =
+        estadoLimpio;
+
+
+    MASS_PAGOS_PLANES_SUPER_ADMIN =
+        Array.isArray(
+            data.pagos
+        )
+            ? data.pagos
+            : [];
+
+
+    return true;
+}
+
+
+/* =========================================================
+   HTML DE PAGOS
+========================================================= */
+
+function crearHtmlPagosPlanesSuperAdmin() {
+
+    const pagos =
+        Array.isArray(
+            MASS_PAGOS_PLANES_SUPER_ADMIN
+        )
+            ? MASS_PAGOS_PLANES_SUPER_ADMIN
+            : [];
+
+
+    if (!pagos.length) {
+
+        return `
+            <div
+                style="
+                    margin-top:16px;
+                    padding:20px;
+                    border:1px solid #444;
+                    border-radius:14px;
+                    background:#111;
+                    color:#aaa;
+                    text-align:center;
+                "
+            >
+                No hay pagos en esta categoría.
+            </div>
+        `;
+
+    }
+
+
+    return pagos.map(
+        pago => {
+
+            const pagoId =
+                String(
+                    pago.pago_id || ""
+                );
+
+
+            const estado =
+                String(
+                    pago.estado_pago || ""
+                )
+                .trim()
+                .toLowerCase();
+
+
+            const colorEstado =
+                estado === "reportado"
+                    ? "#ffd60a"
+                    : estado === "aprobado"
+                        ? "#39ff14"
+                        : estado === "rechazado"
+                            ? "#ff4d4f"
+                            : "#aaa";
+
+
+            let fechaReporte =
+                "—";
+
+
+            if (pago.reportado_at) {
+
+                try {
+
+                    fechaReporte =
+                        new Date(
+                            pago.reportado_at
+                        ).toLocaleString(
+                            "es-MX"
+                        );
+
+                } catch (_) {}
+
+            }
+
+
+            const tamano =
+                Number(
+                    pago.comprobante_tamano ||
+                    0
+                );
+
+
+            const tamanoTexto =
+                Number.isFinite(
+                    tamano
+                ) &&
+                tamano > 0
+                    ? `${
+                        (
+                            tamano /
+                            1024 /
+                            1024
+                        ).toFixed(2)
+                    } MB`
+                    : "—";
+
+
+            return `
+
+                <div
+                    style="
+                        margin-top:16px;
+                        padding:18px;
+                        border:1px solid ${colorEstado};
+                        border-radius:14px;
+                        background:#111;
+                        text-align:left;
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            gap:12px;
+                            flex-wrap:wrap;
+                        "
+                    >
+
+                        <div>
+
+                            <div
+                                style="
+                                    color:#39ff14;
+                                    font-size:20px;
+                                    font-weight:bold;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        pago.organizador_nombre ||
+                                        "Organizador"
+                                    )
+                                }
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:5px;
+                                    color:white;
+                                    font-weight:bold;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        pago.plan_nombre ||
+                                        "Plan"
+                                    )
+                                }
+                            </div>
+
+                        </div>
+
+
+                        <span
+                            style="
+                                padding:6px 10px;
+                                border:1px solid ${colorEstado};
+                                border-radius:999px;
+                                color:${colorEstado};
+                                font-size:12px;
+                                font-weight:bold;
+                            "
+                        >
+                            ${
+                                estado === "reportado"
+                                    ? "⏳ En revisión"
+                                    : estado === "aprobado"
+                                        ? "✅ Aprobado"
+                                        : estado === "rechazado"
+                                            ? "❌ Rechazado"
+                                            : massEscaparHTML(
+                                                estado
+                                            )
+                            }
+                        </span>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            margin-top:16px;
+                            padding:14px;
+                            border-radius:12px;
+                            background:#181818;
+                            line-height:1.7;
+                            color:#ccc;
+                        "
+                    >
+
+                        <div>
+                            <b>Total:</b>
+                            ${
+                                Number(
+                                    pago.monto || 0
+                                ).toLocaleString(
+                                    "es-MX",
+                                    {
+                                        minimumFractionDigits:2,
+                                        maximumFractionDigits:2
+                                    }
+                                )
+                            }
+                            ${
+                                massEscaparHTML(
+                                    pago.moneda || ""
+                                )
+                            }
+                        </div>
+
+
+                        <div>
+                            <b>Método:</b>
+                            ${
+                                massEscaparHTML(
+                                    pago.metodo_nombre ||
+                                    pago.metodo_codigo ||
+                                    "—"
+                                )
+                            }
+                        </div>
+
+
+                        ${
+                            pago.institucion_financiera
+                                ? `
+                                    <div>
+                                        <b>Banco / institución:</b>
+                                        ${
+                                            massEscaparHTML(
+                                                pago.institucion_financiera
+                                            )
+                                        }
+                                    </div>
+                                `
+                                : ""
+                        }
+
+
+                        <div>
+                            <b>Reportado:</b>
+                            ${
+                                massEscaparHTML(
+                                    fechaReporte
+                                )
+                            }
+                        </div>
+
+
+                        <div>
+                            <b>Comprobante:</b>
+                            ${
+                                massEscaparHTML(
+                                    tamanoTexto
+                                )
+                            }
+                        </div>
+
+
+                        ${
+                            pago.es_nuevo_organizador ===
+                            true
+                                ? `
+                                    <div
+                                        style="
+                                            margin-top:8px;
+                                            color:#ffd60a;
+                                        "
+                                    >
+                                        🏢 Nuevo Organizador ·
+                                        onboarding:
+                                        ${
+                                            massEscaparHTML(
+                                                pago.onboarding_estado ||
+                                                "pendiente"
+                                            )
+                                        }
+                                    </div>
+                                `
+                                : ""
+                        }
+
+
+                        ${
+                            pago.motivo_rechazo
+                                ? `
+                                    <div
+                                        style="
+                                            margin-top:10px;
+                                            padding:10px;
+                                            border:1px solid #ff4d4f;
+                                            border-radius:10px;
+                                            color:#ffb3b3;
+                                        "
+                                    >
+                                        <b>Motivo del rechazo:</b>
+                                        ${
+                                            massEscaparHTML(
+                                                pago.motivo_rechazo
+                                            )
+                                        }
+                                    </div>
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+
+                    <div
+                        style="
+                            display:grid;
+                            grid-template-columns:
+                                repeat(
+                                    auto-fit,
+                                    minmax(180px,1fr)
+                                );
+                            gap:10px;
+                            margin-top:16px;
+                        "
+                    >
+
+                        <button
+                            id="btnVerComprobantePlan_${pagoId}"
+                            type="button"
+                            onclick='
+                                abrirComprobantePagoPlanSuperAdmin(
+                                    ${JSON.stringify(
+                                        pagoId
+                                    )}
+                                )
+                            '
+                            style="
+                                background:#222;
+                                color:white;
+                                border:1px solid #888;
+                            "
+                        >
+                            🧾 Ver comprobante privado
+                        </button>
+
+
+                        ${
+                            estado === "reportado"
+                                ? `
+
+                                    <button
+                                        id="btnAprobarPagoPlan_${pagoId}"
+                                        type="button"
+                                        onclick='
+                                            aprobarPagoPlanSuperAdmin(
+                                                ${JSON.stringify(
+                                                    pagoId
+                                                )}
+                                            )
+                                        '
+                                        style="
+                                            background:#163d16;
+                                            color:white;
+                                            border:1px solid #39ff14;
+                                        "
+                                    >
+                                        ✅ Aprobar pago
+                                    </button>
+
+
+                                    <button
+                                        id="btnRechazarPagoPlan_${pagoId}"
+                                        type="button"
+                                        onclick='
+                                            rechazarPagoPlanSuperAdmin(
+                                                ${JSON.stringify(
+                                                    pagoId
+                                                )}
+                                            )
+                                        '
+                                        style="
+                                            background:#3b1515;
+                                            color:white;
+                                            border:1px solid #ff4d4f;
+                                        "
+                                    >
+                                        ❌ Rechazar comprobante
+                                    </button>
+
+                                `
+                                : ""
+                        }
+
+                    </div>
+
+                </div>
+            `;
+
+        }
+    ).join("");
+}
+
+
+/* =========================================================
+   CAMBIAR FILTRO
+========================================================= */
+
+window.cambiarFiltroPagosPlanesSuperAdmin =
+async function (
+    estado
+) {
+
+    MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN =
+        String(
+            estado || "reportado"
+        )
+        .trim()
+        .toLowerCase();
+
+
+    await cargarPagosPlanesSuperAdmin(
+        MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN
+    );
+
+
+    const lista =
+        document.getElementById(
+            "listaPagosPlanesSuperAdmin"
+        );
+
+
+    if (lista) {
+
+        lista.innerHTML =
+            crearHtmlPagosPlanesSuperAdmin();
+
+    }
+
+
+    document.querySelectorAll(
+        "[data-filtro-pagos-planes]"
+    ).forEach(
+        boton => {
+
+            const activo =
+                boton.dataset
+                    .filtroPagosPlanes ===
+                MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN;
+
+
+            boton.style.border =
+                activo
+                    ? "2px solid #39ff14"
+                    : "1px solid #666";
+
+
+            boton.style.color =
+                activo
+                    ? "#39ff14"
+                    : "#ccc";
+
+        }
+    );
+
+};
+
+
+/* =========================================================
+   VER COMPROBANTE PRIVADO
+========================================================= */
+
+window.abrirComprobantePagoPlanSuperAdmin =
+async function (
+    pagoId
+) {
+
+    const id =
+        String(
+            pagoId || ""
+        ).trim();
+
+
+    const pago =
+        MASS_PAGOS_PLANES_SUPER_ADMIN.find(
+            item =>
+                String(
+                    item.pago_id || ""
+                ) ===
+                id
+        );
+
+
+    if (!pago) {
+
+        alert(
+            "❌ No fue posible identificar el pago."
+        );
+
+        return;
+
+    }
+
+
+    const bucket =
+        String(
+            pago.comprobante_bucket || ""
+        ).trim();
+
+
+    const path =
+        String(
+            pago.comprobante_path || ""
+        ).trim();
+
+
+    const tamanoEsperado =
+        Number(
+            pago.comprobante_tamano ||
+            0
+        );
+
+
+    if (
+        bucket !==
+            "planes-comprobantes" ||
+        !path ||
+        !Number.isFinite(
+            tamanoEsperado
+        ) ||
+        tamanoEsperado < 1 ||
+        tamanoEsperado >
+            10485760
+    ) {
+
+        alert(
+            "❌ La referencia privada del comprobante no es válida."
+        );
+
+        return;
+
+    }
+
+
+    /*
+      La ventana debe abrirse ANTES del await
+      para que Safari/iPhone no la bloquee.
+    */
+
+    const ventana =
+        window.open(
+            "",
+            "_blank"
+        );
+
+
+    if (!ventana) {
+
+        alert(
+            "❌ El navegador bloqueó la ventana del comprobante."
+        );
+
+        return;
+
+    }
+
+
+    ventana.opener =
+        null;
+
+
+    const boton =
+        document.getElementById(
+            `btnVerComprobantePlan_${id}`
+        );
+
+
+    const textoOriginal =
+        boton?.textContent ||
+        "🧾 Ver comprobante privado";
+
+
+    try {
+
+        if (boton) {
+
+            boton.disabled =
+                true;
+
+            boton.textContent =
+                "⏳ Abriendo...";
+
+        }
+
+
+        const {
+            data: archivo,
+            error
+        } =
+            await supabaseClient
+                .storage
+                .from(
+                    bucket
+                )
+                .download(
+                    path
+                );
+
+
+        if (
+            error ||
+            !(archivo instanceof Blob)
+        ) {
+
+            throw (
+                error ||
+                new Error(
+                    "Storage no devolvió un archivo válido."
+                )
+            );
+
+        }
+
+
+        const mime =
+            String(
+                archivo.type || ""
+            )
+            .trim()
+            .toLowerCase();
+
+
+        const mimePermitidos =
+            new Set([
+                "image/jpeg",
+                "image/png",
+                "image/webp",
+                "image/heic",
+                "image/heif",
+                "application/pdf"
+            ]);
+
+
+        if (
+            !mimePermitidos.has(
+                mime
+            )
+        ) {
+
+            throw new Error(
+                "El tipo del comprobante no está permitido."
+            );
+
+        }
+
+
+        if (
+            Number(
+                archivo.size
+            ) !==
+            tamanoEsperado
+        ) {
+
+            throw new Error(
+                "El tamaño del comprobante no coincide con el expediente."
+            );
+
+        }
+
+
+        const urlTemporal =
+            URL.createObjectURL(
+                archivo
+            );
+
+
+        ventana.location.href =
+            urlTemporal;
+
+
+        setTimeout(
+            () => {
+
+                try {
+
+                    URL.revokeObjectURL(
+                        urlTemporal
+                    );
+
+                } catch (_) {}
+
+            },
+            300000
+        );
+
+
+    } catch (
+        error
+    ) {
+
+        console.error(
+            "ERROR ABRIENDO COMPROBANTE DE PLAN:",
+            error
+        );
+
+
+        if (!ventana.closed) {
+
+            ventana.close();
+
+        }
+
+
+        alert(
+            "❌ No fue posible abrir el comprobante privado.\n\n" +
+            String(
+                error?.message ||
+                ""
+            )
+        );
+
+
+    } finally {
+
+        if (boton) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                textoOriginal;
+
+        }
+
+    }
+
+};
+
+
+/* =========================================================
+   REFRESCAR BANDEJA
+========================================================= */
+
+async function refrescarPagosPlanesSuperAdmin() {
+
+    await cargarPagosPlanesSuperAdmin(
+        MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN
+    );
+
+
+    const lista =
+        document.getElementById(
+            "listaPagosPlanesSuperAdmin"
+        );
+
+
+    if (lista) {
+
+        lista.innerHTML =
+            crearHtmlPagosPlanesSuperAdmin();
+
+    }
+
+}
+
+
+/* =========================================================
+   APROBAR PAGO
+========================================================= */
+
+window.aprobarPagoPlanSuperAdmin =
+async function (
+    pagoId
+) {
+
+    const id =
+        String(
+            pagoId || ""
+        ).trim();
+
+
+    if (!id) {
+        return;
+    }
+
+
+    const confirmar =
+        window.confirm(
+            "¿Confirmas que verificaste el comprobante y deseas aprobar este pago?\n\n" +
+            "Esta acción marcará la adquisición como pagada."
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const boton =
+        document.getElementById(
+            `btnAprobarPagoPlan_${id}`
+        );
+
+
+    if (boton) {
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "⏳ Aprobando...";
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "aprobar_pago_plan_super_admin_seguro",
+            {
+                p_pago_id:
+                    id
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR APROBANDO PAGO DE PLAN:",
+                error || data
+            );
+
+
+            alert(
+                "❌ No fue posible aprobar el pago."
+            );
+
+
+            return;
+
+        }
+
+
+        if (
+            data.requiere_terminos ===
+            true
+        ) {
+
+            alert(
+                "✅ Pago aprobado.\n\n" +
+                "El nuevo Organizador quedó pendiente de aceptar los Términos y Condiciones.\n\n" +
+                "Todavía no está activo públicamente."
+            );
+
+        } else {
+
+            alert(
+                "✅ Pago aprobado correctamente."
+            );
+
+        }
+
+
+        await refrescarPagosPlanesSuperAdmin();
+
+
+    } finally {
+
+        if (
+            boton &&
+            document.body.contains(
+                boton
+            )
+        ) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                "✅ Aprobar pago";
+
+        }
+
+    }
+
+};
+
+
+/* =========================================================
+   RECHAZAR COMPROBANTE
+========================================================= */
+
+window.rechazarPagoPlanSuperAdmin =
+async function (
+    pagoId
+) {
+
+    const id =
+        String(
+            pagoId || ""
+        ).trim();
+
+
+    if (!id) {
+        return;
+    }
+
+
+    const motivoIngresado =
+        window.prompt(
+            "Escribe el motivo del rechazo del comprobante:"
+        );
+
+
+    if (
+        motivoIngresado ===
+        null
+    ) {
+
+        return;
+
+    }
+
+
+    const motivo =
+        String(
+            motivoIngresado || ""
+        ).trim();
+
+
+    if (
+        motivo.length < 1 ||
+        motivo.length > 1000
+    ) {
+
+        alert(
+            "❌ El motivo debe contener entre 1 y 1000 caracteres."
+        );
+
+        return;
+
+    }
+
+
+    const confirmar =
+        window.confirm(
+            "¿Confirmas que deseas rechazar este comprobante?\n\n" +
+            "El Organizador podrá corregirlo y subir uno nuevo."
+        );
+
+
+    if (!confirmar) {
+        return;
+    }
+
+
+    const boton =
+        document.getElementById(
+            `btnRechazarPagoPlan_${id}`
+        );
+
+
+    if (boton) {
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "⏳ Rechazando...";
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "rechazar_pago_plan_super_admin_seguro",
+            {
+                p_pago_id:
+                    id,
+
+                p_motivo:
+                    motivo
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR RECHAZANDO PAGO DE PLAN:",
+                error || data
+            );
+
+
+            alert(
+                "❌ No fue posible rechazar el comprobante."
+            );
+
+
+            return;
+
+        }
+
+
+        alert(
+            "✅ Comprobante rechazado.\n\n" +
+            "La adquisición volvió a pendiente de pago y podrá enviarse un nuevo comprobante."
+        );
+
+
+        await refrescarPagosPlanesSuperAdmin();
+
+
+    } finally {
+
+        if (
+            boton &&
+            document.body.contains(
+                boton
+            )
+        ) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                "❌ Rechazar comprobante";
+
+        }
+
+    }
+
+};
+
 async function mostrarBillingSuperAdmin(){
 
 	if(!(await verificarAccesoSuperAdmin())) return;
@@ -106155,6 +107291,10 @@ async function mostrarBillingSuperAdmin(){
     await cargarPlanesOrganizadorSuperAdmin();
 
     await cargarMetodosPagoPlanesSuperAdmin();
+
+    await cargarPagosPlanesSuperAdmin(
+    MASS_FILTRO_PAGOS_PLANES_SUPER_ADMIN
+);
 
 	const { data: organizadoresBilling, error: errorOrgBilling } = await supabaseClient
   .from("organizadores")
@@ -106272,6 +107412,125 @@ ${crearHtmlFxPlanesSuperAdmin()}
         id="listaPlanesOrganizadorSuperAdmin"
     >
         ${crearHtmlPlanesOrganizadorSuperAdmin()}
+    </div>
+
+</div>
+
+<div
+    class="card"
+    style="
+        max-width:760px;
+    "
+>
+
+    <h3>
+        🧾 Revisión de pagos de planes
+    </h3>
+
+
+    <p
+        style="
+            color:#bbb;
+            line-height:1.5;
+        "
+    >
+        Revisa los comprobantes privados enviados
+        por los Organizadores antes de aprobar
+        una adquisición.
+    </p>
+
+
+    <div
+        style="
+            display:grid;
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(120px,1fr)
+                );
+            gap:8px;
+            margin-top:16px;
+        "
+    >
+
+        <button
+            type="button"
+            data-filtro-pagos-planes="reportado"
+            onclick="
+                cambiarFiltroPagosPlanesSuperAdmin(
+                    'reportado'
+                )
+            "
+            style="
+                border:2px solid #39ff14;
+                color:#39ff14;
+                background:#181818;
+            "
+        >
+            ⏳ En revisión
+        </button>
+
+
+        <button
+            type="button"
+            data-filtro-pagos-planes="aprobado"
+            onclick="
+                cambiarFiltroPagosPlanesSuperAdmin(
+                    'aprobado'
+                )
+            "
+            style="
+                border:1px solid #666;
+                color:#ccc;
+                background:#181818;
+            "
+        >
+            ✅ Aprobados
+        </button>
+
+
+        <button
+            type="button"
+            data-filtro-pagos-planes="rechazado"
+            onclick="
+                cambiarFiltroPagosPlanesSuperAdmin(
+                    'rechazado'
+                )
+            "
+            style="
+                border:1px solid #666;
+                color:#ccc;
+                background:#181818;
+            "
+        >
+            ❌ Rechazados
+        </button>
+
+
+        <button
+            type="button"
+            data-filtro-pagos-planes="todos"
+            onclick="
+                cambiarFiltroPagosPlanesSuperAdmin(
+                    'todos'
+                )
+            "
+            style="
+                border:1px solid #666;
+                color:#ccc;
+                background:#181818;
+            "
+        >
+            📋 Todos
+        </button>
+
+    </div>
+
+
+    <div
+        id="listaPagosPlanesSuperAdmin"
+    >
+        ${crearHtmlPagosPlanesSuperAdmin()}
     </div>
 
 </div>
