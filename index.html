@@ -62462,8 +62462,384 @@ async function () {
 
 
 /* =========================================================
-   ADQUIRIR PLAN
+   MASS — COMPRA PÚBLICA DEL PRIMER PLAN
+   PLAN-F3D2A
+
+   - MASS ID autenticado
+   - Organizador existente: reutilizar
+   - Usuario normal: crear Organizador provisional
+   - NO concede permisos generales de Organizador
 ========================================================= */
+
+window.pedirNombreNegocioPlanOrganizador =
+function () {
+
+    return new Promise(
+        resolve => {
+
+            document.getElementById(
+                "modalNombreNegocioPlanOrganizador"
+            )?.remove();
+
+
+            const modal =
+                document.createElement(
+                    "div"
+                );
+
+
+            modal.id =
+                "modalNombreNegocioPlanOrganizador";
+
+
+            modal.style.cssText = `
+                position:fixed;
+                inset:0;
+                z-index:10080;
+                background:rgba(0,0,0,.88);
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                padding:20px;
+                overflow-y:auto;
+            `;
+
+
+            modal.innerHTML = `
+
+                <div
+                    class="card"
+                    style="
+                        width:100%;
+                        max-width:520px;
+                        margin:auto;
+                    "
+                >
+
+                    <h2
+                        style="
+                            color:#39ff14;
+                            margin-top:0;
+                        "
+                    >
+                        🏢 Crea tu espacio de Organizador
+                    </h2>
+
+
+                    <p
+                        style="
+                            color:#ccc;
+                            line-height:1.5;
+                        "
+                    >
+                        Escribe el nombre de tu negocio,
+                        proyecto o marca.
+                    </p>
+
+
+                    <p
+                        style="
+                            color:#aaa;
+                            font-size:14px;
+                            line-height:1.5;
+                        "
+                    >
+                        Tu espacio se creará de forma
+                        provisional para continuar con
+                        la compra del plan.
+                        Todavía no estará activo ni
+                        visible públicamente.
+                    </p>
+
+
+                    <form
+                        id="formNombreNegocioPlanOrganizador"
+                    >
+
+                        <input
+                            id="nombreNegocioPlanOrganizador"
+                            type="text"
+                            maxlength="120"
+                            autocomplete="organization"
+                            placeholder="Nombre de tu negocio"
+                            style="
+                                width:100%;
+                                margin-top:12px;
+                            "
+                        >
+
+
+                        <div
+                            style="
+                                display:grid;
+                                grid-template-columns:
+                                    repeat(
+                                        2,
+                                        minmax(0,1fr)
+                                    );
+                                gap:10px;
+                                margin-top:18px;
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                id="cancelarNombreNegocioPlanOrganizador"
+                                style="
+                                    background:#222;
+                                    color:white;
+                                    border:1px solid #666;
+                                "
+                            >
+                                Cancelar
+                            </button>
+
+
+                            <button
+                                type="submit"
+                                style="
+                                    background:#163d16;
+                                    color:white;
+                                    border:1px solid #39ff14;
+                                "
+                            >
+                                Continuar
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+            `;
+
+
+            document.body.appendChild(
+                modal
+            );
+
+
+            const input =
+                modal.querySelector(
+                    "#nombreNegocioPlanOrganizador"
+                );
+
+
+            const form =
+                modal.querySelector(
+                    "#formNombreNegocioPlanOrganizador"
+                );
+
+
+            const cancelar =
+                modal.querySelector(
+                    "#cancelarNombreNegocioPlanOrganizador"
+                );
+
+
+            const finalizar =
+                valor => {
+
+                    modal.remove();
+
+                    resolve(
+                        valor
+                    );
+
+                };
+
+
+            cancelar.onclick =
+                () => {
+
+                    finalizar(
+                        null
+                    );
+
+                };
+
+
+            form.onsubmit =
+                event => {
+
+                    event.preventDefault();
+
+
+                    const nombre =
+                        String(
+                            input?.value || ""
+                        ).trim();
+
+
+                    if (
+                        nombre.length < 3 ||
+                        nombre.length > 120
+                    ) {
+
+                        alert(
+                            "❌ El nombre del negocio debe tener entre 3 y 120 caracteres."
+                        );
+
+                        input?.focus();
+
+                        return;
+
+                    }
+
+
+                    finalizar(
+                        nombre
+                    );
+
+                };
+
+
+            setTimeout(
+                () => {
+                    input?.focus();
+                },
+                50
+            );
+
+        }
+    );
+
+};
+
+
+
+window.prepararOrganizadorParaCompraPlan =
+async function () {
+
+    /*
+      Primer intento SIN nombre.
+
+      Si ya tiene:
+      - Organizador activo
+      - Organizador provisional
+
+      el backend lo reutiliza y NO necesita
+      pedir nuevamente el nombre.
+    */
+
+    let {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "preparar_mi_organizador_provisional_plan_seguro",
+        {
+            p_nombre_negocio:
+                ""
+        }
+    );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR PREPARANDO ORGANIZADOR PARA PLAN:",
+            error
+        );
+
+
+        return {
+            ok:false,
+            codigo:"ERROR_RPC"
+        };
+
+    }
+
+
+    if (
+        data?.ok === true
+    ) {
+
+        return data;
+
+    }
+
+
+    const codigo =
+        String(
+            data?.codigo || ""
+        );
+
+
+    /*
+      Si el usuario todavía NO tiene Organizador,
+      el backend solicitará el nombre del negocio.
+    */
+
+    if (
+        codigo ===
+        "NOMBRE_NEGOCIO_INVALIDO"
+    ) {
+
+        const nombre =
+            await pedirNombreNegocioPlanOrganizador();
+
+
+        if (!nombre) {
+
+            return {
+                ok:false,
+                cancelado:true
+            };
+
+        }
+
+
+        const segundoIntento =
+            await supabaseClient.rpc(
+                "preparar_mi_organizador_provisional_plan_seguro",
+                {
+                    p_nombre_negocio:
+                        nombre
+                }
+            );
+
+
+        data =
+            segundoIntento.data;
+
+        error =
+            segundoIntento.error;
+
+
+        if (error) {
+
+            console.error(
+                "ERROR CREANDO ORGANIZADOR PROVISIONAL:",
+                error
+            );
+
+
+            return {
+                ok:false,
+                codigo:"ERROR_RPC"
+            };
+
+        }
+
+
+        return (
+            data || {
+                ok:false
+            }
+        );
+
+    }
+
+
+    return (
+        data || {
+            ok:false
+        }
+    );
+
+};
+
+
 
 window.adquirirPlanOrganizadorPublico =
 async function (
@@ -62496,7 +62872,9 @@ async function (
             monedaLimpia
         )
     ) {
+
         return;
+
     }
 
 
@@ -62508,31 +62886,14 @@ async function (
             .getSession();
 
 
-    const rol =
-        String(
-            localStorage.getItem(
-                "admin_rol"
-            ) || ""
-        ).trim();
-
-
-    const organizadorId =
-        String(
-            localStorage.getItem(
-                "admin_organizador_id"
-            ) ||
-            localStorage.getItem(
-                "organizador_admin_id"
-            ) ||
-            ""
-        ).trim();
-
+    /*
+      Si no existe sesión Auth:
+      guardar el plan y mandar al login normal MASS ID.
+    */
 
     if (
         errorSesion ||
-        !datosSesion?.session?.user?.id ||
-        rol !== "organizador" ||
-        !organizadorId
+        !datosSesion?.session?.user?.id
     ) {
 
         sessionStorage.setItem(
@@ -62548,20 +62909,138 @@ async function (
 
 
         alert(
-            "🔐 Inicia sesión como Organizador para adquirir este plan."
+            "🔐 Inicia sesión con tu MASS ID para adquirir este plan.\n\n" +
+            "Si todavía no eres Organizador, podrás crear tu espacio de Organizador para continuar con la compra."
         );
 
 
         if (
-            typeof mostrarAccesoOrganizadorV2 ===
+            typeof mostrarLoginUsuarioV2 ===
             "function"
         ) {
 
-            mostrarAccesoOrganizadorV2();
+            mostrarLoginUsuarioV2();
+
         }
 
 
         return;
+
+    }
+
+
+    /*
+      Resolver el Organizador desde el BACKEND.
+
+      No dependemos de admin_rol ni de un ID
+      inventado por localStorage.
+
+      - Si ya es Organizador: reutiliza el suyo.
+      - Si es usuario MASS normal: crea/reutiliza
+        su Organizador provisional.
+    */
+
+    const preparacionOrganizador =
+        await prepararOrganizadorParaCompraPlan();
+
+
+    if (
+        preparacionOrganizador?.cancelado ===
+        true
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        !preparacionOrganizador ||
+        preparacionOrganizador.ok !== true
+    ) {
+
+        const codigoError =
+            String(
+                preparacionOrganizador?.codigo ||
+                ""
+            );
+
+
+        if (
+            codigoError ===
+            "MASS_ID_ACTIVO_REQUERIDO"
+        ) {
+
+            alert(
+                "❌ Necesitas una cuenta MASS ID activa para adquirir un plan."
+            );
+
+        } else if (
+            codigoError ===
+            "ORGANIZADOR_EXISTENTE_INACTIVO"
+        ) {
+
+            alert(
+                "⏳ Ya existe un acceso de Organizador asociado a tu cuenta, pero actualmente no está activo."
+            );
+
+        } else {
+
+            alert(
+                "❌ No fue posible preparar tu espacio de Organizador."
+            );
+
+        }
+
+
+        console.error(
+            "ERROR PREPARANDO ORGANIZADOR PARA COMPRA:",
+            preparacionOrganizador
+        );
+
+
+        return;
+
+    }
+
+
+    const organizadorId =
+        String(
+            preparacionOrganizador
+                .organizador_id || ""
+        ).trim();
+
+
+    if (!organizadorId) {
+
+        alert(
+            "❌ No fue posible identificar el Organizador para esta compra."
+        );
+
+        return;
+
+    }
+
+
+    /*
+      Si acabamos de crear un Organizador provisional,
+      informarlo antes de continuar.
+    */
+
+    if (
+        preparacionOrganizador
+            .es_provisional === true
+        &&
+        preparacionOrganizador
+            .ya_existente === false
+    ) {
+
+        alert(
+            "✅ Tu espacio provisional de Organizador fue creado.\n\n" +
+            "Ahora continuarás al pago del plan.\n\n" +
+            "Todavía no está activo ni visible públicamente."
+        );
+
     }
 
 
@@ -62603,11 +63082,40 @@ async function (
 
         if (
             codigoError ===
+            "ONBOARDING_ADQUISICION_ABIERTA"
+        ) {
+
+            alert(
+                `ℹ️ Ya tienes una adquisición abierta de ${
+                    data?.plan_nombre ||
+                    "otro plan"
+                }.\n\nDebes continuar primero con ese expediente.`
+            );
+
+
+            if (
+                data?.adquisicion_id
+            ) {
+
+                await abrirCheckoutPlanOrganizador(
+                    data.adquisicion_id
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        if (
+            codigoError ===
             "ORGANIZADOR_INACTIVO"
         ) {
 
             alert(
-                "⛔ Tu Organizador se encuentra inactivo."
+                "⛔ Este Organizador no puede realizar actualmente la adquisición."
             );
 
         } else if (
@@ -62619,15 +63127,26 @@ async function (
                 "❌ Esta sesión no puede adquirir planes para ese Organizador."
             );
 
+        } else if (
+            codigoError ===
+            "FX_NO_DISPONIBLE"
+        ) {
+
+            alert(
+                "⏳ La conversión automática MXN no está disponible temporalmente. Intenta nuevamente."
+            );
+
         } else {
 
             alert(
                 "❌ No fue posible preparar la adquisición del plan."
             );
+
         }
 
 
         return;
+
     }
 
 
@@ -62650,12 +63169,14 @@ async function (
                 data.moneda
             }. Abriremos ese expediente.`
         );
+
     }
 
 
     await abrirCheckoutPlanOrganizador(
         data.adquisicion_id
     );
+
 };
 
 
@@ -108997,6 +109518,15 @@ if (accesoV2SesionActiva) {
   await inicializarNotificacionesMass();
   alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
 
+if (
+  typeof window.reanudarCompraPlanPendiente ===
+  "function"
+) {
+
+  await window.reanudarCompraPlanPendiente();
+
+}
+
 window.scrollTo({
 	top:0,
 	left:0,
@@ -109384,7 +109914,16 @@ if (
 	await inicializarNotificacionesMass(); 
     alert("✅ Bienvenido a TE-TO-KA MASS SORTEOS PRO");
 
-	window.scrollTo({
+if (
+  typeof window.reanudarCompraPlanPendiente ===
+  "function"
+) {
+
+  await window.reanudarCompraPlanPendiente();
+
+}
+
+window.scrollTo({
 	top:0,
 	left:0,
 	behavior: "auto"
