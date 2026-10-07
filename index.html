@@ -103003,13 +103003,19 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
 ========================================================= */
 
 /* =========================================================
-   MASS — ADMINISTRACIÓN DE PRECIOS DE PLANES
+   MASS — CONFIGURACIÓN COMPLETA DE PLANES
    SÚPER ADMIN
-   PLAN-F3B2
+   PLAN-F3C2B
 ========================================================= */
 
 let MASS_PLANES_ORGANIZADOR_SUPER_ADMIN = [];
 
+let MASS_FX_PLANES_SUPER_ADMIN = null;
+
+
+/* =========================================================
+   CARGAR PLANES + FX
+========================================================= */
 
 async function cargarPlanesOrganizadorSuperAdmin() {
 
@@ -103032,7 +103038,11 @@ async function cargarPlanesOrganizadorSuperAdmin() {
             error || data
         );
 
+
         MASS_PLANES_ORGANIZADOR_SUPER_ADMIN = [];
+
+        MASS_FX_PLANES_SUPER_ADMIN = null;
+
 
         return false;
     }
@@ -103046,9 +103056,379 @@ async function cargarPlanesOrganizadorSuperAdmin() {
             : [];
 
 
+    MASS_FX_PLANES_SUPER_ADMIN =
+        data.fx &&
+        data.fx.ok === true
+            ? data.fx
+            : null;
+
+
     return true;
 }
 
+
+/* =========================================================
+   RESUMEN DEL TIPO DE CAMBIO
+========================================================= */
+
+function crearHtmlFxPlanesSuperAdmin() {
+
+    const fx =
+        MASS_FX_PLANES_SUPER_ADMIN;
+
+
+    if (
+        !fx ||
+        fx.ok !== true
+    ) {
+
+        return `
+            <div
+                style="
+                    margin:14px 0 18px 0;
+                    padding:14px;
+                    border:1px solid #b58b00;
+                    border-radius:12px;
+                    background:#211c08;
+                    color:#f0d878;
+                    line-height:1.5;
+                "
+            >
+                ⚠️ La conversión automática USD → MXN
+                no está disponible en este momento.
+            </div>
+        `;
+    }
+
+
+    const tasa =
+        Number(
+            fx.tasa || 0
+        );
+
+
+    const multiplo =
+        Math.max(
+            1,
+            Number(
+                fx.redondeo_mxn_multiplo ||
+                10
+            )
+        );
+
+
+    let actualizado = "";
+
+
+    if (
+        fx.actualizado_at
+    ) {
+
+        const fecha =
+            new Date(
+                fx.actualizado_at
+            );
+
+
+        if (
+            !Number.isNaN(
+                fecha.getTime()
+            )
+        ) {
+
+            actualizado =
+                fecha.toLocaleString(
+                    "es-MX"
+                );
+        }
+    }
+
+
+    return `
+        <div
+            style="
+                margin:14px 0 18px 0;
+                padding:15px;
+                border:1px solid #39ff14;
+                border-radius:14px;
+                background:#102010;
+                color:#ddd;
+                line-height:1.55;
+            "
+        >
+
+            <div
+                style="
+                    color:#39ff14;
+                    font-weight:900;
+                    font-size:17px;
+                "
+            >
+                💱 Conversión automática USD → MXN
+            </div>
+
+
+            <div
+                style="
+                    margin-top:7px;
+                "
+            >
+                1 USD =
+                <b>
+                    ${
+                        Number.isFinite(
+                            tasa
+                        )
+                            ? tasa.toFixed(6)
+                            : "—"
+                    }
+                    MXN
+                </b>
+            </div>
+
+
+            <div
+                style="
+                    margin-top:4px;
+                    color:#bbb;
+                    font-size:13px;
+                "
+            >
+                El precio MXN se calcula automáticamente
+                desde el precio maestro USD
+                y se redondea hacia arriba
+                al siguiente múltiplo de
+                ${multiplo} MXN.
+            </div>
+
+
+            ${
+                actualizado
+                    ? `
+                        <div
+                            style="
+                                margin-top:5px;
+                                color:#888;
+                                font-size:12px;
+                            "
+                        >
+                            Tasa actualizada:
+                            ${massEscaparHTML(
+                                actualizado
+                            )}
+                        </div>
+                    `
+                    : ""
+            }
+
+
+            <div
+                style="
+                    margin-top:5px;
+                    color:#777;
+                    font-size:11px;
+                "
+            >
+                Rates by Exchange Rate API
+            </div>
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   VISTA PREVIA USD -> MXN
+========================================================= */
+
+window.actualizarVistaPreviaPrecioMxnPlan =
+function (
+    planId
+) {
+
+    const id =
+        String(
+            planId || ""
+        ).trim();
+
+
+    const inputUsd =
+        document.getElementById(
+            `precioPlanUsd_${id}`
+        );
+
+
+    const inputMxn =
+        document.getElementById(
+            `precioPlanMxn_${id}`
+        );
+
+
+    const detalle =
+        document.getElementById(
+            `detalleFxPlan_${id}`
+        );
+
+
+    if (
+        !inputUsd ||
+        !inputMxn
+    ) {
+        return;
+    }
+
+
+    const usd =
+        Number(
+            inputUsd.value
+        );
+
+
+    const fx =
+        MASS_FX_PLANES_SUPER_ADMIN;
+
+
+    const tasa =
+        Number(
+            fx?.tasa || 0
+        );
+
+
+    const multiplo =
+        Math.max(
+            1,
+            Number(
+                fx?.redondeo_mxn_multiplo ||
+                10
+            )
+        );
+
+
+    if (
+        !Number.isFinite(
+            usd
+        ) ||
+        usd <= 0 ||
+        !Number.isFinite(
+            tasa
+        ) ||
+        tasa <= 0
+    ) {
+
+        if (detalle) {
+
+            detalle.textContent =
+                "Conversión no disponible.";
+        }
+
+        return;
+    }
+
+
+    const exacto =
+        usd * tasa;
+
+
+    const mxn =
+        Math.ceil(
+            exacto /
+            multiplo
+        ) *
+        multiplo;
+
+
+    inputMxn.value =
+        mxn.toFixed(2);
+
+
+    if (detalle) {
+
+        detalle.textContent =
+            `${usd.toFixed(2)} USD × ${
+                tasa.toFixed(6)
+            } = ${
+                exacto.toFixed(2)
+            } MXN → ${
+                mxn.toFixed(2)
+            } MXN`;
+    }
+};
+
+
+/* =========================================================
+   ACTIVAR / DESACTIVAR LÍMITE DE DINÁMICAS
+========================================================= */
+
+window.actualizarTipoCobroPlanSuperAdmin =
+function (
+    planId
+) {
+
+    const id =
+        String(
+            planId || ""
+        ).trim();
+
+
+    const select =
+        document.getElementById(
+            `tipoCobroPlan_${id}`
+        );
+
+
+    const input =
+        document.getElementById(
+            `limiteDinamicasPlan_${id}`
+        );
+
+
+    if (
+        !select ||
+        !input
+    ) {
+        return;
+    }
+
+
+    const mensual =
+        select.value ===
+        "mensual";
+
+
+    input.disabled =
+        !mensual;
+
+
+    if (!mensual) {
+
+        input.value =
+            "";
+
+        input.placeholder =
+            "No aplica";
+
+    } else {
+
+        input.placeholder =
+            "Ej. 3";
+
+
+        if (
+            !String(
+                input.value || ""
+            ).trim()
+        ) {
+
+            input.value =
+                "1";
+        }
+    }
+};
+
+
+/* =========================================================
+   HTML DE LOS PLANES
+========================================================= */
 
 function crearHtmlPlanesOrganizadorSuperAdmin() {
 
@@ -103097,16 +103477,59 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                 );
 
 
+            const precioUsd =
+                Number(
+                    plan.precio_usd || 0
+                );
+
+
             const precioMxn =
                 Number(
                     plan.precio_mxn || 0
                 );
 
 
-            const precioUsd =
+            const limiteNumeros =
                 Number(
-                    plan.precio_usd || 0
+                    plan.limite_numeros_por_dinamica ||
+                    0
                 );
+
+
+            const mensual =
+                String(
+                    plan.tipo_cobro || ""
+                ) ===
+                "mensual";
+
+
+            const limiteDinamicas =
+                mensual
+                    ? Number(
+                        plan.limite_dinamicas_simultaneas ||
+                        1
+                    )
+                    : "";
+
+
+            const caracteristicas =
+                Array.isArray(
+                    plan.caracteristicas
+                )
+                    ? plan.caracteristicas
+                    : [];
+
+
+            const caracteristicasTexto =
+                caracteristicas
+                    .map(
+                        item =>
+                            String(
+                                item || ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+                    .join("\n");
 
 
             const activo =
@@ -103120,14 +103543,14 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
             return `
                 <div
                     style="
-                        margin-top:14px;
+                        margin-top:16px;
                         padding:18px;
                         border:1px solid ${
                             activo
                                 ? "#39ff14"
                                 : "#666"
                         };
-                        border-radius:14px;
+                        border-radius:16px;
                         background:#111;
                         text-align:left;
                     "
@@ -103148,7 +103571,7 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                             <div
                                 style="
                                     color:#39ff14;
-                                    font-size:19px;
+                                    font-size:20px;
                                     font-weight:900;
                                 "
                             >
@@ -103234,6 +103657,67 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                     </div>
 
 
+                    <label
+                        style="
+                            display:block;
+                            margin-top:18px;
+                            color:#ddd;
+                        "
+                    >
+                        Nombre público
+
+                        <input
+                            id="nombrePlan_${planId}"
+                            type="text"
+                            maxlength="120"
+                            value="${
+                                massEscaparHTML(
+                                    String(
+                                        plan.nombre || ""
+                                    )
+                                )
+                            }"
+                            style="
+                                width:100%;
+                                margin-top:6px;
+                                box-sizing:border-box;
+                                font-size:16px;
+                            "
+                        >
+                    </label>
+
+
+                    <label
+                        style="
+                            display:block;
+                            margin-top:14px;
+                            color:#ddd;
+                        "
+                    >
+                        Descripción
+
+                        <textarea
+                            id="descripcionPlan_${planId}"
+                            rows="3"
+                            maxlength="500"
+                            style="
+                                width:100%;
+                                margin-top:6px;
+                                box-sizing:border-box;
+                                resize:vertical;
+                                font-size:16px;
+                            "
+                        >${
+                            massEscaparHTML(
+                                String(
+                                    plan.descripcion ||
+                                    ""
+                                )
+                            )
+                        }</textarea>
+                    </label>
+
+
                     <div
                         style="
                             display:grid;
@@ -103243,7 +103727,7 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                                     minmax(0,1fr)
                                 );
                             gap:12px;
-                            margin-top:18px;
+                            margin-top:16px;
                         "
                     >
 
@@ -103253,37 +103737,7 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                                 color:#ddd;
                             "
                         >
-                            Precio MXN
-
-                            <input
-                                id="precioPlanMxn_${planId}"
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                value="${
-                                    Number.isFinite(
-                                        precioMxn
-                                    )
-                                        ? precioMxn.toFixed(2)
-                                        : "0.00"
-                                }"
-                                style="
-                                    width:100%;
-                                    margin-top:6px;
-                                    box-sizing:border-box;
-                                    font-size:16px;
-                                "
-                            >
-                        </label>
-
-
-                        <label
-                            style="
-                                display:block;
-                                color:#ddd;
-                            "
-                        >
-                            Precio USD
+                            Precio maestro USD
 
                             <input
                                 id="precioPlanUsd_${planId}"
@@ -103297,6 +103751,156 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                                         ? precioUsd.toFixed(2)
                                         : "0.00"
                                 }"
+                                oninput='
+                                    actualizarVistaPreviaPrecioMxnPlan(
+                                        ${JSON.stringify(
+                                            planId
+                                        )}
+                                    )
+                                '
+                                style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    box-sizing:border-box;
+                                    font-size:16px;
+                                "
+                            >
+                        </label>
+
+
+                        <label
+                            style="
+                                display:block;
+                                color:#ddd;
+                            "
+                        >
+                            Precio MXN automático
+
+                            <input
+                                id="precioPlanMxn_${planId}"
+                                type="number"
+                                value="${
+                                    Number.isFinite(
+                                        precioMxn
+                                    )
+                                        ? precioMxn.toFixed(2)
+                                        : "0.00"
+                                }"
+                                readonly
+                                style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    box-sizing:border-box;
+                                    font-size:16px;
+                                    opacity:0.8;
+                                    cursor:not-allowed;
+                                "
+                            >
+                        </label>
+
+                    </div>
+
+
+                    <div
+                        id="detalleFxPlan_${planId}"
+                        style="
+                            margin-top:7px;
+                            color:#888;
+                            font-size:12px;
+                            line-height:1.4;
+                        "
+                    >
+                        MXN es calculado automáticamente
+                        por el backend desde USD.
+                    </div>
+
+
+                    <div
+                        style="
+                            display:grid;
+                            grid-template-columns:
+                                repeat(
+                                    2,
+                                    minmax(0,1fr)
+                                );
+                            gap:12px;
+                            margin-top:16px;
+                        "
+                    >
+
+                        <label
+                            style="
+                                display:block;
+                                color:#ddd;
+                            "
+                        >
+                            Modalidad de cobro
+
+                            <select
+                                id="tipoCobroPlan_${planId}"
+                                onchange='
+                                    actualizarTipoCobroPlanSuperAdmin(
+                                        ${JSON.stringify(
+                                            planId
+                                        )}
+                                    )
+                                '
+                                style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    box-sizing:border-box;
+                                    font-size:16px;
+                                "
+                            >
+
+                                <option
+                                    value="por_dinamica"
+                                    ${
+                                        !mensual
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    Por dinámica
+                                </option>
+
+                                <option
+                                    value="mensual"
+                                    ${
+                                        mensual
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    Mensual
+                                </option>
+
+                            </select>
+                        </label>
+
+
+                        <label
+                            style="
+                                display:block;
+                                color:#ddd;
+                            "
+                        >
+                            Números por dinámica
+
+                            <input
+                                id="limiteNumerosPlan_${planId}"
+                                type="number"
+                                min="1"
+                                step="1"
+                                value="${
+                                    Number.isFinite(
+                                        limiteNumeros
+                                    )
+                                        ? Math.trunc(
+                                            limiteNumeros
+                                        )
+                                        : 1
+                                }"
                                 style="
                                     width:100%;
                                     margin-top:6px;
@@ -103309,24 +103913,123 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                     </div>
 
 
+                    <label
+                        style="
+                            display:block;
+                            margin-top:14px;
+                            color:#ddd;
+                        "
+                    >
+                        Dinámicas simultáneas
+
+                        <input
+                            id="limiteDinamicasPlan_${planId}"
+                            type="number"
+                            min="1"
+                            step="1"
+                            value="${
+                                mensual
+                                    ? Math.max(
+                                        1,
+                                        Math.trunc(
+                                            limiteDinamicas
+                                        )
+                                    )
+                                    : ""
+                            }"
+                            ${
+                                mensual
+                                    ? ""
+                                    : "disabled"
+                            }
+                            placeholder="${
+                                mensual
+                                    ? "Ej. 3"
+                                    : "No aplica"
+                            }"
+                            style="
+                                width:100%;
+                                margin-top:6px;
+                                box-sizing:border-box;
+                                font-size:16px;
+                            "
+                        >
+
+                        <div
+                            style="
+                                margin-top:5px;
+                                color:#888;
+                                font-size:12px;
+                            "
+                        >
+                            Sólo aplica a planes mensuales.
+                            Los planes por dinámica
+                            no consumen slots mensuales.
+                        </div>
+                    </label>
+
+
+                    <label
+                        style="
+                            display:block;
+                            margin-top:14px;
+                            color:#ddd;
+                        "
+                    >
+                        Características visibles
+
+                        <textarea
+                            id="caracteristicasPlan_${planId}"
+                            rows="5"
+                            style="
+                                width:100%;
+                                margin-top:6px;
+                                box-sizing:border-box;
+                                resize:vertical;
+                                font-size:16px;
+                            "
+                        >${
+                            massEscaparHTML(
+                                caracteristicasTexto
+                            )
+                        }</textarea>
+
+                        <div
+                            style="
+                                margin-top:5px;
+                                color:#888;
+                                font-size:12px;
+                            "
+                        >
+                            Escribe una característica
+                            por línea.
+                            Todos los planes conservan
+                            todas las funciones
+                            de MASS SORTEOS PRO.
+                        </div>
+                    </label>
+
+
                     <button
-                        id="btnGuardarPrecioPlan_${planId}"
+                        id="btnGuardarConfigPlan_${planId}"
                         type="button"
                         onclick='
-                            guardarPreciosPlanOrganizadorSuperAdmin(
-                                ${JSON.stringify(planId)},
+                            guardarConfiguracionPlanOrganizadorSuperAdmin(
+                                ${JSON.stringify(
+                                    planId
+                                )},
                                 ${version}
                             )
                         '
                         style="
                             width:100%;
-                            margin-top:16px;
+                            margin-top:18px;
                             background:#163d16;
                             color:white;
                             border:2px solid #39ff14;
                         "
                     >
-                        💾 Guardar precios
+                        💾 Guardar configuración
                     </button>
 
                 </div>
@@ -103336,7 +104039,11 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
 }
 
 
-window.guardarPreciosPlanOrganizadorSuperAdmin =
+/* =========================================================
+   GUARDAR CONFIGURACIÓN
+========================================================= */
+
+window.guardarConfiguracionPlanOrganizadorSuperAdmin =
 async function (
     planId,
     versionEsperada
@@ -103353,61 +104060,107 @@ async function (
     }
 
 
-    const inputMxn =
-        document.getElementById(
-            `precioPlanMxn_${id}`
-        );
-
-
-    const inputUsd =
-        document.getElementById(
-            `precioPlanUsd_${id}`
-        );
-
-
-    const boton =
-        document.getElementById(
-            `btnGuardarPrecioPlan_${id}`
-        );
-
-
-    const textoMxn =
+    const nombre =
         String(
-            inputMxn?.value || ""
+            document.getElementById(
+                `nombrePlan_${id}`
+            )?.value || ""
+        ).trim();
+
+
+    const descripcion =
+        String(
+            document.getElementById(
+                `descripcionPlan_${id}`
+            )?.value || ""
+        ).trim();
+
+
+    const tipoCobro =
+        String(
+            document.getElementById(
+                `tipoCobroPlan_${id}`
+            )?.value || ""
         ).trim();
 
 
     const textoUsd =
         String(
-            inputUsd?.value || ""
+            document.getElementById(
+                `precioPlanUsd_${id}`
+            )?.value || ""
         ).trim();
 
 
-    const patronPrecio =
-        /^\d+(?:\.\d{1,2})?$/;
+    const textoNumeros =
+        String(
+            document.getElementById(
+                `limiteNumerosPlan_${id}`
+            )?.value || ""
+        ).trim();
 
 
-    if (
-        !patronPrecio.test(
-            textoMxn
-        ) ||
-        !patronPrecio.test(
-            textoUsd
-        )
-    ) {
+    const textoDinamicas =
+        String(
+            document.getElementById(
+                `limiteDinamicasPlan_${id}`
+            )?.value || ""
+        ).trim();
+
+
+    const textoCaracteristicas =
+        String(
+            document.getElementById(
+                `caracteristicasPlan_${id}`
+            )?.value || ""
+        );
+
+
+    const boton =
+        document.getElementById(
+            `btnGuardarConfigPlan_${id}`
+        );
+
+
+    if (!nombre) {
 
         alert(
-            "❌ Los precios deben ser números válidos con máximo 2 decimales."
+            "❌ Escribe el nombre público del plan."
         );
 
         return;
     }
 
 
-    const precioMxn =
-        Number(
-            textoMxn
+    if (
+        ![
+            "por_dinamica",
+            "mensual"
+        ].includes(
+            tipoCobro
+        )
+    ) {
+
+        alert(
+            "❌ Selecciona una modalidad de cobro válida."
         );
+
+        return;
+    }
+
+
+    if (
+        !/^\d+(?:\.\d{1,2})?$/.test(
+            textoUsd
+        )
+    ) {
+
+        alert(
+            "❌ El precio USD debe ser válido y tener máximo 2 decimales."
+        );
+
+        return;
+    }
 
 
     const precioUsd =
@@ -103418,17 +104171,131 @@ async function (
 
     if (
         !Number.isFinite(
-            precioMxn
-        ) ||
-        !Number.isFinite(
             precioUsd
         ) ||
-        precioMxn <= 0 ||
         precioUsd <= 0
     ) {
 
         alert(
-            "❌ Los precios MXN y USD deben ser mayores que cero."
+            "❌ El precio USD debe ser mayor que cero."
+        );
+
+        return;
+    }
+
+
+    if (
+        !/^\d+$/.test(
+            textoNumeros
+        )
+    ) {
+
+        alert(
+            "❌ Números por dinámica debe ser un número entero."
+        );
+
+        return;
+    }
+
+
+    const limiteNumeros =
+        Number(
+            textoNumeros
+        );
+
+
+    if (
+        !Number.isSafeInteger(
+            limiteNumeros
+        ) ||
+        limiteNumeros <= 0
+    ) {
+
+        alert(
+            "❌ Números por dinámica debe ser mayor que cero."
+        );
+
+        return;
+    }
+
+
+    let limiteDinamicas =
+        null;
+
+
+    if (
+        tipoCobro ===
+        "mensual"
+    ) {
+
+        if (
+            !/^\d+$/.test(
+                textoDinamicas
+            )
+        ) {
+
+            alert(
+                "❌ Escribe cuántas dinámicas simultáneas incluye el plan mensual."
+            );
+
+            return;
+        }
+
+
+        limiteDinamicas =
+            Number(
+                textoDinamicas
+            );
+
+
+        if (
+            !Number.isSafeInteger(
+                limiteDinamicas
+            ) ||
+            limiteDinamicas <= 0
+        ) {
+
+            alert(
+                "❌ Las dinámicas simultáneas deben ser mayores que cero."
+            );
+
+            return;
+        }
+    }
+
+
+    const caracteristicas =
+        textoCaracteristicas
+            .split(/\r?\n/)
+            .map(
+                item =>
+                    item.trim()
+            )
+            .filter(Boolean);
+
+
+    if (
+        caracteristicas.length >
+        50
+    ) {
+
+        alert(
+            "❌ El plan admite máximo 50 características."
+        );
+
+        return;
+    }
+
+
+    if (
+        caracteristicas.some(
+            item =>
+                item.length > 200
+        )
+    ) {
+
+        alert(
+            "❌ Cada característica puede tener máximo 200 caracteres."
         );
 
         return;
@@ -103451,17 +104318,32 @@ async function (
             data,
             error
         } = await supabaseClient.rpc(
-            "actualizar_precios_plan_organizador_super_admin_segura",
+            "guardar_configuracion_plan_organizador_super_admin_segura",
             {
 
                 p_plan_id:
                     id,
 
-                p_precio_mxn:
-                    precioMxn,
+                p_nombre_publico:
+                    nombre,
+
+                p_descripcion_publica:
+                    descripcion,
+
+                p_tipo_cobro:
+                    tipoCobro,
 
                 p_precio_usd:
                     precioUsd,
+
+                p_limite_numeros_por_dinamica:
+                    limiteNumeros,
+
+                p_limite_dinamicas_simultaneas:
+                    limiteDinamicas,
+
+                p_caracteristicas:
+                    caracteristicas,
 
                 p_version_esperada:
                     Number(
@@ -103479,7 +104361,7 @@ async function (
         ) {
 
             console.error(
-                "ERROR ACTUALIZANDO PRECIOS DEL PLAN:",
+                "ERROR GUARDANDO CONFIGURACIÓN DEL PLAN:",
                 error || data
             );
 
@@ -103496,25 +104378,58 @@ async function (
             ) {
 
                 alert(
-                    "ℹ️ Este plan fue actualizado en otra sesión. Vuelve a cargar Billing / Cobros antes de guardar."
+                    "ℹ️ Este plan fue modificado en otra sesión. Vuelve a cargar Billing / Cobros."
                 );
 
             } else if (
                 codigoError ===
-                "PRECIO_INVALIDO"
+                "FX_NO_DISPONIBLE"
             ) {
 
                 alert(
-                    "❌ Los precios deben ser mayores que cero."
+                    "⚠️ No hay un tipo de cambio USD → MXN vigente. No se guardó el cambio."
                 );
 
             } else if (
                 codigoError ===
-                "MAXIMO_DOS_DECIMALES"
+                "PRECIO_USD_INVALIDO" ||
+                codigoError ===
+                "PRECIO_USD_MAXIMO_DOS_DECIMALES"
             ) {
 
                 alert(
-                    "❌ Los precios admiten máximo 2 decimales."
+                    "❌ Revisa el precio maestro USD."
+                );
+
+            } else if (
+                codigoError ===
+                "LIMITE_NUMEROS_INVALIDO"
+            ) {
+
+                alert(
+                    "❌ Revisa el límite de números por dinámica."
+                );
+
+            } else if (
+                codigoError ===
+                "LIMITE_DINAMICAS_REQUERIDO"
+            ) {
+
+                alert(
+                    "❌ Los planes mensuales necesitan un límite de dinámicas simultáneas."
+                );
+
+            } else if (
+                codigoError ===
+                "CARACTERISTICAS_NO_VALIDAS" ||
+                codigoError ===
+                "CARACTERISTICA_INVALIDA" ||
+                codigoError ===
+                "DEMASIADAS_CARACTERISTICAS"
+            ) {
+
+                alert(
+                    "❌ Revisa las características del plan."
                 );
 
             } else if (
@@ -103523,13 +104438,13 @@ async function (
             ) {
 
                 alert(
-                    "❌ Sólo el Súper Admin puede modificar los precios."
+                    "❌ Sólo el Súper Admin puede modificar los planes."
                 );
 
             } else {
 
                 alert(
-                    "❌ No fue posible actualizar los precios del plan."
+                    "❌ No fue posible guardar la configuración del plan."
                 );
             }
 
@@ -103538,11 +104453,29 @@ async function (
         }
 
 
-        alert(
-            data.sin_cambios === true
-                ? "ℹ️ Los precios ya tenían esos valores."
-                : "✅ Precios del plan actualizados correctamente."
-        );
+        if (
+            data.sin_cambios ===
+            true
+        ) {
+
+            alert(
+                "ℹ️ El plan ya tenía esa configuración."
+            );
+
+        } else {
+
+            alert(
+                `✅ Plan actualizado correctamente.\n\n${
+                    Number(
+                        data.precio_usd
+                    ).toFixed(2)
+                } USD → ${
+                    Number(
+                        data.precio_mxn
+                    ).toFixed(2)
+                } MXN`
+            );
+        }
 
 
         await mostrarBillingSuperAdmin();
@@ -103556,7 +104489,7 @@ async function (
                 false;
 
             boton.textContent =
-                "💾 Guardar precios";
+                "💾 Guardar configuración";
         }
     }
 };
@@ -104792,22 +105725,26 @@ const pagosPendientesBilling = (suscripcionesBilling || [])
 >
 
     <h3>
-        📦 Precios de planes
+    📦 Configuración de planes
     </h3>
 
 
     <p
-        style="
-            color:#bbb;
-            line-height:1.5;
-        "
-    >
-        Modifica los precios públicos
-        en MXN y USD.
-        Los cambios aplican a nuevas adquisiciones.
-        Los expedientes ya abiertos conservan
-        el precio que tenían al momento de crearse.
-    </p>
+    style="
+        color:#bbb;
+        line-height:1.5;
+    "
+>
+    Administra cada plan de MASS SORTEOS PRO.
+    USD es el precio maestro y MXN
+    se calcula automáticamente.
+    También puedes modificar capacidad,
+    modalidad, descripción y características.
+    Los expedientes ya abiertos conservan
+    exactamente el snapshot con el que fueron creados.
+</p>
+
+${crearHtmlFxPlanesSuperAdmin()}
 
 
     <div
