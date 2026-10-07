@@ -61933,6 +61933,28 @@ if (
    PLAN-F3A
 ========================================================= */
 
+window.cerrarPlanesOrganizadorPublicos =
+function () {
+
+    const box =
+        document.getElementById(
+            "planesOrganizadorPublicosBox"
+        );
+
+
+    if (!box) {
+        return;
+    }
+
+
+    box.style.display =
+        "none";
+
+
+    box.innerHTML =
+        "";
+};
+
 window.mostrarPlanesOrganizadorPublicos =
 async function () {
 
@@ -62304,13 +62326,41 @@ async function () {
 
     box.innerHTML = `
 
-        <div
+                <div
             class="card"
             style="
                 max-width:1100px;
                 text-align:center;
             "
         >
+
+            <div
+                style="
+                    display:flex;
+                    justify-content:flex-end;
+                    margin-bottom:8px;
+                "
+            >
+
+                <button
+                    type="button"
+                    onclick="
+                        cerrarPlanesOrganizadorPublicos()
+                    "
+                    style="
+                        width:auto;
+                        padding:8px 14px;
+                        background:#222;
+                        color:white;
+                        border:1px solid #666;
+                        font-size:14px;
+                    "
+                >
+                    ✕ Cerrar
+                </button>
+
+            </div>
+
 
             <h2
                 style="
@@ -62327,9 +62377,47 @@ async function () {
                     line-height:1.5;
                 "
             >
-                Elige el plan que mejor se adapte
+                                Elige el plan que mejor se adapte
                 a tus dinámicas en MASS SORTEOS PRO.
             </p>
+
+
+            <div
+                style="
+                    max-width:780px;
+                    margin:18px auto 4px auto;
+                    padding:16px;
+                    border:1px solid #39ff14;
+                    border-radius:14px;
+                    background:#102010;
+                    color:#ddd;
+                    line-height:1.5;
+                "
+            >
+
+                <div
+                    style="
+                        color:#39ff14;
+                        font-weight:900;
+                        font-size:17px;
+                        margin-bottom:5px;
+                    "
+                >
+                    ✅ Todas las funciones incluidas
+                </div>
+
+
+                <div>
+                    Todos los planes incluyen
+                    todas las funciones de
+                    MASS SORTEOS PRO.
+                    La diferencia entre planes
+                    es la capacidad,
+                    el número de dinámicas simultáneas
+                    y la modalidad de cobro.
+                </div>
+
+            </div>
 
 
             <div
@@ -102914,6 +103002,565 @@ const renovacionesProximasBilling = (suscripcionesBilling || [])
    PLAN-F2C2-UI
 ========================================================= */
 
+/* =========================================================
+   MASS — ADMINISTRACIÓN DE PRECIOS DE PLANES
+   SÚPER ADMIN
+   PLAN-F3B2
+========================================================= */
+
+let MASS_PLANES_ORGANIZADOR_SUPER_ADMIN = [];
+
+
+async function cargarPlanesOrganizadorSuperAdmin() {
+
+    const {
+        data,
+        error
+    } = await supabaseClient.rpc(
+        "listar_planes_organizador_super_admin_segura"
+    );
+
+
+    if (
+        error ||
+        !data ||
+        data.ok !== true
+    ) {
+
+        console.error(
+            "ERROR CARGANDO PLANES PARA SÚPER ADMIN:",
+            error || data
+        );
+
+        MASS_PLANES_ORGANIZADOR_SUPER_ADMIN = [];
+
+        return false;
+    }
+
+
+    MASS_PLANES_ORGANIZADOR_SUPER_ADMIN =
+        Array.isArray(
+            data.planes
+        )
+            ? data.planes
+            : [];
+
+
+    return true;
+}
+
+
+function crearHtmlPlanesOrganizadorSuperAdmin() {
+
+    const planes =
+        Array.isArray(
+            MASS_PLANES_ORGANIZADOR_SUPER_ADMIN
+        )
+            ? MASS_PLANES_ORGANIZADOR_SUPER_ADMIN
+            : [];
+
+
+    if (!planes.length) {
+
+        return `
+            <div
+                style="
+                    padding:18px;
+                    border:1px solid #444;
+                    border-radius:12px;
+                    background:#111;
+                    color:#aaa;
+                    text-align:center;
+                "
+            >
+                No hay planes disponibles.
+            </div>
+        `;
+    }
+
+
+    return planes.map(
+        plan => {
+
+            const planId =
+                String(
+                    plan.id || ""
+                );
+
+
+            const version =
+                Math.max(
+                    1,
+                    Number(
+                        plan.version || 1
+                    )
+                );
+
+
+            const precioMxn =
+                Number(
+                    plan.precio_mxn || 0
+                );
+
+
+            const precioUsd =
+                Number(
+                    plan.precio_usd || 0
+                );
+
+
+            const activo =
+                plan.activo === true;
+
+
+            const visible =
+                plan.visible_publico === true;
+
+
+            return `
+                <div
+                    style="
+                        margin-top:14px;
+                        padding:18px;
+                        border:1px solid ${
+                            activo
+                                ? "#39ff14"
+                                : "#666"
+                        };
+                        border-radius:14px;
+                        background:#111;
+                        text-align:left;
+                    "
+                >
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            gap:12px;
+                            flex-wrap:wrap;
+                        "
+                    >
+
+                        <div>
+
+                            <div
+                                style="
+                                    color:#39ff14;
+                                    font-size:19px;
+                                    font-weight:900;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        plan.nombre ||
+                                        "Plan MASS"
+                                    )
+                                }
+                            </div>
+
+
+                            <div
+                                style="
+                                    margin-top:4px;
+                                    color:#888;
+                                    font-size:12px;
+                                "
+                            >
+                                ${
+                                    massEscaparHTML(
+                                        plan.codigo || ""
+                                    )
+                                }
+
+                                · versión ${version}
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            style="
+                                display:flex;
+                                gap:6px;
+                                flex-wrap:wrap;
+                            "
+                        >
+
+                            <span
+                                style="
+                                    padding:5px 9px;
+                                    border:1px solid ${
+                                        activo
+                                            ? "#39ff14"
+                                            : "#777"
+                                    };
+                                    border-radius:999px;
+                                    color:${
+                                        activo
+                                            ? "#39ff14"
+                                            : "#aaa"
+                                    };
+                                    font-size:12px;
+                                "
+                            >
+                                ${
+                                    activo
+                                        ? "Activo"
+                                        : "Inactivo"
+                                }
+                            </span>
+
+
+                            <span
+                                style="
+                                    padding:5px 9px;
+                                    border:1px solid #777;
+                                    border-radius:999px;
+                                    color:#bbb;
+                                    font-size:12px;
+                                "
+                            >
+                                ${
+                                    visible
+                                        ? "Público"
+                                        : "Oculto"
+                                }
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        style="
+                            display:grid;
+                            grid-template-columns:
+                                repeat(
+                                    2,
+                                    minmax(0,1fr)
+                                );
+                            gap:12px;
+                            margin-top:18px;
+                        "
+                    >
+
+                        <label
+                            style="
+                                display:block;
+                                color:#ddd;
+                            "
+                        >
+                            Precio MXN
+
+                            <input
+                                id="precioPlanMxn_${planId}"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                value="${
+                                    Number.isFinite(
+                                        precioMxn
+                                    )
+                                        ? precioMxn.toFixed(2)
+                                        : "0.00"
+                                }"
+                                style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    box-sizing:border-box;
+                                    font-size:16px;
+                                "
+                            >
+                        </label>
+
+
+                        <label
+                            style="
+                                display:block;
+                                color:#ddd;
+                            "
+                        >
+                            Precio USD
+
+                            <input
+                                id="precioPlanUsd_${planId}"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                value="${
+                                    Number.isFinite(
+                                        precioUsd
+                                    )
+                                        ? precioUsd.toFixed(2)
+                                        : "0.00"
+                                }"
+                                style="
+                                    width:100%;
+                                    margin-top:6px;
+                                    box-sizing:border-box;
+                                    font-size:16px;
+                                "
+                            >
+                        </label>
+
+                    </div>
+
+
+                    <button
+                        id="btnGuardarPrecioPlan_${planId}"
+                        type="button"
+                        onclick='
+                            guardarPreciosPlanOrganizadorSuperAdmin(
+                                ${JSON.stringify(planId)},
+                                ${version}
+                            )
+                        '
+                        style="
+                            width:100%;
+                            margin-top:16px;
+                            background:#163d16;
+                            color:white;
+                            border:2px solid #39ff14;
+                        "
+                    >
+                        💾 Guardar precios
+                    </button>
+
+                </div>
+            `;
+        }
+    ).join("");
+}
+
+
+window.guardarPreciosPlanOrganizadorSuperAdmin =
+async function (
+    planId,
+    versionEsperada
+) {
+
+    const id =
+        String(
+            planId || ""
+        ).trim();
+
+
+    if (!id) {
+        return;
+    }
+
+
+    const inputMxn =
+        document.getElementById(
+            `precioPlanMxn_${id}`
+        );
+
+
+    const inputUsd =
+        document.getElementById(
+            `precioPlanUsd_${id}`
+        );
+
+
+    const boton =
+        document.getElementById(
+            `btnGuardarPrecioPlan_${id}`
+        );
+
+
+    const textoMxn =
+        String(
+            inputMxn?.value || ""
+        ).trim();
+
+
+    const textoUsd =
+        String(
+            inputUsd?.value || ""
+        ).trim();
+
+
+    const patronPrecio =
+        /^\d+(?:\.\d{1,2})?$/;
+
+
+    if (
+        !patronPrecio.test(
+            textoMxn
+        ) ||
+        !patronPrecio.test(
+            textoUsd
+        )
+    ) {
+
+        alert(
+            "❌ Los precios deben ser números válidos con máximo 2 decimales."
+        );
+
+        return;
+    }
+
+
+    const precioMxn =
+        Number(
+            textoMxn
+        );
+
+
+    const precioUsd =
+        Number(
+            textoUsd
+        );
+
+
+    if (
+        !Number.isFinite(
+            precioMxn
+        ) ||
+        !Number.isFinite(
+            precioUsd
+        ) ||
+        precioMxn <= 0 ||
+        precioUsd <= 0
+    ) {
+
+        alert(
+            "❌ Los precios MXN y USD deben ser mayores que cero."
+        );
+
+        return;
+    }
+
+
+    if (boton) {
+
+        boton.disabled =
+            true;
+
+        boton.textContent =
+            "⏳ Guardando...";
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } = await supabaseClient.rpc(
+            "actualizar_precios_plan_organizador_super_admin_segura",
+            {
+
+                p_plan_id:
+                    id,
+
+                p_precio_mxn:
+                    precioMxn,
+
+                p_precio_usd:
+                    precioUsd,
+
+                p_version_esperada:
+                    Number(
+                        versionEsperada
+                    )
+
+            }
+        );
+
+
+        if (
+            error ||
+            !data ||
+            data.ok !== true
+        ) {
+
+            console.error(
+                "ERROR ACTUALIZANDO PRECIOS DEL PLAN:",
+                error || data
+            );
+
+
+            const codigoError =
+                String(
+                    data?.codigo || ""
+                );
+
+
+            if (
+                codigoError ===
+                "VERSION_DESACTUALIZADA"
+            ) {
+
+                alert(
+                    "ℹ️ Este plan fue actualizado en otra sesión. Vuelve a cargar Billing / Cobros antes de guardar."
+                );
+
+            } else if (
+                codigoError ===
+                "PRECIO_INVALIDO"
+            ) {
+
+                alert(
+                    "❌ Los precios deben ser mayores que cero."
+                );
+
+            } else if (
+                codigoError ===
+                "MAXIMO_DOS_DECIMALES"
+            ) {
+
+                alert(
+                    "❌ Los precios admiten máximo 2 decimales."
+                );
+
+            } else if (
+                codigoError ===
+                "NO_AUTORIZADO"
+            ) {
+
+                alert(
+                    "❌ Sólo el Súper Admin puede modificar los precios."
+                );
+
+            } else {
+
+                alert(
+                    "❌ No fue posible actualizar los precios del plan."
+                );
+            }
+
+
+            return;
+        }
+
+
+        alert(
+            data.sin_cambios === true
+                ? "ℹ️ Los precios ya tenían esos valores."
+                : "✅ Precios del plan actualizados correctamente."
+        );
+
+
+        await mostrarBillingSuperAdmin();
+
+
+    } finally {
+
+        if (boton) {
+
+            boton.disabled =
+                false;
+
+            boton.textContent =
+                "💾 Guardar precios";
+        }
+    }
+};
+
 let MASS_METODOS_PAGO_PLANES_SUPER_ADMIN = [];
 
 
@@ -104051,6 +104698,8 @@ async function mostrarBillingSuperAdmin(){
     const cont = document.getElementById("superAdminContenido");
     if(!cont) return;
 
+    await cargarPlanesOrganizadorSuperAdmin();
+
     await cargarMetodosPagoPlanesSuperAdmin();
 
 	const { data: organizadoresBilling, error: errorOrgBilling } = await supabaseClient
@@ -104133,6 +104782,40 @@ const pagosPendientesBilling = (suscripcionesBilling || [])
   USD · MXN
 </div>
   <p style="color:#bbb;">TE-TO-KA SOLUTIONS, LLC · Texas</p>
+</div>
+
+<div
+    class="card"
+    style="
+        max-width:760px;
+    "
+>
+
+    <h3>
+        📦 Precios de planes
+    </h3>
+
+
+    <p
+        style="
+            color:#bbb;
+            line-height:1.5;
+        "
+    >
+        Modifica los precios públicos
+        en MXN y USD.
+        Los cambios aplican a nuevas adquisiciones.
+        Los expedientes ya abiertos conservan
+        el precio que tenían al momento de crearse.
+    </p>
+
+
+    <div
+        id="listaPlanesOrganizadorSuperAdmin"
+    >
+        ${crearHtmlPlanesOrganizadorSuperAdmin()}
+    </div>
+
 </div>
 
 <div
