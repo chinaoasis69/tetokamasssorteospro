@@ -2623,6 +2623,7 @@ Cargando historial...
 </button>
 
 <button
+  id="btnReembolsosMassAdmin"
   type="button"
   onclick="mostrarReembolsosRecargaMassAdmin()"
 >
@@ -2630,6 +2631,7 @@ Cargando historial...
 </button>	
 
 <button
+  id="btnSolicitudesRevisionMassAdmin"
   type="button"
   onclick="mostrarSolicitudesRevisionMassAdmin()"
 >
@@ -3504,66 +3506,80 @@ async function volverPanelSuperAdmin(){
 
 <script>
 window.addEventListener("load", () => {
-    const btn = document.getElementById("btnConfigAdmin");
-	const btnDivisas = document.getElementById("btnDivisasAdmin");
-	const btnMetodosPago = document.getElementById("btnMetodosPagoAdmin");
-	const btnMisPuntosMass =
-    document.getElementById("btnMisPuntosMassAdmin");
-	const btnConvertidor =
-    document.getElementById("btnConvertidorMassAdmin");
-    const rol = localStorage.getItem("admin_rol");
 
-    if (
-  typeof actualizarVisibilidadMiEquipoOrganizador ===
-  "function"
-) {
-  actualizarVisibilidadMiEquipoOrganizador();
-}
+  const btn =
+    document.getElementById(
+      "btnConfigAdmin"
+    );
 
-	if (btnDivisas) {
-  const puedeAdministrarDivisas =
-    rol === "super_admin" || rol === "organizador";
+  const rol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    )
+      .trim()
+      .toLowerCase();
 
-  btnDivisas.style.display = puedeAdministrarDivisas ? "" : "none";
-}
 
-if (btnMetodosPago) {
-  const puedeAdministrarMetodosPago =
-    rol === "super_admin" || rol === "organizador";
+  /*
+    PLAN-F4A4-F4D3
 
-  btnMetodosPago.style.display =
-    puedeAdministrarMetodosPago ? "" : "none";
-}
+    La visibilidad de controles sensibles ya no
+    depende solamente de rol="organizador".
 
-if (btnMisPuntosMass) {
+    La función central distingue:
+    - super_admin
+    - organizador propietario
+    - organizador colaborador
+  */
 
-    const puedeAdministrarMisPuntosMass =
-        rol === "super_admin" ||
-        rol === "organizador";
+  if (
+    typeof actualizarVisibilidadAccesosOrganizador ===
+    "function"
+  ) {
+    actualizarVisibilidadAccesosOrganizador();
+  }
 
-    btnMisPuntosMass.style.display =
-        puedeAdministrarMisPuntosMass
-            ? ""
-            : "none";
-}	
 
-if (btnConvertidor) {
-  const puedeAdministrarConvertidor =
-    rol === "super_admin" || rol === "organizador";
+  /*
+    Compatibilidad específica de Mi equipo.
+    Su propia función mantiene el blindaje visual
+    exclusivo del propietario.
+  */
 
-  btnConvertidor.style.display =
-    puedeAdministrarConvertidor ? "" : "none";
-}	
+  if (
+    typeof actualizarVisibilidadMiEquipoOrganizador ===
+    "function"
+  ) {
+    actualizarVisibilidadMiEquipoOrganizador();
+  }
 
-    if(!btn) return;
 
-    if(rol === "super_admin"){
-        btn.innerHTML = "⚙️ Configuración";
-        btn.onclick = mostrarConfigAdmin;
-    }else{
-        btn.innerHTML = "⚙️ Mi Perfil";
-        btn.onclick = abrirMiPerfil;
-    }
+  if (!btn) {
+    return;
+  }
+
+
+  if (rol === "super_admin") {
+
+    btn.innerHTML =
+      "⚙️ Configuración";
+
+    btn.onclick =
+      mostrarConfigAdmin;
+
+    return;
+  }
+
+
+  if (rol === "organizador") {
+
+    btn.innerHTML =
+      "⚙️ Mi Perfil";
+
+    btn.onclick =
+      abrirMiPerfil;
+  }
+
 });
 </script>	
 	
@@ -46775,6 +46791,101 @@ function actualizarVisibilidadMiEquipoOrganizador() {
     tipoAcceso === "propietario"
       ? ""
       : "none";
+}
+
+// =========================================================
+// MASS — VISIBILIDAD POR TIPO DE ACCESO DEL ORGANIZADOR
+// PLAN-F4A4-F4D2
+//
+// Propietario:
+// - conserva administración sensible.
+//
+// Colaborador:
+// - conserva operación diaria;
+// - no ve controles reservados al propietario.
+//
+// IMPORTANTE:
+// La seguridad real permanece en backend.
+// Esta función solamente alinea la interfaz.
+// =========================================================
+
+function actualizarVisibilidadAccesosOrganizador() {
+
+  const rol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const tipoAcceso =
+    String(
+      localStorage.getItem(
+        "admin_tipo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  const esSuperAdmin =
+    rol === "super_admin";
+
+  const esPropietario =
+    rol === "organizador" &&
+    tipoAcceso === "propietario";
+
+  const puedeAdministrarPropietario =
+    esSuperAdmin || esPropietario;
+
+
+  const idsSoloPropietario = [
+    "btnReembolsosMassAdmin",
+    "btnSolicitudesRevisionMassAdmin",
+    "btnConfigAdmin",
+    "btnMiEquipoAdmin",
+    "btnDivisasAdmin",
+    "btnMetodosPagoAdmin",
+    "btnMisPuntosMassAdmin"
+  ];
+
+
+  for (
+    const id of idsSoloPropietario
+  ) {
+
+    const boton =
+      document.getElementById(id);
+
+    if (!boton) {
+      continue;
+    }
+
+    boton.style.display =
+      puedeAdministrarPropietario
+        ? ""
+        : "none";
+  }
+
+
+  /*
+    Convertidor MASS permanece disponible
+    para la operación diaria del Organizador.
+  */
+
+  const btnConvertidor =
+    document.getElementById(
+      "btnConvertidorMassAdmin"
+    );
+
+  if (btnConvertidor) {
+
+    btnConvertidor.style.display =
+      rol === "super_admin" ||
+      rol === "organizador"
+        ? ""
+        : "none";
+  }
 }
 
 
@@ -110711,6 +110822,13 @@ await inicializarNotificacionesMass();
     ) {
       actualizarVisibilidadMiEquipoOrganizador();
     }
+
+    if (
+  typeof actualizarVisibilidadAccesosOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadAccesosOrganizador();
+}
 
 // ==========================================================
 // MASS - MOSTRAR BOTÓN DE MENSAJES AL INICIAR COMO ORGANIZADOR
