@@ -2640,6 +2640,15 @@ Cargando historial...
   ⚙️ Configuración
 </button>
 
+<button
+  id="btnMiEquipoAdmin"
+  type="button"
+  onclick="mostrarMiEquipoOrganizador()"
+  style="display:none;"
+>
+  👥 Mi equipo / Accesos
+</button>
+
 <button id="btnDivisasAdmin" type="button" onclick="mostrarDivisasAdmin()" style="display:none;">
   💱 Administrar Divisas
 </button>
@@ -3503,6 +3512,13 @@ window.addEventListener("load", () => {
 	const btnConvertidor =
     document.getElementById("btnConvertidorMassAdmin");
     const rol = localStorage.getItem("admin_rol");
+
+    if (
+  typeof actualizarVisibilidadMiEquipoOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadMiEquipoOrganizador();
+}
 
 	if (btnDivisas) {
   const puedeAdministrarDivisas =
@@ -13139,8 +13155,38 @@ if (
       return;
     }
 
-    localStorage.setItem("admin_rol", adminData.rol);
-    localStorage.setItem("admin_organizador_id", adminData.organizador_id || "");
+    localStorage.setItem(
+  "admin_rol",
+  adminData.rol
+);
+
+localStorage.setItem(
+  "admin_organizador_id",
+  adminData.organizador_id || ""
+);
+
+if (adminData.rol === "organizador") {
+
+  localStorage.setItem(
+    "admin_tipo_acceso",
+    String(adminData.tipo_acceso || "")
+      .trim()
+      .toLowerCase()
+  );
+
+} else {
+
+  localStorage.removeItem(
+    "admin_tipo_acceso"
+  );
+}
+
+if (
+  typeof actualizarVisibilidadMiEquipoOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadMiEquipoOrganizador();
+}
 
  if(adminData.rol === "organizador" && adminData.organizador_id){
 
@@ -46681,7 +46727,607 @@ async function asignarCuentaMassAOrganizador(
       "❌ Ocurrió un error inesperado al asignar el acceso."
     );
   }
-}	
+}
+
+// =========================================================
+// MASS — MI EQUIPO / ACCESOS DEL ORGANIZADOR
+// PLAN-F4A4-F4A
+// =========================================================
+
+function escaparHtmlMiEquipo(valor) {
+
+  return String(valor ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function actualizarVisibilidadMiEquipoOrganizador() {
+
+  const boton =
+    document.getElementById(
+      "btnMiEquipoAdmin"
+    );
+
+  if (!boton) return;
+
+  const rol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const tipoAcceso =
+    String(
+      localStorage.getItem(
+        "admin_tipo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  boton.style.display =
+    rol === "organizador" &&
+    tipoAcceso === "propietario"
+      ? ""
+      : "none";
+}
+
+
+async function mostrarMiEquipoOrganizador() {
+
+  const contenedor =
+    document.getElementById(
+      "adminContenido"
+    );
+
+  if (!contenedor) return;
+
+
+  const organizadorId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+
+  const rol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    ).toLowerCase();
+
+
+  const tipoAcceso =
+    String(
+      localStorage.getItem(
+        "admin_tipo_acceso"
+      ) || ""
+    ).toLowerCase();
+
+
+  if (
+    rol !== "organizador" ||
+    tipoAcceso !== "propietario" ||
+    !organizadorId
+  ) {
+
+    alert(
+      "❌ Esta sección es exclusiva del Propietario del Organizador."
+    );
+
+    return;
+  }
+
+
+  contenedor.innerHTML =
+    "<p>⏳ Cargando tu equipo...</p>";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_mi_equipo_organizador_seguro",
+      {
+        p_organizador_id:
+          organizadorId
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR LISTANDO MI EQUIPO:",
+      error
+    );
+
+    contenedor.innerHTML =
+      "<p>❌ No fue posible cargar Mi equipo.</p>";
+
+    return;
+  }
+
+
+  const miembros =
+    Array.isArray(data?.equipo)
+      ? data.equipo
+      : [];
+
+
+  const tarjetas =
+    miembros.map(miembro => {
+
+      const esPropietario =
+        miembro.tipo_acceso ===
+        "propietario";
+
+      const activo =
+        miembro.activo === true;
+
+
+      let acciones = "";
+
+
+      if (!esPropietario) {
+
+        acciones = activo
+          ? `
+            <button
+              type="button"
+              onclick="gestionarColaboradorMiEquipoOrganizador(
+                '${miembro.acceso_id}',
+                'suspender'
+              )"
+            >
+              ⏸️ Suspender
+            </button>
+          `
+          : `
+            <button
+              type="button"
+              onclick="gestionarColaboradorMiEquipoOrganizador(
+                '${miembro.acceso_id}',
+                'reactivar'
+              )"
+            >
+              ▶️ Reactivar
+            </button>
+          `;
+
+
+        acciones += `
+          <button
+            type="button"
+            onclick="gestionarColaboradorMiEquipoOrganizador(
+              '${miembro.acceso_id}',
+              'retirar'
+            )"
+          >
+            🗑️ Retirar
+          </button>
+        `;
+      }
+
+
+      return `
+        <div class="card">
+
+          <h3>
+            ${
+              esPropietario
+                ? "👑 Propietario"
+                : "👤 Colaborador"
+            }
+          </h3>
+
+          <p>
+            <strong>
+              ${escaparHtmlMiEquipo(
+                miembro.nombre
+              )}
+            </strong>
+          </p>
+
+          <p>
+            ${escaparHtmlMiEquipo(
+              miembro.mass_id
+            )}
+          </p>
+
+          <p>
+            ${
+              activo
+                ? "🟢 Activo"
+                : "🟡 Suspendido"
+            }
+          </p>
+
+          ${
+            miembro.es_sesion_actual
+              ? "<p>✅ Sesión actual</p>"
+              : ""
+          }
+
+          ${acciones}
+
+        </div>
+      `;
+
+    }).join("");
+
+
+  contenedor.innerHTML = `
+
+    <h2>👥 Mi equipo / Accesos</h2>
+
+    <div class="card">
+
+      <h3>➕ Agregar colaborador</h3>
+
+      <p class="small">
+        Busca únicamente por MASS ID.
+        No se utiliza correo ni teléfono.
+      </p>
+
+      <input
+        id="miEquipoMassIdBuscar"
+        type="text"
+        placeholder="MASS-00000000"
+        autocomplete="off"
+        style="
+          width:100%;
+          max-width:320px;
+          text-transform:uppercase;
+        "
+      >
+
+      <br>
+
+      <button
+        type="button"
+        onclick="buscarCuentaMiEquipoOrganizador()"
+      >
+        🔎 Buscar MASS ID
+      </button>
+
+      <div
+        id="miEquipoResultadoBusqueda"
+        style="margin-top:15px;"
+      ></div>
+
+    </div>
+
+    <h3>Accesos actuales</h3>
+
+    ${
+      tarjetas ||
+      "<p>No hay integrantes registrados.</p>"
+    }
+  `;
+}
+
+
+async function buscarCuentaMiEquipoOrganizador() {
+
+  const organizadorId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+  const input =
+    document.getElementById(
+      "miEquipoMassIdBuscar"
+    );
+
+  const resultado =
+    document.getElementById(
+      "miEquipoResultadoBusqueda"
+    );
+
+  if (
+    !organizadorId ||
+    !input ||
+    !resultado
+  ) return;
+
+
+  const massId =
+    String(input.value || "")
+      .trim()
+      .toUpperCase();
+
+
+  if (!massId) {
+
+    alert("Ingresa el MASS ID.");
+
+    return;
+  }
+
+
+  resultado.innerHTML =
+    "⏳ Buscando...";
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "buscar_cuenta_mass_para_equipo_organizador_seguro",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_mass_id:
+          massId
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR BUSCANDO MASS ID PARA EQUIPO:",
+      error
+    );
+
+    resultado.innerHTML =
+      "❌ No fue posible realizar la búsqueda.";
+
+    return;
+  }
+
+
+  if (data?.encontrada !== true) {
+
+    resultado.innerHTML =
+      "No se encontró una cuenta MASS activa con ese MASS ID.";
+
+    return;
+  }
+
+
+  const disponible =
+    data.disponible_para_agregar ===
+    true;
+
+
+  resultado.innerHTML = `
+
+    <div class="card">
+
+      <strong>
+        ${escaparHtmlMiEquipo(
+          data.nombre
+        )}
+      </strong>
+
+      <p>
+        ${escaparHtmlMiEquipo(
+          data.mass_id
+        )}
+      </p>
+
+      <p>
+        Estado:
+        ${escaparHtmlMiEquipo(
+          data.estado_vinculo
+        )}
+      </p>
+
+      ${
+        disponible
+          ? `
+            <button
+              type="button"
+              onclick="agregarColaboradorMiEquipoOrganizador()"
+            >
+              ➕ Agregar como colaborador
+            </button>
+          `
+          : `
+            <p>
+              ⛔ Esta cuenta no está disponible para agregar.
+            </p>
+          `
+      }
+
+    </div>
+  `;
+}
+
+
+async function agregarColaboradorMiEquipoOrganizador() {
+
+  const organizadorId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+  const input =
+    document.getElementById(
+      "miEquipoMassIdBuscar"
+    );
+
+
+  const massId =
+    String(input?.value || "")
+      .trim()
+      .toUpperCase();
+
+
+  if (!organizadorId || !massId) return;
+
+
+  if (
+    !confirm(
+      `¿Agregar ${massId} como colaborador?`
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "agregar_colaborador_equipo_organizador_seguro",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_mass_id:
+          massId
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR AGREGANDO COLABORADOR:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible agregar al colaborador.\n\n" +
+      (
+        error.message ||
+        "Error desconocido."
+      )
+    );
+
+    return;
+  }
+
+
+  if (data?.ok !== true) {
+
+    alert(
+      "❌ Supabase no confirmó la operación."
+    );
+
+    return;
+  }
+
+
+  alert(
+    data.codigo === "YA_ES_COLABORADOR"
+      ? "ℹ️ Esta cuenta ya pertenece al equipo."
+      : "✅ Colaborador agregado correctamente."
+  );
+
+
+  await mostrarMiEquipoOrganizador();
+}
+
+
+async function gestionarColaboradorMiEquipoOrganizador(
+  accesoId,
+  accion
+) {
+
+  const organizadorId =
+    localStorage.getItem(
+      "admin_organizador_id"
+    );
+
+
+  if (
+    !organizadorId ||
+    !accesoId
+  ) return;
+
+
+  const mensajes = {
+    suspender:
+      "¿Suspender temporalmente este colaborador?",
+
+    reactivar:
+      "¿Reactivar este colaborador?",
+
+    retirar:
+      "¿Retirar definitivamente este acceso del equipo?"
+  };
+
+
+  if (
+    !confirm(
+      mensajes[accion] ||
+      "¿Confirmar esta acción?"
+    )
+  ) {
+    return;
+  }
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "gestionar_colaborador_equipo_organizador_seguro",
+      {
+        p_organizador_id:
+          organizadorId,
+
+        p_acceso_id:
+          accesoId,
+
+        p_accion:
+          accion
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR GESTIONANDO COLABORADOR:",
+      error
+    );
+
+    alert(
+      "❌ No fue posible completar la acción.\n\n" +
+      (
+        error.message ||
+        "Error desconocido."
+      )
+    );
+
+    return;
+  }
+
+
+  if (data?.ok !== true) {
+
+    alert(
+      "❌ Supabase no confirmó la operación."
+    );
+
+    return;
+  }
+
+
+  alert(
+    accion === "suspender"
+      ? "✅ Colaborador suspendido."
+      : accion === "reactivar"
+        ? "✅ Colaborador reactivado."
+        : "✅ Colaborador retirado."
+  );
+
+
+  await mostrarMiEquipoOrganizador();
+}
 
 async function seleccionarOrganizadorAdmin(id){
 
@@ -101171,9 +101817,11 @@ localStorage.removeItem(
     "mass_email"
 );
 	
-    localStorage.removeItem("admin_rol");
-    localStorage.removeItem("organizador_admin_id");
-	localStorage.removeItem("admin_organizador_id");
+    
+localStorage.removeItem("admin_rol");
+localStorage.removeItem("admin_tipo_acceso");
+localStorage.removeItem("organizador_admin_id");
+localStorage.removeItem("admin_organizador_id");
     localStorage.removeItem("clienteActual");
     localStorage.removeItem("userActual");
 
@@ -110042,10 +110690,27 @@ await inicializarNotificacionesMass();
       "organizador"
     );
 
+    const tipoAccesoOrganizador =
+      String(adminData.tipo_acceso || "")
+        .trim()
+        .toLowerCase();
+
+    localStorage.setItem(
+      "admin_tipo_acceso",
+      tipoAccesoOrganizador
+    );
+
     localStorage.setItem(
       "admin_organizador_id",
       String(organizadorId)
     );
+
+    if (
+      typeof actualizarVisibilidadMiEquipoOrganizador ===
+      "function"
+    ) {
+      actualizarVisibilidadMiEquipoOrganizador();
+    }
 
 // ==========================================================
 // MASS - MOSTRAR BOTÓN DE MENSAJES AL INICIAR COMO ORGANIZADOR
@@ -110232,7 +110897,15 @@ const { data: adminData, error: adminError } =
 await inicializarNotificacionesMass();	  
 
     localStorage.setItem("admin_rol", "super_admin");
-    localStorage.removeItem("admin_organizador_id");
+localStorage.removeItem("admin_tipo_acceso");
+localStorage.removeItem("admin_organizador_id");
+
+if (
+  typeof actualizarVisibilidadMiEquipoOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadMiEquipoOrganizador();
+}
 
 	if (adminData.telefono) {
    localStorage.setItem("mass_telefono", adminData.telefono);
