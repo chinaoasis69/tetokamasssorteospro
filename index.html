@@ -45174,7 +45174,40 @@ function filtrarOrganizadoresParaAcceso() {
         ? "block"
         : "none";
   });
-}	
+}
+
+window.massSoloUnOrganizadorAbierto =
+function (
+    elementoActual
+) {
+
+    if (
+        !elementoActual ||
+        !elementoActual.open
+    ) {
+        return;
+    }
+
+
+    document.querySelectorAll(
+        ".massOrganizadorAcordeon"
+    ).forEach(
+        elemento => {
+
+            if (
+                elemento !==
+                elementoActual
+            ) {
+
+                elemento.open =
+                    false;
+
+            }
+
+        }
+    );
+
+};
 
 async function mostrarOrganizadoresAdmin(){
 
@@ -45269,12 +45302,35 @@ async function mostrarOrganizadoresAdmin(){
             </p>
 
 
-            <button
-                type="button"
-                onclick="crearOrganizadorAdmin()"
-            >
-                ➕ Nuevo Organizador
-            </button>
+            <div
+    style="
+        display:grid;
+        grid-template-columns:
+            repeat(
+                auto-fit,
+                minmax(190px,1fr)
+            );
+        gap:8px;
+        margin-top:14px;
+    "
+>
+
+    <button
+        type="button"
+        onclick="crearOrganizadorAdmin()"
+    >
+        ➕ Crear Organizador manualmente
+    </button>
+
+
+    <button
+        type="button"
+        onclick="volverPanelSuperAdmin()"
+    >
+        ← Volver al Panel Súper Admin
+    </button>
+
+</div>
 
         </div>
 
@@ -45397,17 +45453,55 @@ async function mostrarOrganizadoresAdmin(){
 
                         return `
 
-                            <div
-                                class="card"
-                                style="
-                                    border:1px solid ${estadoColor};
-                                    text-align:left;
-                                "
-                            >
+    <details
+        class="
+            card
+            massOrganizadorAcordeon
+        "
+        ontoggle="
+            massSoloUnOrganizadorAbierto(
+                this
+            )
+        "
+        style="
+            border:1px solid ${estadoColor};
+            text-align:left;
+        "
+    >
 
-                                <div
-                                    style="
-                                        display:flex;
+        <summary
+            style="
+                display:flex;
+                justify-content:space-between;
+                align-items:flex-start;
+                gap:12px;
+                flex-wrap:wrap;
+                cursor:pointer;
+                list-style:none;
+            "
+        >
+
+            <div
+                style="
+                    display:flex;
+                    align-items:flex-start;
+                    gap:10px;
+                    min-width:0;
+                "
+            >
+
+                <span
+                    style="
+                        color:${estadoColor};
+                        font-size:20px;
+                        line-height:1.2;
+                    "
+                >
+                    ▶
+                </span>
+
+
+                <div>
                                         justify-content:space-between;
                                         align-items:flex-start;
                                         gap:12px;
@@ -45466,9 +45560,20 @@ async function mostrarOrganizadoresAdmin(){
                                                 estadoTexto
                                             )
                                         }
-                                    </span>
+                                                                        </span>
 
                                 </div>
+
+                            </div>
+
+                        </summary>
+
+
+                        <div
+                            style="
+                                padding-top:14px;
+                            "
+                        >
 
 
                                 ${
@@ -45818,6 +45923,8 @@ async function mostrarOrganizadoresAdmin(){
                                 </div>
 
                             </div>
+
+                            </details>
                         `;
 
                     }
