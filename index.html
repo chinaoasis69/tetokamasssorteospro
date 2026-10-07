@@ -62826,7 +62826,120 @@ async function cargarResultadosPreSorteosPublicos(rifaId) {
             </div>
         `
     ).join("");
-}	
+}
+
+// =========================================================
+// MASS — REALTIME CATÁLOGO PÚBLICO DE DINÁMICAS
+// PLAN-F4A4-F4F1
+//
+// Mantiene sincronizados:
+// - Organizadores con dinámicas activas.
+// - Listado público de dinámicas activas.
+//
+// La fuente oficial continúa siendo cargarRifasPublicas().
+// Realtime solamente dispara una reconciliación.
+// =========================================================
+
+let canalRealtimeRifasPublicas = null;
+let timerRealtimeRifasPublicas = null;
+
+
+async function iniciarRealtimeRifasPublicas() {
+
+  if (canalRealtimeRifasPublicas) {
+    return;
+  }
+
+
+  canalRealtimeRifasPublicas =
+    supabaseClient
+      .channel(
+        "mass-rifas-publicas-realtime"
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rifas"
+        },
+        () => {
+
+          /*
+            Debounce:
+            evita reconstruir varias veces la página
+            cuando una operación genera cambios seguidos.
+          */
+
+          if (timerRealtimeRifasPublicas) {
+            clearTimeout(
+              timerRealtimeRifasPublicas
+            );
+          }
+
+
+          timerRealtimeRifasPublicas =
+            setTimeout(
+              async () => {
+
+                timerRealtimeRifasPublicas =
+                  null;
+
+
+                if (
+                  document.visibilityState !==
+                  "visible"
+                ) {
+                  return;
+                }
+
+
+                if (
+                  typeof cargarRifasPublicas ===
+                  "function"
+                ) {
+
+                  console.log(
+                    "🎯 Realtime rifas públicas: reconciliando catálogo."
+                  );
+
+
+                  await cargarRifasPublicas();
+                }
+
+              },
+              350
+            );
+        }
+      )
+      .subscribe(
+        async status => {
+
+          console.log(
+            "📡 Realtime rifas públicas:",
+            status
+          );
+
+
+          /*
+            Al conectar o reconectar,
+            reconciliar contra Supabase.
+
+            Así recuperamos cualquier cambio ocurrido
+            mientras el navegador perdió conexión.
+          */
+
+          if (
+            status === "SUBSCRIBED" &&
+            document.visibilityState ===
+              "visible"
+          ) {
+
+            await cargarRifasPublicas();
+          }
+        }
+      );
+}
 
 async function cargarRifasPublicas(){	
 
@@ -95587,7 +95700,8 @@ Promise.resolve().then(async () => {
 
     cargarSaldo();
     cargarRifasPublicas();
-	
+
+	await iniciarRealtimeRifasPublicas();
 	await cargarOrganizadoresConResultados();
 	
     // =====================================================
