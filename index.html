@@ -18439,9 +18439,8 @@ ${r.estado === 'congelada' ? `
 `}               
 
 ${
-  puedeEliminarDinamica &&
-  !r.rifa_origen_id &&
-  Number(r.numero_reprogramacion || 0) === 0
+  r.rifa_origen_id ||
+  Number(r.numero_reprogramacion || 0) > 0
     ? `
       <div
         style="
@@ -18565,6 +18564,7 @@ ${r.estado === 'pausada' ? `
 `}
 
 ${
+  puedeEliminarDinamica &&
   !r.rifa_origen_id &&
   Number(r.numero_reprogramacion || 0) === 0
     ? `
