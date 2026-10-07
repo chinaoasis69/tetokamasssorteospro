@@ -18095,6 +18095,25 @@ async function mostrarSorteosAdmin(){
 const adminRol = localStorage.getItem("admin_rol");
 const adminOrgId = localStorage.getItem("admin_organizador_id");
 
+// =========================================================
+// PLAN-F4A4-F4E5
+// ELIMINACIÓN DEFINITIVA — SOLO PROPIETARIO / SÚPER ADMIN
+// =========================================================
+
+const tipoAccesoSorteos =
+  String(
+    localStorage.getItem("admin_tipo_acceso") || ""
+  )
+    .trim()
+    .toLowerCase();
+
+const puedeEliminarDinamica =
+  adminRol === "super_admin" ||
+  (
+    adminRol === "organizador" &&
+    tipoAccesoSorteos === "propietario"
+  );
+
 if (adminOrgId) {
   query = query.eq("organizador_id", adminOrgId);
 }
@@ -18420,8 +18439,9 @@ ${r.estado === 'congelada' ? `
 `}               
 
 ${
-  r.rifa_origen_id ||
-  Number(r.numero_reprogramacion || 0) > 0
+  puedeEliminarDinamica &&
+  !r.rifa_origen_id &&
+  Number(r.numero_reprogramacion || 0) === 0
     ? `
       <div
         style="
@@ -18461,6 +18481,7 @@ ${r.estado === 'pausada' ? `
 `}
 
 ${
+  puedeEliminarDinamica &&
   !r.rifa_origen_id &&
   Number(r.numero_reprogramacion || 0) === 0
     ? `
