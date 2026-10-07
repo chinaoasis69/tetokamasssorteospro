@@ -45181,11 +45181,31 @@ function (
     elementoActual
 ) {
 
-    if (
-        !elementoActual ||
-        !elementoActual.open
-    ) {
+    if (!elementoActual) {
         return;
+    }
+
+
+    if (elementoActual.open) {
+
+        document.querySelectorAll(
+            ".massOrganizadorAcordeon"
+        ).forEach(
+            elemento => {
+
+                if (
+                    elemento !==
+                    elementoActual
+                ) {
+
+                    elemento.open =
+                        false;
+
+                }
+
+            }
+        );
+
     }
 
 
@@ -45194,13 +45214,18 @@ function (
     ).forEach(
         elemento => {
 
-            if (
-                elemento !==
-                elementoActual
-            ) {
+            const icono =
+                elemento.querySelector(
+                    ".massIconoOrganizadorAcordeon"
+                );
 
-                elemento.open =
-                    false;
+
+            if (icono) {
+
+                icono.textContent =
+                    elemento.open
+                        ? "▼"
+                        : "▶";
 
             }
 
@@ -45491,14 +45516,15 @@ async function mostrarOrganizadoresAdmin(){
             >
 
                 <span
-                    style="
-                        color:${estadoColor};
-                        font-size:20px;
-                        line-height:1.2;
-                    "
-                >
-                    ▶
-                </span>
+    class="massIconoOrganizadorAcordeon"
+    style="
+        color:${estadoColor};
+        font-size:20px;
+        line-height:1.2;
+    "
+>
+    ▶
+</span>
 
 
                 <div>
