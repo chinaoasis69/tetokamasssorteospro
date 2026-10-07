@@ -45178,95 +45178,659 @@ function filtrarOrganizadoresParaAcceso() {
 
 async function mostrarOrganizadoresAdmin(){
 
-	const adminActual = await obtenerAdminActual();
+    const adminActual =
+        await obtenerAdminActual();
 
-if (!adminActual || adminActual.rol !== "super_admin") {
-    alert("Esta sección es solo para el administrador principal.");
-    return;
-}
 
-  document.getElementById("superAdminContenido").innerHTML =
-    "<p>Cargando organizadores...</p>";
+    if (
+        !adminActual ||
+        adminActual.rol !== "super_admin"
+    ) {
 
-  const { data, error } = await supabaseClient
-  .rpc("listar_resumen_organizadores_super_admin");
+        alert(
+            "Esta sección es solo para el administrador principal."
+        );
 
-  if(error){
-    console.error(error);
-    document.getElementById("superAdminContenido").innerHTML =
-      "<p>❌ Error cargando organizadores.</p>";
-    return;
-  }
+        return;
+    }
 
-  document.getElementById("superAdminContenido").innerHTML = `
-    <h3>👤 Organizadores</h3>
 
-    <button onclick="crearOrganizadorAdmin()">
-      ➕ Nuevo Organizador
-    </button>
+    const contenedor =
+        document.getElementById(
+            "superAdminContenido"
+        );
 
-    <br><br>
 
-    ${(data || []).map(o => `
-      <div style="
-        border:1px solid #39ff14;
-        border-radius:12px;
-        padding:12px;
-        margin:10px 0;
-      ">
-        <b>${o.nombre}</b><br>
-Slug: ${o.slug}<br>
-Tel: ${o.telefono || "--"}<br>
-Activo: ${o.activo ? "Sí" : "No"}<br><br>
+    if (!contenedor) {
+        return;
+    }
 
-<b>👥 Organizadores asignados: ${o.total_organizadores || 0}</b><br>
 
-${
-  Array.isArray(o.organizadores_asignados) &&
-  o.organizadores_asignados.length > 0
+    contenedor.innerHTML =
+        "<p>Cargando organizadores...</p>";
 
-    ? o.organizadores_asignados.map(acceso => `
-        <div style="
-          margin-top:8px;
-          padding:10px;
-          border:1px solid #555;
-          border-radius:8px;
-        ">
-          👤 ${acceso.nombre || "Sin nombre"}<br>
-          📧 ${acceso.email || "Sin correo"}<br>
-          📱 ${acceso.telefono || "Sin teléfono"}<br>
-          ${acceso.activo ? "🟢 Acceso activo" : "🔴 Acceso suspendido"}
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient.rpc(
+            "listar_resumen_organizadores_super_admin_v2"
+        );
+
+
+    if (error) {
+
+        console.error(
+            "ERROR CARGANDO ORGANIZADORES V2:",
+            error
+        );
+
+
+        contenedor.innerHTML = `
+            <p>
+                ❌ Error cargando organizadores.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    const organizadores =
+        Array.isArray(data)
+            ? data
+            : [];
+
+
+    contenedor.innerHTML = `
+
+        <h3>
+            👥 Organizadores
+        </h3>
+
+
+        <div
+            class="card"
+            style="
+                margin-bottom:18px;
+            "
+        >
+
+            <p
+                style="
+                    color:#bbb;
+                    line-height:1.5;
+                "
+            >
+                Aquí aparecen tanto los Organizadores
+                activos como los que están realizando
+                su alta mediante la compra de un plan.
+            </p>
+
+
+            <button
+                type="button"
+                onclick="crearOrganizadorAdmin()"
+            >
+                ➕ Nuevo Organizador
+            </button>
+
         </div>
-      `).join("")
 
-    : `
-        <div style="margin-top:8px;">
-          ⚪ Sin Organizador asignado
-        </div>
-      `
-}
 
-	<br><br>
-<button onclick="seleccionarOrganizadorAdmin('${o.organizador_id}')">
-  🎯 Ver / Crear Rifas
-</button>
+        ${
+            organizadores.length > 0
 
-<br><br>
+                ? organizadores.map(
+                    o => {
 
-<button onclick="editarOrganizadorAdmin('${o.organizador_id}')">
-✏️ Editar Organizador
-</button>
+                        const estado =
+                            String(
+                                o.estado_operativo ||
+                                (
+                                    o.activo
+                                        ? "activo"
+                                        : "inactivo"
+                                )
+                            )
+                            .trim()
+                            .toLowerCase();
 
-<button onclick="eliminarOrganizador('${o.organizador_id}')">
-🗑️ Eliminar Organizador
-</button>
 
-<button onclick="mostrarPatrocinadoresAdmin('${o.organizador_id}')">
-🤝 Patrocinadores
-</button>
-      </div>
-    `).join("")}
-  `;
+                        let estadoTexto =
+                            "⚪ Sin estado";
+
+
+                        let estadoColor =
+                            "#aaa";
+
+
+                        if (
+                            estado ===
+                            "provisional"
+                        ) {
+
+                            estadoTexto =
+                                "⚪ Provisional · pendiente de completar pago";
+
+                            estadoColor =
+                                "#ccc";
+
+                        } else if (
+                            estado ===
+                            "pago_en_revision"
+                        ) {
+
+                            estadoTexto =
+                                "🟡 Pago en revisión";
+
+                            estadoColor =
+                                "#ffd60a";
+
+                        } else if (
+                            estado ===
+                            "pendiente_terminos"
+                        ) {
+
+                            estadoTexto =
+                                "🟠 Pendiente de Términos y Condiciones";
+
+                            estadoColor =
+                                "#ff9f0a";
+
+                        } else if (
+                            estado ===
+                            "activo"
+                        ) {
+
+                            estadoTexto =
+                                "🟢 Organizador activo";
+
+                            estadoColor =
+                                "#39ff14";
+
+                        } else if (
+                            estado ===
+                            "cancelado"
+                        ) {
+
+                            estadoTexto =
+                                "🔴 Onboarding cancelado";
+
+                            estadoColor =
+                                "#ff4d4f";
+
+                        } else if (
+                            estado ===
+                            "inactivo"
+                        ) {
+
+                            estadoTexto =
+                                "🔴 Organizador inactivo";
+
+                            estadoColor =
+                                "#ff4d4f";
+
+                        }
+
+
+                        const tienePlan =
+                            !!String(
+                                o.plan_nombre || ""
+                            ).trim();
+
+
+                        const tienePropietario =
+                            !!String(
+                                o.propietario_mass_id || ""
+                            ).trim();
+
+
+                        const accesos =
+                            Array.isArray(
+                                o.organizadores_asignados
+                            )
+                                ? o.organizadores_asignados
+                                : [];
+
+
+                        return `
+
+                            <div
+                                class="card"
+                                style="
+                                    border:1px solid ${estadoColor};
+                                    text-align:left;
+                                "
+                            >
+
+                                <div
+                                    style="
+                                        display:flex;
+                                        justify-content:space-between;
+                                        align-items:flex-start;
+                                        gap:12px;
+                                        flex-wrap:wrap;
+                                    "
+                                >
+
+                                    <div>
+
+                                        <div
+                                            style="
+                                                color:#39ff14;
+                                                font-size:20px;
+                                                font-weight:bold;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    o.nombre ||
+                                                    "Organizador"
+                                                )
+                                            }
+                                        </div>
+
+
+                                        <div
+                                            style="
+                                                margin-top:5px;
+                                                color:#888;
+                                                font-size:12px;
+                                                overflow-wrap:anywhere;
+                                            "
+                                        >
+                                            ${
+                                                massEscaparHTML(
+                                                    o.slug || ""
+                                                )
+                                            }
+                                        </div>
+
+                                    </div>
+
+
+                                    <span
+                                        style="
+                                            padding:6px 10px;
+                                            border:1px solid ${estadoColor};
+                                            border-radius:999px;
+                                            color:${estadoColor};
+                                            font-size:12px;
+                                            font-weight:bold;
+                                        "
+                                    >
+                                        ${
+                                            massEscaparHTML(
+                                                estadoTexto
+                                            )
+                                        }
+                                    </span>
+
+                                </div>
+
+
+                                ${
+                                    tienePropietario
+                                        ? `
+                                            <div
+                                                style="
+                                                    margin-top:14px;
+                                                    padding:12px;
+                                                    border-radius:12px;
+                                                    background:#181818;
+                                                    line-height:1.6;
+                                                    color:#ccc;
+                                                "
+                                            >
+
+                                                <b>
+                                                    👤 Propietario MASS ID
+                                                </b>
+
+                                                <br>
+
+                                                ${
+                                                    massEscaparHTML(
+                                                        o.propietario_mass_id
+                                                    )
+                                                }
+
+                                                ${
+                                                    o.propietario_nombre
+                                                        ? `
+                                                            · ${
+                                                                massEscaparHTML(
+                                                                    o.propietario_nombre
+                                                                )
+                                                            }
+                                                        `
+                                                        : ""
+                                                }
+
+                                                ${
+                                                    o.propietario_email
+                                                        ? `
+                                                            <br>
+                                                            📧 ${
+                                                                massEscaparHTML(
+                                                                    o.propietario_email
+                                                                )
+                                                            }
+                                                        `
+                                                        : ""
+                                                }
+
+                                            </div>
+                                        `
+                                        : ""
+                                }
+
+
+                                ${
+                                    tienePlan
+                                        ? `
+                                            <div
+                                                style="
+                                                    margin-top:12px;
+                                                    padding:12px;
+                                                    border:1px solid #444;
+                                                    border-radius:12px;
+                                                    background:#151515;
+                                                    line-height:1.7;
+                                                    color:#ccc;
+                                                "
+                                            >
+
+                                                <div
+                                                    style="
+                                                        color:white;
+                                                        font-weight:bold;
+                                                    "
+                                                >
+                                                    📦 ${
+                                                        massEscaparHTML(
+                                                            o.plan_nombre
+                                                        )
+                                                    }
+                                                </div>
+
+
+                                                <div>
+                                                    <b>Importe:</b>
+                                                    ${
+                                                        Number(
+                                                            o.monto || 0
+                                                        ).toLocaleString(
+                                                            "es-MX",
+                                                            {
+                                                                minimumFractionDigits:2,
+                                                                maximumFractionDigits:2
+                                                            }
+                                                        )
+                                                    }
+                                                    ${
+                                                        massEscaparHTML(
+                                                            o.moneda || ""
+                                                        )
+                                                    }
+                                                </div>
+
+
+                                                <div>
+                                                    <b>Adquisición:</b>
+                                                    ${
+                                                        massEscaparHTML(
+                                                            o.adquisicion_estado ||
+                                                            "—"
+                                                        )
+                                                    }
+                                                </div>
+
+
+                                                <div>
+                                                    <b>Último pago:</b>
+                                                    ${
+                                                        massEscaparHTML(
+                                                            o.pago_estado ||
+                                                            "—"
+                                                        )
+                                                    }
+                                                </div>
+
+                                            </div>
+                                        `
+                                        : `
+                                            <div
+                                                style="
+                                                    margin-top:12px;
+                                                    color:#888;
+                                                "
+                                            >
+                                                📦 Sin adquisición de plan registrada.
+                                            </div>
+                                        `
+                                }
+
+
+                                <div
+                                    style="
+                                        margin-top:12px;
+                                        line-height:1.6;
+                                        color:#bbb;
+                                    "
+                                >
+
+                                    📱 ${
+                                        massEscaparHTML(
+                                            o.telefono ||
+                                            "--"
+                                        )
+                                    }
+
+                                    <br>
+
+                                    ${
+                                        o.activo
+                                            ? "🟢 Negocio activo"
+                                            : "⚪ Negocio todavía inactivo"
+                                    }
+
+                                    <br>
+
+                                    ${
+                                        o.mostrar_en_inicio
+                                            ? "🌐 Visible públicamente"
+                                            : "🔒 Oculto del inicio público"
+                                    }
+
+                                    <br>
+
+                                    ${
+                                        o.acceso_organizador_activo
+                                            ? "🔓 Acceso de Organizador activo"
+                                            : "🔐 Acceso de Organizador pendiente/inactivo"
+                                    }
+
+                                </div>
+
+
+                                <div
+                                    style="
+                                        margin-top:14px;
+                                        color:#bbb;
+                                    "
+                                >
+
+                                    <b>
+                                        👥 Accesos asignados:
+                                        ${
+                                            Number(
+                                                o.total_organizadores || 0
+                                            )
+                                        }
+                                    </b>
+
+                                </div>
+
+
+                                ${
+                                    accesos.length > 0
+
+                                        ? accesos.map(
+                                            acceso => `
+
+                                                <div
+                                                    style="
+                                                        margin-top:8px;
+                                                        padding:10px;
+                                                        border:1px solid #555;
+                                                        border-radius:8px;
+                                                        color:#ccc;
+                                                    "
+                                                >
+
+                                                    👤 ${
+                                                        massEscaparHTML(
+                                                            acceso.nombre ||
+                                                            "Sin nombre"
+                                                        )
+                                                    }
+
+                                                    <br>
+
+                                                    📧 ${
+                                                        massEscaparHTML(
+                                                            acceso.email ||
+                                                            "Sin correo"
+                                                        )
+                                                    }
+
+                                                    <br>
+
+                                                    📱 ${
+                                                        massEscaparHTML(
+                                                            acceso.telefono ||
+                                                            "Sin teléfono"
+                                                        )
+                                                    }
+
+                                                    <br>
+
+                                                    ${
+                                                        acceso.activo
+                                                            ? "🟢 Acceso activo"
+                                                            : "🔴 Acceso inactivo"
+                                                    }
+
+                                                </div>
+
+                                            `
+                                        ).join("")
+
+                                        : `
+                                            <div
+                                                style="
+                                                    margin-top:8px;
+                                                    color:#888;
+                                                "
+                                            >
+                                                ⚪ Sin acceso administrativo activo
+                                            </div>
+                                        `
+                                }
+
+
+                                <div
+                                    style="
+                                        display:grid;
+                                        grid-template-columns:
+                                            repeat(
+                                                auto-fit,
+                                                minmax(170px,1fr)
+                                            );
+                                        gap:8px;
+                                        margin-top:16px;
+                                    "
+                                >
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            seleccionarOrganizadorAdmin(
+                                                '${
+                                                    o.organizador_id
+                                                }'
+                                            )
+                                        "
+                                    >
+                                        🎯 Ver / Crear dinámicas
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            editarOrganizadorAdmin(
+                                                '${
+                                                    o.organizador_id
+                                                }'
+                                            )
+                                        "
+                                    >
+                                        ✏️ Editar Organizador
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            mostrarPatrocinadoresAdmin(
+                                                '${
+                                                    o.organizador_id
+                                                }'
+                                            )
+                                        "
+                                    >
+                                        🤝 Patrocinadores
+                                    </button>
+
+
+                                    <button
+                                        type="button"
+                                        onclick="
+                                            eliminarOrganizador(
+                                                '${
+                                                    o.organizador_id
+                                                }'
+                                            )
+                                        "
+                                        style="
+                                            background:#3b1515;
+                                            border:1px solid #ff4d4f;
+                                            color:white;
+                                        "
+                                    >
+                                        🗑️ Eliminar Organizador
+                                    </button>
+
+                                </div>
+
+                            </div>
+                        `;
+
+                    }
+                ).join("")
+
+                : `
+                    <div class="card">
+                        Todavía no existen Organizadores.
+                    </div>
+                `
+        }
+
+    `;
 }
 
 async function mostrarAccesosOrganizador(organizadorId) {
@@ -103949,7 +104513,93 @@ function (
 
 /* =========================================================
    HTML DE LOS PLANES
+   ACORDEÓN COMPACTO
 ========================================================= */
+
+window.toggleAcordeonPlanOrganizadorSuperAdmin =
+function (
+    planId
+) {
+
+    const id =
+        String(
+            planId || ""
+        ).trim();
+
+
+    if (!id) {
+        return;
+    }
+
+
+    const objetivo =
+        document.getElementById(
+            `cuerpoPlanSuperAdmin_${id}`
+        );
+
+
+    const iconoObjetivo =
+        document.getElementById(
+            `iconoAcordeonPlanSuperAdmin_${id}`
+        );
+
+
+    if (!objetivo) {
+        return;
+    }
+
+
+    const estabaAbierto =
+        objetivo.style.display !==
+        "none";
+
+
+    /*
+      Cerrar todos.
+      Sólo un plan permanece abierto.
+    */
+
+    document.querySelectorAll(
+        ".cuerpoPlanSuperAdmin"
+    ).forEach(
+        elemento => {
+
+            elemento.style.display =
+                "none";
+
+        }
+    );
+
+
+    document.querySelectorAll(
+        ".iconoAcordeonPlanSuperAdmin"
+    ).forEach(
+        elemento => {
+
+            elemento.textContent =
+                "▶";
+
+        }
+    );
+
+
+    if (!estabaAbierto) {
+
+        objetivo.style.display =
+            "block";
+
+
+        if (iconoObjetivo) {
+
+            iconoObjetivo.textContent =
+                "▼";
+
+        }
+
+    }
+
+};
+
 
 function crearHtmlPlanesOrganizadorSuperAdmin() {
 
@@ -104058,14 +104708,205 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
 
 
             const visible =
-                plan.visible_publico === true;
+    plan.visible_publico === true;
 
 
-            return `
-                <div
+const resumenModalidad =
+    mensual
+        ? `${
+            Math.max(
+                1,
+                Number(
+                    limiteDinamicas || 1
+                )
+            )
+        } dinámicas simultáneas`
+        : "Por dinámica";
+
+
+return `
+
+    <div
+        class="massPlanAcordeonSuperAdmin"
+        style="
+            margin-top:12px;
+            border:1px solid ${
+                activo
+                    ? "#39ff14"
+                    : "#666"
+            };
+            border-radius:14px;
+            background:#111;
+            overflow:hidden;
+        "
+    >
+
+        <button
+            type="button"
+            onclick='
+                toggleAcordeonPlanOrganizadorSuperAdmin(
+                    ${JSON.stringify(
+                        planId
+                    )}
+                )
+            '
+            style="
+                width:100%;
+                padding:14px;
+                margin:0;
+                border:0;
+                border-radius:0;
+                background:#151515;
+                color:white;
+                text-align:left;
+            "
+        >
+
+            <span
+                style="
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                    gap:12px;
+                "
+            >
+
+                <span
                     style="
-                        margin-top:16px;
-                        padding:18px;
+                        display:flex;
+                        align-items:center;
+                        gap:10px;
+                        min-width:0;
+                    "
+                >
+
+                    <span
+                        id="iconoAcordeonPlanSuperAdmin_${planId}"
+                        class="iconoAcordeonPlanSuperAdmin"
+                        style="
+                            color:#39ff14;
+                            font-size:18px;
+                            flex:0 0 auto;
+                        "
+                    >
+                        ▶
+                    </span>
+
+
+                    <span
+                        style="
+                            min-width:0;
+                        "
+                    >
+
+                        <span
+                            style="
+                                display:block;
+                                color:#39ff14;
+                                font-size:17px;
+                                font-weight:900;
+                            "
+                        >
+                            ${
+                                massEscaparHTML(
+                                    plan.nombre ||
+                                    "Plan MASS"
+                                )
+                            }
+                        </span>
+
+
+                        <span
+                            style="
+                                display:block;
+                                margin-top:4px;
+                                color:#aaa;
+                                font-size:12px;
+                            "
+                        >
+                            ${
+                                Number.isFinite(
+                                    precioUsd
+                                )
+                                    ? precioUsd.toFixed(
+                                        2
+                                    )
+                                    : "0.00"
+                            }
+                            USD
+                            ·
+                            ${
+                                Number.isFinite(
+                                    precioMxn
+                                )
+                                    ? precioMxn.toFixed(
+                                        2
+                                    )
+                                    : "0.00"
+                            }
+                            MXN
+                            ·
+                            ${
+                                Number.isFinite(
+                                    limiteNumeros
+                                )
+                                    ? Math.trunc(
+                                        limiteNumeros
+                                    ).toLocaleString(
+                                        "es-MX"
+                                    )
+                                    : "0"
+                            }
+                            números
+                            ·
+                            ${
+                                massEscaparHTML(
+                                    resumenModalidad
+                                )
+                            }
+                        </span>
+
+                    </span>
+
+                </span>
+
+
+                <span
+                    style="
+                        flex:0 0 auto;
+                        color:${
+                            activo
+                                ? "#39ff14"
+                                : "#aaa"
+                        };
+                        font-size:12px;
+                    "
+                >
+                    ${
+                        activo
+                            ? "Activo"
+                            : "Inactivo"
+                    }
+                </span>
+
+            </span>
+
+        </button>
+
+
+        <div
+            id="cuerpoPlanSuperAdmin_${planId}"
+            class="cuerpoPlanSuperAdmin"
+            style="
+                display:none;
+                padding:0 14px 14px 14px;
+            "
+        >
+
+            <div
+                style="
+                    margin-top:12px;
+                    padding:18px;
                         border:1px solid ${
                             activo
                                 ? "#39ff14"
@@ -104549,12 +105390,17 @@ function crearHtmlPlanesOrganizadorSuperAdmin() {
                             color:white;
                             border:2px solid #39ff14;
                         "
-                    >
+                                        >
                         💾 Guardar configuración
                     </button>
 
                 </div>
-            `;
+
+            </div>
+
+        </div>
+
+    `;
         }
     ).join("");
 }
