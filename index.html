@@ -112231,7 +112231,17 @@ async function iniciarSesionOrganizadorV2() {
     return;
   }
 
-  try {
+    try {
+
+    // =====================================================
+    // MASS SORTEOS PRO — PLAN-F4A5-C2M4
+    // UN LOGIN NUEVO NO HEREDA LA POSICIÓN VISUAL ANTERIOR
+    // =====================================================
+
+    localStorage.removeItem(
+      "mass_panel_admin_abierto"
+    );
+
     const {
       data: authData,
       error: authError
@@ -112551,12 +112561,23 @@ if (btnChatFlotanteOrganizador) {
   }
 }
 
-    if (
+        if (
       typeof mostrarPanelAdmin ===
       "function"
     ) {
       await mostrarPanelAdmin();
     }
+
+    // =====================================================
+    // MASS SORTEOS PRO — PLAN-F4A5-C2M4
+    // INICIO VISUAL DEL ORGANIZADOR EN LA PARTE SUPERIOR
+    // =====================================================
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto"
+    });
 
     alert(
       "✅ Bienvenido al panel de Organizador."
