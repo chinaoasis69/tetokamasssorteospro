@@ -18350,7 +18350,218 @@ async function confirmarReprogramacion(
         "✅ Confirmar reprogramación";
     }
   }
-}	
+}
+
+// =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C3C2
+// ACORDEONES DE DINÁMICAS ADMINISTRATIVAS
+// =========================================================
+
+function agruparDinamicasAdminEnAcordeones() {
+
+  const contenedor =
+    document.getElementById(
+      "adminContenido"
+    );
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  const tarjetas =
+    Array.from(
+      contenedor.children
+    ).filter(
+      elemento =>
+        elemento.classList.contains(
+          "mass-dinamica-admin-card"
+        )
+    );
+
+
+  if (!tarjetas.length) {
+    return;
+  }
+
+
+  const activas = [];
+  const finalizadas = [];
+
+
+  tarjetas.forEach(
+    tarjeta => {
+
+      const grupo =
+        String(
+          tarjeta.dataset.grupoDinamica ||
+          "activa"
+        )
+          .trim()
+          .toLowerCase();
+
+
+      if (grupo === "finalizada") {
+
+        finalizadas.push(
+          tarjeta
+        );
+
+      } else {
+
+        activas.push(
+          tarjeta
+        );
+      }
+    }
+  );
+
+
+  const crearAcordeon = (
+    titulo,
+    lista,
+    abierto,
+    mensajeVacio
+  ) => {
+
+    const acordeon =
+      document.createElement(
+        "details"
+      );
+
+
+    acordeon.open =
+      abierto;
+
+
+    acordeon.style.cssText = `
+      width:100%;
+      margin:14px auto;
+      border:2px solid #39ff14;
+      border-radius:14px;
+      background:#0b0b0b;
+      overflow:hidden;
+    `;
+
+
+    const resumen =
+      document.createElement(
+        "summary"
+      );
+
+
+    resumen.textContent =
+      titulo +
+      " (" +
+      lista.length +
+      ")";
+
+
+    resumen.style.cssText = `
+      padding:14px 16px;
+      cursor:pointer;
+      color:#39ff14;
+      font-weight:bold;
+      font-size:17px;
+      text-align:left;
+      user-select:none;
+    `;
+
+
+    const cuerpo =
+      document.createElement(
+        "div"
+      );
+
+
+    cuerpo.style.cssText = `
+      padding:4px 12px 12px 12px;
+    `;
+
+
+    if (lista.length) {
+
+      lista.forEach(
+        tarjeta => {
+
+          cuerpo.appendChild(
+            tarjeta
+          );
+        }
+      );
+
+    } else {
+
+      const vacio =
+        document.createElement(
+          "div"
+        );
+
+
+      vacio.textContent =
+        mensajeVacio;
+
+
+      vacio.style.cssText = `
+        padding:18px;
+        text-align:center;
+        color:#aaa;
+      `;
+
+
+      cuerpo.appendChild(
+        vacio
+      );
+    }
+
+
+    acordeon.appendChild(
+      resumen
+    );
+
+    acordeon.appendChild(
+      cuerpo
+    );
+
+
+    return acordeon;
+  };
+
+
+  const zona =
+    document.createElement(
+      "div"
+    );
+
+
+  zona.id =
+    "acordeonesDinamicasAdminMass";
+
+
+  zona.appendChild(
+    crearAcordeon(
+      "🟢 Dinámicas activas / en curso",
+      activas,
+      true,
+      "No hay dinámicas activas o en curso."
+    )
+  );
+
+
+  zona.appendChild(
+    crearAcordeon(
+      "🏁 Dinámicas finalizadas / cerradas",
+      finalizadas,
+      false,
+      "No hay dinámicas finalizadas o cerradas."
+    )
+  );
+
+
+  contenedor.appendChild(
+    zona
+  );
+}
 
 async function mostrarSorteosAdmin(){
 
@@ -18449,7 +18660,7 @@ const puedeEliminarDinamicas =
     ? tienePermisoSesionOrganizadorMass("eliminar_dinamicas")
     : false;
 
-    // =====================================================
+// =====================================================
 // PLAN-F4A5-C2G-3
 // PERMISOS COMPLEMENTARIOS DE CADA DINÁMICA
 // =====================================================
@@ -18512,7 +18723,23 @@ const rifasConContinuacion = new Set(
         <br><br>
 
         ${data.map(r => `
-            <div style="
+            <div
+              class="mass-dinamica-admin-card"
+              data-grupo-dinamica="${
+                [
+                  "finalizada",
+                  "minimo_no_alcanzado"
+                ].includes(
+                  String(
+                    r.estado || ""
+                  )
+                    .trim()
+                    .toLowerCase()
+                )
+                  ? "finalizada"
+                  : "activa"
+              }"
+              style="
                 border:1px solid #39ff14;
                 border-radius:12px;
                 padding:12px;
@@ -19083,6 +19310,8 @@ ${
             </div>
         `).join("")}
     `;
+
+    agruparDinamicasAdminEnAcordeones();
 }
 
 const rifasAleatoriasPruebaEnProceso =
