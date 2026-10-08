@@ -2709,7 +2709,23 @@ Cargando historial...
 
 <button onclick="cerrarPanelAdmin()">
   ❌ Cerrar panel
-</button> 
+</button>
+
+<!-- PLAN-F4A5-C3C3B — REGRESO UNIVERSAL -->
+
+<button
+  id="btnVolverMenuModuloAdminMass"
+  type="button"
+  class="btn-dark"
+  style="
+    display:none;
+    max-width:calc(100% - 12px);
+    margin:10px auto;
+    white-space:normal;
+  "
+>
+  ← Volver al Panel Administrativo
+</button>
 
   <div id="adminContenido">
     Selecciona una opción.
@@ -3892,6 +3908,106 @@ function cerrarTarjetaModuloAdminMass() {
     }, 50);
   }
 }
+
+// =====================================================
+// PLAN-F4A5-C3C3B
+// REGRESO UNIVERSAL DE MÓDULOS ADMINISTRATIVOS
+// SIN MODIFICAR PERMISOS NI FUNCIONES INTERNAS
+// =====================================================
+
+(function configurarRegresoModulosAdminMass() {
+
+  const contenido =
+    document.getElementById("adminContenido");
+
+  const boton =
+    document.getElementById(
+      "btnVolverMenuModuloAdminMass"
+    );
+
+  if (!contenido || !boton) return;
+
+  // Mostrar el botón solamente cuando exista
+  // una tarjeta abierta sin su propio acordeón.
+
+  const actualizar = () => {
+
+    const texto =
+      String(contenido.textContent || "").trim();
+
+    const hayModulo =
+      texto !== "" &&
+      texto !== "Selecciona una opción.";
+
+    const cierrePropio =
+      !!contenido.querySelector(
+        "#acordeonModuloAdminMass"
+      );
+
+    boton.style.display =
+      hayModulo && !cierrePropio
+        ? "inline-block"
+        : "none";
+  };
+
+  // Cerrar la tarjeta conservando el panel y sesión.
+
+  boton.addEventListener("click", async () => {
+
+    if (boton.disabled) return;
+
+    boton.disabled = true;
+
+    try {
+
+      // Si está abierto el lector QR Lucky Spin,
+      // detener la cámara antes de salir.
+
+      if (
+        contenido.querySelector(
+          "#lectorQrLuckySpinAdmin"
+        ) &&
+        typeof detenerLectorCanjeLuckySpinAdmin ===
+          "function"
+      ) {
+
+        await detenerLectorCanjeLuckySpinAdmin();
+
+      }
+
+      // Reutilizar el cierre ya certificado.
+
+      cerrarTarjetaModuloAdminMass();
+
+    } catch (error) {
+
+      console.error(
+        "ERROR REGRESANDO AL PANEL ADMIN:",
+        error
+      );
+
+    } finally {
+
+      boton.disabled = false;
+      actualizar();
+
+    }
+
+  });
+
+  // Detectar cambios de módulo sin alterar
+  // los controles ni el contenido interno.
+
+  const observador =
+    new MutationObserver(actualizar);
+
+  observador.observe(contenido, {
+    childList: true
+  });
+
+  actualizar();
+
+})();
 
 
 function aplicarAcordeonModuloAdminMass(
