@@ -32167,7 +32167,7 @@ async function generarBoletosParaRifa(
         error
       } =
         await supabaseClient.rpc(
-          "generar_boletos_rifa_segura",
+  "generar_boletos_rifa_granular_segura",
           {
             p_rifa_id:
               rifaId,
@@ -32185,7 +32185,7 @@ async function generarBoletosParaRifa(
       if (error) {
 
         console.error(
-          "Error en generar_boletos_rifa_segura:",
+          "Error en generar_boletos_rifa_granular_segura:",
           {
             intento,
             rifaId,
