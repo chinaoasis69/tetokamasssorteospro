@@ -13249,6 +13249,11 @@ if(btnVolverSuperAdmin){
    }	
       document.getElementById("panelAdmin").style.display = "block";
 
+      localStorage.setItem(
+  "mass_panel_admin_abierto",
+  "1"
+);
+
       setTimeout(() => {
         mostrarSorteosAdmin();
       }, 300);
@@ -13316,10 +13321,20 @@ function abrirAdmin(){
   document.getElementById("panelAdmin").style.display = "block";
 }
 
-function cerrarPanelAdmin(){
-    document.getElementById("panelAdmin").style.display = "none";
-	document.getElementById("panelSuperAdmin").style.display = "none";
-  }
+function cerrarPanelAdmin() {
+
+  localStorage.removeItem(
+    "mass_panel_admin_abierto"
+  );
+
+  document.getElementById(
+    "panelAdmin"
+  ).style.display = "none";
+
+  document.getElementById(
+    "panelSuperAdmin"
+  ).style.display = "none";
+}
 
 let rifaPremiosAdminId = null;
 
