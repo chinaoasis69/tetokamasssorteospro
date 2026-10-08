@@ -18701,25 +18701,42 @@ ${
         y método no pueden modificarse.
       </div>
     `
-    : `
+    : puedeEditarDinamicas
+  ? `
       <button onclick="abrirModalRifaPorId('${r.id}')">
-        ✏️ Editar rifa
+        ✏️ Editar dinámica
       </button>
     `
+  : ``
 }
 
-${r.estado === 'pausada' ? `
-<button onclick="activarRifaAdmin('${r.id}')">
-▶️ Reanudar rifa
-</button>
-` : `
-<button onclick="pausarRifa('${r.id}')">
-⏸️ Pausar rifa
-</button>
-`}
+${
+  r.estado === 'pausada'
+    ? (
+        puedeReactivarDinamicas
+          ? `
+              <button onclick="activarRifaAdmin('${r.id}')">
+                ▶️ Reanudar dinámica
+              </button>
+            `
+          : ``
+      )
+    : r.estado === 'congelada'
+      ? ``
+      : (
+          puedePausarDinamicas
+            ? `
+                <button onclick="pausarRifa('${r.id}')">
+                  ⏸️ Pausar dinámica
+                </button>
+              `
+            : ``
+        )
+}
 
 ${
-  puedeEliminarDinamica &&
+  puedeEliminarDinamicas &&
+puedeEliminarDinamica &&
   !r.rifa_origen_id &&
   Number(r.numero_reprogramacion || 0) === 0
     ? `
@@ -18727,23 +18744,41 @@ ${
         onclick="eliminarRifa('${r.id}')"
         style="background:#a30000;color:white;"
       >
-        🗑️ Eliminar rifa
+        🗑️ Eliminar dinámica
       </button>
     `
     : ""
 }
 
-<button onclick="administrarPremiosRifa('${r.id}')">
-🏆 Premios
-</button>
+${
+  puedeAdministrarPremios
+    ? `
+        <button onclick="administrarPremiosRifa('${r.id}')">
+          🏆 Premios
+        </button>
+      `
+    : ``
+}
 
-<button onclick="mostrarPreSorteosRifa('${r.id}')">
-    🎉 Pre-sorteos
-</button>
+${
+  puedeAdministrarPresorteos
+    ? `
+        <button onclick="mostrarPreSorteosRifa('${r.id}')">
+          🎉 Pre-sorteos
+        </button>
+      `
+    : ``
+}
 
-<button onclick="abrirReglasOficialesRifa('${r.id}')">
-  ⚖️ Reglas Oficiales
-</button>	
+${
+  puedeAdministrarReglas
+    ? `
+        <button onclick="abrirReglasOficialesRifa('${r.id}')">
+          ⚖️ Reglas Oficiales
+        </button>
+      `
+    : ``
+}	
 
 ${(
   String(r.metodo_sorteo || "")
@@ -18788,9 +18823,17 @@ String(r.estado || "")
   : ""
 }
 
-<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
-  🤝 Patrocinadores de esta rifa
-</button>
+${
+  puedeAdministrarPatrocinadores
+    ? `
+        <button
+          onclick="mostrarPatrocinadoresRifa('${r.id}')"
+        >
+          🤝 Patrocinadores de esta dinámica
+        </button>
+      `
+    : ``
+}
 
 `}
             </div>
@@ -111985,84 +112028,8 @@ await inicializarNotificacionesMass();
       actualizarVisibilidadMiEquipoOrganizador();
     }
 
-// =====================================================
-// MASS SORTEOS PRO — PLAN-F4A5-C2D
-// CARGAR PERMISOS ANTES DE PINTAR EL PANEL
-// =====================================================
-
-if (
-  typeof cargarPermisosSesionOrganizadorMass ===
-  "function"
-) {
-  await cargarPermisosSesionOrganizadorMass();
-}
-
-if (
-  typeof actualizarVisibilidadAccesosOrganizador ===
-  "function"
-) {
-  actualizarVisibilidadAccesosOrganizador();
-}
-
-// =========================================================
-// MASS SORTEOS PRO — PLAN-F4A5-C2E
-// MENSAJES Y CHAT FLOTANTE SEGÚN PERMISO GRANULAR
-// =========================================================
-
-const puedeVerMensajesOrganizador =
-  typeof tienePermisoSesionOrganizadorMass === "function"
-    ? tienePermisoSesionOrganizadorMass(
-        "ver_mensajes"
-      )
-    : false;
 
 
-// ---------------------------------------------------------
-// BOTÓN / ACCESO DE MENSAJES DEL ORGANIZADOR
-// ---------------------------------------------------------
-
-const btnMensajesClientesOrganizador =
-  document.getElementById(
-    "btnMensajesClientesOrganizador"
-  );
-
-if (btnMensajesClientesOrganizador) {
-
-  btnMensajesClientesOrganizador.style.display =
-    puedeVerMensajesOrganizador
-      ? "block"
-      : "none";
-}
-
-
-// ---------------------------------------------------------
-// CHAT FLOTANTE DEL ORGANIZADOR
-// ---------------------------------------------------------
-
-const btnChatFlotanteOrganizador =
-  document.getElementById(
-    "btnChatFlotanteOrganizador"
-  );
-
-if (btnChatFlotanteOrganizador) {
-
-  if (puedeVerMensajesOrganizador) {
-
-    btnChatFlotanteOrganizador.style.display =
-      "flex";
-
-    btnChatFlotanteOrganizador.style.alignItems =
-      "center";
-
-    btnChatFlotanteOrganizador.style.justifyContent =
-      "center";
-
-  } else {
-
-    btnChatFlotanteOrganizador.style.display =
-      "none";
-  }
-}
 
 if (
   typeof window.actualizarContadorMensajesOrganizador === "function"
@@ -112151,6 +112118,66 @@ if (
   "function"
 ) {
   actualizarVisibilidadAccesosOrganizador();
+}
+
+// =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2E
+// MENSAJES Y CHAT FLOTANTE SEGÚN PERMISO GRANULAR
+// =========================================================
+
+const puedeVerMensajesOrganizador =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "ver_mensajes"
+      )
+    : false;
+
+
+// ---------------------------------------------------------
+// BOTÓN / ACCESO DE MENSAJES DEL ORGANIZADOR
+// ---------------------------------------------------------
+
+const btnMensajesClientesOrganizador =
+  document.getElementById(
+    "btnMensajesClientesOrganizador"
+  );
+
+if (btnMensajesClientesOrganizador) {
+
+  btnMensajesClientesOrganizador.style.display =
+    puedeVerMensajesOrganizador
+      ? "block"
+      : "none";
+}
+
+
+// ---------------------------------------------------------
+// CHAT FLOTANTE DEL ORGANIZADOR
+// ---------------------------------------------------------
+
+const btnChatFlotanteOrganizador =
+  document.getElementById(
+    "btnChatFlotanteOrganizador"
+  );
+
+if (btnChatFlotanteOrganizador) {
+
+  if (puedeVerMensajesOrganizador) {
+
+    btnChatFlotanteOrganizador.style.display =
+      "flex";
+
+    btnChatFlotanteOrganizador.style.alignItems =
+      "center";
+
+    btnChatFlotanteOrganizador.style.justifyContent =
+      "center";
+
+  } else {
+
+    btnChatFlotanteOrganizador.style.display =
+      "none";
+  }
 }
 
     if (
