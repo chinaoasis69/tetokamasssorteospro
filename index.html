@@ -31725,83 +31725,77 @@ precios_mass_unidad:
     payload.organizador_id =
       localStorage.getItem("admin_organizador_id") || clienteActual?.id;
 
-    const res = await supabaseClient
-      .from("rifas")
-      .insert([payload])
-      .select()
-      .single();
+        // PLAN-F4A5-C3B4C6-G3A
+    // Creación segura con premios iniciales.
+
+    const premiosIniciales =
+      premiosFormulario.map(p => ({
+        lugar: p.lugar,
+        nombre: p.nombre,
+        descripcion:
+          p.lugar === 1
+            ? "Premio principal"
+            : `${p.lugar}.º premio automático`,
+        imagen_url:
+          p.lugar === 1
+            ? (imagen || null)
+            : null
+      }));
+
+    const res = await supabaseClient.rpc(
+      "crear_dinamica_premios_iniciales_segura",
+      {
+        p_organizador_id:
+          payload.organizador_id,
+
+        p_configuracion:
+          payload,
+
+        p_premios:
+          premiosIniciales
+      }
+    );
 
     error = res.error;
-    nuevaRifa = res.data;
 
-    if (!error && nuevaRifa) {
+    nuevaRifa =
+      !error &&
+      res.data?.ok === true &&
+      res.data?.rifa_id
+        ? { id: res.data.rifa_id }
+        : null;
 
-  const boletosGenerados =
-    await generarBoletosParaRifa(
-      nuevaRifa.id,
-      Number(total)
-    );
+    if (!error && !nuevaRifa) {
+      error = new Error(
+        "La creación segura no devolvió una dinámica válida."
+      );
+    }
 
+        if (!error && nuevaRifa) {
 
-  if (!boletosGenerados) {
+      // Los premios iniciales ya fueron
+      // registrados por la RPC segura.
 
-    console.error(
-      "La rifa fue creada, pero falló la generación automática de boletos:",
-      nuevaRifa.id
-    );
+      const boletosGenerados =
+        await generarBoletosParaRifa(
+          nuevaRifa.id,
+          Number(total)
+        );
 
+      if (!boletosGenerados) {
 
-    cerrarModalRifa();
-    mostrarSorteosAdmin();
+        console.error(
+          "La dinámica y sus premios fueron creados, " +
+          "pero no se completó la generación de boletos:",
+          nuevaRifa.id
+        );
 
-    return;
-  }
+        cerrarModalRifa();
+        mostrarSorteosAdmin();
 
-  const premiosParaInsertar =
-  premiosFormulario.map(
-    premioFormulario => ({
-      rifa_id:
-        nuevaRifa.id,
-
-      lugar:
-        premioFormulario.lugar,
-
-      nombre:
-        premioFormulario.nombre,
-
-      descripcion:
-        premioFormulario.lugar === 1
-          ? "Premio principal"
-          : `${premioFormulario.lugar}.º premio automático`,
-
-      imagen_url:
-        premioFormulario.lugar === 1
-          ? imagen
-          : null
-    })
-  );
-
-const {
-  error: premioError
-} = await supabaseClient
-  .from("premios_rifa")
-  .insert(premiosParaInsertar);
-
-   if (premioError) {
-
-    console.error(
-     "Error guardando los premios de la dinámica:",
-      premioError
-    );
-
-    alert(
-  "⚠️ Los boletos se generaron correctamente, " +
-  "pero no se pudieron registrar todos los premios."
-);
-
-  }
-
-}
+        return;
+      }
+    }
   }
 
   if (error) {
@@ -31985,78 +31979,95 @@ const imagen = prompt(
 "URL de imagen del premio (opcional)"
 ) || "";
 
-    const { data: nuevaRifa, error } = await supabaseClient
-    .from("rifas")
-    .insert([{
-        titulo: titulo,
-premio: premio,
-precio_boleto: Number(precio),
-total_numeros: Number(total),
-modalidad: modalidad,		
-fecha_sorteo: fecha,
-metodo_sorteo: metodo,
-cifras_sorteo: cifrasSorteo,
-imagen_url: imagen,
-estado: "programada",
-organizador_id: clienteActual.id		
-    }])
-.select()
-.single();
+    
+  // PLAN-F4A5-C3B4C6-G3B
+  // Crear dinámica y premio inicial mediante Supabase.
 
-    if(error){
-        console.error(error);
-        alert("Error creando rifa");
-        return;
-    }
+  const organizadorId = clienteActual?.id;
 
-const generacionBoletosCompleta =
-  await generarBoletosParaRifa(
-    nuevaRifa.id,
-    Number(total)
-  );
+  if (!organizadorId) {
+    alert("❌ No se identificó el organizador.");
+    return;
+  }
 
-if (!generacionBoletosCompleta) {
+  const { data: resultadoCreacion, error } =
+    await supabaseClient.rpc(
+      "crear_dinamica_premios_iniciales_segura",
+      {
+        p_organizador_id: organizadorId,
 
-  console.error(
-    "La dinámica fue creada, pero no se completó la generación segura de boletos:",
-    {
-      rifaId:
-        nuevaRifa.id,
+        p_configuracion: {
+          titulo,
+          premio,
+          precio_boleto: Number(precio),
+          total_numeros: totalNumeros,
+          modalidad,
+          fecha_sorteo: fecha,
+          metodo_sorteo: metodo,
+          cifras_sorteo: cifrasSorteo,
+          imagen_url: imagen,
+          estado: "programada",
+          organizador_id: organizadorId
+        },
 
-      totalEsperado:
-        Number(total)
-    }
-  );
+        p_premios: [
+          {
+            lugar: 1,
+            nombre: premio,
+            descripcion: "Premio principal",
+            imagen_url: imagen || null
+          }
+        ]
+      }
+    );
 
-  alert(
-    "⚠️ La dinámica fue creada, pero sus boletos " +
-    "no quedaron completos.\n\n" +
-    "Permanecerá programada y no debe activarse " +
-    "hasta reanudar la generación."
-  );
+  if (
+    error ||
+    resultadoCreacion?.ok !== true ||
+    !resultadoCreacion?.rifa_id
+  ) {
+    console.error(
+      "Error en creación segura de dinámica:",
+      error || resultadoCreacion
+    );
 
+    alert("❌ No fue posible crear la dinámica.");
+    return;
+  }
+
+  const nuevaRifa = {
+    id: resultadoCreacion.rifa_id
+  };
+
+  // Los premios iniciales ya están guardados.
+  // Generar boletos mediante la RPC existente.
+
+  const generacionBoletosCompleta =
+    await generarBoletosParaRifa(
+      nuevaRifa.id,
+      totalNumeros
+    );
+
+  if (!generacionBoletosCompleta) {
+    console.error(
+      "Dinámica creada con premios, " +
+      "pero generación de boletos incompleta:",
+      nuevaRifa.id
+    );
+
+    alert(
+      "⚠️ La dinámica y sus premios fueron guardados, " +
+      "pero los boletos no quedaron completos.\n\n" +
+      "La dinámica permanecerá programada."
+    );
+
+    mostrarSorteosAdmin();
+    return;
+  }
+
+  alert("✅ Dinámica creada");
   mostrarSorteosAdmin();
 
-  return;
-}	
-
-const { error: premioError } = await supabaseClient
-  .from("premios_rifa")
-  .insert([{
-    rifa_id: nuevaRifa.id,
-    lugar: 1,
-    nombre: premio,
-    descripcion: "Premio principal",
-    imagen_url: imagen
-  }]);
-
-if(premioError){
-  console.error(premioError);
-  alert("⚠️ Rifa creada, pero no se pudo guardar el 1° premio");
-}	
-
-    alert("✅ Rifa creada");
-    mostrarSorteosAdmin();
 }
 
 async function generarBoletosParaRifa(
