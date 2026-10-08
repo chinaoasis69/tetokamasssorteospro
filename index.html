@@ -96764,7 +96764,20 @@ if (
     );
   }
 });	
+
 Promise.resolve().then(async () => {
+
+    // =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2J4
+// RESTAURACIÓN AUTOMÁTICA DE SESIÓN AL REFRESCAR
+// =====================================================
+
+if (
+  typeof restaurarSesionMassAlCargar ===
+  "function"
+) {
+  await restaurarSesionMassAlCargar();
+}
 
     await asegurarWallet();
 
@@ -111229,7 +111242,56 @@ function ocultarBotonAccesoPublicoMass() {
     boton.style.display =
       "none";
   }
-}	
+}
+
+// =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2J3
+// RESTAURAR SESIÓN MASS AUTOMÁTICAMENTE AL REFRESCAR
+// =====================================================
+
+async function restaurarSesionMassAlCargar() {
+
+  try {
+
+    const {
+      data: datosSesion,
+      error: errorSesion
+    } =
+      await supabaseClient.auth.getSession();
+
+    if (errorSesion) {
+      console.error(
+        "C2J3 — Error consultando sesión:",
+        errorSesion
+      );
+      return;
+    }
+
+    if (!datosSesion?.session?.user) {
+      return;
+    }
+
+    await abrirAccesoV2();
+
+    if (
+      typeof actualizarVisibilidadAccesosOrganizador ===
+      "function"
+    ) {
+      actualizarVisibilidadAccesosOrganizador();
+    }
+
+    console.log(
+      "C2J3 — Sesión restaurada automáticamente."
+    );
+
+  } catch (error) {
+
+    console.error(
+      "C2J3 — Error restaurando sesión:",
+      error
+    );
+  }
+}
 
 async function abrirAccesoV2() {
   window.MASS_ACCESO_CERRADO_MANUAL = false;
