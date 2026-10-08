@@ -53969,61 +53969,6 @@ async function actualizarEntradaMassPuntoOperador() {
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
 
-  // =====================================================
-// MASS SORTEOS PRO — PLAN-F4A5-C2K5
-// RESTAURAR PERMISOS CUANDO SUPABASE CONFIRMA AUTH
-// =====================================================
-
-if (
-  session?.user?.id &&
-  (
-    event === "SIGNED_IN" ||
-    event === "INITIAL_SESSION"
-  )
-) {
-
-  const authUserIdRestauracion =
-    String(session.user.id);
-
-  const restauracionYaProcesada =
-    window.MASS_AUTH_ADMIN_RESTAURADO_ID ===
-    authUserIdRestauracion;
-
-  if (!restauracionYaProcesada) {
-
-    window.MASS_AUTH_ADMIN_RESTAURADO_ID =
-      authUserIdRestauracion;
-
-    Promise.resolve().then(async () => {
-
-      try {
-
-        if (
-          typeof restaurarSesionMassAlCargar ===
-          "function"
-        ) {
-
-          await restaurarSesionMassAlCargar();
-
-          console.log(
-            "C2K5 — Restauración Auth completada."
-          );
-        }
-
-      } catch (error) {
-
-        window.MASS_AUTH_ADMIN_RESTAURADO_ID =
-          null;
-
-        console.error(
-          "C2K5 — Error restaurando Auth:",
-          error
-        );
-      }
-    });
-  }
-}
-
 // ============================================================
 // MASS PUNTO AUTORIZADO
 // VALIDAR ACCESO CUANDO EXISTA SESIÓN
@@ -111335,6 +111280,80 @@ async function restaurarSesionMassAlCargar() {
     );
   }
 }
+
+// =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2L2
+// RESTAURACIÓN ADMINISTRATIVA DESDE AUTH YA DISPONIBLE
+// =====================================================
+
+let restauracionAdminAuthEnCurso = false;
+let restauracionAdminAuthUsuario = null;
+
+supabaseClient.auth.onAuthStateChange(
+  (event, session) => {
+
+    if (
+      !session?.user?.id ||
+      (
+        event !== "SIGNED_IN" &&
+        event !== "INITIAL_SESSION"
+      )
+    ) {
+      return;
+    }
+
+    const authUserId =
+      String(session.user.id);
+
+    if (
+      restauracionAdminAuthEnCurso ||
+      restauracionAdminAuthUsuario === authUserId
+    ) {
+      return;
+    }
+
+    restauracionAdminAuthEnCurso = true;
+
+    /*
+      Importante:
+      no hacemos consultas Supabase directamente
+      dentro del callback de onAuthStateChange.
+
+      Dejamos terminar primero el evento Auth y
+      ejecutamos la restauración inmediatamente
+      después.
+    */
+    setTimeout(async () => {
+
+      try {
+
+        await restaurarSesionMassAlCargar();
+
+        restauracionAdminAuthUsuario =
+          authUserId;
+
+        console.log(
+          "C2L2 — Contexto administrativo restaurado."
+        );
+
+      } catch (error) {
+
+        restauracionAdminAuthUsuario =
+          null;
+
+        console.error(
+          "C2L2 — Error restaurando contexto administrativo:",
+          error
+        );
+
+      } finally {
+
+        restauracionAdminAuthEnCurso = false;
+      }
+
+    }, 0);
+  }
+);
 
 async function abrirAccesoV2() {
   window.MASS_ACCESO_CERRADO_MANUAL = false;
