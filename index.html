@@ -2582,11 +2582,15 @@ Cargando historial...
     👑 Volver al Súper Admin
 </button>	
 
-<button onclick="mostrarDashboardOrganizador()">
-    📊 Dashboard
+<button
+  id="btnDashboardOrganizador"
+  onclick="mostrarDashboardOrganizador()"
+>
+  📊 Dashboard
 </button>
 
 <button
+  id="btnMensajesClientesAdmin"
   type="button"
   onclick="mostrarChatOrganizadorAdmin()"
 >
@@ -2604,22 +2608,39 @@ Cargando historial...
   📷 Canjear QR MASS Lucky Spin
 </button>	
 
-<button onclick="mostrarSorteosAdmin()">
+<button
+  id="btnSorteosAdmin"
+  onclick="mostrarSorteosAdmin()"
+>
   🎯 Sorteos
 </button>
 
-<button onclick="mostrarPatrocinadoresAdmin()">🤝 Patrocinadores</button>
-
-<button onclick="mostrarRecargasMassAdmin()">
-💰 Recargas MASS
+<button
+  id="btnPatrocinadoresAdmin"
+  onclick="mostrarPatrocinadoresAdmin()"
+>
+  🤝 Patrocinadores
 </button>
 
-<button onclick="mostrarGanadoresAdmin()">
-🏆 Ganadores
+<button
+  id="btnRecargasMassAdmin"
+  onclick="mostrarRecargasMassAdmin()"
+>
+  💰 Recargas MASS
+</button>
+
+<button
+  id="btnGanadoresAdmin"
+  onclick="mostrarGanadoresAdmin()"
+>
+  🏆 Ganadores
 </button>	
 
-<button onclick="mostrarHistorialRecargasMassAdmin()">
-📜 Historial recargas
+<button
+  id="btnHistorialRecargasMassAdmin"
+  onclick="mostrarHistorialRecargasMassAdmin()"
+>
+  📜 Historial recargas
 </button>
 
 <button
@@ -18129,13 +18150,95 @@ const { data, error } = await query;
   document.getElementById("adminContenido").innerHTML =
   "<p>❌ Error cargando sorteos.</p>";
   return;
-} 
+}
+
+// =====================================================
+// PLAN-F4A5-C2G-1
+// PERMISO PARA CREAR DINÁMICAS
+// =====================================================
+
+const puedeCrearDinamicas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "crear_dinamicas"
+      )
+    : false;
+
+const botonNuevaDinamicaHtml =
+  puedeCrearDinamicas
+    ? `
+        <button
+          type="button"
+          onclick="abrirModalRifa()"
+        >
+          ➕ Nueva dinámica
+        </button>
+      `
+    : "";
+
+// =====================================================
+// PLAN-F4A5-C2G-2
+// PERMISOS OPERATIVOS DE DINÁMICAS
+// =====================================================
+
+const puedeEditarDinamicas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass("editar_dinamicas")
+    : false;
+
+const puedePausarDinamicas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass("pausar_dinamicas")
+    : false;
+
+const puedeReactivarDinamicas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass("reactivar_dinamicas")
+    : false;
+
+const puedeEliminarDinamicas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass("eliminar_dinamicas")
+    : false;
+
+    // =====================================================
+// PLAN-F4A5-C2G-3
+// PERMISOS COMPLEMENTARIOS DE CADA DINÁMICA
+// =====================================================
+
+const puedeAdministrarPremios =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "administrar_premios"
+      )
+    : false;
+
+const puedeAdministrarPresorteos =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "administrar_presorteos"
+      )
+    : false;
+
+const puedeAdministrarReglas =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "administrar_reglas"
+      )
+    : false;
+
+const puedeAdministrarPatrocinadores =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "administrar_patrocinadores"
+      )
+    : false;
 
     if(!data || data.length === 0){
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
 
-        <button onclick="abrirModalRifa()">➕ Nueva rifa</button>
+        ${botonNuevaDinamicaHtml}
 
         <br><br>
 
@@ -18157,7 +18260,7 @@ const rifasConContinuacion = new Set(
 
     document.getElementById("adminContenido").innerHTML = `
         <h3>🎯 Sorteos</h3>
-		<button onclick="abrirModalRifa()">➕ Nueva rifa</button>
+		${botonNuevaDinamicaHtml}
         <br><br>
 
         ${data.map(r => `
@@ -18461,26 +18564,42 @@ ${
         y método no pueden modificarse.
       </div>
     `
-    : `
+    : puedeEditarDinamicas
+  ? `
       <button onclick="abrirModalRifaPorId('${r.id}')">
-        ✏️ Editar rifa
+        ✏️ Editar dinámica
       </button>
     `
+  : ``
 }
 
-${r.estado === 'pausada' ? `
-<button onclick="activarRifaAdmin('${r.id}')">
-▶️ Reanudar rifa
-</button>
-` : r.estado === 'congelada' ? `
-` : `
-<button onclick="pausarRifa('${r.id}')">
-⏸️ Pausar rifa
-</button>
-`}
+${
+  r.estado === 'pausada'
+    ? (
+        puedeReactivarDinamicas
+          ? `
+              <button onclick="activarRifaAdmin('${r.id}')">
+                ▶️ Reanudar dinámica
+              </button>
+            `
+          : ``
+      )
+    : r.estado === 'congelada'
+      ? ``
+      : (
+          puedePausarDinamicas
+            ? `
+                <button onclick="pausarRifa('${r.id}')">
+                  ⏸️ Pausar dinámica
+                </button>
+              `
+            : ``
+        )
+}
 
 ${
-  puedeEliminarDinamica &&
+  puedeEliminarDinamicas &&
+puedeEliminarDinamica &&
   !r.rifa_origen_id &&
   Number(r.numero_reprogramacion || 0) === 0
     ? `
@@ -18488,27 +18607,59 @@ ${
         onclick="eliminarRifa('${r.id}')"
         style="background:#a30000;color:white;"
       >
-        🗑️ Eliminar rifa
+        🗑️ Eliminar dinámica
       </button>
     `
     : ""
 }
 
-<button onclick="administrarPremiosRifa('${r.id}')">
-  🏆 Premios
-</button>
+${
+  puedeAdministrarPremios
+    ? `
+        <button
+          onclick="administrarPremiosRifa('${r.id}')"
+        >
+          🏆 Premios
+        </button>
+      `
+    : ``
+}
 
-<button onclick="mostrarPreSorteosRifa('${r.id}')">
-    🎉 Pre-sorteos
-</button>
+${
+  puedeAdministrarPresorteos
+    ? `
+        <button
+          onclick="mostrarPreSorteosRifa('${r.id}')"
+        >
+          🎉 Pre-sorteos
+        </button>
+      `
+    : ``
+}
 
-<button onclick="abrirReglasOficialesRifa('${r.id}')">
-  ⚖️ Reglas Oficiales
-</button>		   
+${
+  puedeAdministrarReglas
+    ? `
+        <button
+          onclick="abrirReglasOficialesRifa('${r.id}')"
+        >
+          ⚖️ Reglas Oficiales
+        </button>
+      `
+    : ``
+}
 
-<button onclick="mostrarPatrocinadoresRifa('${r.id}')">
-  🤝 Patrocinadores de esta rifa
-</button>
+${
+  puedeAdministrarPatrocinadores
+    ? `
+        <button
+          onclick="mostrarPatrocinadoresRifa('${r.id}')"
+        >
+          🤝 Patrocinadores de esta dinámica
+        </button>
+      `
+    : ``
+}
 
 ` : `
 
@@ -46815,38 +46966,197 @@ function actualizarVisibilidadMiEquipoOrganizador() {
 }
 
 // =========================================================
-// MASS — VISIBILIDAD POR TIPO DE ACCESO DEL ORGANIZADOR
-// PLAN-F4A4-F4D2
-//
-// Propietario:
-// - conserva administración sensible.
-//
-// Colaborador:
-// - conserva operación diaria;
-// - no ve controles reservados al propietario.
+// MASS SORTEOS PRO — PLAN-F4A5-C2B
+// MATRIZ DE PERMISOS GRANULARES DE LA SESIÓN ORGANIZADOR
+// =========================================================
+
+let permisosSesionOrganizadorMass = new Set();
+
+async function cargarPermisosSesionOrganizadorMass() {
+
+  permisosSesionOrganizadorMass = new Set();
+
+  const rol = String(
+    localStorage.getItem("admin_rol") || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const tipoAcceso = String(
+    localStorage.getItem("admin_tipo_acceso") || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const organizadorId = String(
+    localStorage.getItem("admin_organizador_id") || ""
+  ).trim();
+
+
+  // Súper Admin y Propietario conservan autoridad
+  // visual completa. El backend mantiene su propia
+  // autorización independiente.
+  if (
+    rol === "super_admin" ||
+    (
+      rol === "organizador" &&
+      tipoAcceso === "propietario"
+    )
+  ) {
+    return {
+      ok: true,
+      acceso_total: true
+    };
+  }
+
+
+  if (
+    rol !== "organizador" ||
+    tipoAcceso !== "colaborador" ||
+    !organizadorId
+  ) {
+    return {
+      ok: false,
+      acceso_total: false
+    };
+  }
+
+
+  const permisosCatalogo = [
+    "ver_dashboard",
+    "ver_mensajes",
+    "responder_mensajes",
+    "crear_dinamicas",
+    "editar_dinamicas",
+    "pausar_dinamicas",
+    "reactivar_dinamicas",
+    "eliminar_dinamicas",
+    "administrar_premios",
+    "administrar_presorteos",
+    "administrar_reglas",
+    "administrar_patrocinadores",
+    "administrar_lucky_spin",
+    "canjear_qr_lucky_spin",
+    "administrar_ganadores",
+    "revisar_recargas",
+    "ver_historial_recargas",
+    "administrar_reembolsos",
+    "gestionar_revisiones",
+    "administrar_divisas",
+    "administrar_metodos_pago",
+    "administrar_puntos_mass",
+    "usar_convertidor_mass",
+    "moderar_comentarios",
+    "enviar_comunicaciones",
+    "editar_perfil_publico"
+  ];
+
+
+  for (const permiso of permisosCatalogo) {
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "tiene_permiso_colaborador_seguro",
+        {
+          p_organizador_id: organizadorId,
+          p_permiso_clave: permiso
+        }
+      );
+
+
+    if (error) {
+
+      console.error(
+        "ERROR CONSULTANDO PERMISO:",
+        permiso,
+        error
+      );
+
+      // Fail closed:
+      // si Supabase no puede verificarlo,
+      // no lo agregamos como autorizado.
+      continue;
+    }
+
+
+    if (data === true) {
+      permisosSesionOrganizadorMass.add(
+        permiso
+      );
+    }
+  }
+
+
+  return {
+    ok: true,
+    acceso_total: false,
+    permisos:
+      Array.from(
+        permisosSesionOrganizadorMass
+      )
+  };
+}
+
+
+function tienePermisoSesionOrganizadorMass(
+  permiso
+) {
+
+  const rol = String(
+    localStorage.getItem("admin_rol") || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const tipoAcceso = String(
+    localStorage.getItem("admin_tipo_acceso") || ""
+  )
+    .trim()
+    .toLowerCase();
+
+
+  if (
+    rol === "super_admin" ||
+    (
+      rol === "organizador" &&
+      tipoAcceso === "propietario"
+    )
+  ) {
+    return true;
+  }
+
+
+  return permisosSesionOrganizadorMass.has(
+    String(permiso || "")
+      .trim()
+      .toLowerCase()
+  );
+}
+
+// =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2C
+// VISIBILIDAD DEL PANEL SEGÚN PERMISOS GRANULARES
 //
 // IMPORTANTE:
-// La seguridad real permanece en backend.
-// Esta función solamente alinea la interfaz.
+// - Propietario y Súper Admin conservan su interfaz.
+// - Colaborador ve únicamente funciones autorizadas.
+// - Esto controla UI; la seguridad operativa se
+//   continuará blindando también en backend.
 // =========================================================
 
 function actualizarVisibilidadAccesosOrganizador() {
 
-  const rol =
-    String(
-      localStorage.getItem("admin_rol") || ""
-    )
-      .trim()
-      .toLowerCase();
+  const rol = String(
+    localStorage.getItem("admin_rol") || ""
+  )
+    .trim()
+    .toLowerCase();
 
-  const tipoAcceso =
-    String(
-      localStorage.getItem(
-        "admin_tipo_acceso"
-      ) || ""
-    )
-      .trim()
-      .toLowerCase();
+  const tipoAcceso = String(
+    localStorage.getItem("admin_tipo_acceso") || ""
+  )
+    .trim()
+    .toLowerCase();
 
 
   const esSuperAdmin =
@@ -46856,56 +47166,193 @@ function actualizarVisibilidadAccesosOrganizador() {
     rol === "organizador" &&
     tipoAcceso === "propietario";
 
-  const puedeAdministrarPropietario =
-    esSuperAdmin || esPropietario;
+  const esColaborador =
+    rol === "organizador" &&
+    tipoAcceso === "colaborador";
 
+
+  // =====================================================
+  // CONTROLES RESERVADOS AL PROPIETARIO
+  // =====================================================
 
   const idsSoloPropietario = [
-    "btnReembolsosMassAdmin",
-    "btnSolicitudesRevisionMassAdmin",
     "btnConfigAdmin",
-    "btnMiEquipoAdmin",
-    "btnDivisasAdmin",
-    "btnMetodosPagoAdmin",
-    "btnMisPuntosMassAdmin"
+    "btnMiEquipoAdmin"
   ];
 
-
-  for (
-    const id of idsSoloPropietario
-  ) {
+  for (const id of idsSoloPropietario) {
 
     const boton =
       document.getElementById(id);
 
-    if (!boton) {
-      continue;
-    }
+    if (!boton) continue;
 
     boton.style.display =
-      puedeAdministrarPropietario
+      esSuperAdmin || esPropietario
         ? ""
         : "none";
   }
 
 
-  /*
-    Convertidor MASS permanece disponible
-    para la operación diaria del Organizador.
-  */
+  // =====================================================
+  // MAPA DE BOTONES DELEGABLES
+  // =====================================================
 
-  const btnConvertidor =
+  const controlesDelegables = [
+
+    {
+      id: "btnDashboardOrganizador",
+      permiso: "ver_dashboard"
+    },
+
+    {
+      id: "btnMensajesClientesAdmin",
+      permiso: "ver_mensajes"
+    },
+
+    {
+      id: "btnPatrocinadoresAdmin",
+      permiso: "administrar_patrocinadores"
+    },
+
+    {
+      id: "btnRecargasMassAdmin",
+      permiso: "revisar_recargas"
+    },
+
+    {
+      id: "btnGanadoresAdmin",
+      permiso: "administrar_ganadores"
+    },
+
+    {
+      id: "btnHistorialRecargasMassAdmin",
+      permiso: "ver_historial_recargas"
+    },
+
+    {
+      id: "btnReembolsosMassAdmin",
+      permiso: "administrar_reembolsos"
+    },
+
+    {
+      id: "btnSolicitudesRevisionMassAdmin",
+      permiso: "gestionar_revisiones"
+    },
+
+    {
+      id: "btnDivisasAdmin",
+      permiso: "administrar_divisas"
+    },
+
+    {
+      id: "btnMetodosPagoAdmin",
+      permiso: "administrar_metodos_pago"
+    },
+
+    {
+      id: "btnMisPuntosMassAdmin",
+      permiso: "administrar_puntos_mass"
+    },
+
+    {
+      id: "btnConvertidorMassAdmin",
+      permiso: "usar_convertidor_mass"
+    }
+
+  ];
+
+
+  for (const control of controlesDelegables) {
+
+    const boton =
+      document.getElementById(
+        control.id
+      );
+
+    if (!boton) continue;
+
+
+    if (
+      esSuperAdmin ||
+      esPropietario
+    ) {
+
+      boton.style.display = "";
+      continue;
+    }
+
+
+    if (esColaborador) {
+
+      boton.style.display =
+        tienePermisoSesionOrganizadorMass(
+          control.permiso
+        )
+          ? ""
+          : "none";
+
+      continue;
+    }
+
+
+    boton.style.display = "none";
+  }
+
+
+  // =====================================================
+  // BOTÓN 🎯 SORTEOS
+  //
+  // Se muestra cuando el colaborador posee al menos
+  // una capacidad relacionada con dinámicas.
+  //
+  // Después controlaremos las acciones internas:
+  // crear / editar / pausar / reactivar / eliminar /
+  // reglas / premios / pre-sorteos.
+  // =====================================================
+
+  const btnSorteos =
     document.getElementById(
-      "btnConvertidorMassAdmin"
+      "btnSorteosAdmin"
     );
 
-  if (btnConvertidor) {
+  if (btnSorteos) {
 
-    btnConvertidor.style.display =
-      rol === "super_admin" ||
-      rol === "organizador"
-        ? ""
-        : "none";
+    if (
+      esSuperAdmin ||
+      esPropietario
+    ) {
+
+      btnSorteos.style.display = "";
+
+    } else if (esColaborador) {
+
+      const puedeEntrarSorteos = [
+        "crear_dinamicas",
+        "editar_dinamicas",
+        "pausar_dinamicas",
+        "reactivar_dinamicas",
+        "eliminar_dinamicas",
+        "administrar_premios",
+        "administrar_presorteos",
+        "administrar_reglas"
+      ].some(
+        permiso =>
+          tienePermisoSesionOrganizadorMass(
+            permiso
+          )
+      );
+
+      btnSorteos.style.display =
+        puedeEntrarSorteos
+          ? ""
+          : "none";
+
+    } else {
+
+      btnSorteos.style.display =
+        "none";
+    }
   }
 }
 
@@ -111524,16 +111971,41 @@ await inicializarNotificacionesMass();
       actualizarVisibilidadMiEquipoOrganizador();
     }
 
-    if (
+// =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2D
+// CARGAR PERMISOS ANTES DE PINTAR EL PANEL
+// =====================================================
+
+if (
+  typeof cargarPermisosSesionOrganizadorMass ===
+  "function"
+) {
+  await cargarPermisosSesionOrganizadorMass();
+}
+
+if (
   typeof actualizarVisibilidadAccesosOrganizador ===
   "function"
 ) {
   actualizarVisibilidadAccesosOrganizador();
 }
 
-// ==========================================================
-// MASS - MOSTRAR BOTÓN DE MENSAJES AL INICIAR COMO ORGANIZADOR
-// ==========================================================
+// =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2E
+// MENSAJES Y CHAT FLOTANTE SEGÚN PERMISO GRANULAR
+// =========================================================
+
+const puedeVerMensajesOrganizador =
+  typeof tienePermisoSesionOrganizadorMass === "function"
+    ? tienePermisoSesionOrganizadorMass(
+        "ver_mensajes"
+      )
+    : false;
+
+
+// ---------------------------------------------------------
+// BOTÓN / ACCESO DE MENSAJES DEL ORGANIZADOR
+// ---------------------------------------------------------
 
 const btnMensajesClientesOrganizador =
   document.getElementById(
@@ -111541,16 +112013,41 @@ const btnMensajesClientesOrganizador =
   );
 
 if (btnMensajesClientesOrganizador) {
-  btnMensajesClientesOrganizador.style.display = "block";
+
+  btnMensajesClientesOrganizador.style.display =
+    puedeVerMensajesOrganizador
+      ? "block"
+      : "none";
 }
 
+
+// ---------------------------------------------------------
+// CHAT FLOTANTE DEL ORGANIZADOR
+// ---------------------------------------------------------
+
 const btnChatFlotanteOrganizador =
-  document.getElementById("btnChatFlotanteOrganizador");
+  document.getElementById(
+    "btnChatFlotanteOrganizador"
+  );
 
 if (btnChatFlotanteOrganizador) {
-  btnChatFlotanteOrganizador.style.display = "flex";
-  btnChatFlotanteOrganizador.style.alignItems = "center";
-  btnChatFlotanteOrganizador.style.justifyContent = "center";
+
+  if (puedeVerMensajesOrganizador) {
+
+    btnChatFlotanteOrganizador.style.display =
+      "flex";
+
+    btnChatFlotanteOrganizador.style.alignItems =
+      "center";
+
+    btnChatFlotanteOrganizador.style.justifyContent =
+      "center";
+
+  } else {
+
+    btnChatFlotanteOrganizador.style.display =
+      "none";
+  }
 }
 
 if (
