@@ -111342,7 +111342,103 @@ supabaseClient.auth.onAuthStateChange(
 
       try {
 
-        await restaurarSesionMassAlCargar();
+                await restaurarSesionMassAlCargar();
+
+        // =====================================================
+        // MASS SORTEOS PRO — PLAN-F4A5-C2M2
+        // RESTAURAR ESTADO VISUAL DEL PANEL ADMIN
+        // SOLO DESPUÉS DE AUTH + AUTORIZACIÓN + PERMISOS
+        // =====================================================
+
+        if (
+          localStorage.getItem(
+            "mass_panel_admin_abierto"
+          ) === "1"
+        ) {
+
+          const rolAdminRestaurado =
+            String(
+              localStorage.getItem(
+                "admin_rol"
+              ) || ""
+            )
+              .trim()
+              .toLowerCase();
+
+          const tipoAccesoRestaurado =
+            String(
+              localStorage.getItem(
+                "admin_tipo_acceso"
+              ) || ""
+            )
+              .trim()
+              .toLowerCase();
+
+          const organizadorIdRestaurado =
+            String(
+              localStorage.getItem(
+                "admin_organizador_id"
+              ) || ""
+            ).trim();
+
+          const contextoOrganizadorValido =
+            rolAdminRestaurado ===
+              "organizador" &&
+            organizadorIdRestaurado &&
+            [
+              "propietario",
+              "colaborador"
+            ].includes(
+              tipoAccesoRestaurado
+            );
+
+          if (
+            contextoOrganizadorValido
+          ) {
+
+            const panelAdmin =
+              document.getElementById(
+                "panelAdmin"
+              );
+
+            const panelSuperAdmin =
+              document.getElementById(
+                "panelSuperAdmin"
+              );
+
+            const btnVolverSuperAdmin =
+              document.getElementById(
+                "btnVolverSuperAdmin"
+              );
+
+            if (panelSuperAdmin) {
+              panelSuperAdmin.style.display =
+                "none";
+            }
+
+            if (btnVolverSuperAdmin) {
+              btnVolverSuperAdmin.style.display =
+                "none";
+            }
+
+            if (panelAdmin) {
+              panelAdmin.style.display =
+                "block";
+            }
+
+          } else {
+
+            /*
+              Fail-closed visual:
+              una preferencia local antigua nunca conserva
+              el estado abierto si el contexto administrativo
+              no fue restaurado correctamente.
+            */
+            localStorage.removeItem(
+              "mass_panel_admin_abierto"
+            );
+          }
+        }
 
         restauracionAdminAuthUsuario =
           authUserId;
