@@ -30295,19 +30295,57 @@ async function eliminarPremioRifa(id, rifaId){
   administrarPremiosRifa(rifaId);
 }	
 
-async function pausarRifa(id){
-  if(!confirm("¿Pausar esta rifa?")) return;
 
-  const { error } = await supabaseClient
-    .from("rifas")
-    .update({ estado:"pausada" })
-    .eq("id", id);
+async function pausarRifa(id) {
 
-  if(error) return alert(error.message);
+  // PLAN-F4A5-C3B4C6-H2C
+  // Pausa autorizada por Supabase.
 
-  alert("⏸️ Rifa pausada");
-await mostrarSorteosAdmin();
+  if (!id) {
+    alert("❌ No se identificó la dinámica.");
+    return;
+  }
+
+  if (!confirm("¿Pausar esta dinámica?")) {
+    return;
+  }
+
+  const { data, error } =
+    await supabaseClient.rpc(
+      "pausar_dinamica_granular_segura",
+      {
+        p_rifa_id: id
+      }
+    );
+
+  if (error || data?.ok !== true) {
+
+    console.error(
+      "Error pausando dinámica:",
+      error || data
+    );
+
+    alert(
+      "❌ No fue posible pausar la dinámica.\n\n" +
+      (
+        error?.message ||
+        data?.mensaje ||
+        "Operación no autorizada."
+      )
+    );
+
+    return;
+  }
+
+  if (data.sin_cambios === true) {
+    alert("⏸️ Esta dinámica ya estaba pausada.");
+  } else {
+    alert("✅ Dinámica pausada correctamente.");
+  }
+
+  await mostrarSorteosAdmin();
 }
+
 
 async function eliminarRifa(id) {
 
