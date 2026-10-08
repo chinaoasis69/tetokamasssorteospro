@@ -2597,15 +2597,19 @@ Cargando historial...
   💬 Mensajes de clientes
 </button>
 
-<button onclick="mostrarPremiosAdmin()">
+<button
+  id="btnPremiosLuckySpinAdmin"
+  onclick="mostrarPremiosAdmin()"
+>
   🎁 Premios MASS Lucky Spin
 </button>
 
 <button
+  id="btnCanjearQrLuckySpinAdmin"
   type="button"
   onclick="mostrarCanjeLuckySpinAdmin()"
 >
-  📷 Canjear QR MASS Lucky Spin
+  🎟️ Canjear QR MASS Lucky Spin
 </button>	
 
 <button
@@ -47209,6 +47213,16 @@ function actualizarVisibilidadAccesosOrganizador() {
       id: "btnMensajesClientesAdmin",
       permiso: "ver_mensajes"
     },
+
+    {
+  id: "btnPremiosLuckySpinAdmin",
+  permiso: "administrar_lucky_spin"
+},
+
+{
+  id: "btnCanjearQrLuckySpinAdmin",
+  permiso: "canjear_qr_lucky_spin"
+},
 
     {
       id: "btnPatrocinadoresAdmin",
@@ -112119,6 +112133,25 @@ if (chatOrganizadorUsuarioBox) {
     ) {
       await mostrarSesionActiva();
     }
+
+// =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2H3
+// SINCRONIZAR PERMISOS JUSTO ANTES DE ABRIR EL PANEL
+// =====================================================
+
+if (
+  typeof cargarPermisosSesionOrganizadorMass ===
+  "function"
+) {
+  await cargarPermisosSesionOrganizadorMass();
+}
+
+if (
+  typeof actualizarVisibilidadAccesosOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadAccesosOrganizador();
+}
 
     if (
       typeof mostrarPanelAdmin ===
