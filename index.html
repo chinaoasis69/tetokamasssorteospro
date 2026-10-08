@@ -3612,6 +3612,238 @@ window.addEventListener("load", () => {
 
 <script>
 
+ // =====================================================
+// PLAN-F4A5-C3C3A
+// PANEL ADMINISTRATIVO POR CATEGORÍAS
+// CONSERVA BOTONES Y PERMISOS EXISTENTES
+// =====================================================
+
+(function organizarPanelAdminMass() {
+
+  const panel =
+    document.getElementById("panelAdmin");
+
+  const botonCerrar =
+    panel?.querySelector(
+      'button[onclick="cerrarPanelAdmin()"]'
+    );
+
+  if (
+    !panel ||
+    !botonCerrar ||
+    document.getElementById("categoriasPanelAdminMass")
+  ) return;
+
+  const categorias = [
+    {
+      titulo: "📊 Gestión y comunicación",
+      ids: [
+        "btnDashboardOrganizador",
+        "btnMensajesClientesAdmin"
+      ]
+    },
+    {
+      titulo: "🎯 Sorteos y premios",
+      ids: [
+        "btnSorteosAdmin",
+        "btnPremiosLuckySpinAdmin",
+        "btnCanjearQrLuckySpinAdmin",
+        "btnGanadoresAdmin",
+        "btnPatrocinadoresAdmin"
+      ]
+    },
+    {
+      titulo: "💰 Finanzas MASS",
+      ids: [
+        "btnRecargasMassAdmin",
+        "btnHistorialRecargasMassAdmin",
+        "btnReembolsosMassAdmin",
+        "btnSolicitudesRevisionMassAdmin",
+        "btnDivisasAdmin",
+        "btnMetodosPagoAdmin",
+        "btnConvertidorMassAdmin"
+      ]
+    },
+    {
+      titulo: "🏪 Puntos MASS",
+      ids: [
+        "btnMisPuntosMassAdmin"
+      ]
+    },
+    {
+      titulo: "⚙️ Configuración y equipo",
+      ids: [
+        "btnConfigAdmin",
+        "btnMiEquipoAdmin"
+      ]
+    }
+  ];
+
+  // Verificar todos los botones antes de moverlos.
+
+  const botones = new Map();
+
+  for (const categoria of categorias) {
+    for (const id of categoria.ids) {
+
+      const boton = document.getElementById(id);
+
+      if (!boton || !panel.contains(boton)) {
+        console.warn(
+          "C3C3A — Botón no encontrado:",
+          id
+        );
+        return;
+      }
+
+      botones.set(id, boton);
+    }
+  }
+
+  // Estilo exclusivo del menú administrativo.
+
+  const estilo = document.createElement("style");
+
+  estilo.textContent = `
+    #categoriasPanelAdminMass {
+      display:grid;
+      gap:11px;
+      width:100%;
+      margin:18px auto;
+    }
+
+    #categoriasPanelAdminMass details {
+      border:1px solid rgba(57,255,20,.6);
+      border-radius:13px;
+      background:#0b0b0b;
+      overflow:hidden;
+    }
+
+    #categoriasPanelAdminMass details[hidden] {
+      display:none;
+    }
+
+    #categoriasPanelAdminMass summary {
+      padding:14px;
+      color:#39ff14;
+      font-weight:bold;
+      text-align:left;
+      cursor:pointer;
+      list-style:none;
+    }
+
+    #categoriasPanelAdminMass summary::-webkit-details-marker {
+      display:none;
+    }
+
+    #categoriasPanelAdminMass summary::after {
+      content:"▸";
+      float:right;
+    }
+
+    #categoriasPanelAdminMass details[open] summary::after {
+      content:"▾";
+    }
+
+    #categoriasPanelAdminMass .accionesGrupoMass {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px;
+      padding:12px;
+    }
+
+    #categoriasPanelAdminMass .accionesGrupoMass button {
+      width:100%;
+      min-width:0;
+      min-height:48px;
+      margin:0;
+      padding:10px 8px;
+      font-size:13px;
+      white-space:normal;
+    }
+
+    @media (max-width:600px) {
+      #categoriasPanelAdminMass .accionesGrupoMass {
+        grid-template-columns:1fr;
+      }
+    }
+  `;
+
+  document.head.appendChild(estilo);
+
+  const raiz = document.createElement("div");
+  raiz.id = "categoriasPanelAdminMass";
+
+  const secciones = [];
+
+  categorias.forEach((categoria, indice) => {
+
+    const acordeon = document.createElement("details");
+    acordeon.open = indice === 0;
+
+    const resumen = document.createElement("summary");
+
+    const acciones = document.createElement("div");
+    acciones.className = "accionesGrupoMass";
+
+    const botonesGrupo = categoria.ids.map(
+      id => botones.get(id)
+    );
+
+    botonesGrupo.forEach(
+      boton => acciones.appendChild(boton)
+    );
+
+    acordeon.appendChild(resumen);
+    acordeon.appendChild(acciones);
+    raiz.appendChild(acordeon);
+
+    secciones.push({
+      titulo: categoria.titulo,
+      acordeon,
+      resumen,
+      botonesGrupo
+    });
+  });
+
+  panel.insertBefore(raiz, botonCerrar);
+
+  // Respetar la visibilidad granular ya certificada.
+  // Una categoría sin botones visibles se oculta.
+
+  const actualizarCategorias = () => {
+
+    secciones.forEach(seccion => {
+
+      const visibles = seccion.botonesGrupo.filter(
+        boton => boton.style.display !== "none"
+      ).length;
+
+      seccion.resumen.textContent =
+        `${seccion.titulo} (${visibles})`;
+
+      seccion.acordeon.hidden =
+        visibles === 0;
+    });
+  };
+
+  // Sincronizar cuando cambian los permisos visuales.
+
+  const observador = new MutationObserver(
+    actualizarCategorias
+  );
+
+  botones.forEach(boton => {
+    observador.observe(boton, {
+      attributes:true,
+      attributeFilter:["style"]
+    });
+  });
+
+  actualizarCategorias();
+
+})();   
+
  // =========================================================
 // MASS SORTEOS PRO — PLAN-F4A5-C3C1
 // ACORDEÓN Y CIERRE DE MÓDULOS ADMINISTRATIVOS
