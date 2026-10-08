@@ -3612,6 +3612,231 @@ window.addEventListener("load", () => {
 
 <script>
 
+ // =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C3C1
+// ACORDEÓN Y CIERRE DE MÓDULOS ADMINISTRATIVOS
+// =========================================================
+
+function cerrarTarjetaModuloAdminMass() {
+
+  const contenedor =
+    document.getElementById(
+      "adminContenido"
+    );
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  contenedor.innerHTML = `
+    <div
+      style="
+        padding:12px 0;
+        text-align:center;
+        color:#aaa;
+      "
+    >
+      Selecciona una opción.
+    </div>
+  `;
+
+
+  const panelAdmin =
+    document.getElementById(
+      "panelAdmin"
+    );
+
+
+  if (panelAdmin) {
+
+    setTimeout(() => {
+
+      panelAdmin.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }, 50);
+  }
+}
+
+
+function aplicarAcordeonModuloAdminMass(
+  titulo
+) {
+
+  const contenedor =
+    document.getElementById(
+      "adminContenido"
+    );
+
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  if (
+    document.getElementById(
+      "acordeonModuloAdminMass"
+    )
+  ) {
+    return;
+  }
+
+
+  /*
+    Conservamos exactamente los nodos
+    creados por el módulo.
+
+    No reconstruimos su contenido ni
+    sus controles.
+  */
+  const fragmento =
+    document.createDocumentFragment();
+
+
+  while (
+    contenedor.firstChild
+  ) {
+
+    fragmento.appendChild(
+      contenedor.firstChild
+    );
+  }
+
+
+  const acordeon =
+    document.createElement(
+      "details"
+    );
+
+
+  acordeon.id =
+    "acordeonModuloAdminMass";
+
+  acordeon.open =
+    true;
+
+
+  acordeon.style.cssText = `
+    width:100%;
+    margin:14px auto 0 auto;
+    border:1px solid rgba(57,255,20,.55);
+    border-radius:14px;
+    overflow:hidden;
+    background:rgba(0,0,0,.18);
+  `;
+
+
+  const resumen =
+    document.createElement(
+      "summary"
+    );
+
+
+  resumen.style.cssText = `
+    padding:13px 16px;
+    cursor:pointer;
+    font-weight:bold;
+    color:#39ff14;
+    text-align:left;
+    user-select:none;
+    border-bottom:1px solid rgba(57,255,20,.25);
+  `;
+
+
+  resumen.textContent =
+    "🗂️ " +
+    String(
+      titulo ||
+      "Módulo administrativo"
+    ) +
+    " · ocultar / mostrar";
+
+
+  const cuerpo =
+    document.createElement(
+      "div"
+    );
+
+
+  cuerpo.style.cssText = `
+    padding:12px 0 0 0;
+  `;
+
+
+  cuerpo.appendChild(
+    fragmento
+  );
+
+
+  acordeon.appendChild(
+    resumen
+  );
+
+  acordeon.appendChild(
+    cuerpo
+  );
+
+
+  const acciones =
+    document.createElement(
+      "div"
+    );
+
+
+  acciones.style.cssText = `
+    margin:16px auto 8px auto;
+    text-align:center;
+  `;
+
+
+  const botonCerrar =
+    document.createElement(
+      "button"
+    );
+
+
+  botonCerrar.type =
+    "button";
+
+  botonCerrar.textContent =
+    "✖ Cerrar tarjeta";
+
+
+  botonCerrar.style.cssText = `
+    padding:10px 16px;
+    border:1px solid #777;
+    border-radius:10px;
+    background:#222;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+  `;
+
+
+  botonCerrar.addEventListener(
+    "click",
+    cerrarTarjetaModuloAdminMass
+  );
+
+
+  acciones.appendChild(
+    botonCerrar
+  );
+
+
+  contenedor.appendChild(
+    acordeon
+  );
+
+  contenedor.appendChild(
+    acciones
+  );
+}   
+
 // =========================================================
 // MASS — ADMINISTRAR MÉTODOS DE PAGO
 // CARGA SEGURA DE CONFIGURACIONES DEL ORGANIZADOR
@@ -4156,7 +4381,11 @@ async function mostrarMetodosPagoAdmin() {
       </div>
     `;
 
-	// =====================================================
+        aplicarAcordeonModuloAdminMass(
+      "💳 Administrar Métodos de Pago"
+    );
+
+// =====================================================
 // PAGOS-ESTADO-1
 // HABILITAR / DESHABILITAR MÉTODO DE PAGO
 // MEDIANTE RPC SEGURA + CONTROL DE VERSIÓN
@@ -43324,6 +43553,10 @@ ${botonReactivar}
 
       </div>
     `;
+
+        aplicarAcordeonModuloAdminMass(
+      "🌐 Administrar Divisas"
+    );
 
   } catch (error) {
 
