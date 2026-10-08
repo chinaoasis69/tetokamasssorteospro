@@ -111421,9 +111421,32 @@ supabaseClient.auth.onAuthStateChange(
                 "none";
             }
 
-            if (panelAdmin) {
+                        if (panelAdmin) {
               panelAdmin.style.display =
                 "block";
+
+              // =================================================
+              // MASS SORTEOS PRO — PLAN-F4A5-C2M3
+              // LLEVAR LA VISTA AL PANEL RESTAURADO
+              // =================================================
+
+              setTimeout(() => {
+
+                if (
+                  localStorage.getItem(
+                    "mass_panel_admin_abierto"
+                  ) === "1" &&
+                  panelAdmin.style.display !==
+                    "none"
+                ) {
+
+                  panelAdmin.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                  });
+                }
+
+              }, 350);
             }
 
           } else {
