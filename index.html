@@ -96767,18 +96767,6 @@ if (
 
 Promise.resolve().then(async () => {
 
-    // =====================================================
-// MASS SORTEOS PRO — PLAN-F4A5-C2J4
-// RESTAURACIÓN AUTOMÁTICA DE SESIÓN AL REFRESCAR
-// =====================================================
-
-if (
-  typeof restaurarSesionMassAlCargar ===
-  "function"
-) {
-  await restaurarSesionMassAlCargar();
-}
-
     await asegurarWallet();
 
     cargarSaldo();
@@ -111535,6 +111523,33 @@ mostrarSesionActiva();
     regresarMenuAccesoV2();
   }
 }
+
+// =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2K2
+// RESTAURACIÓN AUTOMÁTICA DESPUÉS DE DEFINIR EL FLUJO
+// =====================================================
+
+Promise.resolve().then(async () => {
+
+  try {
+
+    if (
+      typeof restaurarSesionMassAlCargar !==
+      "function"
+    ) {
+      return;
+    }
+
+    await restaurarSesionMassAlCargar();
+
+  } catch (error) {
+
+    console.error(
+      "C2K2 — Error en restauración automática:",
+      error
+    );
+  }
+});
 
 async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
   if (!conservarSesionRecuperacion) {
