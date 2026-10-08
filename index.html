@@ -47043,6 +47043,31 @@ async function mostrarMiEquipoOrganizador() {
             🗑️ Retirar
           </button>
         `;
+
+// =====================================================
+// PLAN-F4A5-B1-1
+// BOTÓN DE PERMISOS INDIVIDUALES DEL COLABORADOR
+// =====================================================
+
+        acciones += `
+          <div style="margin-top:14px;">
+            <button
+              type="button"
+              onclick="abrirPermisosColaboradorMass(
+                '${miembro.acceso_id}'
+              )"
+              style="
+                background:#7CFF00;
+                color:#111;
+                font-weight:800;
+                border-radius:12px;
+                padding:12px 18px;
+              "
+            >
+              🔐 Administrar permisos
+            </button>
+          </div>
+        `;
       }
 
 
@@ -47359,6 +47384,547 @@ async function agregarColaboradorMiEquipoOrganizador() {
 
 
   await mostrarMiEquipoOrganizador();
+}
+
+// =========================================================
+// MASS — PERMISOS GRANULARES DEL COLABORADOR
+// PLAN-F4A5-B1-2
+//
+// - Solo el Propietario llega a esta interfaz.
+// - La RPC vuelve a validar autorización en backend.
+// - Los permisos se obtienen del catálogo oficial.
+// =========================================================
+
+async function abrirPermisosColaboradorMass(
+  accesoId
+) {
+
+  const idLimpio =
+    String(accesoId || "").trim();
+
+  if (!idLimpio) {
+    return;
+  }
+
+
+  const rol =
+    String(
+      localStorage.getItem("admin_rol") || ""
+    )
+      .trim()
+      .toLowerCase();
+
+  const tipoAcceso =
+    String(
+      localStorage.getItem(
+        "admin_tipo_acceso"
+      ) || ""
+    )
+      .trim()
+      .toLowerCase();
+
+
+  if (
+    rol !== "organizador" ||
+    tipoAcceso !== "propietario"
+  ) {
+
+    alert(
+      "❌ Solo el Propietario puede administrar permisos."
+    );
+
+    return;
+  }
+
+
+  const contenedor =
+    document.getElementById(
+      "adminContenido"
+    );
+
+  if (!contenedor) {
+    return;
+  }
+
+
+  contenedor.innerHTML = `
+    <h2>🔐 Permisos del colaborador</h2>
+
+    <div class="card">
+      <p>
+        ⏳ Cargando permisos...
+      </p>
+    </div>
+  `;
+
+
+  const {
+    data,
+    error
+  } =
+    await supabaseClient.rpc(
+      "listar_permisos_colaborador_seguro",
+      {
+        p_acceso_id:
+          idLimpio
+      }
+    );
+
+
+  if (error) {
+
+    console.error(
+      "ERROR CARGANDO PERMISOS DEL COLABORADOR:",
+      error
+    );
+
+    contenedor.innerHTML = `
+      <h2>🔐 Permisos del colaborador</h2>
+
+      <div class="card">
+        <p>
+          ❌ No fue posible cargar los permisos.
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarMiEquipoOrganizador()"
+        >
+          ← Regresar a Mi equipo
+        </button>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  if (
+    data?.ok !== true ||
+    !Array.isArray(data?.permisos)
+  ) {
+
+    contenedor.innerHTML = `
+      <h2>🔐 Permisos del colaborador</h2>
+
+      <div class="card">
+        <p>
+          ❌ Supabase no devolvió una lista válida
+          de permisos.
+        </p>
+
+        <button
+          type="button"
+          onclick="mostrarMiEquipoOrganizador()"
+        >
+          ← Regresar a Mi equipo
+        </button>
+      </div>
+    `;
+
+    return;
+  }
+
+
+  const permisos =
+    data.permisos;
+
+
+  const nombresCategorias = {
+    general:
+      "⚙️ General",
+
+    comunicacion:
+      "💬 Comunicación",
+
+    dinamicas:
+      "🎯 Dinámicas",
+
+    premios:
+      "🏆 Premios",
+
+    comercial:
+      "🤝 Comercial",
+
+    finanzas:
+      "💰 Finanzas"
+  };
+
+
+  const categorias = {};
+
+
+  for (const permiso of permisos) {
+
+    const categoria =
+      String(
+        permiso.categoria ||
+        "general"
+      );
+
+    if (!categorias[categoria]) {
+      categorias[categoria] = [];
+    }
+
+    categorias[categoria].push(
+      permiso
+    );
+  }
+
+
+  const htmlCategorias =
+    Object.entries(categorias)
+      .map(
+        ([categoria, lista]) => {
+
+          const permisosHtml =
+            lista.map(
+              permiso => {
+
+                const clave =
+                  escaparHtmlMiEquipo(
+                    permiso.clave
+                  );
+
+                const nombre =
+                  escaparHtmlMiEquipo(
+                    permiso.nombre
+                  );
+
+
+                return `
+                  <label
+                    style="
+                      display:flex;
+                      align-items:center;
+                      gap:12px;
+                      padding:11px 8px;
+                      border-bottom:
+                        1px solid rgba(255,255,255,.10);
+                      cursor:pointer;
+                      text-align:left;
+                    "
+                  >
+
+                    <input
+                      type="checkbox"
+                      data-permiso-colaborador="${clave}"
+                      ${
+                        permiso.permitido === true
+                          ? "checked"
+                          : ""
+                      }
+                      style="
+                        width:20px;
+                        height:20px;
+                        flex:0 0 auto;
+                      "
+                    >
+
+                    <span>
+                      ${nombre}
+                    </span>
+
+                  </label>
+                `;
+              }
+            )
+            .join("");
+
+
+          return `
+            <div
+              class="card"
+              style="
+                margin-bottom:16px;
+                text-align:left;
+              "
+            >
+
+              <h3>
+                ${
+                  nombresCategorias[categoria] ||
+                  escaparHtmlMiEquipo(
+                    categoria
+                  )
+                }
+              </h3>
+
+              ${permisosHtml}
+
+            </div>
+          `;
+        }
+      )
+      .join("");
+
+
+  contenedor.innerHTML = `
+
+    <h2>
+      🔐 Permisos del colaborador
+    </h2>
+
+    <div
+      class="card"
+      style="margin-bottom:18px;"
+    >
+
+      <p>
+        Selecciona únicamente las funciones
+        que deseas delegar a este colaborador.
+      </p>
+
+      <p class="small">
+        Los cambios se validan nuevamente
+        en Supabase y quedan auditados.
+      </p>
+
+      <button
+        type="button"
+        onclick="marcarTodosPermisosColaboradorMass(true)"
+      >
+        ☑️ Seleccionar todo
+      </button>
+
+      <button
+        type="button"
+        onclick="marcarTodosPermisosColaboradorMass(false)"
+      >
+        ⬜ Quitar selección
+      </button>
+
+    </div>
+
+    ${htmlCategorias}
+
+    <div
+      class="card"
+      style="
+        position:sticky;
+        bottom:12px;
+        z-index:20;
+      "
+    >
+
+      <button
+        type="button"
+        onclick="guardarPermisosColaboradorMass(
+          '${idLimpio}'
+        )"
+      >
+        💾 Guardar permisos
+      </button>
+
+      <button
+        type="button"
+        onclick="mostrarMiEquipoOrganizador()"
+      >
+        ← Cancelar / Regresar
+      </button>
+
+    </div>
+  `;
+}
+
+
+// =========================================================
+// MARCAR / DESMARCAR TODAS LAS CASILLAS
+// =========================================================
+
+function marcarTodosPermisosColaboradorMass(
+  permitido
+) {
+
+  const checks =
+    document.querySelectorAll(
+      "[data-permiso-colaborador]"
+    );
+
+  for (const check of checks) {
+    check.checked =
+      permitido === true;
+  }
+}
+
+// =========================================================
+// MASS SORTEOS PRO — PLAN-F4A5-B1-3
+// GUARDADO SEGURO DE PERMISOS DEL COLABORADOR
+// =========================================================
+
+let guardandoPermisosColaboradorMass = false;
+
+async function guardarPermisosColaboradorMass(accesoId) {
+
+  if (guardandoPermisosColaboradorMass) return;
+
+  const rol = String(
+    localStorage.getItem("admin_rol") || ""
+  ).trim().toLowerCase();
+
+  const tipoAcceso = String(
+    localStorage.getItem("admin_tipo_acceso") || ""
+  ).trim().toLowerCase();
+
+  if (
+    rol !== "organizador" ||
+    tipoAcceso !== "propietario"
+  ) {
+    alert("❌ Solo el Propietario puede guardar permisos.");
+    return;
+  }
+
+  const id = String(accesoId || "").trim();
+
+  const checks = Array.from(
+    document.querySelectorAll(
+      "[data-permiso-colaborador]"
+    )
+  );
+
+  if (!id || checks.length === 0) {
+    alert("❌ No se encontró el formulario de permisos.");
+    return;
+  }
+
+  // Consultar nuevamente los permisos oficiales.
+  const { data: actuales, error: errorLectura } =
+    await supabaseClient.rpc(
+      "listar_permisos_colaborador_seguro",
+      { p_acceso_id: id }
+    );
+
+  if (
+    errorLectura ||
+    actuales?.ok !== true ||
+    !Array.isArray(actuales.permisos)
+  ) {
+    alert(
+      "❌ No fue posible verificar los permisos actuales."
+    );
+    return;
+  }
+
+  const mapaActual = new Map(
+    actuales.permisos.map(p => [
+      String(p.clave),
+      p.permitido === true
+    ])
+  );
+
+  if (mapaActual.size !== checks.length) {
+    alert(
+      "❌ El catálogo de permisos cambió. " +
+      "Vuelve a abrir el formulario."
+    );
+    return;
+  }
+
+  const cambios = [];
+
+  for (const check of checks) {
+
+    const clave = check.dataset.permisoColaborador;
+
+    if (!mapaActual.has(clave)) {
+      alert("❌ Se detectó un permiso no válido.");
+      return;
+    }
+
+    const anterior = mapaActual.get(clave);
+    const nuevo = check.checked === true;
+
+    if (anterior !== nuevo) {
+      cambios.push({
+        clave,
+        anterior,
+        nuevo
+      });
+    }
+  }
+
+  if (cambios.length === 0) {
+    alert("ℹ️ No hay cambios pendientes.");
+    return;
+  }
+
+  if (!confirm(
+    `¿Guardar ${cambios.length} cambio(s) de permisos?\n\n` +
+    "Los permisos serán registrados en la auditoría."
+  )) {
+    return;
+  }
+
+  guardandoPermisosColaboradorMass = true;
+
+  const botones = Array.from(
+    document.querySelectorAll(
+      "#adminContenido button"
+    )
+  );
+
+  botones.forEach(b => b.disabled = true);
+  checks.forEach(c => c.disabled = true);
+
+  let guardados = 0;
+  let fallo = null;
+
+  try {
+
+    // Guardado secuencial para mantener orden de auditoría.
+    for (const cambio of cambios) {
+
+      const { data, error } =
+        await supabaseClient.rpc(
+          "guardar_permiso_colaborador_seguro",
+          {
+            p_acceso_id: id,
+            p_permiso_clave: cambio.clave,
+            p_permitido: cambio.nuevo
+          }
+        );
+
+      if (
+        error ||
+        data?.ok !== true ||
+        data?.permiso_clave !== cambio.clave ||
+        data?.permitido !== cambio.nuevo
+      ) {
+        fallo =
+          error?.message ||
+          `No se confirmó el permiso ${cambio.clave}.`;
+        break;
+      }
+
+      guardados++;
+    }
+
+  } catch (error) {
+    fallo = error?.message || String(error);
+  } finally {
+    guardandoPermisosColaboradorMass = false;
+    botones.forEach(b => b.disabled = false);
+    checks.forEach(c => c.disabled = false);
+  }
+
+  if (fallo) {
+
+    alert(
+      "⚠️ Guardado incompleto.\n\n" +
+      `Cambios confirmados: ${guardados}/${cambios.length}\n\n` +
+      fallo +
+      "\n\nSe recargarán los permisos oficiales."
+    );
+
+    await abrirPermisosColaboradorMass(id);
+    return;
+  }
+
+  alert(
+    `✅ ${guardados} permiso(s) actualizado(s) correctamente.`
+  );
+
+  await abrirPermisosColaboradorMass(id);
 }
 
 
