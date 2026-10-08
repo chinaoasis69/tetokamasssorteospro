@@ -19363,7 +19363,7 @@ ${
 
 ` : r.estado !== 'activa' ? `
 
-${r.estado === 'congelada' ? `
+${r.estado === 'pausada' ? '' : r.estado === 'congelada' ? `
 <button onclick="activarRifaAdmin('${r.id}')">
 ✅ Activar rifa reprogramada
 </button>
@@ -32678,6 +32678,71 @@ async function activarRifaAdmin(id) {
 
     return;
   }
+
+  
+  // =====================================================
+  // PLAN-F4A5-C3B4C6-H2D4
+  // REACTIVACION GRANULAR DE DINAMICAS PAUSADAS
+  // =====================================================
+
+  if (
+    String(rifa.estado || "")
+      .trim()
+      .toLowerCase() === "pausada"
+  ) {
+
+    const confirmarReactivacion = confirm(
+      `¿Reanudar la dinámica "${rifa.titulo || "Sin título"}"?`
+    );
+
+    if (!confirmarReactivacion) {
+      return;
+    }
+
+    const {
+      data: resultadoReactivacion,
+      error: errorReactivacion
+    } = await supabaseClient.rpc(
+      "reactivar_dinamica_granular_segura",
+      {
+        p_rifa_id: id
+      }
+    );
+
+    if (
+      errorReactivacion ||
+      resultadoReactivacion?.ok !== true ||
+      resultadoReactivacion?.estado !== "activa"
+    ) {
+
+      console.error(
+        "Error reactivando dinámica:",
+        errorReactivacion || resultadoReactivacion
+      );
+
+      alert(
+        "❌ No fue posible reactivar la dinámica.\n\n" +
+        (
+          errorReactivacion?.message ||
+          resultadoReactivacion?.mensaje ||
+          "Operación no autorizada."
+        )
+      );
+
+      return;
+    }
+
+    alert(
+      "✅ Dinámica reanudada correctamente.\n\n" +
+      "Boletos verificados: " +
+      resultadoReactivacion.boletos_verificados
+    );
+
+    await mostrarSorteosAdmin();
+
+    return;
+  }
+
 
 	if (
     rifa.estado === "congelada" &&
