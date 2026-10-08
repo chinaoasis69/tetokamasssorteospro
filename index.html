@@ -111327,6 +111327,118 @@ async function abrirAccesoV2() {
       }
     }
 
+    // =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2J1
+// RESTAURAR PERMISOS DEL ORGANIZADOR CON SESIÓN ACTIVA
+// =====================================================
+
+if (
+  session?.user?.id &&
+  typeof cargarPermisosSesionOrganizadorMass === "function" &&
+  typeof actualizarVisibilidadAccesosOrganizador === "function"
+) {
+
+  const limpiarContextoAdminRestaurado = () => {
+    localStorage.removeItem("admin_rol");
+    localStorage.removeItem("admin_tipo_acceso");
+    localStorage.removeItem("admin_organizador_id");
+
+    permisosSesionOrganizadorMass = new Set();
+
+    actualizarVisibilidadAccesosOrganizador();
+  };
+
+  try {
+
+    const { data: accesoAdmin, error: errorAdmin } =
+      await supabaseClient
+        .from("admin_organizadores")
+        .select(
+          "organizador_id, rol, tipo_acceso, activo"
+        )
+        .eq("auth_user_id", session.user.id)
+        .eq("rol", "organizador")
+        .maybeSingle();
+
+    if (
+      errorAdmin ||
+      !accesoAdmin ||
+      accesoAdmin.activo !== true ||
+      !accesoAdmin.organizador_id ||
+      !["propietario", "colaborador"].includes(
+        String(accesoAdmin.tipo_acceso || "")
+          .trim()
+          .toLowerCase()
+      )
+    ) {
+
+      limpiarContextoAdminRestaurado();
+
+    } else {
+
+      const { data: organizador, error: errorOrganizador } =
+        await supabaseClient
+          .from("organizadores")
+          .select("id, activo")
+          .eq("id", accesoAdmin.organizador_id)
+          .maybeSingle();
+
+      if (
+        errorOrganizador ||
+        !organizador ||
+        organizador.activo !== true
+      ) {
+
+        limpiarContextoAdminRestaurado();
+
+      } else {
+
+        localStorage.setItem(
+          "admin_rol",
+          "organizador"
+        );
+
+        localStorage.setItem(
+          "admin_tipo_acceso",
+          String(accesoAdmin.tipo_acceso)
+            .trim()
+            .toLowerCase()
+        );
+
+        localStorage.setItem(
+          "admin_organizador_id",
+          String(accesoAdmin.organizador_id)
+        );
+
+        await cargarPermisosSesionOrganizadorMass();
+
+        actualizarVisibilidadAccesosOrganizador();
+
+        if (
+  typeof actualizarVisibilidadMiEquipoOrganizador ===
+  "function"
+) {
+  actualizarVisibilidadMiEquipoOrganizador();
+}
+
+        console.log(
+          "C2J1 — Permisos restaurados:",
+          accesoAdmin.tipo_acceso
+        );
+      }
+    }
+
+  } catch (errorRestauracion) {
+
+    console.error(
+      "C2J1 — Error restaurando permisos:",
+      errorRestauracion
+    );
+
+    limpiarContextoAdminRestaurado();
+  }
+}
+
     /*
       Sesión válida y seguridad completa:
       no abre el modal de acceso.
