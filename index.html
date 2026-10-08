@@ -53969,6 +53969,61 @@ async function actualizarEntradaMassPuntoOperador() {
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
   console.log("EVENTO AUTH MASS ID:", event);
 
+  // =====================================================
+// MASS SORTEOS PRO — PLAN-F4A5-C2K5
+// RESTAURAR PERMISOS CUANDO SUPABASE CONFIRMA AUTH
+// =====================================================
+
+if (
+  session?.user?.id &&
+  (
+    event === "SIGNED_IN" ||
+    event === "INITIAL_SESSION"
+  )
+) {
+
+  const authUserIdRestauracion =
+    String(session.user.id);
+
+  const restauracionYaProcesada =
+    window.MASS_AUTH_ADMIN_RESTAURADO_ID ===
+    authUserIdRestauracion;
+
+  if (!restauracionYaProcesada) {
+
+    window.MASS_AUTH_ADMIN_RESTAURADO_ID =
+      authUserIdRestauracion;
+
+    Promise.resolve().then(async () => {
+
+      try {
+
+        if (
+          typeof restaurarSesionMassAlCargar ===
+          "function"
+        ) {
+
+          await restaurarSesionMassAlCargar();
+
+          console.log(
+            "C2K5 — Restauración Auth completada."
+          );
+        }
+
+      } catch (error) {
+
+        window.MASS_AUTH_ADMIN_RESTAURADO_ID =
+          null;
+
+        console.error(
+          "C2K5 — Error restaurando Auth:",
+          error
+        );
+      }
+    });
+  }
+}
+
 // ============================================================
 // MASS PUNTO AUTORIZADO
 // VALIDAR ACCESO CUANDO EXISTA SESIÓN
@@ -111524,32 +111579,6 @@ mostrarSesionActiva();
   }
 }
 
-// =====================================================
-// MASS SORTEOS PRO — PLAN-F4A5-C2K2
-// RESTAURACIÓN AUTOMÁTICA DESPUÉS DE DEFINIR EL FLUJO
-// =====================================================
-
-Promise.resolve().then(async () => {
-
-  try {
-
-    if (
-      typeof restaurarSesionMassAlCargar !==
-      "function"
-    ) {
-      return;
-    }
-
-    await restaurarSesionMassAlCargar();
-
-  } catch (error) {
-
-    console.error(
-      "C2K2 — Error en restauración automática:",
-      error
-    );
-  }
-});
 
 async function cerrarAccesoV2(conservarSesionRecuperacion = false) {
   if (!conservarSesionRecuperacion) {
