@@ -31760,13 +31760,28 @@ precios_mass_unidad:
   let error;
   let nuevaRifa;
 
-  if (id) {
-    const res = await supabaseClient
-      .from("rifas")
-      .update(payload)
-      .eq("id", id);
+    // PLAN-F4A5-C3B4C6-H2F5-AW
+  // Edicion mediante RPC segura.
 
-    error = res.error;
+  if (id) {
+    const { data, error: errorRPC } =
+      await supabaseClient.rpc(
+        "guardar_edicion_dinamica_formulario_segura",
+        {
+          p_rifa_id: id,
+          p_configuracion: payload,
+          p_premios: premiosFormulario
+        }
+      );
+
+    error = errorRPC;
+
+    if (!error && data?.ok !== true) {
+      error = new Error(
+        "Supabase no confirmó la edición segura."
+      );
+    }
+
   } else {
     payload.estado = "programada";
     payload.organizador_id =
