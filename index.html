@@ -31759,6 +31759,7 @@ precios_mass_unidad:
 
   let error;
   let nuevaRifa;
+  let edicionSinCambios = false;
 
     // PLAN-F4A5-C3B4C6-H2F5-AW
   // Edicion mediante RPC segura.
@@ -31775,6 +31776,11 @@ precios_mass_unidad:
       );
 
     error = errorRPC;
+
+        edicionSinCambios =
+      !errorRPC &&
+      data?.ok === true &&
+      data?.sin_cambios === true;
 
     if (!error && data?.ok !== true) {
       error = new Error(
@@ -31889,7 +31895,15 @@ precios_mass_unidad:
     return;
   }
 
-  alert(id ? "✅ Rifa actualizada" : "✅ Rifa creada");
+    alert(
+    id
+      ? (
+          edicionSinCambios
+            ? "✅ Sin cambios. La dinámica ya está actualizada."
+            : "✅ Dinámica actualizada correctamente."
+        )
+      : "✅ Dinámica creada correctamente."
+  );
 
 cerrarModalRifa();
 mostrarSorteosAdmin();
