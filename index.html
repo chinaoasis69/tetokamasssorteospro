@@ -19363,15 +19363,24 @@ ${
 
 ` : r.estado !== 'activa' ? `
 
-${r.estado === 'pausada' ? '' : r.estado === 'congelada' ? `
-<button onclick="activarRifaAdmin('${r.id}')">
-✅ Activar rifa reprogramada
-</button>
-` : `
-<button onclick="activarRifaAdmin('${r.id}')">
-✅ Activar rifa
-</button>
-`}               
+
+${r.estado === 'pausada'
+  ? ''
+  : r.estado === 'congelada'
+    ? `
+      <button onclick="activarRifaAdmin('${r.id}')">
+        ✅ Activar dinámica reprogramada
+      </button>
+    `
+    : r.estado === 'programada' && puedeCrearDinamicas
+      ? `
+        <button onclick="activarRifaAdmin('${r.id}')">
+          ✅ Activar dinámica
+        </button>
+      `
+      : ''
+}
+              
 
 ${
   r.rifa_origen_id ||
@@ -32909,17 +32918,66 @@ async function activarRifaAdmin(id) {
   }
 
 
-  const {
-    error: errorActivar
-  } = await supabaseClient
-    .from("rifas")
-    .update({
-      estado: "activa"
-    })
-    .eq(
-      "id",
-      id
+  
+  // PLAN-F4A5-C3B4C6-H2E3
+  // Activación inicial granular segura.
+
+  const estadoActual =
+    String(rifa.estado || "")
+      .trim()
+      .toLowerCase();
+
+  let errorActivar = null;
+
+  if (estadoActual === "programada") {
+
+    const { data, error } =
+      await supabaseClient.rpc(
+        "activar_dinamica_inicial_granular_segura",
+        {
+          p_rifa_id: id
+        }
+      );
+
+    errorActivar = error;
+
+    if (
+      !error &&
+      (
+        data?.ok !== true ||
+        data?.estado !== "activa" ||
+        data?.operacion !== "activacion_inicial"
+      )
+    ) {
+      errorActivar = new Error(
+        "Supabase no confirmó la activación inicial."
+      );
+    }
+
+  } else if (estadoActual === "congelada") {
+
+    // Ruta histórica conservada temporalmente.
+    // Se protegerá por separado antes de cerrar
+    // la política UPDATE general.
+
+    const { error } = await supabaseClient
+      .from("rifas")
+      .update({
+        estado: "activa"
+      })
+      .eq("id", id);
+
+    errorActivar = error;
+
+  } else {
+
+    alert(
+      "❌ El estado actual no permite " +
+      "esta operación de activación."
     );
+
+    return;
+  }
 
 
   if (errorActivar) {
