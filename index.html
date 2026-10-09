@@ -31860,9 +31860,32 @@ precios_mass_unidad:
     }
   }
 
+    // PLAN-F4A5-C3B4C6-H2F5-BF
+  // Mostrar motivo de rechazo seguro.
+
   if (error) {
-    console.error(error);
-    alert("❌ Error guardando Rifa");
+    console.error(
+      "Error guardando dinámica:",
+      error
+    );
+
+    const motivo = String(
+      error.message || ""
+    );
+
+    if (motivo.includes("ESTRUCTURA_INMUTABLE")) {
+      alert(
+        "🔒 Modificación estructural bloqueada.\n\n" +
+        "No puedes cambiar la cantidad de boletos, " +
+        "modalidad, método o premios desde esta edición."
+      );
+    } else {
+      alert(
+        "❌ No fue posible guardar la dinámica.\n\n" +
+        (motivo || "Operación no autorizada.")
+      );
+    }
+
     return;
   }
 
