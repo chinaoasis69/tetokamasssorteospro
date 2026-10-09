@@ -33024,71 +33024,11 @@ async function activarRifaAdmin(id) {
 
 }
 
-async function editarRifaAdmin(id){
+// PLAN-F4A5-C3B4C6-H2F5-AX
+// Editor administrativo unificado y seguro.
 
-    const { data, error } = await supabaseClient
-        .from("rifas")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-    if(error){
-        console.error(error);
-        alert("❌ Error cargando rifa");
-        return;
-    }
-
-    const titulo = prompt("Título de la rifa", data.titulo || "");
-    if(!titulo) return;
-
-    const premio = prompt("Premio principal", data.premio || "");
-    if(!premio) return;
-
-    const precio = prompt("Precio por boleto", data.precio_boleto || "");
-    if(!precio) return;
-
-    const total = prompt("Cantidad de números", data.total_numeros || "");
-    if(!total) return;
-
-    const fecha = prompt("Fecha sorteo (2026-09-15)", data.fecha_sorteo || "");
-    if(!fecha) return;
-
-    const metodo = prompt("Método de sorteo", data.metodo_sorteo || "");
-    if(!metodo) return;
-
-    const cifras = prompt("Últimas cuántas cifras", data.cifras_sorteo || "");
-    if(!cifras) return;
-
-    const aviso = prompt("Aviso", data.aviso || "");
-
-    const porcentaje = prompt("Mínimo para sortear %", data.porcentaje_minimo || 80);
-
-    const imagen = prompt("URL imagen premio", data.imagen_url || "");
-
-    const { error: errorUpdate } = await supabaseClient
-        .from("rifas")
-        .update({
-            titulo: titulo,
-            premio: premio,
-            precio_boleto: Number(precio),
-            total_numeros: Number(total),
-            fecha_sorteo: fecha,
-            metodo_sorteo: metodo,
-            cifras_sorteo: Number(cifras),
-            aviso: aviso,
-            porcentaje_minimo: Number(porcentaje),
-            imagen_url: imagen
-        })
-        .eq("id", id);
-
-    if(errorUpdate){
-        console.error(errorUpdate);
-        alert("❌ Error actualizando rifa");
-        return;
-    }
-
-    alert("✅ Rifa actualizada");
-    mostrarSorteosAdmin();
+async function editarRifaAdmin(id) {
+  return await abrirModalRifaPorId(id);
 }
 
 let tipoCambioMass = 16.70;
