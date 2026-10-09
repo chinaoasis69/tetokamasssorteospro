@@ -19366,11 +19366,11 @@ ${
 
 ${r.estado === 'pausada'
   ? ''
-  : r.estado === 'congelada'
+    : r.estado === 'congelada'
     ? `
-      <button onclick="activarRifaAdmin('${r.id}')">
-        ✅ Activar dinámica reprogramada
-      </button>
+      <div style="padding:10px;color:#ffcc00;">
+        🔒 Dinámica congelada — reactivación protegida
+      </div>
     `
     : r.estado === 'programada' && puedeCrearDinamicas
       ? `
@@ -32969,20 +32969,18 @@ async function activarRifaAdmin(id) {
       );
     }
 
-  } else if (estadoActual === "congelada") {
+    } else if (estadoActual === "congelada") {
 
-    // Ruta histórica conservada temporalmente.
-    // Se protegerá por separado antes de cerrar
-    // la política UPDATE general.
+    // PLAN-F4A5-C3B4C6-H2F5-AY
+    // Bloqueo de reactivacion directa insegura.
 
-    const { error } = await supabaseClient
-      .from("rifas")
-      .update({
-        estado: "activa"
-      })
-      .eq("id", id);
+    alert(
+      "🔒 Esta dinámica está congelada.\n\n" +
+      "Su reactivación requiere una operación " +
+      "segura autorizada desde Supabase."
+    );
 
-    errorActivar = error;
+    return;
 
   } else {
 
