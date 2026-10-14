@@ -118229,11 +118229,13 @@ window.abrirPerfilLegalMASS = async function () {
             País
         </label>
 
-        <select id="massLegalPais" style="width:100%;">
-            <option value="">Seleccionar</option>
-            <option value="MX">México</option>
-            <option value="US">Estados Unidos</option>
-        </select>
+        <select
+    id="massLegalPais"
+    style="width:100%;"
+    disabled
+>
+    <option value="">Cargando países...</option>
+</select>
 
         <p style="font-size:13px;color:#aaa;">
             Este registro no verifica automáticamente
@@ -118248,9 +118250,137 @@ window.abrirPerfilLegalMASS = async function () {
             onclick="registrarPerfilLegalInicialMass()"
         >
             💾 Registrar perfil legal
-        </button>
+                </button>
     `;
+
+    await cargarPaisesPerfilLegalMass();
 };
+
+// ================================================
+// PLAN-MASS-DERECHOS-P31-F4
+// PAISES DEL PERFIL LEGAL DESDE MASS ID
+// ================================================
+
+async function cargarPaisesPerfilLegalMass() {
+
+    const selector =
+        document.getElementById("massLegalPais");
+
+    const boton =
+        document.getElementById(
+            "btnRegistrarPerfilLegalMass"
+        );
+
+    if (!selector) return false;
+
+    selector.disabled = true;
+
+    if (boton) boton.disabled = true;
+
+    selector.innerHTML =
+        '<option value="">Cargando países...</option>';
+
+    try {
+
+        const { data, error } =
+            await supabaseClient.rpc(
+                "listar_paises_telefonia_mass_id_publico"
+            );
+
+        if (
+            error ||
+            data?.ok !== true ||
+            !Array.isArray(data?.paises)
+        ) {
+            throw error || new Error(
+                "No fue posible obtener los países."
+            );
+        }
+
+        const fragmento =
+            document.createDocumentFragment();
+
+        const inicial =
+            document.createElement("option");
+
+        inicial.value = "";
+        inicial.textContent = "Seleccionar país";
+        inicial.disabled = true;
+        inicial.selected = true;
+
+        fragmento.appendChild(inicial);
+
+        const vistos = new Set();
+        let total = 0;
+
+        for (const pais of data.paises) {
+
+            const iso2 = String(
+                pais?.codigo_iso2 || ""
+            ).trim().toUpperCase();
+
+            const nombre = String(
+                pais?.nombre || ""
+            ).trim();
+
+            if (
+                !/^[A-Z]{2}$/.test(iso2) ||
+                !nombre ||
+                vistos.has(iso2)
+            ) {
+                continue;
+            }
+
+            vistos.add(iso2);
+
+            const opcion =
+                document.createElement("option");
+
+            opcion.value = iso2;
+            opcion.textContent = nombre;
+
+            fragmento.appendChild(opcion);
+            total++;
+        }
+
+        if (total === 0) {
+            throw new Error(
+                "No hay países disponibles."
+            );
+        }
+
+        if (!selector.isConnected) return false;
+
+        selector.replaceChildren(fragmento);
+        selector.disabled = false;
+
+        if (boton?.isConnected) {
+            boton.disabled = false;
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "ERROR CARGANDO PAÍSES PERFIL LEGAL:",
+            error
+        );
+
+        if (selector.isConnected) {
+            selector.innerHTML =
+                '<option value="">No fue posible cargar países</option>';
+
+            selector.disabled = true;
+        }
+
+        if (boton?.isConnected) {
+            boton.disabled = true;
+        }
+
+        return false;
+    }
+}
 
 window.registrarPerfilLegalInicialMass =
 async function () {
@@ -118266,16 +118396,31 @@ async function () {
             ?.value || ""
     ).trim();
 
-    const pais = document.getElementById(
-        "massLegalPais"
-    )?.value || "";
+        const selectorPais =
+        document.getElementById("massLegalPais");
+
+    const pais = String(
+        selectorPais?.value || ""
+    ).trim().toUpperCase();
+
+    const paisDisponible =
+        Boolean(
+            selectorPais &&
+            !selectorPais.disabled &&
+            Array.from(selectorPais.options).some(
+                opcion =>
+                    opcion.value === pais &&
+                    !opcion.disabled
+            )
+        );
 
     if (
         !orgId ||
         !["persona", "empresa"].includes(tipo) ||
         nombre.length < 3 ||
         nombre.length > 200 ||
-        !["MX", "US"].includes(pais)
+                !/^[A-Z]{2}$/.test(pais) ||
+        !paisDisponible
     ) {
         alert("❌ Completa correctamente los campos.");
         return;
