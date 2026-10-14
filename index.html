@@ -119497,6 +119497,186 @@ if (data.estado_verificacion === "en_revision") {
         }
     });
 }
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P34-F8-F3
+// RECHAZO ADMINISTRATIVO DE PERFIL LEGAL - SUPER ADMIN
+// Dentro de mostrarDetallePerfilLegalSuperAdminMass,
+// DESPUES del bloque P34-F8-F2 y ANTES del catch externo.
+// No sustituir Guardianes ni otras funciones.
+// =====================================================
+if (data.estado_verificacion === "en_revision") {
+    const seccionRechazoLegal = document.createElement("section");
+    seccionRechazoLegal.id = "massLegalRechazoSuperAdmin";
+    seccionRechazoLegal.style.cssText =
+        "border:1px solid #b75b5b;border-radius:12px;" +
+        "padding:16px;margin-top:16px;background:#211010";
+
+    const tituloRechazoLegal = document.createElement("h3");
+    tituloRechazoLegal.textContent = "❌ Rechazar perfil legal";
+    tituloRechazoLegal.style.cssText = "color:#ffb0b0;margin:0 0 10px";
+
+    const avisoRechazoLegal = document.createElement("p");
+    avisoRechazoLegal.textContent =
+        "Usa el rechazo solo después de una revisión fundamentada. " +
+        "Si el expediente puede corregirse, utiliza la solicitud de correcciones cuando esté disponible. " +
+        "No incluyas números completos de documentos ni información sensible innecesaria.";
+    avisoRechazoLegal.style.cssText =
+        "color:#ddd;font-size:14px;line-height:1.5;white-space:pre-wrap";
+
+    const etiquetaMotivoRechazo = document.createElement("label");
+    etiquetaMotivoRechazo.textContent = "Motivo administrativo del rechazo (3–1000 caracteres)";
+    etiquetaMotivoRechazo.style.cssText = "display:block;margin:12px 0;color:#eee";
+
+    const motivoRechazoLegal = document.createElement("textarea");
+    motivoRechazoLegal.id = "massLegalMotivoRechazoSuperAdmin";
+    motivoRechazoLegal.maxLength = 1000;
+    motivoRechazoLegal.rows = 4;
+    motivoRechazoLegal.placeholder = "Indica de forma precisa el motivo del rechazo.";
+    motivoRechazoLegal.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;" +
+        "margin-top:6px;padding:10px;resize:vertical";
+    etiquetaMotivoRechazo.appendChild(motivoRechazoLegal);
+
+    const etiquetaConfirmarRechazo = document.createElement("label");
+    etiquetaConfirmarRechazo.style.cssText =
+        "display:flex;gap:9px;align-items:flex-start;margin:16px 0;" +
+        "color:#eee;font-size:14px;line-height:1.5;cursor:pointer";
+
+    const confirmarRechazoLegal = document.createElement("input");
+    confirmarRechazoLegal.type = "checkbox";
+    confirmarRechazoLegal.id = "massLegalConfirmarRechazoSuperAdmin";
+    confirmarRechazoLegal.style.cssText = "margin-top:4px;flex-shrink:0";
+
+    const textoConfirmarRechazo = document.createElement("span");
+    textoConfirmarRechazo.textContent =
+        "Confirmo que revisé el expediente y que esta decisión corresponde a un rechazo, " +
+        "no a una solicitud de correcciones.";
+    etiquetaConfirmarRechazo.append(confirmarRechazoLegal, textoConfirmarRechazo);
+
+    const botonRechazarLegal = document.createElement("button");
+    botonRechazarLegal.type = "button";
+    botonRechazarLegal.id = "massLegalRechazarPerfilSuperAdmin";
+    botonRechazarLegal.textContent = "❌ Confirmar rechazo legal";
+    botonRechazarLegal.style.cssText =
+        "padding:12px 16px;border:2px solid #f17777;" +
+        "border-radius:10px;cursor:pointer;max-width:100%";
+
+    const estadoRechazoLegal = document.createElement("p");
+    estadoRechazoLegal.setAttribute("role", "status");
+    estadoRechazoLegal.style.cssText =
+        "color:#f5d6d6;font-size:14px;line-height:1.5;" +
+        "white-space:pre-wrap;overflow-wrap:anywhere";
+
+    seccionRechazoLegal.append(
+        tituloRechazoLegal,
+        avisoRechazoLegal,
+        etiquetaMotivoRechazo,
+        etiquetaConfirmarRechazo,
+        botonRechazarLegal,
+        estadoRechazoLegal
+    );
+    contenido.appendChild(seccionRechazoLegal);
+
+    botonRechazarLegal.addEventListener("click", async () => {
+        if (!vista.isConnected || botonRechazarLegal.disabled) return;
+
+        if (!data.actualizado_en || data.perfil_legal_id !== id ||
+            !data.organizador_id) {
+            estadoRechazoLegal.textContent =
+                "❌ El expediente cambió o sus identificadores no son válidos. Vuelve a abrirlo.";
+            return;
+        }
+
+        const motivo = motivoRechazoLegal.value.trim();
+        if (motivo.length < 3 || motivo.length > 1000) {
+            estadoRechazoLegal.textContent =
+                "⚠️ Escribe un motivo de rechazo de 3 a 1000 caracteres.";
+            return;
+        }
+
+        if (!confirmarRechazoLegal.checked) {
+            estadoRechazoLegal.textContent =
+                "⚠️ Confirma que la revisión fundamenta el rechazo.";
+            return;
+        }
+
+        if (!confirm(
+            "¿CONFIRMAS RECHAZAR este Perfil Legal? " +
+            "La decisión será auditada y no eliminará el expediente."
+        )) return;
+
+        botonRechazarLegal.disabled = true;
+        botonRechazarLegal.textContent = "⏳ Registrando rechazo...";
+        estadoRechazoLegal.textContent = "Validando decisión en Supabase...";
+
+        try {
+            if (!(await verificarAccesoSuperAdmin())) {
+                if (vista.isConnected) {
+                    estadoRechazoLegal.textContent = "❌ Acceso no autorizado.";
+                }
+                return;
+            }
+            if (!vista.isConnected) return;
+
+            const { data: rechazo, error: errorRechazo } =
+                await supabaseClient.rpc(
+                    "rechazar_perfil_legal_super_admin_seguro",
+                    {
+                        p_perfil_legal_id: id,
+                        p_actualizado_en_esperado: data.actualizado_en,
+                        p_motivo_revision: motivo
+                    }
+                );
+
+            if (!vista.isConnected) return;
+
+            if (!errorRechazo && rechazo?.ok === true &&
+                rechazo.codigo === "PERFIL_LEGAL_RECHAZADO" &&
+                rechazo.perfil_legal_id === id &&
+                rechazo.organizador_id === data.organizador_id &&
+                rechazo.estado_verificacion === "rechazado") {
+                motivoRechazoLegal.value = "";
+                confirmarRechazoLegal.checked = false;
+                await mostrarDetallePerfilLegalSuperAdminMass(id);
+                return;
+            }
+
+            const codigo = rechazo?.codigo;
+            estadoRechazoLegal.textContent =
+                codigo === "AUTOREVISION_NO_PERMITIDA"
+                    ? "❌ No puedes rechazar tu propio expediente ni el de un organizador vinculado a ti."
+                : codigo === "VERSION_DESACTUALIZADA"
+                    ? "ℹ️ El expediente cambió. Vuelve a abrirlo antes de decidir."
+                : codigo === "TRANSICION_NO_PERMITIDA"
+                    ? "ℹ️ El expediente ya no está en revisión. Actualiza la lista."
+                : codigo === "YA_RECHAZADO"
+                    ? "ℹ️ El expediente ya fue rechazado. Actualiza la vista."
+                : codigo === "MOTIVO_RECHAZO_INVALIDO"
+                    ? "⚠️ El motivo no cumple las validaciones. Revísalo."
+                : codigo === "PERFIL_NO_EXISTE"
+                    ? "ℹ️ El expediente solicitado no existe."
+                : codigo === "NO_AUTORIZADO"
+                    ? "❌ Acceso no autorizado."
+                : "❌ Supabase no confirmó el rechazo. Revisa el expediente e inténtalo nuevamente.";
+
+            if (errorRechazo) {
+                // Nunca escribir el motivo de rechazo en la consola.
+                console.error("ERROR RECHAZO PERFIL LEGAL:", errorRechazo.code);
+            }
+        } catch (_error) {
+            if (vista.isConnected) {
+                estadoRechazoLegal.textContent =
+                    "❌ Error inesperado al registrar el rechazo legal.";
+            }
+        } finally {
+            if (botonRechazarLegal.isConnected) {
+                botonRechazarLegal.disabled = false;
+                botonRechazarLegal.textContent = "❌ Confirmar rechazo legal";
+            }
+        }
+    });
+}
     } catch (error) {
         if (vista.isConnected) {
             estado.textContent = "❌ Error inesperado consultando el expediente.";
