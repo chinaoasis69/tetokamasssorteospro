@@ -119677,6 +119677,215 @@ if (data.estado_verificacion === "en_revision") {
         }
     });
 }
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P34-F8-F4
+// SOLICITUD SEGURA DE CORRECCIONES LEGALES - SUPER ADMIN
+// PEGAR DENTRO de mostrarDetallePerfilLegalSuperAdminMass,
+// DESPUES del bloque P34-F8-F3 y ANTES del catch externo.
+// No modificar Guardianes ni otras funciones existentes.
+// =====================================================
+if (data.estado_verificacion === "en_revision") {
+    // Acordeon cerrado inicialmente para no saturar el expediente.
+    const panelCorreccionesLegal = document.createElement("details");
+    panelCorreccionesLegal.id = "massLegalCorreccionesSuperAdmin";
+    panelCorreccionesLegal.style.cssText =
+        "border:1px solid #d5a53c;border-radius:12px;" +
+        "padding:14px;margin-top:16px;background:#211a0b";
+
+    const resumenCorreccionesLegal = document.createElement("summary");
+    resumenCorreccionesLegal.textContent = "📝 Solicitar correcciones al propietario";
+    resumenCorreccionesLegal.style.cssText =
+        "color:#ffdc8b;font-weight:bold;cursor:pointer";
+
+    const avisoCorreccionesLegal = document.createElement("p");
+    avisoCorreccionesLegal.textContent =
+        "Esta acción devuelve el expediente al propietario para correcciones. " +
+        "El motivo administrativo es privado. Solo las indicaciones para el propietario " +
+        "se mostrarán en Mi Perfil Legal. No incluyas datos sensibles innecesarios.";
+    avisoCorreccionesLegal.style.cssText =
+        "color:#ddd;font-size:14px;line-height:1.5";
+
+    const etiquetaMotivoCorrecciones = document.createElement("label");
+    etiquetaMotivoCorrecciones.textContent =
+        "Motivo administrativo privado (3 a 1000 caracteres)";
+    etiquetaMotivoCorrecciones.style.cssText =
+        "display:block;color:#eee;margin:12px 0";
+    const motivoCorreccionesLegal = document.createElement("textarea");
+    motivoCorreccionesLegal.id = "massLegalMotivoCorreccionesSuperAdmin";
+    motivoCorreccionesLegal.rows = 3;
+    motivoCorreccionesLegal.maxLength = 1000;
+    motivoCorreccionesLegal.autocomplete = "off";
+    motivoCorreccionesLegal.placeholder = "Motivo interno de la revisión.";
+    motivoCorreccionesLegal.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;margin-top:6px;" +
+        "padding:10px;resize:vertical";
+    etiquetaMotivoCorrecciones.appendChild(motivoCorreccionesLegal);
+
+    const etiquetaIndicacionesLegal = document.createElement("label");
+    etiquetaIndicacionesLegal.textContent =
+        "Indicaciones que verá el propietario (10 a 1500 caracteres)";
+    etiquetaIndicacionesLegal.style.cssText =
+        "display:block;color:#eee;margin:12px 0";
+    const indicacionesCorreccionesLegal = document.createElement("textarea");
+    indicacionesCorreccionesLegal.id = "massLegalIndicacionesPropietarioSuperAdmin";
+    indicacionesCorreccionesLegal.rows = 5;
+    indicacionesCorreccionesLegal.maxLength = 1500;
+    indicacionesCorreccionesLegal.autocomplete = "off";
+    indicacionesCorreccionesLegal.placeholder =
+        "Explica qué datos debe corregir y cómo hacerlo, sin incluir información confidencial.";
+    indicacionesCorreccionesLegal.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;margin-top:6px;" +
+        "padding:10px;resize:vertical";
+    etiquetaIndicacionesLegal.appendChild(indicacionesCorreccionesLegal);
+
+    const etiquetaConfirmaCorrecciones = document.createElement("label");
+    etiquetaConfirmaCorrecciones.style.cssText =
+        "display:flex;gap:9px;align-items:flex-start;margin:16px 0;" +
+        "color:#eee;font-size:14px;line-height:1.5;cursor:pointer";
+    const confirmaCorreccionesLegal = document.createElement("input");
+    confirmaCorreccionesLegal.type = "checkbox";
+    confirmaCorreccionesLegal.id = "massLegalConfirmaCorreccionesSuperAdmin";
+    confirmaCorreccionesLegal.style.cssText = "margin-top:4px;flex-shrink:0";
+    const textoConfirmaCorrecciones = document.createElement("span");
+    textoConfirmaCorrecciones.textContent =
+        "Confirmo que el expediente requiere correcciones y que las indicaciones " +
+        "son adecuadas para comunicarse al propietario.";
+    etiquetaConfirmaCorrecciones.append(
+        confirmaCorreccionesLegal, textoConfirmaCorrecciones
+    );
+
+    const botonSolicitarCorrecciones = document.createElement("button");
+    botonSolicitarCorrecciones.type = "button";
+    botonSolicitarCorrecciones.id = "massLegalSolicitarCorreccionesSuperAdmin";
+    botonSolicitarCorrecciones.textContent = "📝 Solicitar correcciones";
+    botonSolicitarCorrecciones.style.cssText =
+        "padding:12px 16px;border:2px solid #ffca59;" +
+        "border-radius:10px;cursor:pointer;max-width:100%";
+
+    const estadoSolicitudCorrecciones = document.createElement("p");
+    estadoSolicitudCorrecciones.setAttribute("role", "status");
+    estadoSolicitudCorrecciones.style.cssText =
+        "color:#ffe2a0;font-size:14px;line-height:1.5;" +
+        "white-space:pre-wrap;overflow-wrap:anywhere";
+
+    panelCorreccionesLegal.append(
+        resumenCorreccionesLegal,
+        avisoCorreccionesLegal,
+        etiquetaMotivoCorrecciones,
+        etiquetaIndicacionesLegal,
+        etiquetaConfirmaCorrecciones,
+        botonSolicitarCorrecciones,
+        estadoSolicitudCorrecciones
+    );
+    contenido.appendChild(panelCorreccionesLegal);
+
+    botonSolicitarCorrecciones.addEventListener("click", async () => {
+        if (!vista.isConnected || botonSolicitarCorrecciones.disabled) return;
+        if (!data.actualizado_en || data.perfil_legal_id !== id ||
+            !data.organizador_id) {
+            estadoSolicitudCorrecciones.textContent =
+                "❌ El expediente cambió o sus identificadores no son válidos. Vuelve a abrirlo.";
+            return;
+        }
+
+        const motivo = motivoCorreccionesLegal.value.trim();
+        const indicaciones = indicacionesCorreccionesLegal.value.trim();
+        if (motivo.length < 3 || motivo.length > 1000) {
+            estadoSolicitudCorrecciones.textContent =
+                "⚠️ El motivo administrativo debe tener de 3 a 1000 caracteres.";
+            return;
+        }
+        if (indicaciones.length < 10 || indicaciones.length > 1500) {
+            estadoSolicitudCorrecciones.textContent =
+                "⚠️ Las indicaciones al propietario deben tener de 10 a 1500 caracteres.";
+            return;
+        }
+        if (!confirmaCorreccionesLegal.checked) {
+            estadoSolicitudCorrecciones.textContent =
+                "⚠️ Confirma que revisaste las indicaciones publicables.";
+            return;
+        }
+        if (!confirm(
+            "¿CONFIRMAS solicitar correcciones de este expediente? " +
+            "Las indicaciones serán visibles para el propietario y la decisión será auditada."
+        )) return;
+
+        botonSolicitarCorrecciones.disabled = true;
+        botonSolicitarCorrecciones.textContent = "⏳ Solicitando correcciones...";
+        estadoSolicitudCorrecciones.textContent = "Validando solicitud en Supabase...";
+
+        try {
+            if (!(await verificarAccesoSuperAdmin())) {
+                if (vista.isConnected) {
+                    estadoSolicitudCorrecciones.textContent = "❌ Acceso no autorizado.";
+                }
+                return;
+            }
+            if (!vista.isConnected) return;
+
+            const { data: solicitud, error: errorSolicitud } =
+                await supabaseClient.rpc(
+                    "solicitar_correcciones_perfil_legal_con_indicaciones_seguro",
+                    {
+                        p_perfil_legal_id: id,
+                        p_actualizado_en_esperado: data.actualizado_en,
+                        p_motivo_revision: motivo,
+                        p_indicaciones_para_propietario: indicaciones
+                    }
+                );
+            if (!vista.isConnected) return;
+
+            if (!errorSolicitud && solicitud?.ok === true &&
+                solicitud.codigo === "ACTUALIZACION_LEGAL_SOLICITADA" &&
+                solicitud.perfil_legal_id === id &&
+                String(solicitud.organizador_id) === String(data.organizador_id) &&
+                solicitud.estado_verificacion === "requiere_actualizacion" &&
+                solicitud.indicaciones_publicadas === true) {
+                // Limpiar los dos textos antes de actualizar la vista.
+                motivoCorreccionesLegal.value = "";
+                indicacionesCorreccionesLegal.value = "";
+                confirmaCorreccionesLegal.checked = false;
+                await mostrarDetallePerfilLegalSuperAdminMass(id);
+                return;
+            }
+
+            const codigo = solicitud?.codigo;
+            estadoSolicitudCorrecciones.textContent =
+                codigo === "AUTOREVISION_NO_PERMITIDA"
+                    ? "❌ No puedes revisar tu propio expediente ni el de un organizador vinculado a ti."
+                : codigo === "VERSION_DESACTUALIZADA"
+                    ? "ℹ️ El expediente cambió. Vuelve a abrirlo antes de decidir."
+                : codigo === "TRANSICION_NO_PERMITIDA"
+                    ? "ℹ️ El expediente ya no está en revisión. Actualiza la lista."
+                : codigo === "YA_REQUIERE_ACTUALIZACION"
+                    ? "ℹ️ Ya se solicitaron correcciones para este expediente."
+                : codigo === "MOTIVO_ACTUALIZACION_INVALIDO"
+                    ? "⚠️ Revisa el motivo administrativo." 
+                : codigo === "INDICACIONES_PROPIETARIO_INVALIDAS"
+                    ? "⚠️ Revisa el texto que se enviará al propietario."
+                : codigo === "PERFIL_NO_EXISTE"
+                    ? "ℹ️ El expediente solicitado no existe."
+                : codigo === "NO_AUTORIZADO"
+                    ? "❌ Acceso no autorizado."
+                : "❌ Supabase no confirmó la solicitud ni su publicación. Actualiza la vista antes de reintentar.";
+            if (errorSolicitud) {
+                // No registrar en consola el motivo ni las indicaciones.
+                console.error("ERROR CORRECCIONES PERFIL LEGAL:", errorSolicitud.code);
+            }
+        } catch (_error) {
+            if (vista.isConnected) {
+                estadoSolicitudCorrecciones.textContent =
+                    "❌ Error inesperado al solicitar correcciones legales.";
+            }
+        } finally {
+            if (botonSolicitarCorrecciones.isConnected) {
+                botonSolicitarCorrecciones.disabled = false;
+                botonSolicitarCorrecciones.textContent = "📝 Solicitar correcciones";
+            }
+        }
+    });
+}
     } catch (error) {
         if (vista.isConnected) {
             estado.textContent = "❌ Error inesperado consultando el expediente.";
