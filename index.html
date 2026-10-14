@@ -118599,6 +118599,90 @@ async function mostrarEditorPerfilLegalMass(resultado) {
     panel.appendChild(guardar);
     cont.replaceChildren(panel);
 
+    // =====================================================
+// PLAN-MASS-DERECHOS-P34-F6-F5-F1
+// INDICACIONES DE CORRECCION PRIVADAS - MI PERFIL LEGAL
+// =====================================================
+if (resultado.estado_verificacion === "requiere_actualizacion") {
+    const avisoCorrecciones = document.createElement("section");
+    avisoCorrecciones.id = "massPerfilLegalAvisoCorrecciones";
+    avisoCorrecciones.setAttribute("aria-live", "polite");
+    avisoCorrecciones.style.cssText =
+        "border:1px solid #ffcc66;border-radius:12px;" +
+        "background:#201a0c;padding:15px;margin:14px 0;" +
+        "overflow-wrap:anywhere";
+
+    const tituloCorrecciones = document.createElement("h3");
+    tituloCorrecciones.textContent = "⚠️ Correcciones solicitadas";
+    tituloCorrecciones.style.cssText = "color:#ffcc66;margin:0 0 8px";
+
+    const textoCorrecciones = document.createElement("p");
+    textoCorrecciones.style.cssText =
+        "color:#eee;white-space:pre-wrap;line-height:1.6;margin:0";
+    textoCorrecciones.textContent = "Consultando indicaciones oficiales...";
+
+    const notaCorrecciones = document.createElement("p");
+    notaCorrecciones.style.cssText =
+        "color:#bbb;font-size:13px;line-height:1.5;margin:12px 0 0";
+    notaCorrecciones.textContent =
+        "Corrige los datos indicados y guarda el perfil. El reenvío a revisión se habilitará por separado.";
+
+    avisoCorrecciones.append(
+        tituloCorrecciones, textoCorrecciones, notaCorrecciones
+    );
+    panel.insertBefore(avisoCorrecciones, nota);
+
+    // Cargar en paralelo sin bloquear los campos ni el botón Guardar.
+    void (async () => {
+        try {
+            const { data: instrucciones, error: errorIndicaciones } =
+                await supabaseClient.rpc(
+                    "obtener_mis_indicaciones_perfil_legal_organizador_seguro",
+                    { p_organizador_id: organizadorId }
+                );
+
+            // No insertar información si el usuario cambió de pantalla
+            // o de organizador durante la consulta.
+            if (!avisoCorrecciones.isConnected ||
+                obtenerOrganizadorPerfilLegalMass() !== organizadorId) {
+                return;
+            }
+
+            if (errorIndicaciones || instrucciones?.ok !== true) {
+                textoCorrecciones.textContent =
+                    "❌ No fue posible consultar las indicaciones. Vuelve a abrir Mi Perfil Legal.";
+                return;
+            }
+
+            if (instrucciones.existe !== true ||
+                instrucciones.perfil_legal_id !== resultado.perfil_legal_id ||
+                instrucciones.estado_verificacion !== "requiere_actualizacion" ||
+                instrucciones.actualizado_en !== actualizadoEn) {
+                textoCorrecciones.textContent =
+                    "ℹ️ El expediente cambió. Vuelve a abrir Mi Perfil Legal para ver la información actualizada.";
+                return;
+            }
+
+            const indicacionesPublicadas =
+                instrucciones.indicaciones_para_propietario;
+            if (instrucciones.tiene_indicaciones === true &&
+                typeof indicacionesPublicadas === "string" &&
+                indicacionesPublicadas.trim().length > 0) {
+                // Solo texto: evita inyectar HTML desde datos externos.
+                textoCorrecciones.textContent = indicacionesPublicadas;
+            } else {
+                textoCorrecciones.textContent =
+                    "ℹ️ Este perfil requiere correcciones, pero todavía no tiene indicaciones publicadas. Comunícate con soporte de TE-TO-KA.";
+            }
+        } catch (_error) {
+            if (avisoCorrecciones.isConnected) {
+                textoCorrecciones.textContent =
+                    "❌ Error al consultar indicaciones. Vuelve a abrir Mi Perfil Legal.";
+            }
+        }
+    })();
+}
+
     const tipo = document.getElementById("massLegalEditar_tipo_responsable");
     const alternarEmpresa = () => {
         if (seccionEmpresa) {
