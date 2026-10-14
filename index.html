@@ -3520,6 +3520,14 @@ async function volverPanelSuperAdmin(){
   document.getElementById("superAdminContenido").innerHTML = `
     <button onclick="mostrarDashboardGlobalSuperAdmin()">📊 Dashboard global</button>
     <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+
+    <button
+    type="button"
+    onclick="mostrarPerfilesLegalesSuperAdminMass()"
+>
+    ⚖️ Verificación de Perfiles Legales
+</button>
+
 	<button
   type="button"
   onclick="mostrarGestionAccesosOrganizadores()"
@@ -13861,6 +13869,14 @@ if(btnVolverSuperAdmin){
   document.getElementById("superAdminContenido").innerHTML = `
     <button onclick="mostrarDashboardGlobalSuperAdmin()">📊 Dashboard global</button>
     <button onclick="mostrarOrganizadoresAdmin()">👥 Organizadores</button>
+
+    <button
+    type="button"
+    onclick="mostrarPerfilesLegalesSuperAdminMass()"
+>
+    ⚖️ Verificación de Perfiles Legales
+</button>
+
 	<button
   type="button"
   onclick="mostrarGestionAccesosOrganizadores()"
@@ -118684,6 +118700,140 @@ async function mostrarEditorPerfilLegalMass(resultado) {
             }
         }
     });
+}
+
+// PLAN-MASS-DERECHOS-P32-F1
+// Lista de perfiles legales, consulta exclusiva del Super Admin.
+async function mostrarPerfilesLegalesSuperAdminMass() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+
+    const raiz = document.getElementById("superAdminContenido");
+    if (!raiz) return;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText = "max-width:900px;margin:0 auto;text-align:left";
+    raiz.replaceChildren(vista);
+
+    const titulo = document.createElement("h2");
+    titulo.textContent = "⚖️ Verificación de Perfiles Legales";
+    titulo.style.color = "#39ff14";
+
+    const descripcion = document.createElement("p");
+    descripcion.textContent =
+        "Solicitudes de identidad legal. Esta pantalla es de solo consulta; " +
+        "todavía no aprueba ni rechaza perfiles.";
+    descripcion.style.color = "#bbb";
+
+    const filtros = document.createElement("div");
+    filtros.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;margin:14px 0";
+
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", "Filtrar perfiles por estado");
+    for (const [valor, etiqueta] of [
+        ["", "Todos los estados"],
+        ["pendiente", "Pendientes"],
+        ["en_revision", "En revisión"],
+        ["verificado", "Verificados"],
+        ["rechazado", "Rechazados"],
+        ["requiere_actualizacion", "Requieren actualización"]
+    ]) {
+        const opcion = document.createElement("option");
+        opcion.value = valor;
+        opcion.textContent = etiqueta;
+        select.appendChild(opcion);
+    }
+
+    const recargar = document.createElement("button");
+    recargar.type = "button";
+    recargar.textContent = "🔄 Actualizar";
+
+    const regresar = document.createElement("button");
+    regresar.type = "button";
+    regresar.textContent = "← Volver al Panel Súper Admin";
+    regresar.addEventListener("click", () => volverPanelSuperAdmin());
+
+    filtros.append(select, recargar, regresar);
+
+    const resumen = document.createElement("p");
+    resumen.setAttribute("aria-live", "polite");
+    const lista = document.createElement("div");
+    vista.append(titulo, descripcion, filtros, resumen, lista);
+
+    let ultimaSolicitud = 0;
+    async function cargar() {
+        const solicitud = ++ultimaSolicitud;
+        recargar.disabled = true;
+        resumen.textContent = "Consultando Supabase...";
+        lista.replaceChildren();
+
+        try {
+            const {data, error} = await supabaseClient.rpc(
+                "listar_perfiles_legales_super_admin_seguro",
+                {p_estado: select.value || null, p_limite: 50}
+            );
+
+            if (!vista.isConnected || solicitud !== ultimaSolicitud) return;
+
+            if (error || data?.ok !== true || !Array.isArray(data?.perfiles)) {
+                resumen.textContent =
+                    "❌ No fue posible consultar los perfiles legales.";
+                return;
+            }
+
+            resumen.textContent =
+                `Total en este estado: ${Number(data.total || 0)} · ` +
+                `Mostrados: ${data.perfiles.length} (máximo 50)`;
+
+            if (data.perfiles.length === 0) {
+                const vacio = document.createElement("p");
+                vacio.textContent = "Todavía no hay perfiles legales en este estado.";
+                vacio.style.color = "#bbb";
+                lista.appendChild(vacio);
+                return;
+            }
+
+            for (const perfil of data.perfiles) {
+                const tarjeta = document.createElement("details");
+                tarjeta.style.cssText =
+                    "border:1px solid #39ff14;border-radius:12px;" +
+                    "padding:12px;margin:10px 0;background:#101810";
+
+                const encabezado = document.createElement("summary");
+                encabezado.style.cssText = "cursor:pointer;font-weight:bold";
+                encabezado.textContent =
+                    `${perfil.nombre_legal || "Sin nombre legal"} · ` +
+                    `${perfil.estado_verificacion || "Sin estado"}`;
+                tarjeta.appendChild(encabezado);
+
+                for (const [etiqueta, valor] of [
+                    ["Tipo", perfil.tipo_responsable],
+                    ["País", perfil.pais_codigo_iso2],
+                    ["Organizador ID", perfil.organizador_id],
+                    ["Perfil ID", perfil.perfil_legal_id],
+                    ["Actualizado", perfil.actualizado_en]
+                ]) {
+                    const dato = document.createElement("p");
+                    dato.textContent = `${etiqueta}: ${valor ?? "—"}`;
+                    dato.style.overflowWrap = "anywhere";
+                    tarjeta.appendChild(dato);
+                }
+                lista.appendChild(tarjeta);
+            }
+        } catch (e) {
+            if (vista.isConnected && solicitud === ultimaSolicitud) {
+                resumen.textContent = "❌ Error inesperado consultando perfiles.";
+            }
+        } finally {
+            if (vista.isConnected && solicitud === ultimaSolicitud) {
+                recargar.disabled = false;
+            }
+        }
+    }
+
+    select.addEventListener("change", cargar);
+    recargar.addEventListener("click", cargar);
+    await cargar();
 }
 </script>
 
