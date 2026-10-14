@@ -118818,6 +118818,163 @@ async function mostrarPerfilesLegalesSuperAdminMass() {
                     dato.style.overflowWrap = "anywhere";
                     tarjeta.appendChild(dato);
                 }
+                                // =====================================================
+                // PLAN-MASS-DERECHOS-P33B-F1
+                // CONSULTA DETALLADA PRIVADA - SIN CAMBIAR DATOS
+                // =====================================================
+                const botonExpediente = document.createElement("button");
+                botonExpediente.type = "button";
+                botonExpediente.textContent = "🔎 Revisar expediente";
+                botonExpediente.style.cssText =
+                    "margin:12px 0;padding:10px;border:1px solid #39ff14;" +
+                    "border-radius:10px;background:#102710;color:white;cursor:pointer";
+
+                const detalleExpediente = document.createElement("div");
+                detalleExpediente.hidden = true;
+                detalleExpediente.style.cssText =
+                    "border-top:1px solid #355835;margin-top:10px;padding-top:12px";
+
+                botonExpediente.addEventListener("click", async () => {
+                    // Si está abierto, cerrarlo sin volver a consultar.
+                    if (!detalleExpediente.hidden) {
+                        detalleExpediente.hidden = true;
+                        botonExpediente.textContent = "🔎 Revisar expediente";
+                        return;
+                    }
+
+                    botonExpediente.disabled = true;
+                    detalleExpediente.hidden = false;
+                    detalleExpediente.textContent = "Consultando expediente protegido...";
+
+                    try {
+                        // El backend verifica nuevamente al Súper Admin.
+                        if (!(await verificarAccesoSuperAdmin())) {
+                            if (detalleExpediente.isConnected) {
+                                detalleExpediente.textContent = "Acceso no autorizado.";
+                            }
+                            return;
+                        }
+
+                        const { data: expediente, error: errorDetalle } =
+                            await supabaseClient.rpc(
+                                "obtener_detalle_perfil_legal_super_admin_seguro",
+                                { p_perfil_legal_id: perfil.perfil_legal_id }
+                            );
+
+                        if (!detalleExpediente.isConnected) return;
+
+                        if (
+                            errorDetalle ||
+                            expediente?.ok !== true ||
+                            !expediente.perfil ||
+                            typeof expediente.perfil !== "object" ||
+                            expediente.perfil_legal_id !== perfil.perfil_legal_id ||
+                            expediente.organizador_id !== perfil.organizador_id
+                        ) {
+                            detalleExpediente.textContent =
+                                "❌ No fue posible consultar este expediente. Actualiza la lista.";
+                            return;
+                        }
+
+                        const p = expediente.perfil;
+                        const org = expediente.organizador || {};
+                        const rev = expediente.revision || {};
+
+                        // Construir exclusivamente nodos DOM: sin HTML de origen externo.
+                        detalleExpediente.replaceChildren();
+                        const encabezadoDetalle = document.createElement("h3");
+                        encabezadoDetalle.textContent = "🔐 Expediente legal privado";
+                        encabezadoDetalle.style.color = "#39ff14";
+                        detalleExpediente.appendChild(encabezadoDetalle);
+
+                        const advertencia = document.createElement("p");
+                        advertencia.textContent =
+                            "Solo lectura. Esta vista no aprueba ni rechaza la identidad.";
+                        advertencia.style.color = "#bbb";
+                        detalleExpediente.appendChild(advertencia);
+
+                        const seccionesDetalle = [
+                            ["Organizador", [
+                                ["Nombre público", org.nombre_publico],
+                                ["Activo", org.activo === true ? "Sí" : "No"],
+                                ["Organizador ID", expediente.organizador_id],
+                                ["Perfil ID", expediente.perfil_legal_id],
+                                ["Creado", expediente.creado_en],
+                                ["Actualizado", expediente.actualizado_en]
+                            ]],
+                            ["Identidad legal", [
+                                ["Responsable", p.tipo_responsable],
+                                ["Nombre legal", p.nombre_legal],
+                                ["País de domicilio", p.pais_codigo_iso2]
+                            ]],
+                            ["Empresa y representante", [
+                                ["País de constitución", p.pais_constitucion_codigo],
+                                ["Tipo de registro", p.empresa_registro_tipo],
+                                ["Referencia de registro", p.empresa_registro_referencia],
+                                ["Representante", p.representante_nombre],
+                                ["Cargo", p.representante_cargo]
+                            ]],
+                            ["Ubicación", [
+                                ["Estado/región", p.estado_region],
+                                ["Ciudad/localidad", p.ciudad_localidad],
+                                ["Código postal", p.codigo_postal],
+                                ["Dirección 1", p.direccion_linea1],
+                                ["Dirección 2", p.direccion_linea2],
+                                ["Zona horaria", p.zona_horaria],
+                                ["Nivel de ubicación pública", p.nivel_ubicacion_publica]
+                            ]],
+                            ["Atención y privacidad", [
+                                ["Canal de soporte", p.soporte_tipo],
+                                ["Contacto de soporte", p.soporte_valor],
+                                ["Canal de privacidad", p.privacidad_tipo],
+                                ["Contacto de privacidad", p.privacidad_valor]
+                            ]],
+                            ["Revisión administrativa", [
+                                ["Estado", expediente.estado_verificacion],
+                                ["Motivo de revisión", rev.motivo_revision],
+                                ["Método de verificación", rev.verificacion_metodo],
+                                ["Verificado en", rev.verificado_en],
+                                ["Verificado por", rev.verificado_por_auth_id]
+                            ]]
+                        ];
+
+                        for (const [tituloSeccion, campos] of seccionesDetalle) {
+                            const acordeon = document.createElement("details");
+                            acordeon.open = tituloSeccion === "Identidad legal";
+                            acordeon.style.cssText =
+                                "border:1px solid #365d36;border-radius:10px;" +
+                                "padding:10px;margin:8px 0;background:#0b170b";
+
+                            const resumenDetalle = document.createElement("summary");
+                            resumenDetalle.textContent = tituloSeccion;
+                            resumenDetalle.style.cssText =
+                                "color:#9cff9c;font-weight:bold;cursor:pointer";
+                            acordeon.appendChild(resumenDetalle);
+
+                            for (const [etiqueta, valor] of campos) {
+                                const fila = document.createElement("p");
+                                fila.style.cssText =
+                                    "margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap";
+                                fila.textContent = `${etiqueta}: ${valor ?? "—"}`;
+                                acordeon.appendChild(fila);
+                            }
+                            detalleExpediente.appendChild(acordeon);
+                        }
+
+                        botonExpediente.textContent = "🔒 Ocultar expediente";
+                    } catch (e) {
+                        if (detalleExpediente.isConnected) {
+                            detalleExpediente.textContent =
+                                "❌ Ocurrió un error al consultar el expediente.";
+                        }
+                    } finally {
+                        if (botonExpediente.isConnected) {
+                            botonExpediente.disabled = false;
+                        }
+                    }
+                });
+
+                tarjeta.append(botonExpediente, detalleExpediente);
                 lista.appendChild(tarjeta);
             }
         } catch (e) {
