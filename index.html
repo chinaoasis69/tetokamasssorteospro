@@ -119295,6 +119295,208 @@ if (data.estado_verificacion === "pendiente") {
         }
     });
 }
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P34-F8-F2
+// APROBACION PRIVADA DE PERFIL LEGAL - SUPER ADMIN
+// Ubicar DENTRO de mostrarDetallePerfilLegalSuperAdminMass,
+// DESPUES del bloque P34-F8-F1 y ANTES del catch externo.
+// No modificar los Guardianes ni otras funciones.
+// =====================================================
+if (data.estado_verificacion === "en_revision") {
+    const seccionAprobacionLegal = document.createElement("section");
+    seccionAprobacionLegal.id = "massLegalAprobacionSuperAdmin";
+    seccionAprobacionLegal.style.cssText =
+        "border:1px solid #457c45;border-radius:12px;" +
+        "padding:16px;margin-top:20px;background:#0c180e";
+
+    const tituloAprobacionLegal = document.createElement("h3");
+    tituloAprobacionLegal.textContent = "✅ Verificar identidad legal";
+    tituloAprobacionLegal.style.cssText = "color:#91ff91;margin:0 0 10px";
+
+    const avisoAprobacionLegal = document.createElement("p");
+    avisoAprobacionLegal.textContent =
+        "Únicamente después de comprobar la evidencia auténtica. " +
+        "Esta decisión verifica identidad, NO otorga permisos para organizar sorteos. " +
+        "No escribas documentos completos ni números de identificación sensibles.";
+    avisoAprobacionLegal.style.cssText =
+        "color:#ddd;font-size:14px;line-height:1.5;white-space:pre-wrap";
+
+    const etiquetaMetodoLegal = document.createElement("label");
+    etiquetaMetodoLegal.textContent = "Método de verificación (2–120 caracteres)";
+    etiquetaMetodoLegal.style.cssText = "display:block;margin:12px 0;color:#eee";
+    const metodoLegal = document.createElement("input");
+    metodoLegal.type = "text";
+    metodoLegal.id = "massLegalMetodoVerificacionSuperAdmin";
+    metodoLegal.maxLength = 120;
+    metodoLegal.autocomplete = "off";
+    metodoLegal.placeholder = "Ej.: cotejo_documental";
+    metodoLegal.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px";
+    etiquetaMetodoLegal.appendChild(metodoLegal);
+
+    const etiquetaReferenciaLegal = document.createElement("label");
+    etiquetaReferenciaLegal.textContent =
+        "Referencia interna de evidencia (6–300 caracteres)";
+    etiquetaReferenciaLegal.style.cssText = "display:block;margin:12px 0;color:#eee";
+    const referenciaLegal = document.createElement("input");
+    referenciaLegal.type = "text";
+    referenciaLegal.id = "massLegalReferenciaVerificacionSuperAdmin";
+    referenciaLegal.maxLength = 300;
+    referenciaLegal.autocomplete = "off";
+    referenciaLegal.placeholder = "Folio interno, sin datos personales completos";
+    referenciaLegal.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px";
+    etiquetaReferenciaLegal.appendChild(referenciaLegal);
+
+    const etiquetaConfirmacionLegal = document.createElement("label");
+    etiquetaConfirmacionLegal.style.cssText =
+        "display:flex;gap:9px;align-items:flex-start;margin:16px 0;color:#eee;" +
+        "font-size:14px;line-height:1.5;cursor:pointer";
+    const confirmacionLegal = document.createElement("input");
+    confirmacionLegal.type = "checkbox";
+    confirmacionLegal.id = "massLegalEvidenciaConfirmadaSuperAdmin";
+    confirmacionLegal.style.cssText = "margin-top:4px;flex-shrink:0";
+    const textoConfirmacionLegal = document.createElement("span");
+    textoConfirmacionLegal.textContent =
+        "Confirmo que revisé evidencia auténtica, verifiqué la identidad " +
+        "y estoy autorizado a decidir sobre este expediente.";
+    etiquetaConfirmacionLegal.append(confirmacionLegal, textoConfirmacionLegal);
+
+    const botonAprobarLegal = document.createElement("button");
+    botonAprobarLegal.type = "button";
+    botonAprobarLegal.id = "massLegalAprobarPerfilSuperAdmin";
+    botonAprobarLegal.textContent = "✅ Aprobar identidad legal";
+    botonAprobarLegal.style.cssText =
+        "padding:12px 16px;border:2px solid #39ff14;" +
+        "border-radius:10px;cursor:pointer;max-width:100%";
+
+    const estadoAprobacionLegal = document.createElement("p");
+    estadoAprobacionLegal.setAttribute("role", "status");
+    estadoAprobacionLegal.style.cssText =
+        "color:#e3e3e3;white-space:pre-wrap;overflow-wrap:anywhere;" +
+        "font-size:14px;line-height:1.5";
+
+    seccionAprobacionLegal.append(
+        tituloAprobacionLegal,
+        avisoAprobacionLegal,
+        etiquetaMetodoLegal,
+        etiquetaReferenciaLegal,
+        etiquetaConfirmacionLegal,
+        botonAprobarLegal,
+        estadoAprobacionLegal
+    );
+    contenido.appendChild(seccionAprobacionLegal);
+
+    botonAprobarLegal.addEventListener("click", async () => {
+        if (!vista.isConnected || botonAprobarLegal.disabled) return;
+
+        if (!data.actualizado_en || data.perfil_legal_id !== id) {
+            estadoAprobacionLegal.textContent =
+                "❌ La versión o identidad del expediente no es válida. Vuelve a abrirlo.";
+            return;
+        }
+
+        const metodo = metodoLegal.value.trim();
+        const referencia = referenciaLegal.value.trim();
+        if (metodo.length < 2 || metodo.length > 120) {
+            estadoAprobacionLegal.textContent =
+                "⚠️ Escribe un método de verificación de 2 a 120 caracteres.";
+            return;
+        }
+        if (referencia.length < 6 || referencia.length > 300) {
+            estadoAprobacionLegal.textContent =
+                "⚠️ Escribe una referencia interna de 6 a 300 caracteres.";
+            return;
+        }
+        if (!confirmacionLegal.checked) {
+            estadoAprobacionLegal.textContent =
+                "⚠️ Confirma que revisaste la evidencia auténtica antes de aprobar.";
+            return;
+        }
+
+        if (!confirm(
+            "¿CONFIRMAS aprobar la identidad legal de este expediente? " +
+            "Esta decisión quedará auditada. No concede permisos de sorteos."
+        )) return;
+
+        botonAprobarLegal.disabled = true;
+        botonAprobarLegal.textContent = "⏳ Verificando identidad...";
+        estadoAprobacionLegal.textContent = "Validando la decisión en Supabase...";
+
+        try {
+            if (!(await verificarAccesoSuperAdmin())) {
+                if (vista.isConnected) {
+                    estadoAprobacionLegal.textContent = "❌ Acceso no autorizado.";
+                }
+                return;
+            }
+            if (!vista.isConnected) return;
+
+            const { data: aprobacion, error: errorAprobacion } =
+                await supabaseClient.rpc(
+                    "aprobar_perfil_legal_super_admin_seguro",
+                    {
+                        p_perfil_legal_id: id,
+                        p_actualizado_en_esperado: data.actualizado_en,
+                        p_verificacion_metodo: metodo,
+                        p_verificacion_referencia: referencia
+                    }
+                );
+
+            if (!vista.isConnected) return;
+
+            if (!errorAprobacion &&
+                aprobacion?.ok === true &&
+                aprobacion.codigo === "PERFIL_LEGAL_VERIFICADO" &&
+                aprobacion.perfil_legal_id === id &&
+                aprobacion.organizador_id === data.organizador_id &&
+                aprobacion.estado_verificacion === "verificado") {
+                // Limpiar la referencia sensible antes de reemplazar la vista.
+                metodoLegal.value = "";
+                referenciaLegal.value = "";
+                confirmacionLegal.checked = false;
+                await mostrarDetallePerfilLegalSuperAdminMass(id);
+                return;
+            }
+
+            const codigo = aprobacion?.codigo;
+            if (codigo === "DATOS_LEGALES_INCOMPLETOS") {
+                const faltantes = Array.isArray(aprobacion.campos_faltantes)
+                    ? aprobacion.campos_faltantes.join(", ") : "datos obligatorios";
+                estadoAprobacionLegal.textContent =
+                    "⚠️ El expediente está incompleto: " + faltantes + ".";
+            } else {
+                estadoAprobacionLegal.textContent =
+                    codigo === "AUTOREVISION_NO_PERMITIDA"
+                        ? "❌ No puedes verificar tu propio expediente ni uno de un organizador vinculado a ti."
+                    : codigo === "VERSION_DESACTUALIZADA"
+                        ? "ℹ️ El expediente cambió. Vuelve a abrirlo antes de decidir."
+                    : codigo === "TRANSICION_NO_PERMITIDA"
+                        ? "ℹ️ El expediente ya no está en revisión. Actualiza la lista."
+                    : codigo === "YA_VERIFICADO"
+                        ? "ℹ️ El expediente ya fue verificado. Actualiza la vista."
+                    : codigo === "NO_AUTORIZADO"
+                        ? "❌ Acceso no autorizado."
+                    : "❌ No se pudo confirmar la verificación. Revisa el expediente e inténtalo de nuevo.";
+            }
+            if (errorAprobacion) {
+                // Nunca registrar en consola el método ni la referencia interna.
+                console.error("ERROR DE APROBACIÓN LEGAL:", errorAprobacion.code);
+            }
+        } catch (_error) {
+            if (vista.isConnected) {
+                estadoAprobacionLegal.textContent =
+                    "❌ Error inesperado al verificar la identidad legal.";
+            }
+        } finally {
+            if (botonAprobarLegal.isConnected) {
+                botonAprobarLegal.disabled = false;
+                botonAprobarLegal.textContent = "✅ Aprobar identidad legal";
+            }
+        }
+    });
+}
     } catch (error) {
         if (vista.isConnected) {
             estado.textContent = "❌ Error inesperado consultando el expediente.";
