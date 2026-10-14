@@ -118599,7 +118599,7 @@ async function mostrarEditorPerfilLegalMass(resultado) {
     panel.appendChild(guardar);
     cont.replaceChildren(panel);
 
-    // =====================================================
+// =====================================================
 // PLAN-MASS-DERECHOS-P34-F6-F5-F1
 // INDICACIONES DE CORRECCION PRIVADAS - MI PERFIL LEGAL
 // =====================================================
@@ -118631,6 +118631,122 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
         tituloCorrecciones, textoCorrecciones, notaCorrecciones
     );
     panel.insertBefore(avisoCorrecciones, nota);
+
+    // =====================================================
+    // PLAN-MASS-DERECHOS-P34-F7-F1
+    // REENVIO PRIVADO DEL PERFIL LEGAL - PROPIETARIO
+    // Insertar dentro del bloque de correcciones P34-F6-F5-F1.
+    // =====================================================
+
+    notaCorrecciones.textContent =
+        "Corrige los datos indicados y guarda tu Perfil Legal. " +
+        "Después utiliza el botón de reenvío; la identidad no se verifica automáticamente.";
+
+    const botonReenviarLegal = document.createElement("button");
+    botonReenviarLegal.type = "button";
+    botonReenviarLegal.id = "massLegalReenviarRevision";
+    botonReenviarLegal.textContent = "📤 Reenviar a revisión";
+    botonReenviarLegal.style.cssText =
+        "display:block;margin:14px 0 0;padding:12px 16px;" +
+        "border:2px solid #ffcc66;border-radius:10px;cursor:pointer;" +
+        "max-width:100%;white-space:normal;";
+
+    const resultadoReenvioLegal = document.createElement("p");
+    resultadoReenvioLegal.setAttribute("role", "status");
+    resultadoReenvioLegal.style.cssText =
+        "color:#ffdf95;white-space:pre-wrap;overflow-wrap:anywhere;" +
+        "font-size:14px;margin:8px 0 0";
+
+    // Mostrar el botón junto a Guardar, no entre los campos del editor.
+    panel.append(botonReenviarLegal, resultadoReenvioLegal);
+
+    botonReenviarLegal.addEventListener("click", async () => {
+        if (botonReenviarLegal.disabled || !panel.isConnected) return;
+
+        // No usar datos de otra sesión ni enviar mientras el editor carga/guarda.
+        if (organizadorId !== obtenerOrganizadorPerfilLegalMass() ||
+            !actualizadoEn || !guardar.isConnected || guardar.disabled) {
+            resultadoReenvioLegal.textContent =
+                "ℹ️ Espera a que cargue el editor o vuelve a abrir Mi Perfil Legal.";
+            return;
+        }
+
+        // Evitar reenviar con modificaciones todavía no guardadas.
+        const cambiosSinGuardar = Object.keys(nombres).some((clave) => {
+            const idCampo = clave === "pais_codigo_iso2"
+                ? "massLegalPais" : "massLegalEditar_" + clave;
+            const campo = document.getElementById(idCampo);
+            if (!campo || !panel.contains(campo)) return true;
+            const actual = String(campo.value ?? "").trim() || null;
+            const anterior = String(original[clave] ?? "").trim() || null;
+            return actual !== anterior;
+        });
+        if (cambiosSinGuardar) {
+            resultadoReenvioLegal.textContent =
+                "⚠️ Tienes cambios sin guardar. Guarda primero tu Perfil Legal.";
+            return;
+        }
+
+        if (!confirm(
+            "¿Reenviar las correcciones guardadas a revisión? " +
+            "El Súper Admin deberá revisar nuevamente tu identidad."
+        )) return;
+
+        botonReenviarLegal.disabled = true;
+        botonReenviarLegal.textContent = "⏳ Reenviando...";
+        resultadoReenvioLegal.textContent = "Validando las correcciones en Supabase...";
+
+        try {
+            const { data, error } = await supabaseClient.rpc(
+                "reenviar_mi_perfil_legal_organizador_seguro",
+                {
+                    p_organizador_id: organizadorId,
+                    p_actualizado_en_esperado: actualizadoEn
+                }
+            );
+
+            if (!panel.isConnected ||
+                organizadorId !== obtenerOrganizadorPerfilLegalMass()) return;
+
+            if (error || data?.ok !== true ||
+                data?.codigo !== "PERFIL_LEGAL_REENVIADO" ||
+                data?.estado_verificacion !== "pendiente") {
+                if (error) {
+                    console.error("ERROR REENVIO PERFIL LEGAL:", error);
+                }
+                const codigo = data?.codigo;
+                resultadoReenvioLegal.textContent =
+                    codigo === "SIN_CAMBIOS_REALES_POSTERIORES"
+                        ? "⚠️ Primero guarda correcciones reales posteriores a la solicitud. Los cambios revertidos no cuentan."
+                    : codigo === "VERSION_DESACTUALIZADA"
+                        ? "ℹ️ Tu perfil cambió en otra sesión. Vuelve a abrir Mi Perfil Legal."
+                    : codigo === "TRANSICION_NO_PERMITIDA"
+                        ? "ℹ️ El expediente ya no está esperando correcciones. Vuelve a abrir Mi Perfil Legal."
+                    : codigo === "AUDITORIA_SOLICITUD_NO_ENCONTRADA"
+                        ? "⚠️ No se encontró el registro de la solicitud de corrección. Contacta a soporte."
+                    : codigo === "SIN_AUTORIZACION_PERFIL_LEGAL" ||
+                      codigo === "NO_AUTORIZADO"
+                        ? "❌ No tienes autorización para reenviar este expediente."
+                        : "❌ Supabase no confirmó el reenvío. Inténtalo nuevamente o contacta a soporte.";
+                return;
+            }
+
+            resultadoReenvioLegal.textContent =
+                "✅ Perfil Legal reenviado. Estado: pendiente de nueva revisión.";
+            await abrirPerfilLegalMASS();
+        } catch (e) {
+            console.error("ERROR INESPERADO REENVIO PERFIL LEGAL:", e);
+            if (panel.isConnected) {
+                resultadoReenvioLegal.textContent =
+                    "❌ No fue posible reenviar el perfil. Inténtalo nuevamente.";
+            }
+        } finally {
+            if (botonReenviarLegal.isConnected) {
+                botonReenviarLegal.disabled = false;
+                botonReenviarLegal.textContent = "📤 Reenviar a revisión";
+            }
+        }
+    });
 
     // Cargar en paralelo sin bloquear los campos ni el botón Guardar.
     void (async () => {
