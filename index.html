@@ -37163,6 +37163,27 @@ document.getElementById("adminContenido").innerHTML = `
     de tu negocio en MASS SORTEOS PRO.
 </p>
 
+<!-- PLAN-MASS-DERECHOS-P31-F1 -->
+<button
+    type="button"
+    onclick="abrirPerfilLegalMASS()"
+    style="
+        display:block;
+        width:100%;
+        margin-bottom:20px;
+        padding:14px;
+        border:2px solid #39ff14;
+        border-radius:12px;
+        background:#102710;
+        color:white;
+        font-size:16px;
+        font-weight:bold;
+        cursor:pointer;
+    "
+>
+    ⚖️ Mi Perfil Legal
+</button>
+
 
 <!-- =====================================================
      MASS — MI PERFIL V2
@@ -118099,7 +118120,210 @@ font-family:Arial, sans-serif;">
 >
   0
 </span>
-</button>	
+</button>
+
+<script>
+// =====================================================
+// PLAN-MASS-DERECHOS-P31-F1
+// MI PERFIL LEGAL - REGISTRO INICIAL
+// =====================================================
+
+function obtenerOrganizadorPerfilLegalMass() {
+    return String(
+        localStorage.getItem("admin_organizador_id") ||
+        localStorage.getItem("organizador_admin_id") ||
+        ""
+    ).trim();
+}
+
+window.abrirPerfilLegalMASS = async function () {
+
+    const orgId = obtenerOrganizadorPerfilLegalMass();
+
+    const cont = document.getElementById("adminContenido");
+
+    if (!cont || !orgId) {
+        alert("❌ No se identificó el organizador.");
+        return;
+    }
+
+    cont.innerHTML = `
+        <div class="card"
+             style="max-width:720px;margin:auto;text-align:left;">
+
+            <h2 style="color:#39ff14;">
+                ⚖️ Mi Perfil Legal
+            </h2>
+
+            <p style="color:#bbb;">
+                Información privada para identificar
+                legalmente al responsable del organizador.
+            </p>
+
+            <div id="massPerfilLegalEstado">
+                Consultando Supabase...
+            </div>
+
+            <button
+                type="button"
+                onclick="mostrarConfigAdmin()"
+                style="margin-top:18px;"
+            >
+                ← Volver a Mi Perfil
+            </button>
+
+        </div>
+    `;
+
+    const estado = document.getElementById(
+        "massPerfilLegalEstado"
+    );
+
+    const { data, error } = await supabaseClient.rpc(
+        "obtener_mi_perfil_legal_organizador_seguro",
+        {
+            p_organizador_id: orgId
+        }
+    );
+
+    if (!estado || !estado.isConnected) return;
+
+    if (error || data?.ok !== true) {
+        estado.textContent =
+            "❌ No fue posible consultar el perfil legal.";
+        return;
+    }
+
+    if (data.existe === true) {
+        estado.textContent =
+            "✅ Perfil registrado. Estado: " +
+            String(data.estado_verificacion || "pendiente");
+        return;
+    }
+
+    estado.innerHTML = `
+        <p>
+            Aún no tienes un perfil legal registrado.
+        </p>
+
+        <label>Tipo de responsable</label>
+        <select id="massLegalTipo" style="width:100%;">
+            <option value="">Seleccionar</option>
+            <option value="persona">Persona</option>
+            <option value="empresa">Empresa</option>
+        </select>
+
+        <label style="display:block;margin-top:14px;">
+            Nombre legal completo o razón social
+        </label>
+
+        <input
+            id="massLegalNombre"
+            type="text"
+            maxlength="200"
+            autocomplete="off"
+            style="width:100%;box-sizing:border-box;"
+        >
+
+        <label style="display:block;margin-top:14px;">
+            País
+        </label>
+
+        <select id="massLegalPais" style="width:100%;">
+            <option value="">Seleccionar</option>
+            <option value="MX">México</option>
+            <option value="US">Estados Unidos</option>
+        </select>
+
+        <p style="font-size:13px;color:#aaa;">
+            Este registro no verifica automáticamente
+            tu identidad ni autoriza sorteos.
+            Los demás datos legales se completarán
+            en el siguiente formulario.
+        </p>
+
+        <button
+            id="btnRegistrarPerfilLegalMass"
+            type="button"
+            onclick="registrarPerfilLegalInicialMass()"
+        >
+            💾 Registrar perfil legal
+        </button>
+    `;
+};
+
+window.registrarPerfilLegalInicialMass =
+async function () {
+
+    const orgId = obtenerOrganizadorPerfilLegalMass();
+
+    const tipo = document.getElementById(
+        "massLegalTipo"
+    )?.value || "";
+
+    const nombre = String(
+        document.getElementById("massLegalNombre")
+            ?.value || ""
+    ).trim();
+
+    const pais = document.getElementById(
+        "massLegalPais"
+    )?.value || "";
+
+    if (
+        !orgId ||
+        !["persona", "empresa"].includes(tipo) ||
+        nombre.length < 3 ||
+        nombre.length > 200 ||
+        !["MX", "US"].includes(pais)
+    ) {
+        alert("❌ Completa correctamente los campos.");
+        return;
+    }
+
+    const boton = document.getElementById(
+        "btnRegistrarPerfilLegalMass"
+    );
+
+    if (boton) {
+        boton.disabled = true;
+        boton.textContent = "⏳ Registrando...";
+    }
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "registrar_mi_perfil_legal_organizador_seguro",
+            {
+                p_organizador_id: orgId,
+                p_tipo_responsable: tipo,
+                p_nombre_legal: nombre,
+                p_pais_codigo_iso2: pais
+            }
+        );
+
+        if (error || data?.ok !== true) {
+            alert(
+                "❌ Supabase no confirmó el registro legal."
+            );
+            return;
+        }
+
+        alert(
+            data.creado === true
+                ? "✅ Perfil legal registrado como pendiente."
+                : "ℹ️ Ya existe un perfil legal para este organizador."
+        );
+
+        await abrirPerfilLegalMASS();
+
+    } finally {
+        if (boton && boton.isConnected) {
+            boton.disabled = false;
+            boton.textContent = "💾 Registrar perfil legal";
+        }
+    }
+};
+</script>
 
 </body>
 </html>
