@@ -118194,10 +118194,8 @@ window.abrirPerfilLegalMASS = async function () {
         return;
     }
 
-    if (data.existe === true) {
-        estado.textContent =
-            "✅ Perfil registrado. Estado: " +
-            String(data.estado_verificacion || "pendiente");
+        if (data.existe === true) {
+        await mostrarEditorPerfilLegalMass(data);
         return;
     }
 
@@ -118468,6 +118466,226 @@ async function () {
         }
     }
 };
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P31-F5
+// EDITOR SEGURO DE PERFIL LEGAL EXISTENTE
+// Agregar dentro del <script> legal actual, antes de </script>.
+// =====================================================
+async function mostrarEditorPerfilLegalMass(resultado) {
+    const cont = document.getElementById("massPerfilLegalEstado");
+    if (!cont || resultado?.existe !== true || !resultado?.perfil) return;
+
+    const original = resultado.perfil;
+    const actualizadoEn = resultado.actualizado_en;
+    const organizadorId = resultado.organizador_id;
+    const nombres = {
+        tipo_responsable: "Tipo de responsable *",
+        nombre_legal: "Nombre legal o razón social *",
+        pais_codigo_iso2: "País de domicilio *",
+        pais_constitucion_codigo: "País de constitución",
+        empresa_registro_tipo: "Tipo de registro de empresa",
+        empresa_registro_referencia: "Referencia de registro de empresa",
+        representante_nombre: "Nombre del representante",
+        representante_cargo: "Cargo del representante",
+        estado_region: "Estado / región",
+        ciudad_localidad: "Ciudad / localidad",
+        codigo_postal: "Código postal",
+        direccion_linea1: "Dirección, línea 1",
+        direccion_linea2: "Dirección, línea 2",
+        zona_horaria: "Zona horaria (ej. America/Chicago)",
+        nivel_ubicacion_publica: "Ubicación visible públicamente",
+        soporte_tipo: "Canal de atención al usuario",
+        soporte_valor: "Contacto de atención",
+        privacidad_tipo: "Canal de privacidad",
+        privacidad_valor: "Contacto para privacidad"
+    };
+    const grupos = [
+        ["Identidad legal", ["tipo_responsable", "nombre_legal", "pais_codigo_iso2"]],
+        ["Datos de empresa y representante", ["pais_constitucion_codigo", "empresa_registro_tipo", "empresa_registro_referencia", "representante_nombre", "representante_cargo"]],
+        ["Ubicación", ["estado_region", "ciudad_localidad", "codigo_postal", "direccion_linea1", "direccion_linea2", "zona_horaria", "nivel_ubicacion_publica"]],
+        ["Atención y privacidad", ["soporte_tipo", "soporte_valor", "privacidad_tipo", "privacidad_valor"]]
+    ];
+    const opciones = {
+        tipo_responsable: [["", "Seleccionar"], ["persona", "Persona"], ["empresa", "Empresa"]],
+        pais_codigo_iso2: [["", "Cargando países..."]],
+        pais_constitucion_codigo: [["", "Seleccionar / No aplica"]],
+        nivel_ubicacion_publica: [["pais", "País"], ["region", "Región"], ["ciudad", "Ciudad"], ["ciudad_codigo_postal", "Ciudad y código postal"]],
+        soporte_tipo: [["", "Seleccionar"], ["email", "Email"], ["whatsapp", "WhatsApp"], ["telefono", "Teléfono"], ["otro", "Otro"]],
+        privacidad_tipo: [["", "Seleccionar"], ["email", "Email"], ["whatsapp", "WhatsApp"], ["telefono", "Teléfono"], ["otro", "Otro"]]
+    };
+    const longitudes = {
+        nombre_legal: 200, empresa_registro_tipo: 120,
+        empresa_registro_referencia: 300, representante_nombre: 200,
+        representante_cargo: 120, estado_region: 120,
+        ciudad_localidad: 120, codigo_postal: 20,
+        direccion_linea1: 250, direccion_linea2: 250,
+        zona_horaria: 100, soporte_valor: 250, privacidad_valor: 250
+    };
+
+    const panel = document.createElement("div");
+    const estado = document.createElement("p");
+    estado.style.color = "#a5ffa5";
+    estado.textContent = "Estado de verificación: " + String(resultado.estado_verificacion || "pendiente");
+    panel.appendChild(estado);
+    const nota = document.createElement("p");
+    nota.style.cssText = "color:#bbb;font-size:13px;line-height:1.5";
+    nota.textContent = "Completa tu información real. Guardar no verifica automáticamente tu identidad ni autoriza sorteos. Los datos complementarios serán necesarios para la revisión.";
+    panel.appendChild(nota);
+    let seccionEmpresa = null;
+
+    for (const [titulo, claves] of grupos) {
+        const bloque = document.createElement("details");
+        bloque.open = titulo === "Identidad legal";
+        bloque.style.cssText = "border:1px solid #3b6c3b;border-radius:12px;padding:12px;margin:12px 0;background:#101810";
+        const cabecera = document.createElement("summary");
+        cabecera.textContent = titulo;
+        cabecera.style.cssText = "cursor:pointer;color:#80ff80;font-weight:bold";
+        bloque.appendChild(cabecera);
+        if (titulo === "Datos de empresa y representante") seccionEmpresa = bloque;
+
+        for (const clave of claves) {
+            const envoltura = document.createElement("label");
+            envoltura.style.cssText = "display:block;margin:12px 0;color:#eee";
+            envoltura.textContent = nombres[clave];
+            const control = document.createElement(opciones[clave] ? "select" : "input");
+            control.id = clave === "pais_codigo_iso2" ? "massLegalPais" : "massLegalEditar_" + clave;
+            control.style.cssText = "display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;font-size:16px";
+            if (opciones[clave]) {
+                for (const [valor, texto] of opciones[clave]) {
+                    const opcion = document.createElement("option");
+                    opcion.value = valor;
+                    opcion.textContent = texto;
+                    control.appendChild(opcion);
+                }
+                if (clave === "pais_codigo_iso2") control.disabled = true;
+            } else {
+                control.type = "text";
+                control.maxLength = longitudes[clave] || 200;
+            }
+            if (!clave.includes("pais_codigo_iso2") || !opciones[clave]) {
+                control.value = original[clave] ?? "";
+            }
+            envoltura.appendChild(control);
+            bloque.appendChild(envoltura);
+        }
+        panel.appendChild(bloque);
+    }
+
+    const mensaje = document.createElement("p");
+    mensaje.style.cssText = "color:#bbb;font-size:13px";
+    mensaje.textContent = "Los datos se guardan de forma privada en Supabase. Las modificaciones importantes de una identidad verificada requieren nueva revisión.";
+    panel.appendChild(mensaje);
+    const guardar = document.createElement("button");
+    guardar.type = "button";
+    guardar.disabled = true;
+    guardar.textContent = "💾 Guardar Perfil Legal";
+    guardar.style.cssText = "padding:12px;margin-top:10px;border:2px solid #39ff14;border-radius:10px";
+    panel.appendChild(guardar);
+    cont.replaceChildren(panel);
+
+    const tipo = document.getElementById("massLegalEditar_tipo_responsable");
+    const alternarEmpresa = () => {
+        if (seccionEmpresa) {
+            seccionEmpresa.hidden = tipo.value !== "empresa";
+            if (tipo.value === "empresa") seccionEmpresa.open = true;
+        }
+    };
+    tipo.addEventListener("change", alternarEmpresa);
+    alternarEmpresa();
+
+    const cargados = await cargarPaisesPerfilLegalMass();
+    if (!panel.isConnected || !cargados) {
+        mensaje.textContent = "❌ No se pudo cargar el catálogo de países. Vuelve a abrir Mi Perfil Legal.";
+        return;
+    }
+
+    const pais = document.getElementById("massLegalPais");
+    const constitucion = document.getElementById("massLegalEditar_pais_constitucion_codigo");
+    for (const opcion of Array.from(pais.options)) {
+        if (opcion.value) {
+            constitucion.appendChild(new Option(opcion.textContent, opcion.value));
+        }
+    }
+    const asignarCodigo = (select, codigo) => {
+        const iso = String(codigo || "").trim().toUpperCase();
+        if (iso && !Array.from(select.options).some(op => op.value === iso)) {
+            select.add(new Option("País previamente registrado (" + iso + ")", iso));
+        }
+        select.value = iso;
+    };
+    asignarCodigo(pais, original.pais_codigo_iso2);
+    asignarCodigo(constitucion, original.pais_constitucion_codigo);
+    constitucion.disabled = false;
+    guardar.disabled = false;
+
+    guardar.addEventListener("click", async () => {
+        if (organizadorId !== obtenerOrganizadorPerfilLegalMass() || !actualizadoEn) {
+            alert("❌ La sesión o versión del perfil ha cambiado. Vuelve a abrir Mi Perfil Legal.");
+            return;
+        }
+        const cambios = {};
+        for (const clave of Object.keys(nombres)) {
+            const id = clave === "pais_codigo_iso2" ? "massLegalPais" : "massLegalEditar_" + clave;
+            const campo = document.getElementById(id);
+            if (!campo || !panel.contains(campo)) {
+                alert("❌ El formulario está incompleto. Vuelve a abrir Mi Perfil Legal.");
+                return;
+            }
+            cambios[clave] = String(campo.value || "").trim() || null;
+        }
+        if (cambios.tipo_responsable !== "empresa") {
+            for (const clave of grupos[1][1]) cambios[clave] = null;
+        }
+        if (!(["persona", "empresa"].includes(cambios.tipo_responsable)) ||
+            (cambios.nombre_legal || "").length < 3 ||
+            !/^[A-Z]{2}$/.test(cambios.pais_codigo_iso2 || "")) {
+            alert("❌ Verifica tipo de responsable, nombre legal y país.");
+            return;
+        }
+        for (const par of [["soporte_tipo", "soporte_valor"], ["privacidad_tipo", "privacidad_valor"]]) {
+            if (Boolean(cambios[par[0]]) !== Boolean(cambios[par[1]])) {
+                alert("❌ Completa ambos campos de " + (par[0] === "soporte_tipo" ? "atención" : "privacidad") + ".");
+                return;
+            }
+        }
+        if (original.tipo_responsable === "empresa" && cambios.tipo_responsable !== "empresa" &&
+            !confirm("Cambiar de Empresa a Persona borrará los datos empresariales del perfil. ¿Continuar?")) return;
+        const materiales = ["tipo_responsable", "nombre_legal", "pais_constitucion_codigo", "empresa_registro_tipo", "empresa_registro_referencia", "representante_nombre", "representante_cargo", "pais_codigo_iso2"];
+        if (resultado.estado_verificacion === "verificado" &&
+            materiales.some(k => (cambios[k] || null) !== (original[k] || null)) &&
+            !confirm("Estos cambios de identidad requerirán una nueva verificación. ¿Guardar?")) return;
+
+        guardar.disabled = true;
+        guardar.textContent = "⏳ Guardando...";
+        try {
+            const { data, error } = await supabaseClient.rpc(
+                "actualizar_mi_perfil_legal_organizador_seguro", {
+                    p_organizador_id: organizadorId,
+                    p_datos: cambios,
+                    p_actualizado_en_esperado: actualizadoEn
+                }
+            );
+            if (error || data?.ok !== true) {
+                console.error("ERROR GUARDANDO PERFIL LEGAL:", error || data);
+                alert(data?.codigo === "VERSION_DESACTUALIZADA"
+                    ? "ℹ️ Tu perfil cambió en otra sesión. Vuelve a abrirlo antes de guardar."
+                    : "❌ Supabase no confirmó el guardado. " + (error?.message || data?.codigo || ""));
+                return;
+            }
+            alert(data.sin_cambios === true ? "ℹ️ Sin cambios." : "✅ Perfil legal actualizado.");
+            await abrirPerfilLegalMASS();
+        } catch (error) {
+            console.error("ERROR INESPERADO PERFIL LEGAL:", error);
+            alert("❌ No fue posible guardar el perfil legal.");
+        } finally {
+            if (guardar.isConnected) {
+                guardar.disabled = false;
+                guardar.textContent = "💾 Guardar Perfil Legal";
+            }
+        }
+    });
+}
 </script>
 
 </body>
