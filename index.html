@@ -118818,163 +118818,30 @@ async function mostrarPerfilesLegalesSuperAdminMass() {
                     dato.style.overflowWrap = "anywhere";
                     tarjeta.appendChild(dato);
                 }
-                                // =====================================================
-                // PLAN-MASS-DERECHOS-P33B-F1
-                // CONSULTA DETALLADA PRIVADA - SIN CAMBIAR DATOS
-                // =====================================================
-                const botonExpediente = document.createElement("button");
-                botonExpediente.type = "button";
-                botonExpediente.textContent = "🔎 Revisar expediente";
-                botonExpediente.style.cssText =
-                    "margin:12px 0;padding:10px;border:1px solid #39ff14;" +
-                    "border-radius:10px;background:#102710;color:white;cursor:pointer";
+                                const botonRevisar =
+                    document.createElement("button");
 
-                const detalleExpediente = document.createElement("div");
-                detalleExpediente.hidden = true;
-                detalleExpediente.style.cssText =
-                    "border-top:1px solid #355835;margin-top:10px;padding-top:12px";
+                botonRevisar.type = "button";
 
-                botonExpediente.addEventListener("click", async () => {
-                    // Si está abierto, cerrarlo sin volver a consultar.
-                    if (!detalleExpediente.hidden) {
-                        detalleExpediente.hidden = true;
-                        botonExpediente.textContent = "🔎 Revisar expediente";
-                        return;
+                botonRevisar.textContent =
+                    "🔎 Revisar expediente";
+
+                botonRevisar.style.cssText =
+                    "margin-top:10px;padding:11px 16px;" +
+                    "border:2px solid #39ff14;" +
+                    "border-radius:10px;cursor:pointer;";
+
+                botonRevisar.addEventListener(
+                    "click",
+                    () => {
+                        mostrarDetallePerfilLegalSuperAdminMass(
+                            perfil.perfil_legal_id
+                        );
                     }
+                );
 
-                    botonExpediente.disabled = true;
-                    detalleExpediente.hidden = false;
-                    detalleExpediente.textContent = "Consultando expediente protegido...";
+                tarjeta.appendChild(botonRevisar);
 
-                    try {
-                        // El backend verifica nuevamente al Súper Admin.
-                        if (!(await verificarAccesoSuperAdmin())) {
-                            if (detalleExpediente.isConnected) {
-                                detalleExpediente.textContent = "Acceso no autorizado.";
-                            }
-                            return;
-                        }
-
-                        const { data: expediente, error: errorDetalle } =
-                            await supabaseClient.rpc(
-                                "obtener_detalle_perfil_legal_super_admin_seguro",
-                                { p_perfil_legal_id: perfil.perfil_legal_id }
-                            );
-
-                        if (!detalleExpediente.isConnected) return;
-
-                        if (
-                            errorDetalle ||
-                            expediente?.ok !== true ||
-                            !expediente.perfil ||
-                            typeof expediente.perfil !== "object" ||
-                            expediente.perfil_legal_id !== perfil.perfil_legal_id ||
-                            expediente.organizador_id !== perfil.organizador_id
-                        ) {
-                            detalleExpediente.textContent =
-                                "❌ No fue posible consultar este expediente. Actualiza la lista.";
-                            return;
-                        }
-
-                        const p = expediente.perfil;
-                        const org = expediente.organizador || {};
-                        const rev = expediente.revision || {};
-
-                        // Construir exclusivamente nodos DOM: sin HTML de origen externo.
-                        detalleExpediente.replaceChildren();
-                        const encabezadoDetalle = document.createElement("h3");
-                        encabezadoDetalle.textContent = "🔐 Expediente legal privado";
-                        encabezadoDetalle.style.color = "#39ff14";
-                        detalleExpediente.appendChild(encabezadoDetalle);
-
-                        const advertencia = document.createElement("p");
-                        advertencia.textContent =
-                            "Solo lectura. Esta vista no aprueba ni rechaza la identidad.";
-                        advertencia.style.color = "#bbb";
-                        detalleExpediente.appendChild(advertencia);
-
-                        const seccionesDetalle = [
-                            ["Organizador", [
-                                ["Nombre público", org.nombre_publico],
-                                ["Activo", org.activo === true ? "Sí" : "No"],
-                                ["Organizador ID", expediente.organizador_id],
-                                ["Perfil ID", expediente.perfil_legal_id],
-                                ["Creado", expediente.creado_en],
-                                ["Actualizado", expediente.actualizado_en]
-                            ]],
-                            ["Identidad legal", [
-                                ["Responsable", p.tipo_responsable],
-                                ["Nombre legal", p.nombre_legal],
-                                ["País de domicilio", p.pais_codigo_iso2]
-                            ]],
-                            ["Empresa y representante", [
-                                ["País de constitución", p.pais_constitucion_codigo],
-                                ["Tipo de registro", p.empresa_registro_tipo],
-                                ["Referencia de registro", p.empresa_registro_referencia],
-                                ["Representante", p.representante_nombre],
-                                ["Cargo", p.representante_cargo]
-                            ]],
-                            ["Ubicación", [
-                                ["Estado/región", p.estado_region],
-                                ["Ciudad/localidad", p.ciudad_localidad],
-                                ["Código postal", p.codigo_postal],
-                                ["Dirección 1", p.direccion_linea1],
-                                ["Dirección 2", p.direccion_linea2],
-                                ["Zona horaria", p.zona_horaria],
-                                ["Nivel de ubicación pública", p.nivel_ubicacion_publica]
-                            ]],
-                            ["Atención y privacidad", [
-                                ["Canal de soporte", p.soporte_tipo],
-                                ["Contacto de soporte", p.soporte_valor],
-                                ["Canal de privacidad", p.privacidad_tipo],
-                                ["Contacto de privacidad", p.privacidad_valor]
-                            ]],
-                            ["Revisión administrativa", [
-                                ["Estado", expediente.estado_verificacion],
-                                ["Motivo de revisión", rev.motivo_revision],
-                                ["Método de verificación", rev.verificacion_metodo],
-                                ["Verificado en", rev.verificado_en],
-                                ["Verificado por", rev.verificado_por_auth_id]
-                            ]]
-                        ];
-
-                        for (const [tituloSeccion, campos] of seccionesDetalle) {
-                            const acordeon = document.createElement("details");
-                            acordeon.open = tituloSeccion === "Identidad legal";
-                            acordeon.style.cssText =
-                                "border:1px solid #365d36;border-radius:10px;" +
-                                "padding:10px;margin:8px 0;background:#0b170b";
-
-                            const resumenDetalle = document.createElement("summary");
-                            resumenDetalle.textContent = tituloSeccion;
-                            resumenDetalle.style.cssText =
-                                "color:#9cff9c;font-weight:bold;cursor:pointer";
-                            acordeon.appendChild(resumenDetalle);
-
-                            for (const [etiqueta, valor] of campos) {
-                                const fila = document.createElement("p");
-                                fila.style.cssText =
-                                    "margin:8px 0;overflow-wrap:anywhere;white-space:pre-wrap";
-                                fila.textContent = `${etiqueta}: ${valor ?? "—"}`;
-                                acordeon.appendChild(fila);
-                            }
-                            detalleExpediente.appendChild(acordeon);
-                        }
-
-                        botonExpediente.textContent = "🔒 Ocultar expediente";
-                    } catch (e) {
-                        if (detalleExpediente.isConnected) {
-                            detalleExpediente.textContent =
-                                "❌ Ocurrió un error al consultar el expediente.";
-                        }
-                    } finally {
-                        if (botonExpediente.isConnected) {
-                            botonExpediente.disabled = false;
-                        }
-                    }
-                });
-
-                tarjeta.append(botonExpediente, detalleExpediente);
                 lista.appendChild(tarjeta);
             }
         } catch (e) {
@@ -118991,6 +118858,149 @@ async function mostrarPerfilesLegalesSuperAdminMass() {
     select.addEventListener("change", cargar);
     recargar.addEventListener("click", cargar);
     await cargar();
+}
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P33B
+// EXPEDIENTE PRIVADO SUPER ADMIN - SOLO LECTURA
+// =====================================================
+async function mostrarDetallePerfilLegalSuperAdminMass(perfilLegalId) {
+    // Revalidar el acceso contra Supabase (no confiar en localStorage).
+    if (!(await verificarAccesoSuperAdmin())) return;
+
+    const id = String(perfilLegalId || "").trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+        alert("❌ Identificador de perfil legal inválido.");
+        return;
+    }
+
+    const raiz = document.getElementById("superAdminContenido");
+    if (!raiz) return;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText = "max-width:900px;margin:0 auto;text-align:left";
+
+    const titulo = document.createElement("h2");
+    titulo.textContent = "🔎 Expediente Legal del Organizador";
+    titulo.style.color = "#39ff14";
+
+    const advertencia = document.createElement("p");
+    advertencia.textContent =
+        "Información privada. Consulta administrativa; esta pantalla no aprueba ni rechaza perfiles.";
+    advertencia.style.cssText = "font-size:14px;color:#bbb;line-height:1.5";
+
+    const regresar = document.createElement("button");
+    regresar.type = "button";
+    regresar.textContent = "← Volver a Verificación de Perfiles Legales";
+    regresar.addEventListener("click", () => {
+        mostrarPerfilesLegalesSuperAdminMass();
+    });
+
+    const estado = document.createElement("p");
+    estado.setAttribute("aria-live", "polite");
+    estado.textContent = "Consultando expediente protegido...";
+
+    const contenido = document.createElement("div");
+    vista.append(titulo, advertencia, regresar, estado, contenido);
+    raiz.replaceChildren(vista);
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "obtener_detalle_perfil_legal_super_admin_seguro",
+            { p_perfil_legal_id: id }
+        );
+
+        // No pintar datos si el usuario ya cambió de pantalla.
+        if (!vista.isConnected) return;
+
+        if (error || data?.ok !== true || !data?.perfil) {
+            estado.textContent = data?.codigo === "PERFIL_NO_EXISTE"
+                ? "ℹ️ El expediente solicitado no existe."
+                : "❌ No fue posible consultar el expediente legal.";
+            return;
+        }
+
+        estado.textContent = "Estado de verificación: " +
+            String(data.estado_verificacion || "pendiente");
+        estado.style.cssText = "color:#a5ffa5;font-weight:bold";
+
+        const p = data.perfil;
+        const r = data.revision || {};
+        const o = data.organizador || {};
+
+        const grupos = [
+            ["🏢 Organizador", [
+                ["Nombre público", o.nombre_publico],
+                ["Estado operativo", o.activo === true ? "Activo" : "Inactivo"],
+                ["Organizador ID", data.organizador_id],
+                ["Perfil legal ID", data.perfil_legal_id]
+            ]],
+            ["⚖️ Identidad y representación", [
+                ["Tipo de responsable", p.tipo_responsable],
+                ["Nombre legal o razón social", p.nombre_legal],
+                ["País de domicilio", p.pais_codigo_iso2],
+                ["País de constitución", p.pais_constitucion_codigo],
+                ["Tipo de registro de empresa", p.empresa_registro_tipo],
+                ["Referencia de registro", p.empresa_registro_referencia],
+                ["Representante legal", p.representante_nombre],
+                ["Cargo del representante", p.representante_cargo]
+            ]],
+            ["📍 Ubicación", [
+                ["Estado / región", p.estado_region],
+                ["Ciudad / localidad", p.ciudad_localidad],
+                ["Código postal", p.codigo_postal],
+                ["Dirección, línea 1", p.direccion_linea1],
+                ["Dirección, línea 2", p.direccion_linea2],
+                ["Zona horaria", p.zona_horaria],
+                ["Nivel de ubicación pública", p.nivel_ubicacion_publica]
+            ]],
+            ["☎️ Atención y privacidad", [
+                ["Tipo de canal de atención", p.soporte_tipo],
+                ["Contacto de atención", p.soporte_valor],
+                ["Tipo de canal de privacidad", p.privacidad_tipo],
+                ["Contacto de privacidad", p.privacidad_valor]
+            ]],
+            ["🔐 Revisión e historial", [
+                ["Estado", r.estado],
+                ["Motivo de revisión", r.motivo_revision],
+                ["Método de verificación", r.verificacion_metodo],
+                ["Verificado en", r.verificado_en],
+                ["Verificado por (Auth ID)", r.verificado_por_auth_id],
+                ["Creado en", data.creado_en],
+                ["Última actualización", data.actualizado_en]
+            ]]
+        ];
+
+        // Usar textContent, no HTML dinámico con datos privados.
+        for (const [indice, grupo] of grupos.entries()) {
+            const [nombre, campos] = grupo;
+            const acordeon = document.createElement("details");
+            acordeon.open = indice === 0;
+            acordeon.style.cssText =
+                "border:1px solid #3b8b3b;border-radius:12px;" +
+                "padding:12px;margin:12px 0;background:#101810";
+
+            const resumen = document.createElement("summary");
+            resumen.textContent = nombre;
+            resumen.style.cssText = "color:#8bff8b;font-weight:bold;cursor:pointer";
+            acordeon.appendChild(resumen);
+
+            for (const [etiqueta, valor] of campos) {
+                const linea = document.createElement("p");
+                const texto = valor === null || valor === undefined || valor === ""
+                    ? "—" : String(valor);
+                linea.textContent = `${etiqueta}: ${texto}`;
+                linea.style.cssText = "overflow-wrap:anywhere;margin:9px 0;color:#eee";
+                acordeon.appendChild(linea);
+            }
+            contenido.appendChild(acordeon);
+        }
+    } catch (error) {
+        if (vista.isConnected) {
+            estado.textContent = "❌ Error inesperado consultando el expediente.";
+        }
+    }
 }
 </script>
 
