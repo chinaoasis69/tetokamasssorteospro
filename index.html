@@ -119196,6 +119196,105 @@ async function mostrarDetallePerfilLegalSuperAdminMass(perfilLegalId) {
             }
             contenido.appendChild(acordeon);
         }
+
+// =====================================================
+// PLAN-MASS-DERECHOS-P34-F8-F1
+// BOTON INICIAR REVISION - DETALLE LEGAL SUPER ADMIN
+// PEGAR dentro de mostrarDetallePerfilLegalSuperAdminMass,
+// despues del for que crea los acordeones y ANTES del catch.
+// =====================================================
+if (data.estado_verificacion === "pendiente") {
+    const accionInicioLegal = document.createElement("div");
+    accionInicioLegal.style.cssText =
+        "border-top:1px solid #355835;margin-top:18px;padding-top:14px";
+
+    const botonInicioLegal = document.createElement("button");
+    botonInicioLegal.type = "button";
+    botonInicioLegal.id = "massLegalIniciarRevisionSuperAdmin";
+    botonInicioLegal.textContent = "🔍 Iniciar revisión legal";
+    botonInicioLegal.style.cssText =
+        "padding:12px 16px;border:2px solid #39ff14;" +
+        "border-radius:10px;cursor:pointer;max-width:100%";
+
+    const estadoInicioLegal = document.createElement("p");
+    estadoInicioLegal.setAttribute("role", "status");
+    estadoInicioLegal.style.cssText =
+        "color:#ddd;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere";
+
+    accionInicioLegal.append(botonInicioLegal, estadoInicioLegal);
+    contenido.appendChild(accionInicioLegal);
+
+    botonInicioLegal.addEventListener("click", async () => {
+        if (!vista.isConnected || botonInicioLegal.disabled) return;
+        if (!data.actualizado_en) {
+            estadoInicioLegal.textContent =
+                "❌ No se obtuvo la versión del expediente. Vuelve a abrirlo.";
+            return;
+        }
+        if (!confirm(
+            "¿Iniciar la revisión de este expediente legal? " +
+            "Esta acción no verifica ni autoriza sorteos."
+        )) return;
+
+        botonInicioLegal.disabled = true;
+        botonInicioLegal.textContent = "⏳ Iniciando revisión...";
+        estadoInicioLegal.textContent = "Consultando Supabase...";
+
+        try {
+            if (!(await verificarAccesoSuperAdmin())) {
+                if (vista.isConnected) {
+                    estadoInicioLegal.textContent = "❌ Acceso no autorizado.";
+                }
+                return;
+            }
+            if (!vista.isConnected) return;
+
+            const { data: respuestaInicio, error: errorInicio } =
+                await supabaseClient.rpc(
+                    "iniciar_revision_perfil_legal_super_admin_seguro",
+                    {
+                        p_perfil_legal_id: id,
+                        p_actualizado_en_esperado: data.actualizado_en
+                    }
+                );
+
+            if (!vista.isConnected) return;
+
+            if (!errorInicio && respuestaInicio?.ok === true &&
+                (respuestaInicio.codigo === "REVISION_INICIADA" ||
+                 respuestaInicio.codigo === "YA_EN_REVISION")) {
+                await mostrarDetallePerfilLegalSuperAdminMass(id);
+                return;
+            }
+
+            const codigo = respuestaInicio?.codigo;
+            estadoInicioLegal.textContent =
+                codigo === "VERSION_DESACTUALIZADA"
+                    ? "ℹ️ El expediente cambió. Vuelve a abrirlo antes de decidir."
+                : codigo === "TRANSICION_NO_PERMITIDA"
+                    ? "ℹ️ Este expediente ya no está pendiente. Actualiza la lista."
+                : codigo === "PERFIL_NO_EXISTE"
+                    ? "ℹ️ El expediente ya no existe. Actualiza la lista."
+                : codigo === "NO_AUTORIZADO"
+                    ? "❌ Acceso no autorizado."
+                : "❌ No se pudo iniciar la revisión. Actualiza e intenta nuevamente.";
+            if (errorInicio) {
+                console.error("ERROR INICIAR REVISION LEGAL:", errorInicio);
+            }
+        } catch (error) {
+            if (vista.isConnected) {
+                estadoInicioLegal.textContent =
+                    "❌ Error inesperado al iniciar revisión.";
+            }
+            console.error("ERROR INESPERADO REVISION LEGAL:", error);
+        } finally {
+            if (botonInicioLegal.isConnected) {
+                botonInicioLegal.disabled = false;
+                botonInicioLegal.textContent = "🔍 Iniciar revisión legal";
+            }
+        }
+    });
+}
     } catch (error) {
         if (vista.isConnected) {
             estado.textContent = "❌ Error inesperado consultando el expediente.";
