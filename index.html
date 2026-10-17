@@ -17473,10 +17473,12 @@ async function nuevoPatrocinador() {
       "organizador_id",
       organizadorId
     )
-    .eq(
-      "estado",
-      "activa"
-    )
+    
+.in(
+  "estado",
+  ["programada", "activa"]
+)
+
     .order(
       "created_at",
       {
@@ -17580,33 +17582,43 @@ async function nuevoPatrocinador() {
     };
 
 
-  const opcionesRifas =
-    rifas
-      .map(
-        rifa => {
+  
+const opcionesRifas =
+  rifas
+    .map(rifa => {
 
-          const nombreRifa =
-            rifa.titulo
-            ||
-            rifa.premio
-            ||
-            "Sorteo sin título";
+      const nombreRifa =
+        String(
+          rifa.titulo ||
+          rifa.premio ||
+          "Sorteo sin título"
+        );
 
+      const nombreLimpio =
+        nombreRifa
+          .replace(/^PRUEBA\s+/i, "")
+          .replace(/\s+—\s+NO COMPRAR\s*$/i, "")
+          .trim();
 
-          return `
-            <option
-              value="${escaparPatrocinador(
-                rifa.id
-              )}"
-            >
-              ${escaparPatrocinador(
-                nombreRifa
-              )}
-            </option>
-          `;
-        }
-      )
-      .join("");
+      const nombreCorto =
+        nombreLimpio.length > 45
+          ? nombreLimpio.slice(0, 45).trim() + "..."
+          : nombreLimpio;
+
+      const estadoTexto =
+        rifa.estado === "programada"
+          ? "Programada"
+          : "Activa";
+
+      return `
+        <option value="${escaparPatrocinador(rifa.id)}">
+          ${escaparPatrocinador(nombreCorto + " — " + estadoTexto)}
+        </option>
+      `;
+
+    })
+    .join("");
+
 
 
   // =========================================================
