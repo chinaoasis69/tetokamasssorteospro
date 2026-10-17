@@ -13949,7 +13949,9 @@ const adminOrgId = localStorage.getItem("admin_organizador_id");
 let queryRifas = supabaseClient
   .from("rifas")
   .select("id,titulo,estado")
-  .eq("estado", "activa")
+  
+.in("estado", ["programada", "activa"])
+
   .order("created_at", { ascending: false });
 
 if (
@@ -14025,10 +14027,14 @@ if(rifaPremiosAdminId){
         <h3>🎁 Premios MASS Lucky Spin</h3>
 
   <select onchange="rifaPremiosAdminId = this.value; mostrarPremiosAdmin();">
-  <option value="">Selecciona una rifa activa</option>
+  
+<option value="">Selecciona una dinámica programada o activa</option>
+
   ${rifas.map(r => `
     <option value="${r.id}" ${r.id === rifaPremiosAdminId ? "selected" : ""}>
-      ${r.titulo}
+      
+${r.titulo} — ${r.estado === "programada" ? "Programada" : "Activa"}
+
     </option>
   `).join("")}
 </select>
@@ -16044,9 +16050,11 @@ async function nuevoPremioLucky(){
 
   if (!rifaPremiosAdminId) {
 
-    alert(
-      "Primero selecciona una rifa activa para agregar premios MASS Lucky Spin."
-    );
+    
+alert(
+  "Primero selecciona una dinámica programada o activa para agregar premios MASS Lucky Spin."
+);
+
 
     return;
   }
