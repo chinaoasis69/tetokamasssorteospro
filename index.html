@@ -13938,6 +13938,19 @@ function cerrarPanelAdmin() {
   ).style.display = "none";
 }
 
+function formatearEtiquetaRifaLucky(r) {
+  const estado = r.estado === "programada" ? "Programada" : "Activa";
+  let titulo = r.titulo || "";
+
+  titulo = titulo.replace("PRUEBA ", "").replace(" — NO COMPRAR", "").trim();
+
+  if (titulo.length > 45) {
+    titulo = titulo.slice(0, 45).trim() + "...";
+  }
+
+  return `${titulo} — ${estado}`;
+}
+
 let rifaPremiosAdminId = null;
 
 async function mostrarPremiosAdmin(){
@@ -14033,7 +14046,7 @@ if(rifaPremiosAdminId){
   ${rifas.map(r => `
     <option value="${r.id}" ${r.id === rifaPremiosAdminId ? "selected" : ""}>
       
-${r.titulo} — ${r.estado === "programada" ? "Programada" : "Activa"}
+${formatearEtiquetaRifaLucky(r)}
 
     </option>
   `).join("")}
