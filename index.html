@@ -80950,35 +80950,45 @@ if (errorPendientes) {
 // MASS - IDENTIFICAR AL CLIENTE MEDIANTE SU MASS ID
 // ============================================================
 
+
 let massIdCliente = "MASS ID no disponible";
 
-if (conversacion.usuario_auth_id) {
-  const {
-    data: usuarioMassConversacion,
-    error: errorUsuarioMassConversacion
-  } = await supabaseClient
-    .from("usuarios_mass")
-    .select("mass_id")
-    .eq(
-      "auth_user_id",
-      conversacion.usuario_auth_id
-    )
-    .maybeSingle();
+// ============================================================
+// P35-C3-C2AZ-V20AD
+// MASS ID DEL PARTICIPANTE MEDIANTE RPC SEGURA
+// ============================================================
 
-  if (errorUsuarioMassConversacion) {
+if (conversacion.id) {
+
+  const {
+    data: massIdSeguro,
+    error: errorMassIdSeguro
+  } = await supabaseClient.rpc(
+    "obtener_mass_id_participante_chat_seguro",
+    {
+      p_conversacion_id: conversacion.id
+    }
+  );
+
+  if (errorMassIdSeguro) {
+
     console.error(
-      "ERROR OBTENIENDO MASS ID DE LA CONVERSACIÓN:",
-      errorUsuarioMassConversacion
+      "ERROR CONSULTANDO MASS ID SEGURO DEL CHAT:",
+      errorMassIdSeguro.code ||
+      "ERROR_RPC_CHAT"
     );
+
   } else if (
-    usuarioMassConversacion?.mass_id
+    typeof massIdSeguro === "string" &&
+    massIdSeguro.trim() !== ""
   ) {
-    massIdCliente =
-      String(
-        usuarioMassConversacion.mass_id
-      ).trim();
+
+    massIdCliente = massIdSeguro.trim();
+
   }
+
 }
+
 
 // Guardar temporalmente el MASS ID dentro del objeto
 // para usarlo al abrir la conversación.
