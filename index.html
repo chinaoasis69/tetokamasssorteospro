@@ -89750,6 +89750,45 @@ async function pagarReservadoConMass(numero, rifaId) {
     return;
   }
 
+  
+  // ==================================================
+  // P35-C3-C2AZ-V18C
+  // GUARDIAN LEGAL PARA PAGO DE RESERVAS MASS
+  // ==================================================
+
+  const verificacionLegalPagoReserva =
+    await cumplirRequisitosLegalesParticipacionSeguro({
+      rifaId: rifaTexto,
+      organizadorId: null,
+      idiomaCodigo: "es",
+      consentimientoClaves:
+        MASS_LEGAL_CONSENTIMIENTOS_PARTICIPACION
+    });
+
+  if (
+    !verificacionLegalPagoReserva ||
+    verificacionLegalPagoReserva.ok !== true
+  ) {
+
+    if (
+      verificacionLegalPagoReserva?.cancelado === true
+    ) {
+      return;
+    }
+
+    console.error(
+      "PAGO RESERVA: REQUISITOS LEGALES PENDIENTES",
+      verificacionLegalPagoReserva?.error ||
+      verificacionLegalPagoReserva
+    );
+
+    return;
+  }
+
+  // Solo continuar al pago cuando
+  // el servidor confirme los requisitos.
+
+
 
   const confirmarPago = confirm(
     `¿Pagar el boleto reservado ${numeroBase} con tu saldo MASS?`
