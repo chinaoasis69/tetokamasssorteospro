@@ -81162,33 +81162,37 @@ btnEliminarConversacion.onclick = function (event) {
   );
 };
 
+
+ // ============================================================
+ // P35-C3-C2AZ-V20AT
+ // ELIMINACION DEFINITIVA SUSPENDIDA
+ // PROTECCION DE HISTORIAL DEL CHAT
+ // ============================================================
+
 const btnEliminarDefinitivamente =
   document.createElement("button");
 
 btnEliminarDefinitivamente.type = "button";
 
+btnEliminarDefinitivamente.disabled = true;
+
 btnEliminarDefinitivamente.textContent =
-  "⚠️ Eliminar definitivamente";
+  "🔒 Eliminación definitiva suspendida";
+
+btnEliminarDefinitivamente.title =
+  "La eliminación permanente está suspendida por seguridad y protección del historial.";
 
 btnEliminarDefinitivamente.style.cssText = `
   padding:8px 12px;
-  border:1px solid #ff2d2d;
+  border:1px solid #777;
   border-radius:8px;
-  background:#7a0000;
-  color:white;
+  background:#262626;
+  color:#bbb;
   font-weight:bold;
-  cursor:pointer;
+  cursor:not-allowed;
+  opacity:0.75;
 `;
-
-btnEliminarDefinitivamente.onclick =
-async function (event) {
-
-  event.stopPropagation();
-
-  await window.eliminarDefinitivamenteConversacionOrganizador(
-    conversacion
-  );
-};	  
+	  
 
 if (!vistaEliminadas) {
   accionesConversacion.appendChild(
