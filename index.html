@@ -78445,8 +78445,71 @@ async function (vista) {
 // MASS - CONTROLES DEL FORMULARIO DE MENSAJE MASIVO
 // ============================================================
 
+
+/* ============================================================
+   P35-C3-C2AZ-V20CM
+   SEGURIDAD VISUAL DE COMUNICACIONES MASIVAS
+   ============================================================ */
+
+window.puedeEnviarComunicacionesMasivasUI = function () {
+  return (
+    typeof tienePermisoSesionOrganizadorMass === "function" &&
+    tienePermisoSesionOrganizadorMass(
+      "enviar_comunicaciones"
+    )
+  );
+};
+
+window.actualizarVisibilidadComunicacionesMasivasUI =
+function () {
+
+  const autorizado =
+    window.puedeEnviarComunicacionesMasivasUI();
+
+  const botones = [
+    "btnAbrirMensajeMasivoOrganizador",
+    "btnHistorialCampanasMasivasOrganizador"
+  ];
+
+  for (const id of botones) {
+    const boton = document.getElementById(id);
+
+    if (boton) {
+      boton.style.display =
+        autorizado ? "" : "none";
+    }
+  }
+
+  if (!autorizado) {
+    const paneles = [
+      "panelMensajeMasivoOrganizador",
+      "panelHistorialCampanasMasivasOrganizador",
+      "panelDestinatariosCampanaMasivaOrganizador"
+    ];
+
+    for (const id of paneles) {
+      const panel = document.getElementById(id);
+
+      if (panel) {
+        panel.style.display = "none";
+      }
+    }
+  }
+
+  return autorizado;
+};
+
+
 window.abrirPanelMensajeMasivoOrganizador =
 async function () {
+
+    
+  // P35-C3-C2AZ-V20CM
+  if (!window.puedeEnviarComunicacionesMasivasUI()) {
+    alert("No tienes permiso para crear comunicaciones masivas.");
+    return;
+  }
+
 
   const panel =
     document.getElementById(
@@ -80650,6 +80713,14 @@ window.cerrarDestinatariosCampanaMasivaOrganizador =
 
 window.mostrarHistorialCampanasMasivasOrganizador =
   async function () {
+
+    
+  // P35-C3-C2AZ-V20CM
+  if (!window.puedeEnviarComunicacionesMasivasUI()) {
+    alert("No tienes permiso para consultar campañas masivas.");
+    return;
+  }
+
     const panelHistorial =
       document.getElementById(
         "panelHistorialCampanasMasivasOrganizador"
@@ -80738,6 +80809,18 @@ window.mostrarChatOrganizadorAdmin = async function () {
     alert("No se encontró el organizador asignado.");
     return;
   }
+
+  
+  // P35-C3-C2AZ-V20CM
+  // Sincronizar botones masivos con permisos.
+
+  if (
+    typeof window.actualizarVisibilidadComunicacionesMasivasUI ===
+    "function"
+  ) {
+    window.actualizarVisibilidadComunicacionesMasivasUI();
+  }
+
 
 	const contadorMensajesOrganizador =
   document.getElementById("contadorMensajesOrganizador");
