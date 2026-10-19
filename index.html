@@ -2597,6 +2597,18 @@ Cargando historial...
   💬 Mensajes de clientes
 </button>
 
+
+<!-- P35-C3-C2AZ-V20CO -->
+<button
+  id="btnComunicacionesMasivasAdminMass"
+  type="button"
+  onclick="abrirComunicacionesMasivasIndependientesMass()"
+  style="display:none;"
+>
+  📣 Comunicaciones masivas
+</button>
+
+
 <button
   id="btnPremiosLuckySpinAdmin"
   onclick="mostrarPremiosAdmin()"
@@ -3661,10 +3673,13 @@ window.addEventListener("load", () => {
   const categorias = [
     {
       titulo: "📊 Gestión y comunicación",
-      ids: [
-        "btnDashboardOrganizador",
-        "btnMensajesClientesAdmin"
-      ]
+      
+ids: [
+  "btnDashboardOrganizador",
+  "btnMensajesClientesAdmin",
+  "btnComunicacionesMasivasAdminMass"
+]
+
     },
     {
       titulo: "🎯 Sorteos y premios",
@@ -48323,6 +48338,13 @@ function actualizarVisibilidadAccesosOrganizador() {
       permiso: "ver_mensajes"
     },
 
+    
+{
+  id: "btnComunicacionesMasivasAdminMass",
+  permiso: "enviar_comunicaciones"
+},
+
+
     {
   id: "btnPremiosLuckySpinAdmin",
   permiso: "administrar_lucky_spin"
@@ -78500,6 +78522,146 @@ function () {
 };
 
 
+/* ============================================================
+   P35-C3-C2AZ-V20CO
+   ACCESO INDEPENDIENTE A COMUNICACIONES MASIVAS
+   SIN CARGAR CONVERSACIONES PRIVADAS
+   ============================================================ */
+
+window.abrirComunicacionesMasivasIndependientesMass =
+async function () {
+
+  try {
+    const { data, error } =
+      await supabaseClient.auth.getUser();
+
+    if (error || !data?.user?.id) {
+      alert("Debes iniciar sesión.");
+      return;
+    }
+
+    // Refrescar permisos antes de abrir.
+    if (
+      typeof cargarPermisosSesionOrganizadorMass ===
+      "function"
+    ) {
+      await cargarPermisosSesionOrganizadorMass();
+    }
+
+    if (
+      typeof window.puedeEnviarComunicacionesMasivasUI !==
+        "function" ||
+      !window.puedeEnviarComunicacionesMasivasUI()
+    ) {
+      alert(
+        "No tienes permiso para administrar comunicaciones masivas."
+      );
+      return;
+    }
+
+    const panel = document.getElementById(
+      "panelChatOrganizadorAdmin"
+    );
+
+    if (!panel) {
+      console.error(
+        "No se encontró el módulo de comunicaciones."
+      );
+      return;
+    }
+
+    // Ocultar conversaciones incluso cuando otras
+    // funciones intenten restaurar su display.
+    if (
+      !document.getElementById(
+        "estiloComunicacionesIndependientesMass"
+      )
+    ) {
+      const estilo = document.createElement("style");
+
+      estilo.id =
+        "estiloComunicacionesIndependientesMass";
+
+      estilo.textContent = `
+        #panelChatOrganizadorAdmin[data-comunicaciones-solo="true"]
+        #filtrosConversacionesOrganizador,
+
+        #panelChatOrganizadorAdmin[data-comunicaciones-solo="true"]
+        #listaConversacionesOrganizadorAdmin {
+          display:none !important;
+        }
+      `;
+
+      document.head.appendChild(estilo);
+    }
+
+    panel.setAttribute(
+      "data-comunicaciones-solo",
+      "true"
+    );
+
+    const titulo = panel.querySelector("h2");
+
+    if (titulo) {
+      titulo.textContent =
+        "📣 Comunicaciones masivas";
+    }
+
+    // Cerrar vistas anteriores sin borrar datos.
+    for (const id of [
+      "panelMensajeMasivoOrganizador",
+      "panelHistorialCampanasMasivasOrganizador",
+      "panelDestinatariosCampanaMasivaOrganizador"
+    ]) {
+      const elemento = document.getElementById(id);
+
+      if (elemento) {
+        elemento.style.display = "none";
+      }
+    }
+
+    // No conservar conversación privada en pantalla
+    // cuando la sesión no puede consultar el chat.
+    const puedeLeerChat =
+      typeof tienePermisoSesionOrganizadorMass ===
+        "function" &&
+      tienePermisoSesionOrganizadorMass(
+        "ver_mensajes"
+      );
+
+    if (!puedeLeerChat) {
+      const lista = document.getElementById(
+        "listaConversacionesOrganizadorAdmin"
+      );
+
+      if (lista) {
+        lista.replaceChildren();
+      }
+    }
+
+    window.actualizarVisibilidadComunicacionesMasivasUI();
+
+    panel.style.display = "block";
+
+    panel.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  } catch (error) {
+    console.error(
+      "V20CO - Error abriendo comunicaciones:",
+      error
+    );
+
+    alert(
+      "No fue posible verificar el acceso a comunicaciones."
+    );
+  }
+};
+
+
+
 window.abrirPanelMensajeMasivoOrganizador =
 async function () {
 
@@ -80621,10 +80783,29 @@ window.verDestinatariosCampanaMasivaOrganizador =
           </div>
         `;
 
-	const conversacionIdDestinatario =
+	
+const conversacionIdDestinatario =
   destinatario.conversacion_id;
 
-if (conversacionIdDestinatario) {
+// P35-C3-C2AZ-V20CO
+// El módulo independiente no abre chat privado.
+const puedeAbrirChatDesdeCampana =
+  typeof tienePermisoSesionOrganizadorMass ===
+    "function" &&
+  tienePermisoSesionOrganizadorMass(
+    "ver_mensajes"
+  ) &&
+  document.getElementById(
+    "panelChatOrganizadorAdmin"
+  )?.getAttribute(
+    "data-comunicaciones-solo"
+  ) !== "true";
+
+if (
+  conversacionIdDestinatario &&
+  puedeAbrirChatDesdeCampana
+) {
+
   const botonAbrirConversacion =
     document.createElement("button");
 
@@ -80809,6 +80990,57 @@ window.mostrarChatOrganizadorAdmin = async function () {
     alert("No se encontró el organizador asignado.");
     return;
   }
+
+  
+  // P35-C3-C2AZ-V20CO
+  // Entrada exclusiva al chat privado.
+
+  if (
+    typeof tienePermisoSesionOrganizadorMass !==
+      "function" ||
+    !tienePermisoSesionOrganizadorMass(
+      "ver_mensajes"
+    )
+  ) {
+    alert(
+      "No tienes permiso para consultar mensajes de clientes."
+    );
+    return;
+  }
+
+  panelChat.removeAttribute(
+    "data-comunicaciones-solo"
+  );
+
+  const tituloChat = panelChat.querySelector("h2");
+
+  if (tituloChat) {
+    tituloChat.textContent =
+      "💬 Mensajes de clientes";
+  }
+
+  const filtrosChat = document.getElementById(
+    "filtrosConversacionesOrganizador"
+  );
+
+  if (filtrosChat) {
+    filtrosChat.style.display = "flex";
+  }
+
+  listaConversaciones.style.display = "block";
+
+  for (const id of [
+    "panelMensajeMasivoOrganizador",
+    "panelHistorialCampanasMasivasOrganizador",
+    "panelDestinatariosCampanaMasivaOrganizador"
+  ]) {
+    const elemento = document.getElementById(id);
+
+    if (elemento) {
+      elemento.style.display = "none";
+    }
+  }
+
 
   
   // P35-C3-C2AZ-V20CM
@@ -82330,6 +82562,12 @@ window.cerrarChatOrganizadorAdmin = function () {
 
   if (panelChat) {
     panelChat.style.display = "none";
+
+    
+panelChat.removeAttribute(
+  "data-comunicaciones-solo"
+);
+
   }
 
   if (listaConversaciones) {
@@ -82349,11 +82587,28 @@ window.cerrarChatOrganizadorAdmin = function () {
 	const btnChatFlotanteOrganizador =
   document.getElementById("btnChatFlotanteOrganizador");
 
+
 if (btnChatFlotanteOrganizador) {
-  btnChatFlotanteOrganizador.style.display = "flex";
-  btnChatFlotanteOrganizador.style.alignItems = "center";
-  btnChatFlotanteOrganizador.style.justifyContent = "center";
+
+  const puedeLeerChat =
+    typeof tienePermisoSesionOrganizadorMass ===
+      "function" &&
+    tienePermisoSesionOrganizadorMass(
+      "ver_mensajes"
+    );
+
+  btnChatFlotanteOrganizador.style.display =
+    puedeLeerChat ? "flex" : "none";
+
+  if (puedeLeerChat) {
+    btnChatFlotanteOrganizador.style.alignItems =
+      "center";
+
+    btnChatFlotanteOrganizador.style.justifyContent =
+      "center";
+  }
 }
+
 };
 
 // ============================================================
