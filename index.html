@@ -82197,7 +82197,19 @@ cajaRespuesta.innerHTML = `
   </button>
 `;
 
-contenedor.appendChild(cajaRespuesta);
+
+  // P35-C3-C2AZ-V20CK
+  // Mostrar respuestas solo con permiso granular.
+  const puedeResponderChatOrganizador =
+    typeof tienePermisoSesionOrganizadorMass === "function" &&
+    tienePermisoSesionOrganizadorMass(
+      "responder_mensajes"
+    );
+
+  if (puedeResponderChatOrganizador) {
+    contenedor.appendChild(cajaRespuesta);
+  }
+
 
   historial.scrollTop =
     historial.scrollHeight;
@@ -82266,6 +82278,22 @@ if (btnChatFlotanteOrganizador) {
 // ============================================================
 
 window.enviarRespuestaOrganizadorAdmin = async function () {
+
+    
+  // P35-C3-C2AZ-V20CK
+  // Segunda validacion visual antes de enviar.
+  if (
+    typeof tienePermisoSesionOrganizadorMass !== "function" ||
+    !tienePermisoSesionOrganizadorMass(
+      "responder_mensajes"
+    )
+  ) {
+    alert(
+      "No tienes permiso para responder mensajes de clientes."
+    );
+    return;
+  }
+
 
   const textarea = document.getElementById(
     "textoRespuestaOrganizadorAdmin"
