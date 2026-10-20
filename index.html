@@ -90315,7 +90315,7 @@ async function abrirModalBeneficios() {
 
 const { data, error } = await supabaseClient
   .from("beneficios_entregados")
-  .select("*")
+  .select("id,patrocinador_nombre,promocion,codigo,usado")
   .eq("user_id", usuario)
   .eq("usado", false)
   .eq("oculto_usuario", false)
@@ -94824,7 +94824,7 @@ async function abrirCanjeados(){
 
 const { data, error } = await supabaseClient
   .from("beneficios_entregados")
-  .select("*")
+  .select("id,patrocinador_nombre,promocion,codigo,usado")
   .eq("user_id", usuario)
   .eq("usado", true)
   .order("created_at", { ascending:false });
@@ -94858,7 +94858,7 @@ async function abrirBeneficiosOcultos() {
 
   const { data, error } = await supabaseClient
     .from("beneficios_entregados")
-    .select("*")
+    .select("id,patrocinador_nombre,promocion,codigo,usado")
     .eq("user_id", userActual)
     .eq("oculto_usuario", true)
     .order("created_at", { ascending: false });
