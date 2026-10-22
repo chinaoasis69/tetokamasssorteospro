@@ -43223,6 +43223,129 @@ CANCELAR CIERRE`
 
 async function mostrarConvertidorMassAdmin() {
 
+// =====================================================
+// TE-TO-KA MASS SORTEOS PRO
+// P35-C3-C2AZ-V20DT-E19BJ
+// SEPARAR USO Y ADMINISTRACION DEL CONVERTIDOR
+// =====================================================
+
+  let sesionConvertidor = null;
+
+  try {
+    sesionConvertidor = await obtenerAdminActual();
+  } catch (errorSesion) {
+    console.error(
+      "E19BJ: error verificando sesión:",
+      errorSesion
+    );
+
+    alert("No fue posible verificar tu autorización.");
+    return;
+  }
+
+  const esSuperAdminConvertidor =
+    sesionConvertidor?.rol === "super_admin";
+
+  const esPropietarioConvertidor =
+    sesionConvertidor?.rol === "organizador" &&
+    sesionConvertidor?.tipo_acceso === "propietario";
+
+  const esColaboradorConvertidor =
+    sesionConvertidor?.rol === "organizador" &&
+    sesionConvertidor?.tipo_acceso === "colaborador";
+
+  // Colaborador: exclusivamente calculadora.
+  if (esColaboradorConvertidor) {
+
+    const organizadorId =
+      sesionConvertidor.organizador_id;
+
+    if (!organizadorId) {
+      alert("No se identificó tu organizador.");
+      return;
+    }
+
+    try {
+
+      const {
+        data: permisoUso,
+        error: errorPermiso
+      } = await supabaseClient.rpc(
+        "tiene_permiso_colaborador_seguro",
+        {
+          p_organizador_id: organizadorId,
+          p_permiso_clave: "usar_convertidor_mass"
+        }
+      );
+
+      if (errorPermiso || permisoUso !== true) {
+        alert(
+          "No tienes autorización para utilizar " +
+          "el Convertidor MASS."
+        );
+        return;
+      }
+
+      const {
+        data: organizador,
+        error: errorOrganizador
+      } = await supabaseClient
+        .from("organizadores")
+        .select("convertidor_mass_activo")
+        .eq("id", organizadorId)
+        .maybeSingle();
+
+      if (errorOrganizador || !organizador) {
+        alert(
+          "No fue posible consultar el estado " +
+          "del Convertidor MASS."
+        );
+        return;
+      }
+
+      if (
+        organizador.convertidor_mass_activo !== true
+      ) {
+        alert(
+          "El Convertidor MASS está desactivado " +
+          "para este organizador."
+        );
+        return;
+      }
+
+      // Calculadora de referencia existente.
+      await abrirConvertidorMass();
+      return;
+
+    } catch (errorConvertidor) {
+
+      console.error(
+        "E19BJ: error abriendo calculadora:",
+        errorConvertidor
+      );
+
+      alert(
+        "No fue posible abrir el Convertidor MASS."
+      );
+      return;
+    }
+  }
+
+  // Configuración administrativa: propietarios
+  // legítimos y Súper Admin.
+  if (
+    !esSuperAdminConvertidor &&
+    !esPropietarioConvertidor
+  ) {
+    alert(
+      "No tienes autorización para administrar " +
+      "el Convertidor MASS."
+    );
+    return;
+  }
+
+// FIN DE GUARDIA E19BJ
+
   const contenedor =
     document.getElementById("adminContenido");
 
@@ -43484,6 +43607,53 @@ async function cambiarEstadoConvertidorMassAdmin(
   organizadorId,
   nuevoEstado
 ) {
+
+// =====================================================
+// P35-C3-C2AZ-V20DT-E19BJ
+// PROTECCION DIRECTA DEL CAMBIO DE ESTADO
+// =====================================================
+
+  let administradorConvertidor = null;
+
+  try {
+    administradorConvertidor =
+      await obtenerAdminActual();
+
+  } catch (errorSesion) {
+
+    console.error(
+      "E19BJ: error verificando administrador:",
+      errorSesion
+    );
+
+    alert("No fue posible verificar tu autorización.");
+    return;
+  }
+
+  const superAdminAutorizado =
+    administradorConvertidor?.rol === "super_admin";
+
+  const propietarioAutorizado =
+    administradorConvertidor?.rol === "organizador" &&
+    administradorConvertidor?.tipo_acceso === "propietario" &&
+    String(administradorConvertidor?.organizador_id || "") ===
+      String(organizadorId || "");
+
+  if (
+    !organizadorId ||
+    (
+      !superAdminAutorizado &&
+      !propietarioAutorizado
+    )
+  ) {
+    alert(
+      "No tienes autorización para activar " +
+      "o desactivar el Convertidor MASS."
+    );
+    return;
+  }
+
+// FIN DE GUARDIA E19BJ
 
   const activar =
     nuevoEstado === true;
