@@ -96302,19 +96302,19 @@ if (item.tipo === "lucky_spin") {
                         <b>🎉 Premio de pre-sorteo</b>
                         <br>
 
-                        🎊 ${p.pre_sorteo_titulo}
+                        🎊 ${escaparHtmlPremios(p.pre_sorteo_titulo)}
                         <br>
 
                         🎟️ Número ganador:
-                        <b>${p.numero_ganador}</b>
+                        <b>${escaparHtmlPremios(p.numero_ganador)}</b>
                         <br>
 
                         🏆 Premio:
-                        <b>${p.premio}</b>
+                        <b>${escaparHtmlPremios(p.premio)}</b>
                         <br>
 
                         📦 Entrega:
-                        ${p.estado_entrega}
+                        ${escaparHtmlPremios(p.estado_entrega)}
                         <br>
 
                         📅 ${
@@ -96336,11 +96336,11 @@ if (item.tipo === "lucky_spin") {
                     border-radius:10px;
                 ">
                     🏆 Premio:
-                    <b>${p.premio}</b>
+                    <b>${escaparHtmlPremios(p.premio)}</b>
                     <br>
 
                     🎟️ Número:
-                    <b>${p.numero}</b>
+                    <b>${escaparHtmlPremios(p.numero)}</b>
                     <br>
 
                     📅 ${
