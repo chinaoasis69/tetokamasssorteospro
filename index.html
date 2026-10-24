@@ -19015,6 +19015,14 @@ const puedeEliminarDinamica =
     tipoAccesoSorteos === "propietario"
   );
 
+// D3HA: solo propietario o Súper Admin puede ver reprogramación.
+const puedeReprogramarDinamicas =
+  adminRol === "super_admin" ||
+  (
+    adminRol === "organizador" &&
+    tipoAccesoSorteos === "propietario"
+  );
+
 if (adminOrgId) {
   query = query.eq("organizador_id", adminOrgId);
 }
@@ -19388,6 +19396,7 @@ ${
   String(r.estado || "")
     .trim()
     .toLowerCase() === "minimo_no_alcanzado" &&
+  puedeReprogramarDinamicas &&
   !rifasConContinuacion.has(String(r.id))
     ? `
       <button
