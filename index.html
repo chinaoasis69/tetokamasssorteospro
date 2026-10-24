@@ -108972,8 +108972,9 @@ return `
                             <input
                                 id="limiteNumerosPlan_${planId}"
                                 type="number"
-                                min="1"
-                                step="1"
+                                min="100"
+                                max="1000000"
+                                step="100"
                                 value="${
                                     Number.isFinite(
                                         limiteNumeros
@@ -108981,7 +108982,7 @@ return `
                                         ? Math.trunc(
                                             limiteNumeros
                                         )
-                                        : 1
+                                        : 100
                                 }"
                                 style="
                                     width:100%;
@@ -109295,11 +109296,13 @@ async function (
         !Number.isSafeInteger(
             limiteNumeros
         ) ||
-        limiteNumeros <= 0
+        limiteNumeros < 100 ||
+        limiteNumeros > 1000000 ||
+        limiteNumeros % 100 !== 0
     ) {
 
         alert(
-            "❌ Números por dinámica debe ser mayor que cero."
+            "❌ Debes indicar entre 100 y 1,000,000 números, en múltiplos de 100."
         );
 
         return;
@@ -109494,7 +109497,7 @@ async function (
             ) {
 
                 alert(
-                    "❌ Revisa el límite de números por dinámica."
+                    "❌ Los límites permitidos son de 100 a 1,000,000 números, en múltiplos de 100."
                 );
 
             } else if (
