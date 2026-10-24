@@ -31962,7 +31962,7 @@ precios_mass_unidad:
     const adquisicionR3 = String(
         document.getElementById("massR3AdquisicionCreacion")?.value || ""
     ).trim();
-    const organizadorR3 = String(payload.organizador_id || "").trim();
+    const organizadorR3 = massR3OrganizadorCreacionActual();
     if (!adquisicionR3 ||
         organizadorR3 !== massR3ModalContexto.organizadorId ||
         !massR3ModalContexto.opciones.some(
@@ -31990,8 +31990,7 @@ precios_mass_unidad:
     }
     payload.adquisicion_id = adquisicionR3;
     payload.estado = "programada";
-    payload.organizador_id =
-      localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+    payload.organizador_id = organizadorR3;
 
         // PLAN-F4A5-C3B4C6-G3A
     // Creación segura con premios iniciales.
