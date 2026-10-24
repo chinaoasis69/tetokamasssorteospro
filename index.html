@@ -30967,7 +30967,102 @@ function actualizarCamposPremiosAutomaticos() {
   }
 }	
 
-	function cerrarModalRifa() {
+	
+// D3JF: selector de derechos R3. Backend es fuente exclusiva de autorizacion.
+// Esta rama NO habilita creaciones hasta integrar D3JG y aprobar su QA.
+const MASS_R3_CREACION_BACKEND_LISTO = false;
+let massR3ModalSecuencia = 0;
+let massR3ModalContexto = { organizadorId: "", opciones: [] };
+
+function massR3OrganizadorCreacionActual() {
+    return String(
+        localStorage.getItem("admin_organizador_id") ||
+        clienteActual?.id || ""
+    ).trim();
+}
+
+async function massR3ConsultarDerechosCreacion(organizadorId) {
+    const id = String(organizadorId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id)) return { ok: false, opciones: [] };
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_derechos_disponibles_creacion_r3_seguro",
+            { p_organizador_id: id }
+        );
+        if (error || data?.ok !== true ||
+            String(data?.organizador_id || "").toLowerCase() !== id.toLowerCase() ||
+            !Array.isArray(data?.opciones)) {
+            console.error("D3JF: consulta comercial:", error || data?.codigo);
+            return { ok: false, opciones: [] };
+        }
+        return {
+            ok: true,
+            opciones: data.opciones.filter(op =>
+                op && uuid.test(String(op.adquisicion_id || "")) &&
+                ["por_dinamica", "mensual"].includes(String(op.tipo_cobro || "")) &&
+                Number.isSafeInteger(Number(op.limite_numeros)) &&
+                Number(op.limite_numeros) >= 100 &&
+                Number(op.limite_numeros) <= 1000000 &&
+                Number(op.limite_numeros) % 100 === 0 &&
+                Number.isSafeInteger(Number(op.cupos_disponibles)) &&
+                Number(op.cupos_disponibles) > 0
+            )
+        };
+    } catch (error) {
+        console.error("D3JF: consulta de derechos:", error);
+        return { ok: false, opciones: [] };
+    }
+}
+
+async function massR3PrepararSelectorCreacion(datos = null) {
+    const secuencia = ++massR3ModalSecuencia;
+    const caja = document.getElementById("massR3GrupoDerechoCreacion");
+    const selector = document.getElementById("massR3AdquisicionCreacion");
+    const estado = document.getElementById("massR3EstadoDerechoCreacion");
+    massR3ModalContexto = { organizadorId: "", opciones: [] };
+    if (!caja || !selector || !estado) return;
+    caja.style.display = datos?.id ? "none" : "block";
+    selector.replaceChildren();
+    selector.disabled = true;
+    if (datos?.id) {
+        estado.textContent = "";
+        return; // Edicion no exige una compra nueva.
+    }
+    const organizadorId = massR3OrganizadorCreacionActual();
+    estado.textContent = "Consultando derechos MASS...";
+    const respuesta = await massR3ConsultarDerechosCreacion(organizadorId);
+    if (secuencia !== massR3ModalSecuencia ||
+        document.getElementById("formRifaId")?.value) return;
+    if (!respuesta.ok) {
+        estado.textContent = "No se pudo verificar el derecho. Creación bloqueada.";
+        return;
+    }
+    massR3ModalContexto = { organizadorId, opciones: respuesta.opciones };
+    if (!respuesta.opciones.length) {
+        estado.textContent = "No hay adquisiciones activadas con cupo disponible.";
+        return;
+    }
+    const inicial = document.createElement("option");
+    inicial.value = "";
+    inicial.textContent = "Selecciona un derecho MASS";
+    selector.appendChild(inicial);
+    for (const op of respuesta.opciones) {
+        const item = document.createElement("option");
+        item.value = String(op.adquisicion_id);
+        item.textContent =
+            String(op.plan_nombre || op.plan_codigo || "Plan MASS") +
+            " · Hasta " + Number(op.limite_numeros).toLocaleString("es-MX") +
+            " números · " + Number(op.cupos_disponibles) + " cupo(s)";
+        selector.appendChild(item); // textContent previene HTML dinamico.
+    }
+    selector.disabled = false;
+    estado.textContent = "La RPC verificará nuevamente el derecho antes de crear.";
+}
+
+function cerrarModalRifa() {
+    massR3ModalSecuencia += 1;
+    massR3ModalContexto = { organizadorId: "", opciones: [] };
     document.getElementById("modalRifa").style.display = "none";
 }
 
@@ -31438,6 +31533,7 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formPorcentaje").value =
       datos ? (datos.porcentaje_minimo ?? "") : "";
 	actualizarCampoCifrasRifa();
+    massR3PrepararSelectorCreacion(datos);
 
 	/*
   Cargar los premios existentes
@@ -31862,6 +31958,37 @@ precios_mass_unidad:
     }
 
   } else {
+
+    const adquisicionR3 = String(
+        document.getElementById("massR3AdquisicionCreacion")?.value || ""
+    ).trim();
+    const organizadorR3 = String(payload.organizador_id || "").trim();
+    if (!adquisicionR3 ||
+        organizadorR3 !== massR3ModalContexto.organizadorId ||
+        !massR3ModalContexto.opciones.some(
+            op => String(op.adquisicion_id) === adquisicionR3
+        )) {
+        alert("🔒 Selecciona un derecho comercial válido para este organizador.");
+        return;
+    }
+    const consultaR3 = await massR3ConsultarDerechosCreacion(organizadorR3);
+    const derechoActualR3 = consultaR3.ok
+        ? consultaR3.opciones.find(op =>
+            String(op.adquisicion_id) === adquisicionR3 &&
+            Number(op.limite_numeros) >= totalNumeros
+        )
+        : null;
+    if (!derechoActualR3) {
+        alert("🔒 El derecho no está vigente, sin cupo o no alcanza los números.");
+        await massR3PrepararSelectorCreacion();
+        return;
+    }
+    // Fail closed mientras el backend aun no valida y asocia en una transaccion.
+    if (!MASS_R3_CREACION_BACKEND_LISTO) {
+        alert("🔒 R3 pendiente en Supabase. No se creará ninguna dinámica.");
+        return;
+    }
+    payload.adquisicion_id = adquisicionR3;
     payload.estado = "programada";
     payload.organizador_id =
       localStorage.getItem("admin_organizador_id") || clienteActual?.id;
@@ -31902,7 +32029,9 @@ precios_mass_unidad:
     nuevaRifa =
       !error &&
       res.data?.ok === true &&
-      res.data?.rifa_id
+      res.data?.rifa_id &&
+      res.data?.asociacion_comercial_r3 === true &&
+      String(res.data?.adquisicion_id) === adquisicionR3
         ? { id: res.data.rifa_id }
         : null;
 
@@ -32015,6 +32144,40 @@ if (
   );
 
   return;
+}
+
+
+const organizadorR3Legacy = String(clienteActual?.id || "").trim();
+const consultaR3Legacy = await massR3ConsultarDerechosCreacion(organizadorR3Legacy);
+if (!consultaR3Legacy.ok) {
+    alert("🔒 No se pudieron consultar los derechos MASS."); return;
+}
+const opcionesR3Legacy = consultaR3Legacy.opciones.filter(
+    op => Number(op.limite_numeros) >= totalNumeros
+);
+if (!opcionesR3Legacy.length) {
+    alert("🔒 No hay derechos activos con cupo para esta cantidad."); return;
+}
+const menuR3Legacy = opcionesR3Legacy.map(
+    (op, i) => (i + 1) + ". " +
+        String(op.plan_nombre || op.plan_codigo || "MASS") +
+        " · " + Number(op.cupos_disponibles) + " cupo(s)"
+).join("\n");
+const eleccionR3Legacy = window.prompt(
+    "🔐 Selecciona la adquisición MASS:\n\n" + menuR3Legacy, "1"
+);
+if (eleccionR3Legacy === null) return;
+const indiceR3Legacy = Number(eleccionR3Legacy.trim()) - 1;
+if (!Number.isSafeInteger(indiceR3Legacy) ||
+    indiceR3Legacy < 0 || indiceR3Legacy >= opcionesR3Legacy.length) {
+    alert("❌ Derecho comercial inválido."); return;
+}
+const adquisicionR3Legacy = String(
+    opcionesR3Legacy[indiceR3Legacy].adquisicion_id
+);
+if (!MASS_R3_CREACION_BACKEND_LISTO) {
+    alert("🔒 R3 pendiente en Supabase. No se creará ninguna dinámica.");
+    return;
 }
 
 const modalidadIngresada = prompt(
@@ -32179,7 +32342,8 @@ const imagen = prompt(
           cifras_sorteo: cifrasSorteo,
           imagen_url: imagen,
           estado: "programada",
-          organizador_id: organizadorId
+          organizador_id: organizadorId,
+          adquisicion_id: adquisicionR3Legacy
         },
 
         p_premios: [
@@ -32196,7 +32360,9 @@ const imagen = prompt(
   if (
     error ||
     resultadoCreacion?.ok !== true ||
-    !resultadoCreacion?.rifa_id
+    !resultadoCreacion?.rifa_id ||
+    resultadoCreacion?.asociacion_comercial_r3 !== true ||
+    String(resultadoCreacion?.adquisicion_id) !== adquisicionR3Legacy
   ) {
     console.error(
       "Error en creación segura de dinámica:",
@@ -117229,7 +117395,18 @@ font-family:Arial, sans-serif;">
     Las divisas adicionales son únicamente informativas.
   </div>
 </div>
-    <input id="formTotal" type="number" placeholder="Cantidad de números">
+    <input id="formTotal" type="number" min="100" max="1000000" step="100" placeholder="Cantidad de números">
+
+    <div id="massR3GrupoDerechoCreacion"
+         style="display:none;margin:12px auto;padding:12px;border:1px solid #39ff14;border-radius:12px;max-width:420px;">
+      <label for="massR3AdquisicionCreacion" style="color:#39ff14;font-weight:bold;display:block;">
+        🔐 Derecho comercial MASS para esta dinámica
+      </label>
+      <select id="massR3AdquisicionCreacion" disabled></select>
+      <div id="massR3EstadoDerechoCreacion" aria-live="polite"
+           style="color:#ddd;font-size:13px;"></div>
+    </div>
+
 
 <select id="formModalidad">
   <option value="1">Modalidad 1 — entrega 1 número</option>
