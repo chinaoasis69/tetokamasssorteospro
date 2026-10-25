@@ -108037,6 +108037,147 @@ async function cargarPlanesOrganizadorSuperAdmin() {
 }
 
 
+
+/* =========================================================
+   D3JG-BG-05-H-10-A — TARIFAS R3 SÚPER ADMIN
+   Lectura solamente; sin editar ni activar ventas.
+========================================================= */
+let MASS_TARIFAS_R3_ADMIN = [];
+let MASS_TARIFAS_R3_ADMIN_CARGADAS = false;
+
+async function cargarTarifasVigenciaR3SuperAdmin() {
+    MASS_TARIFAS_R3_ADMIN = [];
+    MASS_TARIFAS_R3_ADMIN_CARGADAS = false;
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_tarifas_vigencia_r3_super_admin_segura"
+        );
+
+        if (
+            error || !data || data.ok !== true ||
+            !Array.isArray(data.tarifas) ||
+            data.total !== 16 || data.tarifas.length !== 16
+        ) {
+            console.error("R3: consulta de tarifas no disponible", error || data);
+            return false;
+        }
+
+        const permitidas = new Set(["inicial:3", "inicial:6", "inicial:12", "ampliacion:1"]);
+        const claves = new Set();
+        const grupos = new Map();
+
+        for (const t of data.tarifas) {
+            const planId = String(t?.plan_id || "");
+            const codigo = String(t?.plan_codigo || "");
+            const opcion = String(t?.tipo_tarifa || "") + ":" + Number(t?.duracion_meses);
+            const clave = planId + "|" + opcion;
+
+            if (
+                !planId || !codigo || !String(t?.plan_nombre || "") ||
+                !String(t?.tarifa_id || "") ||
+                t?.tipo_cobro !== "por_dinamica" ||
+                !permitidas.has(opcion) || claves.has(clave) ||
+                !Number.isFinite(Number(t?.precio_usd)) ||
+                Number(t?.precio_usd) <= 0 ||
+                !Number.isInteger(Number(t?.version)) ||
+                Number(t?.version) < 1 ||
+                typeof t?.activo !== "boolean" ||
+                typeof t?.fx_ok !== "boolean" ||
+                (t.fx_ok === true && (
+                    t.precio_mxn_estimado == null ||
+                    !Number.isFinite(Number(t.precio_mxn_estimado))
+                ))
+            ) {
+                console.error("R3: respuesta tarifaria incompleta o inválida");
+                return false;
+            }
+            claves.add(clave);
+            const anterior = grupos.get(planId);
+            if (anterior && anterior.codigo !== codigo) {
+                console.error("R3: identidad del plan inconsistente");
+                return false;
+            }
+            grupos.set(planId, {
+                codigo: codigo,
+                cantidad: (anterior ? anterior.cantidad : 0) + 1
+            });
+        }
+
+        if (
+            grupos.size !== 4 ||
+            Array.from(grupos.values()).some(g => g.cantidad !== 4)
+        ) {
+            console.error("R3: faltan variantes del catálogo");
+            return false;
+        }
+
+        MASS_TARIFAS_R3_ADMIN = data.tarifas;
+        MASS_TARIFAS_R3_ADMIN_CARGADAS = true;
+        return true;
+    } catch (error) {
+        console.error("R3: error consultando tarifas", error);
+        return false;
+    }
+}
+
+function crearHtmlTarifasVigenciaR3SuperAdmin() {
+    if (!MASS_TARIFAS_R3_ADMIN_CARGADAS) {
+        return '<p role="alert" style="color:#f4b46b;">' +
+            '⚠️ No se pudieron consultar las tarifas R3. ' +
+            'No se muestran precios ni se habilitan operaciones.</p>';
+    }
+    const grupos = new Map();
+    for (const t of MASS_TARIFAS_R3_ADMIN) {
+        const id = String(t.plan_id);
+        if (!grupos.has(id)) {
+            grupos.set(id, {
+                nombre: String(t.plan_nombre),
+                codigo: String(t.plan_codigo),
+                filas: []
+            });
+        }
+        grupos.get(id).filas.push(t);
+    }
+
+    return Array.from(grupos.values()).map(g => {
+        const tarjetas = g.filas.map(t => {
+            const nombre = t.tipo_tarifa === "ampliacion"
+                ? "+1 mes adicional"
+                : String(t.duracion_meses) + " meses";
+            const usd = Number(t.precio_usd).toFixed(2);
+            const mxn = t.fx_ok === true
+                ? "≈ $" + Number(t.precio_mxn_estimado).toLocaleString(
+                    "es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                  ) + " MXN"
+                : "MXN no disponible";
+            const estado = t.activo === true ? "Activa" : "Inactiva";
+
+            return [
+                '<div style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
+                '<div style="color:#ddd;font-weight:600;">', massEscaparHTML(nombre), '</div>',
+                '<div style="font-size:20px;font-weight:bold;color:white;margin-top:8px;">$',
+                massEscaparHTML(usd), ' USD</div>',
+                '<div style="color:#bbb;font-size:13px;margin-top:5px;">',
+                massEscaparHTML(mxn), '</div>',
+                '<div style="color:#999;font-size:12px;margin-top:7px;">Versión ',
+                Number(t.version), ' · ', massEscaparHTML(estado), '</div>',
+                '</div>'
+            ].join("");
+        }).join("");
+
+        return [
+            '<section style="border:1px solid #555;border-radius:12px;padding:14px;margin-top:12px;">',
+            '<div style="font-weight:700;margin-bottom:3px;">',
+            massEscaparHTML(g.nombre), '</div>',
+            '<div style="color:#999;font-size:12px;margin-bottom:12px;">',
+            massEscaparHTML(g.codigo), '</div>',
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">',
+            tarjetas, '</div></section>'
+        ].join("");
+    }).join("");
+}
+
 /* =========================================================
    RESUMEN DEL TIPO DE CAMBIO
 ========================================================= */
@@ -112024,6 +112165,8 @@ async function mostrarBillingSuperAdmin(){
 
     await cargarPlanesOrganizadorSuperAdmin();
 
+    await cargarTarifasVigenciaR3SuperAdmin();
+
     await cargarMetodosPagoPlanesSuperAdmin();
 
     await cargarPagosPlanesSuperAdmin(
@@ -112148,6 +112291,16 @@ ${crearHtmlFxPlanesSuperAdmin()}
         ${crearHtmlPlanesOrganizadorSuperAdmin()}
     </div>
 
+</div>
+
+<div class="card" style="max-width:760px;">
+    <h3>🗓️ Tarifas por vigencia MASS R3 · Solo lectura</h3>
+    <p style="color:#bbb;line-height:1.5;">
+        Consulta administrativa de 3, 6 y 12 meses, y el mes adicional por
+        plan. USD es el precio maestro y MXN es una estimación del backend.
+        Esta vista no habilita ventas, activaciones ni cambios de tarifas.
+    </p>
+    ${crearHtmlTarifasVigenciaR3SuperAdmin()}
 </div>
 
 <div
