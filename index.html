@@ -66050,17 +66050,23 @@ function massR3CrearHtmlVigenciasPublicas(plan) {
   const disponibles=MASS_R3_PUBLICOS_TARIFAS.filter(t=>t.plan_codigo===codigo&&
     String(t.plan_id)===planId&&t.tipo_tarifa==="inicial"&&[3,6,12].includes(Number(t.duracion_meses)));
   const guardada=massR3SeleccionGuardada();
-  const elegida=disponibles.find(t=>guardada&&guardada.codigo===codigo&&
+  // H-06-B: Nunca sustituir silenciosamente una vigencia guardada.
+  const seleccionDeEstePlan=!!guardada&&guardada.codigo===codigo;
+  const elegida=disponibles.find(t=>seleccionDeEstePlan&&
     guardada.tarifa_id===t.tarifa_id&&Number(guardada.version)===Number(t.version)&&
-    Number(guardada.duracion_meses)===Number(t.duracion_meses))||
-    disponibles.find(t=>Number(t.duracion_meses)===3)||disponibles[0];
+    Number(guardada.duracion_meses)===Number(t.duracion_meses))||null;
+  const seleccionDesactualizada=seleccionDeEstePlan&&!elegida&&disponibles.length>0;
   const opciones=[3,6,12].map(m=>{
     const t=disponibles.find(x=>Number(x.duracion_meses)===m);
     return `<option value="${m}"${t?"":" disabled"}${t&&elegida&&t.tarifa_id===elegida.tarifa_id?" selected":""}>${m} meses${t?"":" · no disponible"}</option>`;
   }).join("");
   const detalle=elegida
     ? `${Number(elegida.duracion_meses)} meses · ${Number(elegida.precio_usd).toFixed(2)} USD · ≈ ${Number(elegida.precio_mxn_estimado).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
-    : "Las vigencias R3 aún no están habilitadas para contratación.";
+    : seleccionDesactualizada
+      ? "Tu vigencia guardada requiere nueva confirmación porque su tarifa cambió. Vuelve a elegir los meses."
+      : disponibles.length
+        ? "Elige una vigencia para consultar su precio. La contratación R3 continúa en QA."
+        : "Las vigencias R3 aún no están habilitadas para contratación.";
   return `<div style="margin:16px 0;padding:14px;border:1px solid #666;border-radius:12px;background:#181818;">
   <div style="font-weight:800;color:#39ff14;margin-bottom:8px;">🗓️ Vigencia MASS R3</div>
   <label for="massR3VigenciaPublica_${massEscaparHTML(planId)}" style="display:block;color:#ddd;font-size:14px;margin-bottom:6px;">Selecciona 3, 6 o 12 meses</label>
