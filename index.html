@@ -108153,6 +108153,12 @@ function crearHtmlTarifasVigenciaR3SuperAdmin() {
                 : "MXN no disponible";
             const estado = t.activo === true ? "Activa" : "Inactiva";
 
+            const idSeguro = massEscaparHTML(String(t.tarifa_id));
+            const bloqueo = MASS_R3_TARIFAS_EDITOR_HABILITADO ? "" : " disabled";
+            const textoGuardar = MASS_R3_TARIFAS_EDITOR_HABILITADO
+                ? "💾 Guardar precio"
+                : "🔒 Guardado pendiente de QA";
+
             return [
                 '<div style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
                 '<div style="color:#ddd;font-weight:600;">', massEscaparHTML(nombre), '</div>',
@@ -108162,6 +108168,20 @@ function crearHtmlTarifasVigenciaR3SuperAdmin() {
                 massEscaparHTML(mxn), '</div>',
                 '<div style="color:#999;font-size:12px;margin-top:7px;">Versión ',
                 Number(t.version), ' · ', massEscaparHTML(estado), '</div>',
+                '<label for="precioTarifaR3_', idSeguro,
+                '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
+                'Nuevo precio USD</label>',
+                '<input id="precioTarifaR3_', idSeguro,
+                '" type="number" inputmode="decimal" min="0.01" max="9999999999.99"',
+                ' step="0.01" autocomplete="off" value="', massEscaparHTML(usd),
+                '" style="width:100%;box-sizing:border-box;font-size:16px;margin-top:5px;',
+                'padding:9px;border-radius:7px;background:#202020;color:#fff;',
+                'border:1px solid #555;"', bloqueo, '>',
+                '<button type="button" id="btnTarifaR3_', idSeguro,
+                '" data-mass-r3-guardar="', idSeguro,
+                '" style="width:100%;margin-top:8px;padding:9px;border-radius:8px;',
+                'border:1px solid #888;background:#292929;color:#fff;"',
+                bloqueo, '>', massEscaparHTML(textoGuardar), '</button>',
                 '</div>'
             ].join("");
         }).join("");
@@ -108177,6 +108197,135 @@ function crearHtmlTarifasVigenciaR3SuperAdmin() {
         ].join("");
     }).join("");
 }
+
+
+/* =========================================================
+   D3JG-BG-05-H-10-B — EDITOR INDIVIDUAL TARIFAS R3
+   Guardado bloqueado hasta autorizar QA y edición real.
+========================================================= */
+const MASS_R3_TARIFAS_EDITOR_HABILITADO = false;
+const MASS_R3_TARIFAS_GUARDANDO = new Set();
+
+window.guardarPrecioTarifaVigenciaR3SuperAdmin = async function(tarifaId) {
+    if (!MASS_R3_TARIFAS_EDITOR_HABILITADO) {
+        alert("🔒 Edición R3 pendiente de QA y autorización. No se modificó ningún precio.");
+        return false;
+    }
+
+    if (!MASS_TARIFAS_R3_ADMIN_CARGADAS) {
+        alert("⚠️ Recarga Billing / Cobros antes de editar una tarifa.");
+        return false;
+    }
+
+    const id = String(tarifaId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id) || MASS_R3_TARIFAS_GUARDANDO.has(id)) return false;
+
+    const tarifa = MASS_TARIFAS_R3_ADMIN.find(t => String(t.tarifa_id) === id);
+    const input = document.getElementById("precioTarifaR3_" + id);
+    const boton = document.getElementById("btnTarifaR3_" + id);
+    if (!tarifa || !input || !boton || !document.getElementById("tarifasR3SuperAdmin")) {
+        alert("⚠️ Tarifa no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const texto = String(input.value || "").trim();
+    const nuevo = Number(texto);
+    const actual = Number(tarifa.precio_usd);
+    const version = Number(tarifa.version);
+    if (
+        !/^[0-9]+(?:\.[0-9]{1,2})?$/.test(texto) ||
+        !Number.isFinite(nuevo) || nuevo <= 0 || nuevo > 9999999999.99 ||
+        !Number.isInteger(version) || version < 1
+    ) {
+        alert("❌ Introduce un precio USD positivo, con máximo dos decimales.");
+        return false;
+    }
+    if (nuevo.toFixed(2) === actual.toFixed(2)) {
+        alert("ℹ️ El precio no ha cambiado.");
+        return false;
+    }
+
+    const periodo = tarifa.tipo_tarifa === "ampliacion"
+        ? "mes adicional" : String(tarifa.duracion_meses) + " meses";
+    if (!confirm(
+        "¿Confirmas actualizar el precio maestro USD?\n\n" +
+        String(tarifa.plan_nombre) + " · " + periodo +
+        "\nDe: $" + actual.toFixed(2) + " USD" +
+        "\nA: $" + nuevo.toFixed(2) + " USD\n\n" +
+        "Solo afecta nuevas contrataciones; no cambia adquisiciones históricas."
+    )) return false;
+
+    MASS_R3_TARIFAS_GUARDANDO.add(id);
+    boton.disabled = true;
+    boton.textContent = "⏳ Guardando...";
+    input.disabled = true;
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "guardar_precio_tarifa_vigencia_r3_super_admin_segura",
+            {
+                p_tarifa_id: id,
+                p_precio_usd: nuevo,
+                p_version_esperada: version
+            }
+        );
+
+        if (error || !data || data.ok !== true) {
+            const codigo = String(data?.codigo || "");
+            console.error("R3: no se pudo guardar precio", error || data);
+            if (codigo === "VERSION_DESACTUALIZADA") {
+                alert("⚠️ La tarifa cambió en otra sesión. Recarga Billing / Cobros.");
+            } else if (codigo === "FX_NO_DISPONIBLE") {
+                alert("⚠️ No existe un tipo de cambio USD/MXN vigente.");
+            } else if (codigo === "NO_AUTORIZADO") {
+                alert("🔒 Solo el Súper Admin puede editar tarifas.");
+            } else if (codigo === "CAMBIO_CATALOGO_RECHAZADO" ||
+                       codigo === "PRECIO_BASE_INCONSISTENTE") {
+                alert("⚠️ Inconsistencia en el precio base del catálogo.");
+            } else {
+                alert("❌ No se pudo confirmar el cambio. Revisa Billing / Cobros.");
+            }
+            return false;
+        }
+
+        if (
+            Number(data.precio_usd) !== nuevo ||
+            Number(data.version) !== version + 1 ||
+            String(data.tarifa_id) !== id
+        ) {
+            console.error("R3: respuesta de guardado inesperada", data);
+            alert("⚠️ La respuesta del servidor debe verificarse. Recarga el panel.");
+            return false;
+        }
+
+        alert("✅ Tarifa actualizada y auditada: $" + nuevo.toFixed(2) + " USD.");
+        await mostrarBillingSuperAdmin();
+        return true;
+    } catch (error) {
+        console.error("R3: error inesperado al guardar tarifa", error);
+        alert("❌ No fue posible confirmar la modificación. Recarga el panel.");
+        return false;
+    } finally {
+        MASS_R3_TARIFAS_GUARDANDO.delete(id);
+        if (boton.isConnected) {
+            boton.disabled = !MASS_R3_TARIFAS_EDITOR_HABILITADO;
+            boton.textContent = MASS_R3_TARIFAS_EDITOR_HABILITADO
+                ? "💾 Guardar precio" : "🔒 Guardado pendiente de QA";
+        }
+        if (input.isConnected) input.disabled = !MASS_R3_TARIFAS_EDITOR_HABILITADO;
+    }
+};
+
+document.addEventListener("click", function massR3AdminTarifasClick(event) {
+    const boton = event.target.closest("button[data-mass-r3-guardar]");
+    const contenedor = document.getElementById("tarifasR3SuperAdmin");
+    if (!boton || !contenedor || !contenedor.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPrecioTarifaVigenciaR3SuperAdmin(
+        boton.getAttribute("data-mass-r3-guardar")
+    );
+});
 
 /* =========================================================
    RESUMEN DEL TIPO DE CAMBIO
@@ -112293,12 +112442,12 @@ ${crearHtmlFxPlanesSuperAdmin()}
 
 </div>
 
-<div class="card" style="max-width:760px;">
-    <h3>🗓️ Tarifas por vigencia MASS R3 · Solo lectura</h3>
+<div class="card" id="tarifasR3SuperAdmin" style="max-width:760px;">
+    <h3>🗓️ Tarifas por vigencia MASS R3 · Editor en QA</h3>
     <p style="color:#bbb;line-height:1.5;">
-        Consulta administrativa de 3, 6 y 12 meses, y el mes adicional por
-        plan. USD es el precio maestro y MXN es una estimación del backend.
-        Esta vista no habilita ventas, activaciones ni cambios de tarifas.
+        USD es el precio maestro y MXN se calcula en el backend.
+        Las tarifas están inactivas para contratación.
+        El guardado de precios permanece bloqueado hasta nueva autorización.
     </p>
     ${crearHtmlTarifasVigenciaR3SuperAdmin()}
 </div>
