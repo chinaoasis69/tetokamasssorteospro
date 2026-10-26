@@ -66007,6 +66007,98 @@ function () {
         "";
 };
 
+
+/* =========================================================
+   D3JG-BG-05-H-11-G-05-H-06-A — SELECTOR PUBLICO R3 EN QA
+   Vigencias desde RPC publica, sin compras ni pagos R3.
+========================================================= */
+const MASS_R3_PLANES_DINAMICA_CONOCIDOS = new Set(["mass_mini_100","mass_start_1k","mass_growth_10k","mass_pro_100k"]);
+const MASS_R3_PLANES_MENSUALES_CONOCIDOS = new Set(["mass_multi_3","mass_multi_5"]);
+let MASS_R3_PLANES_PUBLICOS_TIPO = new Map();
+let MASS_R3_PUBLICOS_TARIFAS = [];
+function massR3SeleccionGuardada() {
+  try { const v=JSON.parse(sessionStorage.getItem("mass_r3_vigencia_publica_qa")||"null");return v&&typeof v==="object"?v:null; }
+  catch {return null;}
+}
+async function massR3CargarTarifasPublicasParaSelector() {
+  MASS_R3_PUBLICOS_TARIFAS=[];
+  try {
+    const {data,error}=await supabaseClient.rpc("listar_tarifas_vigencia_r3_publicas_segura");
+    if(error||!data||data.ok!==true||data.moneda_maestra!=="USD"||
+      !Array.isArray(data.tarifas)||data.total!==data.tarifas.length||data.total>16) {
+      console.warn("MASS R3: tarifas públicas no disponibles; selector bloqueado.");return false;
+    }
+    const uuid=/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    const duplicados=new Set();
+    for(const t of data.tarifas) {
+      const meses=Number(t.duracion_meses),version=Number(t.version),usd=Number(t.precio_usd),mxn=Number(t.precio_mxn_estimado);
+      const tipo=String(t.tipo_tarifa||""),clave=String(t.plan_id)+":"+tipo+":"+meses;
+      if(!uuid.test(String(t.tarifa_id||""))||!uuid.test(String(t.plan_id||""))||
+        !String(t.plan_codigo||"").trim()||t.tipo_cobro!=="por_dinamica"||
+        !((tipo==="inicial"&&[3,6,12].includes(meses))||(tipo==="ampliacion"&&meses===1))||
+        !Number.isInteger(version)||version<1||!Number.isFinite(usd)||usd<=0||
+        !Number.isFinite(mxn)||mxn<=0||Math.abs(usd*100-Math.round(usd*100))>0.00001||
+        duplicados.has(clave)) {console.warn("MASS R3: respuesta tarifaria inválida; selector bloqueado.");return false;}
+      duplicados.add(clave);
+    }
+    MASS_R3_PUBLICOS_TARIFAS=data.tarifas.filter(t=>t.tipo_tarifa==="inicial");
+    return true;
+  } catch(error) {console.warn("MASS R3: no se pudo cargar el selector.",error);return false;}
+}
+function massR3CrearHtmlVigenciasPublicas(plan) {
+  const codigo=String(plan.codigo||"").trim().toLowerCase(),planId=String(plan.id||"");
+  const disponibles=MASS_R3_PUBLICOS_TARIFAS.filter(t=>t.plan_codigo===codigo&&
+    String(t.plan_id)===planId&&t.tipo_tarifa==="inicial"&&[3,6,12].includes(Number(t.duracion_meses)));
+  const guardada=massR3SeleccionGuardada();
+  const elegida=disponibles.find(t=>guardada&&guardada.codigo===codigo&&
+    guardada.tarifa_id===t.tarifa_id&&Number(guardada.version)===Number(t.version)&&
+    Number(guardada.duracion_meses)===Number(t.duracion_meses))||
+    disponibles.find(t=>Number(t.duracion_meses)===3)||disponibles[0];
+  const opciones=[3,6,12].map(m=>{
+    const t=disponibles.find(x=>Number(x.duracion_meses)===m);
+    return `<option value="${m}"${t?"":" disabled"}${t&&elegida&&t.tarifa_id===elegida.tarifa_id?" selected":""}>${m} meses${t?"":" · no disponible"}</option>`;
+  }).join("");
+  const detalle=elegida
+    ? `${Number(elegida.duracion_meses)} meses · ${Number(elegida.precio_usd).toFixed(2)} USD · ≈ ${Number(elegida.precio_mxn_estimado).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
+    : "Las vigencias R3 aún no están habilitadas para contratación.";
+  return `<div style="margin:16px 0;padding:14px;border:1px solid #666;border-radius:12px;background:#181818;">
+  <div style="font-weight:800;color:#39ff14;margin-bottom:8px;">🗓️ Vigencia MASS R3</div>
+  <label for="massR3VigenciaPublica_${massEscaparHTML(planId)}" style="display:block;color:#ddd;font-size:14px;margin-bottom:6px;">Selecciona 3, 6 o 12 meses</label>
+  <select id="massR3VigenciaPublica_${massEscaparHTML(planId)}"
+    data-mass-r3-plan-id="${massEscaparHTML(planId)}"
+    data-mass-r3-codigo="${massEscaparHTML(codigo)}"
+    onchange="massR3GuardarSeleccionVigenciaPublica(this)"
+    ${disponibles.length?"":"disabled"}
+    style="width:100%;max-width:100%;box-sizing:border-box;padding:12px;background:#242424;color:white;border:1px solid #777;border-radius:9px;font-size:16px;">
+    <option value=""${elegida?"":" selected"} disabled>Elige una vigencia</option>
+    ${opciones}
+  </select>
+  <div id="massR3DetallePublico_${massEscaparHTML(planId)}" role="status" aria-live="polite"
+    style="margin-top:9px;color:#ddd;font-size:13px;line-height:1.5;">${massEscaparHTML(detalle)}</div>
+  <div style="margin-top:8px;color:#aaa;font-size:12px;line-height:1.4;">USD es el precio maestro. La conversión MXN es informativa hasta contratar legítimamente.</div>
+</div>`;
+}
+function massR3HtmlAvisoCompra() {
+  return `<div role="status" style="padding:12px;margin-top:16px;border:1px solid #777;border-radius:10px;background:#242424;color:#eee;text-align:center;line-height:1.5;">🔒 Contratación por dinámica pendiente de QA R3. No se habilitan compras desde esta vista previa.</div>`;
+}
+window.massR3GuardarSeleccionVigenciaPublica = function massR3GuardarSeleccionVigenciaPublica(select) {
+  if(!select||!select.dataset)return false;
+  const codigo=String(select.dataset.massR3Codigo||"").trim().toLowerCase();
+  const planId=String(select.dataset.massR3PlanId||"");
+  const meses=Number(select.value);
+  const tarifa=MASS_R3_PUBLICOS_TARIFAS.find(t=>t.plan_codigo===codigo&&
+    String(t.plan_id)===planId&&t.tipo_tarifa==="inicial"&&Number(t.duracion_meses)===meses);
+  if(!tarifa)return false;
+  try {
+    sessionStorage.setItem("mass_r3_vigencia_publica_qa",JSON.stringify({
+      codigo,tarifa_id:String(tarifa.tarifa_id),version:Number(tarifa.version),duracion_meses:meses
+    }));
+  } catch{return false;}
+  const detalle=document.getElementById("massR3DetallePublico_"+planId);
+  if(detalle)detalle.textContent=`${meses} meses · ${Number(tarifa.precio_usd).toFixed(2)} USD · ≈ ${Number(tarifa.precio_mxn_estimado).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`;
+  return true;
+};
+
 window.mostrarPlanesOrganizadorPublicos =
 async function () {
 
@@ -66109,6 +66201,12 @@ async function () {
             : [];
 
 
+    MASS_R3_PLANES_PUBLICOS_TIPO = new Map(planes.map(p => [
+        String(p.codigo || "").trim().toLowerCase(),
+        String(p.tipo_cobro || "")
+    ]));
+    await massR3CargarTarifasPublicasParaSelector();
+
     const tarjetas =
         planes.map(
             plan => {
@@ -66203,7 +66301,7 @@ async function () {
                         <div
                             style="
                                 margin:18px 0;
-                                display:grid;
+                                display:${mensual ? "grid" : "none"};
                                 grid-template-columns:
                                     repeat(
                                         2,
@@ -66281,6 +66379,8 @@ async function () {
                         </div>
 
 
+                        ${mensual ? "" : massR3CrearHtmlVigenciasPublicas(plan)}
+
                         <div
                             style="
                                 color:#ddd;
@@ -66312,7 +66412,7 @@ async function () {
 
                         <div
                             style="
-                                display:grid;
+                                display:${mensual ? "grid" : "none"};
                                 grid-template-columns:
                                     repeat(
                                         2,
@@ -66325,6 +66425,7 @@ async function () {
 
                             <button
                                 type="button"
+                                ${mensual ? "" : "disabled"}
                                 onclick='
                                     adquirirPlanOrganizadorPublico(
                                         ${JSON.stringify(
@@ -66348,6 +66449,7 @@ async function () {
 
                             <button
                                 type="button"
+                                ${mensual ? "" : "disabled"}
                                 onclick='
                                     adquirirPlanOrganizadorPublico(
                                         ${JSON.stringify(
@@ -66369,6 +66471,8 @@ async function () {
                             </button>
 
                         </div>
+
+                        ${mensual ? "" : massR3HtmlAvisoCompra()}
 
                     </div>
                 `;
@@ -66929,6 +67033,27 @@ async function (
 
     }
 
+
+    // H-06-A: La ruta legacy no debe vender planes por dinamica R3.
+    // No crear organizadores, adquisiciones, pagos ni derechos desde este selector.
+    const tipoPlan = MASS_R3_PLANES_PUBLICOS_TIPO.get(codigoLimpio);
+    if (MASS_R3_PLANES_DINAMICA_CONOCIDOS.has(codigoLimpio) ||
+        tipoPlan === "por_dinamica") {
+        try {
+            const previo = JSON.parse(sessionStorage.getItem("mass_plan_compra_pendiente") || "null");
+            if (previo && String(previo.codigo || "").toLowerCase() === codigoLimpio) {
+                sessionStorage.removeItem("mass_plan_compra_pendiente");
+            }
+        } catch { /* Compra bloqueada independientemente del almacenamiento. */ }
+        alert("🔒 La contratación por dinámica MASS R3 continúa en QA; no se realizó ninguna compra.");
+        return;
+    }
+    // Mantener únicamente la ruta legacy de los planes mensuales.
+    if (tipoPlan !== "mensual" &&
+        !MASS_R3_PLANES_MENSUALES_CONOCIDOS.has(codigoLimpio)) {
+        alert("⚠️ Este plan no está disponible para contratación.");
+        return;
+    }
 
     const {
         data: datosSesion,
