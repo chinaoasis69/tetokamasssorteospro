@@ -108680,9 +108680,9 @@ document.addEventListener("click", function massComplementosAdminClick(event) {
 
 /* =========================================================
    PM-06-F-03-B — PRESENTACIÓN COMERCIAL EN PANEL SUPER ADMIN
-   VISTA QA. Editor DESHABILITADO hasta aprobación específica.
+   VISTA QA. Editor habilitado en PR #10; cambios requieren confirmación.
 ========================================================= */
-const MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO = false;
+const MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO = true;
 const MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO = new Set();
 
 function crearHtmlCamposPresentacionMass(tipo, r) {
@@ -113212,8 +113212,9 @@ ${crearHtmlFxPlanesSuperAdmin()}
         </summary>
         <p style="color:#bbb;line-height:1.5;margin-top:12px;">
             Dos productos y ocho paquetes: nombres, descripciones y versiones.
-            Edición bloqueada hasta QA y autorización. No se modifican
-            precios, capacidades, estados ni contrataciones.
+            Edición de nombres y descripciones habilitada para Súper Admin en Preview.
+            Guardar modifica registros reales con confirmación, versión y auditoría.
+            Precios, capacidades, estados y contrataciones permanecen protegidos.
         </p>
         <div id="listaPresentacionComplementosMassSuperAdmin">
             ${crearHtmlPresentacionComplementosMassSuperAdmin()}
