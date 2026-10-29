@@ -108677,6 +108677,264 @@ document.addEventListener("click", function massComplementosAdminClick(event) {
     );
 });
 
+
+/* =========================================================
+   PM-06-F-03-B — PRESENTACIÓN COMERCIAL EN PANEL SUPER ADMIN
+   VISTA QA. Editor DESHABILITADO hasta aprobación específica.
+========================================================= */
+const MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO = false;
+const MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO = new Set();
+
+function crearHtmlCamposPresentacionMass(tipo, r) {
+    if (!["producto", "paquete"].includes(tipo)) return "";
+    const rawId = String(tipo === "producto" ? r.producto_id : r.paquete_id);
+    if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(rawId)) return "";
+    const e = s => massEscaparHTML(String(s ?? ""));
+    const id = e(rawId), suf = tipo + "_" + id;
+    const editable = MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO === true &&
+        MASS_COMPLEMENTOS_ADMIN_LISTO === true;
+    const disabled = editable ? "" : " disabled";
+    const inputCss = ' style="width:100%;box-sizing:border-box;padding:9px;background:#202020;' +
+        'color:#fff;border:1px solid #555;border-radius:7px;"';
+    return [
+        '<div style="display:grid;gap:8px;margin-top:12px;">',
+        '<label for="massPresentNombre_', suf, '">Nombre público (3 a 120 caracteres)</label>',
+        '<input type="text" id="massPresentNombre_', suf, '" maxlength="120" autocomplete="off"',
+        ' value="', e(r.nombre_publico), '"', inputCss, disabled, '>',
+        '<label for="massPresentDescripcion_', suf, '">Descripción pública (opcional, máximo 1000)</label>',
+        '<textarea id="massPresentDescripcion_', suf, '" rows="3" maxlength="1000"',
+        inputCss, disabled, '>', e(r.descripcion_publica), '</textarea>',
+        '<label for="massPresentMotivo_', suf, '">Motivo obligatorio (10 a 1000 caracteres)</label>',
+        '<textarea id="massPresentMotivo_', suf, '" rows="2" maxlength="1000"',
+        inputCss, disabled, '></textarea>',
+        '<button type="button" id="massPresentBtn_', suf,
+        '" data-mass-presentacion-tipo="', tipo, '" data-mass-presentacion-id="', id,
+        '" style="width:100%;padding:10px;background:#292929;color:#ddd;',
+        'border:1px solid #888;border-radius:8px;"', disabled, '>',
+        e(editable ? "💾 Guardar presentación" : "🔒 Guardado pendiente de QA y autorización"),
+        '</button></div>'
+    ].join("");
+}
+
+function crearHtmlPresentacionComplementosMassSuperAdmin() {
+    if (!MASS_COMPLEMENTOS_ADMIN_LISTO)
+        return '<p role="alert">⚠️ Catálogo no disponible. Operaciones bloqueadas.</p>';
+    const e = s => massEscaparHTML(String(s ?? ""));
+    return MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.map(producto => {
+        const paquetes = MASS_COMPLEMENTOS_ADMIN_PAQUETES
+            .filter(p => p.complemento_codigo === producto.codigo)
+            .map(p => [
+                '<details style="background:#181818;border:1px solid #444;',
+                'border-radius:9px;padding:10px;margin-top:9px;">',
+                '<summary style="cursor:pointer;color:#eee;font-weight:600;">',
+                e(p.nombre_publico), ' · Versión ', e(p.version),
+                ' · USD ', e(Number(p.precio_usd).toFixed(2)), '/mes</summary>',
+                '<p style="font-size:12px;color:#aaa;">Capacidad ', e(p.capacidad_unidades),
+                ' · ', p.tipo_paquete === "adicional" ? "Adicional" : "Base",
+                ' · ', p.activo ? "Activo" : "Inactivo",
+                ' · ', p.visible_publico ? "Visible" : "Oculto",
+                ' · Precio y capacidad no editables.</p>',
+                crearHtmlCamposPresentacionMass("paquete", p), '</details>'
+            ].join("")).join("");
+        return [
+            '<details style="background:#151515;border:1px solid #555;',
+            'border-radius:11px;padding:12px;margin-top:12px;">',
+            '<summary style="cursor:pointer;color:#fff;font-weight:700;">',
+            e(producto.nombre_publico), ' · Versión ', e(producto.version),
+            ' · ', producto.activo ? "Activo" : "Inactivo",
+            ' · ', producto.visible_publico ? "Visible" : "Oculto", '</summary>',
+            '<p style="font-size:12px;color:#aaa;">Producto: ', e(producto.codigo),
+            ' · Solo nombre y descripción.</p>',
+            crearHtmlCamposPresentacionMass("producto", producto),
+            '<p style="font-weight:600;color:#ddd;margin-top:15px;">Paquetes (4)</p>',
+            paquetes, '</details>'
+        ].join("");
+    }).join("");
+}
+
+window.guardarPresentacionComplementosMassSuperAdmin = async function(tipo, identificador) {
+    // Bloqueo en código, además de los controles HTML deshabilitados.
+    if (MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO !== true ||
+        MASS_COMPLEMENTOS_ADMIN_LISTO !== true ||
+        !["producto", "paquete"].includes(tipo)) return false;
+    const id = String(identificador || "");
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    const clave = tipo + ":" + id;
+    if (!uuid.test(id) || MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.has(clave)) return false;
+
+    const registro = (tipo === "producto" ? MASS_COMPLEMENTOS_ADMIN_PRODUCTOS :
+        MASS_COMPLEMENTOS_ADMIN_PAQUETES).find(p =>
+        String(tipo === "producto" ? p.producto_id : p.paquete_id) === id);
+    const version = Number(registro?.version);
+    const suf = tipo + "_" + id;
+    const root = document.getElementById("presentacionComplementosMassSuperAdmin");
+    const lista = document.getElementById("listaPresentacionComplementosMassSuperAdmin");
+    const nombreInput = document.getElementById("massPresentNombre_" + suf);
+    const descripcionInput = document.getElementById("massPresentDescripcion_" + suf);
+    const motivoInput = document.getElementById("massPresentMotivo_" + suf);
+    const boton = document.getElementById("massPresentBtn_" + suf);
+    if (!registro || !root || !lista || !nombreInput || !descripcionInput ||
+        !motivoInput || !boton || boton.disabled || !root.contains(boton) ||
+        !Number.isInteger(version) || version < 1 || version >= 2147483647) {
+        alert("⚠️ Registro o versión no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+    if (registro.activo !== false || registro.visible_publico !== false) {
+        alert("🔒 Producto o paquete activo o publicado.");
+        return false;
+    }
+    if (tipo === "paquete") {
+        const padre = MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.find(
+            p => p.codigo === registro.complemento_codigo);
+        if (!padre || padre.activo !== false || padre.visible_publico !== false) {
+            alert("🔒 Producto padre no elegible.");
+            return false;
+        }
+    }
+
+    const nombre = String(nombreInput.value ?? "");
+    const textoDesc = String(descripcionInput.value ?? "");
+    const descripcion = textoDesc === "" ? null : textoDesc;
+    const motivo = String(motivoInput.value ?? "").trim();
+    const antesNombre = String(registro.nombre_publico);
+    const antesDesc = registro.descripcion_publica ?? null;
+    if (nombre.length < 3 || nombre.length > 120 || nombre.trim() !== nombre) {
+        alert("❌ Nombre inválido (3 a 120 caracteres, sin espacios exteriores).");
+        return false;
+    }
+    if (descripcion !== null &&
+        (descripcion.length > 1000 || descripcion.trim() !== descripcion)) {
+        alert("❌ Descripción inválida (máximo 1000 caracteres).");
+        return false;
+    }
+    if (motivo.length < 10 || motivo.length > 1000) {
+        alert("❌ Motivo obligatorio de 10 a 1000 caracteres.");
+        return false;
+    }
+    if (nombre === antesNombre && descripcion === antesDesc) {
+        alert("ℹ️ No hay cambios de presentación.");
+        return false;
+    }
+    if (!confirm(
+        "¿Confirmas modificar la presentación REAL de este " + tipo + "?\n\n" +
+        "Nombre: " + antesNombre + " → " + nombre +
+        "\nDescripción anterior: " + (antesDesc ?? "(sin descripción)") +
+        "\nDescripción nueva: " + (descripcion ?? "(sin descripción)") +
+        "\nVersión: " + version + " → " + (version + 1) +
+        "\nMotivo: " + motivo +
+        "\n\nHabrá auditoría permanente. Precios, capacidades y estados no cambiarán."
+    )) return false;
+
+    MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.add(clave);
+    for (const campo of [nombreInput, descripcionInput, motivoInput, boton]) campo.disabled = true;
+    boton.textContent = "⏳ Guardando y auditando...";
+    try {
+        const { data: sesion, error: eAuth } = await supabaseClient.auth.getUser();
+        if (eAuth || !sesion?.user) {
+            alert("🔒 Sesión Auth inválida. No se solicitó el cambio.");
+            return false;
+        }
+        const { data: admin, error: eRol } = await supabaseClient.rpc("is_super_admin");
+        if (eRol || admin !== true) {
+            alert("🔒 Solo Súper Admin puede modificar presentaciones.");
+            return false;
+        }
+
+        const rpc = tipo === "producto"
+            ? "actualizar_presentacion_producto_mass_super_admin_segura"
+            : "actualizar_presentacion_paquete_mass_super_admin_segura";
+        const parametros = {
+            p_nombre_publico: nombre,
+            p_descripcion_publica: descripcion,
+            p_version_esperada: version,
+            p_motivo: motivo
+        };
+        if (tipo === "producto") parametros.p_producto_id = id;
+        else parametros.p_paquete_id = id;
+        const { data, error } = await supabaseClient.rpc(rpc, parametros);
+        if (error || data?.ok !== true) {
+            console.error("MASS presentación: cambio no confirmado", error || data);
+            const codigo = String(error?.code || "");
+            const mensaje = String(error?.message || data?.codigo || "");
+            if (codigo === "PT409" || mensaje.includes("VERSION_DESACTUALIZADA") ||
+                mensaje.includes("ACTUALIZACION_CONCURRENTE")) {
+                alert("⚠️ Conflicto de versión. Recarga el panel sin repetir el guardado.");
+            } else if (codigo === "42501" || mensaje.includes("SUPER_ADMIN_REQUERIDO")) {
+                alert("🔒 Cambio no autorizado.");
+            } else if (codigo === "22023") {
+                alert("❌ Nombre, descripción o motivo inválidos.");
+            } else {
+                alert("❌ Cambio no confirmado. Verifica en Supabase antes de reintentar.");
+            }
+            return false;
+        }
+
+        const respuestaId = tipo === "producto" ? data.producto_id : data.paquete_id;
+        if (data.sin_cambios !== false || String(respuestaId) !== id ||
+            Number(data.version_anterior) !== version ||
+            Number(data.version_nueva) !== version + 1 ||
+            typeof data.auditoria_id !== "string" || !uuid.test(data.auditoria_id) ||
+            data.valores_anteriores?.nombre_publico !== antesNombre ||
+            data.valores_anteriores?.descripcion_publica !== antesDesc ||
+            data.valores_nuevos?.nombre_publico !== nombre ||
+            data.valores_nuevos?.descripcion_publica !== descripcion) {
+            console.error("MASS presentación: auditoría no verificable", data);
+            alert("⚠️ Respuesta no verificable. No repitas el guardado.");
+            return false;
+        }
+
+        const refrescado = await cargarComplementosMassSuperAdmin();
+        const actual = (tipo === "producto" ? MASS_COMPLEMENTOS_ADMIN_PRODUCTOS :
+            MASS_COMPLEMENTOS_ADMIN_PAQUETES).find(p =>
+            String(tipo === "producto" ? p.producto_id : p.paquete_id) === id);
+        const coincide = refrescado && actual &&
+            actual.nombre_publico === nombre &&
+            (actual.descripcion_publica ?? null) === descripcion &&
+            Number(actual.version) === version + 1 &&
+            actual.activo === false && actual.visible_publico === false &&
+            (tipo === "producto" || (
+                Number(actual.precio_usd) === Number(registro.precio_usd) &&
+                Number(actual.capacidad_unidades) === Number(registro.capacidad_unidades) &&
+                Number(actual.duracion_meses) === Number(registro.duracion_meses) &&
+                actual.tipo_paquete === registro.tipo_paquete
+            ));
+        if (!coincide) MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+        lista.innerHTML = crearHtmlPresentacionComplementosMassSuperAdmin();
+        const precios = document.getElementById("listaComplementosMassSuperAdmin");
+        if (precios) precios.innerHTML = crearHtmlComplementosMassSuperAdmin();
+        if (!coincide) {
+            alert("⚠️ No se pudo verificar la actualización. Consulta Supabase; no repitas el cambio.");
+            return false;
+        }
+        alert("✅ Presentación actualizada y auditada. Versión " + (version + 1));
+        return true;
+    } catch (error) {
+        console.error("MASS presentación: error inesperado", error);
+        alert("❌ Cambio no confirmado. Consulta el catálogo antes de reintentar.");
+        return false;
+    } finally {
+        MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.delete(clave);
+        if (boton.isConnected) {
+            const disabled = MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO !== true ||
+                MASS_COMPLEMENTOS_ADMIN_LISTO !== true;
+            for (const campo of [nombreInput, descripcionInput, motivoInput, boton]) campo.disabled = disabled;
+            boton.textContent = disabled ? "🔒 Guardado pendiente de QA" : "💾 Guardar presentación";
+        }
+    }
+};
+
+document.addEventListener("click", function massPresentacionComplementosClick(event) {
+    if (!event.target || typeof event.target.closest !== "function") return;
+    const boton = event.target.closest("button[data-mass-presentacion-tipo]");
+    const root = document.getElementById("presentacionComplementosMassSuperAdmin");
+    if (!boton || !root || !root.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPresentacionComplementosMassSuperAdmin(
+        boton.getAttribute("data-mass-presentacion-tipo"),
+        boton.getAttribute("data-mass-presentacion-id")
+    );
+});
+
 /* =========================================================
    D3JG-BG-05-H-10-B — EDITOR INDIVIDUAL TARIFAS R3
    Guardado bloqueado hasta autorizar QA y edición real.
@@ -112944,6 +113202,23 @@ ${crearHtmlFxPlanesSuperAdmin()}
     <div id="listaComplementosMassSuperAdmin">
         ${crearHtmlComplementosMassSuperAdmin()}
     </div>
+</div>
+
+
+<div class="card" id="presentacionComplementosMassSuperAdmin" style="max-width:760px;">
+    <details>
+        <summary style="cursor:pointer;font-size:18px;font-weight:700;">
+            📝 Complementos MASS · Presentación comercial · Vista QA
+        </summary>
+        <p style="color:#bbb;line-height:1.5;margin-top:12px;">
+            Dos productos y ocho paquetes: nombres, descripciones y versiones.
+            Edición bloqueada hasta QA y autorización. No se modifican
+            precios, capacidades, estados ni contrataciones.
+        </p>
+        <div id="listaPresentacionComplementosMassSuperAdmin">
+            ${crearHtmlPresentacionComplementosMassSuperAdmin()}
+        </div>
+    </details>
 </div>
 
 <div
