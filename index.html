@@ -108330,6 +108330,163 @@ function crearHtmlTarifasVigenciaR3SuperAdmin() {
 }
 
 
+
+/* =========================================================
+   PM-06-E-02 — COMPLEMENTOS MASS SÚPER ADMIN
+   Vista de solo lectura: edición y guardado BLOQUEADOS.
+========================================================= */
+let MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = [];
+let MASS_COMPLEMENTOS_ADMIN_PAQUETES = [];
+let MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+
+async function cargarComplementosMassSuperAdmin() {
+    MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+    MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = [];
+    MASS_COMPLEMENTOS_ADMIN_PAQUETES = [];
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_complementos_mass_super_admin_seguro"
+        );
+        const productos = data?.productos;
+        const paquetes = data?.paquetes;
+        if (error || data?.ok !== true ||
+            !Array.isArray(productos) || !Array.isArray(paquetes) ||
+            productos.length !== 2 || paquetes.length < 8 ||
+            Number(data.total_productos) !== productos.length ||
+            Number(data.total_paquetes) !== paquetes.length) {
+            throw new Error("COMPLEMENTOS_RESPUESTA_INVALIDA");
+        }
+        const unidades = {
+            mi_equipo_mass: "plaza_colaborador",
+            puntos_mass_pro: "relacion_punto_organizador"
+        };
+        const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+        const vistosProductos = new Set();
+        for (const p of productos) {
+            if (!Object.prototype.hasOwnProperty.call(unidades, p.codigo) ||
+                vistosProductos.has(p.codigo) ||
+                !uuid.test(String(p.producto_id || "")) ||
+                typeof p.nombre_publico !== "string" || !p.nombre_publico.trim() ||
+                p.unidad_comercial !== unidades[p.codigo] ||
+                p.tipo_cobro !== "mensual" ||
+                typeof p.activo !== "boolean" ||
+                typeof p.visible_publico !== "boolean" ||
+                !Number.isInteger(Number(p.version)) ||
+                Number(p.version) < 1) {
+                throw new Error("COMPLEMENTO_PRODUCTO_INVALIDO");
+            }
+            vistosProductos.add(p.codigo);
+        }
+        const vistosPaquetes = new Set();
+        for (const p of paquetes) {
+            const clave = String(p.complemento_codigo || "") + "|" + String(p.codigo || "");
+            const precio = Number(p.precio_usd);
+            if (!vistosProductos.has(p.complemento_codigo) ||
+                !uuid.test(String(p.paquete_id || "")) ||
+                !/^[a-z][a-z0-9_]{2,63}$/.test(String(p.codigo || "")) ||
+                vistosPaquetes.has(clave) ||
+                typeof p.nombre_publico !== "string" || !p.nombre_publico.trim() ||
+                p.unidad_comercial !== unidades[p.complemento_codigo] ||
+                !["base", "adicional"].includes(p.tipo_paquete) ||
+                !Number.isInteger(Number(p.capacidad_unidades)) ||
+                Number(p.capacidad_unidades) < 1 ||
+                Number(p.duracion_meses) !== 1 ||
+                p.precio_usd == null || !Number.isFinite(precio) ||
+                precio <= 0 || precio > 9999999999.99 ||
+                Math.abs(precio - Math.round(precio * 100) / 100) > 0.000001 ||
+                !Number.isInteger(Number(p.version)) || Number(p.version) < 1 ||
+                typeof p.activo !== "boolean" ||
+                typeof p.visible_publico !== "boolean") {
+                throw new Error("COMPLEMENTO_PAQUETE_INVALIDO");
+            }
+            vistosPaquetes.add(clave);
+        }
+        const esperados = [
+            "mi_equipo_mass|equipo_1",
+            "mi_equipo_mass|equipo_3",
+            "mi_equipo_mass|equipo_10",
+            "mi_equipo_mass|equipo_extra_1",
+            "puntos_mass_pro|puntos_1",
+            "puntos_mass_pro|puntos_3",
+            "puntos_mass_pro|puntos_10",
+            "puntos_mass_pro|puntos_extra_1"
+        ];
+        if (!esperados.every(c => vistosPaquetes.has(c))) {
+            throw new Error("COMPLEMENTOS_PAQUETES_INCOMPLETOS");
+        }
+        MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = productos;
+        MASS_COMPLEMENTOS_ADMIN_PAQUETES = paquetes;
+        MASS_COMPLEMENTOS_ADMIN_LISTO = true;
+        return true;
+    } catch (error) {
+        console.error("MASS: no se pudo validar el listado de complementos", error);
+        return false;
+    }
+}
+
+function crearHtmlComplementosMassSuperAdmin() {
+    if (!MASS_COMPLEMENTOS_ADMIN_LISTO) {
+        return '<p role="alert" style="color:#f4b46b;">' +
+            '⚠️ Catálogo no disponible. No se muestran precios ni se habilitan operaciones.</p>';
+    }
+    return MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.map(function(producto) {
+        const tarjetas = MASS_COMPLEMENTOS_ADMIN_PAQUETES
+            .filter(p => p.complemento_codigo === producto.codigo)
+            .map(function(p) {
+                const id = massEscaparHTML(String(p.paquete_id));
+                const usd = massEscaparHTML(Number(p.precio_usd).toFixed(2));
+                const unidad = producto.codigo === "mi_equipo_mass"
+                    ? "colaborador(es)" : "punto(s) por organizador";
+                return [
+                    '<article style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
+                    '<div style="font-weight:700;color:#fff;">',
+                    massEscaparHTML(p.nombre_publico), '</div>',
+                    '<div style="color:#bbb;font-size:12px;margin-top:5px;">',
+                    massEscaparHTML(String(p.capacidad_unidades)), ' ',
+                    massEscaparHTML(unidad), ' · ',
+                    p.tipo_paquete === "adicional" ? "Adicional" : "Base",
+                    ' · 1 mes</div>',
+                    '<div style="font-size:20px;font-weight:bold;color:#fff;margin-top:8px;">',
+                    'USD ', usd, ' / mes</div>',
+                    '<div style="font-size:12px;color:#aaa;margin-top:5px;">',
+                    'Versión ', massEscaparHTML(String(p.version)), ' · ',
+                    p.activo ? "Activo" : "Inactivo", ' · ',
+                    p.visible_publico ? "Visible" : "Oculto", '</div>',
+                    '<label for="massPrecioComplemento_', id,
+                    '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
+                    'Nuevo precio USD · Edición bloqueada</label>',
+                    '<input id="massPrecioComplemento_', id,
+                    '" type="text" disabled autocomplete="off" value="', usd,
+                    '" style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
+                    'background:#202020;color:#aaa;border:1px solid #555;">',
+                    '<label for="massMotivoComplemento_', id,
+                    '" style="display:block;color:#bbb;font-size:12px;margin-top:10px;">',
+                    'Motivo · Edición bloqueada</label>',
+                    '<input id="massMotivoComplemento_', id,
+                    '" type="text" disabled autocomplete="off" value="" ',
+                    'style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
+                    'background:#202020;color:#aaa;border:1px solid #555;">',
+                    '<button type="button" disabled style="width:100%;margin-top:9px;',
+                    'padding:9px;border-radius:8px;background:#292929;color:#bbb;',
+                    'border:1px solid #666;">🔒 Guardado pendiente de QA y autorización</button>',
+                    '</article>'
+                ].join("");
+            }).join("");
+        return [
+            '<section style="border:1px solid #555;border-radius:12px;padding:14px;margin-top:12px;">',
+            '<div style="font-weight:700;margin-bottom:4px;">',
+            massEscaparHTML(producto.nombre_publico), '</div>',
+            '<div style="font-size:12px;color:#999;margin-bottom:12px;">',
+            massEscaparHTML(producto.codigo), ' · ',
+            producto.activo ? "Producto activo" : "Producto inactivo",
+            ' · ', producto.visible_publico ? "Público" : "No público",
+            '</div>',
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;">',
+            tarjetas, '</div></section>'
+        ].join("");
+    }).join("");
+}
+
 /* =========================================================
    D3JG-BG-05-H-10-B — EDITOR INDIVIDUAL TARIFAS R3
    Guardado bloqueado hasta autorizar QA y edición real.
@@ -112447,6 +112604,8 @@ async function mostrarBillingSuperAdmin(){
 
     await cargarTarifasVigenciaR3SuperAdmin();
 
+    await cargarComplementosMassSuperAdmin();
+
     await cargarMetodosPagoPlanesSuperAdmin();
 
     await cargarPagosPlanesSuperAdmin(
@@ -112581,6 +112740,17 @@ ${crearHtmlFxPlanesSuperAdmin()}
         El guardado de precios permanece bloqueado hasta nueva autorización.
     </p>
     ${crearHtmlTarifasVigenciaR3SuperAdmin()}
+</div>
+
+<div class="card" id="complementosMassSuperAdmin" style="max-width:760px;">
+    <h3>🧩 Complementos MASS · Precios mensuales · Vista QA</h3>
+    <p style="color:#bbb;line-height:1.5;">
+        MI EQUIPO MASS y PUNTOS MASS PRO: precios USD actuales.
+        Estos productos aún no están habilitados para contratación.
+        Guardar precios permanece bloqueado hasta QA y nueva autorización.
+        La estimación MXN se integrará después usando el motor FX; sin valores inventados.
+    </p>
+    ${crearHtmlComplementosMassSuperAdmin()}
 </div>
 
 <div
