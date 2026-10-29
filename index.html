@@ -108598,8 +108598,12 @@ window.guardarPrecioComplementoMassSuperAdmin = async function(paqueteId) {
             console.error("MASS: cambio de precio no confirmado", error || data);
             const codigo = String(error?.code || "");
             const mensaje = String(error?.message || data?.codigo || "");
-            if (codigo === "40001" || mensaje.includes("VERSION_DESACTUALIZADA")) {
+            if (mensaje.includes("VERSION_DESACTUALIZADA")) {
                 alert("⚠️ Versión desactualizada. Recarga Billing / Cobros antes de continuar.");
+            } else if (mensaje.includes("ACTUALIZACION_CONCURRENTE")) {
+                alert("⚠️ Otra actualización del paquete está en curso. Recarga Billing / Cobros.");
+            } else if (codigo === "PT409" || codigo === "40001") {
+                alert("⚠️ Conflicto de actualización. Recarga Billing / Cobros antes de continuar.");
             } else if (codigo === "42501" || mensaje.includes("SUPER_ADMIN_REQUERIDO")) {
                 alert("🔒 No autorizado para cambiar el precio.");
             } else {
