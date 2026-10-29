@@ -108333,7 +108333,7 @@ function crearHtmlTarifasVigenciaR3SuperAdmin() {
 
 /* =========================================================
    PM-06-E-02 — COMPLEMENTOS MASS SÚPER ADMIN
-   Vista de solo lectura: edición y guardado BLOQUEADOS.
+   Consulta de catálogo; el editor PM-06-E-03 controla sus cambios.
 ========================================================= */
 let MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = [];
 let MASS_COMPLEMENTOS_ADMIN_PAQUETES = [];
@@ -108436,7 +108436,8 @@ function crearHtmlComplementosMassSuperAdmin() {
                 const id = massEscaparHTML(String(p.paquete_id));
                 const usd = massEscaparHTML(Number(p.precio_usd).toFixed(2));
                 const unidad = producto.codigo === "mi_equipo_mass"
-                    ? "colaborador(es)" : "punto(s) por organizador";
+                    ? (Number(p.capacidad_unidades) === 1 ? "colaborador" : "colaboradores")
+                    : (Number(p.capacidad_unidades) === 1 ? "punto por organizador" : "puntos por organizador");
                 return [
                     '<article style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
                     '<div style="font-weight:700;color:#fff;">',
@@ -108454,21 +108455,23 @@ function crearHtmlComplementosMassSuperAdmin() {
                     p.visible_publico ? "Visible" : "Oculto", '</div>',
                     '<label for="massPrecioComplemento_', id,
                     '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
-                    'Nuevo precio USD · Edición bloqueada</label>',
+                    'Nuevo precio USD</label>',
                     '<input id="massPrecioComplemento_', id,
-                    '" type="text" disabled autocomplete="off" value="', usd,
+                    '" type="text" inputmode="decimal" maxlength="20" autocomplete="off" value="', usd,
                     '" style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
                     'background:#202020;color:#aaa;border:1px solid #555;">',
                     '<label for="massMotivoComplemento_', id,
                     '" style="display:block;color:#bbb;font-size:12px;margin-top:10px;">',
-                    'Motivo · Edición bloqueada</label>',
+                    'Motivo obligatorio (10 a 1000 caracteres)</label>',
                     '<input id="massMotivoComplemento_', id,
-                    '" type="text" disabled autocomplete="off" value="" ',
+                    '" type="text" maxlength="1000" autocomplete="off" value="" ',
                     'style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
                     'background:#202020;color:#aaa;border:1px solid #555;">',
-                    '<button type="button" disabled style="width:100%;margin-top:9px;',
+                    '<button type="button" id="massBtnGuardarComplemento_', id,
+                    '" data-mass-complemento-guardar="', id,
+                    '" style="width:100%;margin-top:9px;',
                     'padding:9px;border-radius:8px;background:#292929;color:#bbb;',
-                    'border:1px solid #666;">🔒 Guardado pendiente de QA y autorización</button>',
+                    'border:1px solid #888;">💾 Guardar nuevo precio</button>',
                     '</article>'
                 ].join("");
             }).join("");
@@ -108486,6 +108489,183 @@ function crearHtmlComplementosMassSuperAdmin() {
         ].join("");
     }).join("");
 }
+
+
+/* =========================================================
+   PM-06-E-03 — EDITOR DE PRECIOS DE COMPLEMENTOS, PR #10
+   Sólo Súper Admin. El servidor valida, versiona y audita.
+   NO activa contrataciones, derechos o planes R3.
+========================================================= */
+const MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO = true;
+const MASS_COMPLEMENTOS_ADMIN_GUARDANDO = new Set();
+
+window.guardarPrecioComplementoMassSuperAdmin = async function(paqueteId) {
+    if (!MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO ||
+        !MASS_COMPLEMENTOS_ADMIN_LISTO) {
+        alert("🔒 Catálogo no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const id = String(paqueteId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id) || MASS_COMPLEMENTOS_ADMIN_GUARDANDO.has(id)) return false;
+
+    const contenedor = document.getElementById("complementosMassSuperAdmin");
+    const lista = document.getElementById("listaComplementosMassSuperAdmin");
+    const precioInput = document.getElementById("massPrecioComplemento_" + id);
+    const motivoInput = document.getElementById("massMotivoComplemento_" + id);
+    const boton = document.getElementById("massBtnGuardarComplemento_" + id);
+    const paquete = MASS_COMPLEMENTOS_ADMIN_PAQUETES.find(
+        p => String(p.paquete_id) === id
+    );
+
+    if (!contenedor || !lista || !paquete || !precioInput || !motivoInput ||
+        !boton || boton.disabled || !contenedor.contains(boton)) {
+        alert("⚠️ Paquete no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const entrada = String(precioInput.value || "").trim();
+    const precioNuevo = Number(entrada);
+    const precioActual = Number(paquete.precio_usd);
+    const version = Number(paquete.version);
+    const motivo = String(motivoInput.value || "").trim();
+
+    if (!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(entrada) ||
+        !Number.isFinite(precioNuevo) || precioNuevo <= 0 ||
+        precioNuevo > 9999999999.99 ||
+        !Number.isFinite(precioActual) || precioActual <= 0 ||
+        !Number.isInteger(version) || version < 1) {
+        alert("❌ Precio USD inválido. Usa un valor positivo con máximo 2 decimales.");
+        return false;
+    }
+    if (precioNuevo.toFixed(2) === precioActual.toFixed(2)) {
+        alert("ℹ️ El precio no ha cambiado. No se guardará nada.");
+        return false;
+    }
+    if (motivo.length < 10 || motivo.length > 1000) {
+        alert("❌ El motivo debe tener de 10 a 1000 caracteres.");
+        return false;
+    }
+
+    if (!confirm(
+        "¿Confirmas cambiar el precio REAL del catálogo?\n\n" +
+        String(paquete.nombre_publico) +
+        "\nDe: USD " + precioActual.toFixed(2) +
+        "\nA: USD " + precioNuevo.toFixed(2) +
+        "\nMotivo: " + motivo +
+        "\n\nSe registrará auditoría. No habilita contrataciones. " +
+        "Los cambios futuros no modifican las adquisiciones anteriores."
+    )) return false;
+
+    MASS_COMPLEMENTOS_ADMIN_GUARDANDO.add(id);
+    boton.disabled = true;
+    boton.textContent = "⏳ Guardando y auditando...";
+    precioInput.disabled = true;
+    motivoInput.disabled = true;
+
+    try {
+        const { data: auth, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !auth?.user) {
+            alert("🔒 Sesión Auth inválida. No se solicitó el cambio.");
+            return false;
+        }
+
+        const { data: esSuperAdmin, error: rolError } =
+            await supabaseClient.rpc("is_super_admin");
+        if (rolError || esSuperAdmin !== true) {
+            alert("🔒 Solo Súper Admin puede editar estos precios.");
+            return false;
+        }
+
+        const { data, error } = await supabaseClient.rpc(
+            "guardar_precio_paquete_complemento_super_admin_segura",
+            {
+                p_paquete_id: id,
+                p_precio_usd: precioNuevo,
+                p_version_esperada: version,
+                p_motivo: motivo
+            }
+        );
+
+        if (error || !data || data.ok !== true) {
+            console.error("MASS: cambio de precio no confirmado", error || data);
+            const codigo = String(error?.code || "");
+            const mensaje = String(error?.message || data?.codigo || "");
+            if (codigo === "40001" || mensaje.includes("VERSION_DESACTUALIZADA")) {
+                alert("⚠️ Versión desactualizada. Recarga Billing / Cobros antes de continuar.");
+            } else if (codigo === "42501" || mensaje.includes("SUPER_ADMIN_REQUERIDO")) {
+                alert("🔒 No autorizado para cambiar el precio.");
+            } else {
+                alert("❌ Cambio no confirmado. Consulta el precio antes de reintentar.");
+            }
+            return false;
+        }
+
+        const auditoriaCorrecta = typeof data.auditoria_id === "string" &&
+            uuid.test(data.auditoria_id);
+
+        if (data.sin_cambios !== false ||
+            String(data.paquete_id) !== id ||
+            Number(data.precio_usd_anterior) !== precioActual ||
+            Number(data.precio_usd_nuevo) !== precioNuevo ||
+            Number(data.version_anterior) !== version ||
+            Number(data.version_nueva) !== version + 1 ||
+            !auditoriaCorrecta) {
+            console.error("MASS: respuesta de precio inesperada", data);
+            alert("⚠️ Respuesta no verificable. Recarga el panel antes de reintentar.");
+            return false;
+        }
+
+        if (!(await cargarComplementosMassSuperAdmin())) {
+            lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+            alert("⚠️ No se pudo refrescar el catálogo. Recarga el panel; no repitas el guardado.");
+            return false;
+        }
+
+        const actualizado = MASS_COMPLEMENTOS_ADMIN_PAQUETES.find(
+            p => String(p.paquete_id) === id
+        );
+        if (!actualizado ||
+            Number(actualizado.precio_usd) !== precioNuevo ||
+            Number(actualizado.version) !== version + 1) {
+            MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+            lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+            alert("⚠️ Precio pendiente de verificación. Recarga el panel; no repitas el guardado.");
+            return false;
+        }
+
+        lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+        alert("✅ Precio actualizado y auditado: USD " + precioNuevo.toFixed(2));
+        return true;
+
+    } catch (error) {
+        console.error("MASS: error al guardar precio de complemento", error);
+        alert("❌ Error inesperado. Recarga el panel y verifica antes de reintentar.");
+        return false;
+    } finally {
+        MASS_COMPLEMENTOS_ADMIN_GUARDANDO.delete(id);
+        if (boton.isConnected) {
+            boton.disabled = !MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO ||
+                !MASS_COMPLEMENTOS_ADMIN_LISTO;
+            precioInput.disabled = boton.disabled;
+            motivoInput.disabled = boton.disabled;
+            boton.textContent = boton.disabled
+                ? "🔒 Recarga Billing / Cobros" : "💾 Guardar nuevo precio";
+        }
+    }
+};
+
+document.addEventListener("click", function massComplementosAdminClick(event) {
+    if (!event.target || typeof event.target.closest !== "function") return;
+    const boton = event.target.closest("button[data-mass-complemento-guardar]");
+    const contenedor = document.getElementById("complementosMassSuperAdmin");
+    if (!boton || !contenedor || !contenedor.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPrecioComplementoMassSuperAdmin(
+        boton.getAttribute("data-mass-complemento-guardar")
+    );
+});
 
 /* =========================================================
    D3JG-BG-05-H-10-B — EDITOR INDIVIDUAL TARIFAS R3
@@ -112743,14 +112923,17 @@ ${crearHtmlFxPlanesSuperAdmin()}
 </div>
 
 <div class="card" id="complementosMassSuperAdmin" style="max-width:760px;">
-    <h3>🧩 Complementos MASS · Precios mensuales · Vista QA</h3>
+    <h3>🧩 Complementos MASS · Editor de precios USD · Vista QA</h3>
     <p style="color:#bbb;line-height:1.5;">
-        MI EQUIPO MASS y PUNTOS MASS PRO: precios USD actuales.
-        Estos productos aún no están habilitados para contratación.
-        Guardar precios permanece bloqueado hasta QA y nueva autorización.
-        La estimación MXN se integrará después usando el motor FX; sin valores inventados.
+        MI EQUIPO MASS y PUNTOS MASS PRO. Guardar cambia el precio real
+        del catálogo interno y genera auditoría. Confirma cada cambio.
+        Los productos siguen inactivos y no admiten contrataciones.
+        Durante QA visual, no pulses Guardar sin autorizar un cambio real.
+        La conversión MXN se integrará con el motor FX más adelante.
     </p>
-    ${crearHtmlComplementosMassSuperAdmin()}
+    <div id="listaComplementosMassSuperAdmin">
+        ${crearHtmlComplementosMassSuperAdmin()}
+    </div>
 </div>
 
 <div
