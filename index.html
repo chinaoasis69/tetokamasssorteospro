@@ -30967,7 +30967,102 @@ function actualizarCamposPremiosAutomaticos() {
   }
 }	
 
-	function cerrarModalRifa() {
+	
+// D3JF: selector de derechos R3. Backend es fuente exclusiva de autorizacion.
+// Esta rama NO habilita creaciones hasta integrar D3JG y aprobar su QA.
+const MASS_R3_CREACION_BACKEND_LISTO = false;
+let massR3ModalSecuencia = 0;
+let massR3ModalContexto = { organizadorId: "", opciones: [] };
+
+function massR3OrganizadorCreacionActual() {
+    return String(
+        localStorage.getItem("admin_organizador_id") ||
+        clienteActual?.id || ""
+    ).trim();
+}
+
+async function massR3ConsultarDerechosCreacion(organizadorId) {
+    const id = String(organizadorId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id)) return { ok: false, opciones: [] };
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_derechos_disponibles_creacion_r3_seguro",
+            { p_organizador_id: id }
+        );
+        if (error || data?.ok !== true ||
+            String(data?.organizador_id || "").toLowerCase() !== id.toLowerCase() ||
+            !Array.isArray(data?.opciones)) {
+            console.error("D3JF: consulta comercial:", error || data?.codigo);
+            return { ok: false, opciones: [] };
+        }
+        return {
+            ok: true,
+            opciones: data.opciones.filter(op =>
+                op && uuid.test(String(op.adquisicion_id || "")) &&
+                ["por_dinamica", "mensual"].includes(String(op.tipo_cobro || "")) &&
+                Number.isSafeInteger(Number(op.limite_numeros)) &&
+                Number(op.limite_numeros) >= 100 &&
+                Number(op.limite_numeros) <= 1000000 &&
+                Number(op.limite_numeros) % 100 === 0 &&
+                Number.isSafeInteger(Number(op.cupos_disponibles)) &&
+                Number(op.cupos_disponibles) > 0
+            )
+        };
+    } catch (error) {
+        console.error("D3JF: consulta de derechos:", error);
+        return { ok: false, opciones: [] };
+    }
+}
+
+async function massR3PrepararSelectorCreacion(datos = null) {
+    const secuencia = ++massR3ModalSecuencia;
+    const caja = document.getElementById("massR3GrupoDerechoCreacion");
+    const selector = document.getElementById("massR3AdquisicionCreacion");
+    const estado = document.getElementById("massR3EstadoDerechoCreacion");
+    massR3ModalContexto = { organizadorId: "", opciones: [] };
+    if (!caja || !selector || !estado) return;
+    caja.style.display = datos?.id ? "none" : "block";
+    selector.replaceChildren();
+    selector.disabled = true;
+    if (datos?.id) {
+        estado.textContent = "";
+        return; // Edicion no exige una compra nueva.
+    }
+    const organizadorId = massR3OrganizadorCreacionActual();
+    estado.textContent = "Consultando derechos MASS...";
+    const respuesta = await massR3ConsultarDerechosCreacion(organizadorId);
+    if (secuencia !== massR3ModalSecuencia ||
+        document.getElementById("formRifaId")?.value) return;
+    if (!respuesta.ok) {
+        estado.textContent = "No se pudo verificar el derecho. Creación bloqueada.";
+        return;
+    }
+    massR3ModalContexto = { organizadorId, opciones: respuesta.opciones };
+    if (!respuesta.opciones.length) {
+        estado.textContent = "No hay adquisiciones activadas con cupo disponible.";
+        return;
+    }
+    const inicial = document.createElement("option");
+    inicial.value = "";
+    inicial.textContent = "Selecciona un derecho MASS";
+    selector.appendChild(inicial);
+    for (const op of respuesta.opciones) {
+        const item = document.createElement("option");
+        item.value = String(op.adquisicion_id);
+        item.textContent =
+            String(op.plan_nombre || op.plan_codigo || "Plan MASS") +
+            " · Hasta " + Number(op.limite_numeros).toLocaleString("es-MX") +
+            " números · " + Number(op.cupos_disponibles) + " cupo(s)";
+        selector.appendChild(item); // textContent previene HTML dinamico.
+    }
+    selector.disabled = false;
+    estado.textContent = "La RPC verificará nuevamente el derecho antes de crear.";
+}
+
+function cerrarModalRifa() {
+    massR3ModalSecuencia += 1;
+    massR3ModalContexto = { organizadorId: "", opciones: [] };
     document.getElementById("modalRifa").style.display = "none";
 }
 
@@ -31438,6 +31533,7 @@ function abrirModalRifa(datos = null) {
     document.getElementById("formPorcentaje").value =
       datos ? (datos.porcentaje_minimo ?? "") : "";
 	actualizarCampoCifrasRifa();
+    massR3PrepararSelectorCreacion(datos);
 
 	/*
   Cargar los premios existentes
@@ -31862,9 +31958,39 @@ precios_mass_unidad:
     }
 
   } else {
+
+    const adquisicionR3 = String(
+        document.getElementById("massR3AdquisicionCreacion")?.value || ""
+    ).trim();
+    const organizadorR3 = massR3OrganizadorCreacionActual();
+    if (!adquisicionR3 ||
+        organizadorR3 !== massR3ModalContexto.organizadorId ||
+        !massR3ModalContexto.opciones.some(
+            op => String(op.adquisicion_id) === adquisicionR3
+        )) {
+        alert("🔒 Selecciona un derecho comercial válido para este organizador.");
+        return;
+    }
+    const consultaR3 = await massR3ConsultarDerechosCreacion(organizadorR3);
+    const derechoActualR3 = consultaR3.ok
+        ? consultaR3.opciones.find(op =>
+            String(op.adquisicion_id) === adquisicionR3 &&
+            Number(op.limite_numeros) >= totalNumeros
+        )
+        : null;
+    if (!derechoActualR3) {
+        alert("🔒 El derecho no está vigente, sin cupo o no alcanza los números.");
+        await massR3PrepararSelectorCreacion();
+        return;
+    }
+    // Fail closed mientras el backend aun no valida y asocia en una transaccion.
+    if (!MASS_R3_CREACION_BACKEND_LISTO) {
+        alert("🔒 R3 pendiente en Supabase. No se creará ninguna dinámica.");
+        return;
+    }
+    payload.adquisicion_id = adquisicionR3;
     payload.estado = "programada";
-    payload.organizador_id =
-      localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+    payload.organizador_id = organizadorR3;
 
         // PLAN-F4A5-C3B4C6-G3A
     // Creación segura con premios iniciales.
@@ -31902,7 +32028,9 @@ precios_mass_unidad:
     nuevaRifa =
       !error &&
       res.data?.ok === true &&
-      res.data?.rifa_id
+      res.data?.rifa_id &&
+      res.data?.asociacion_comercial_r3 === true &&
+      String(res.data?.adquisicion_id) === adquisicionR3
         ? { id: res.data.rifa_id }
         : null;
 
@@ -32015,6 +32143,40 @@ if (
   );
 
   return;
+}
+
+
+const organizadorR3Legacy = String(clienteActual?.id || "").trim();
+const consultaR3Legacy = await massR3ConsultarDerechosCreacion(organizadorR3Legacy);
+if (!consultaR3Legacy.ok) {
+    alert("🔒 No se pudieron consultar los derechos MASS."); return;
+}
+const opcionesR3Legacy = consultaR3Legacy.opciones.filter(
+    op => Number(op.limite_numeros) >= totalNumeros
+);
+if (!opcionesR3Legacy.length) {
+    alert("🔒 No hay derechos activos con cupo para esta cantidad."); return;
+}
+const menuR3Legacy = opcionesR3Legacy.map(
+    (op, i) => (i + 1) + ". " +
+        String(op.plan_nombre || op.plan_codigo || "MASS") +
+        " · " + Number(op.cupos_disponibles) + " cupo(s)"
+).join("\n");
+const eleccionR3Legacy = window.prompt(
+    "🔐 Selecciona la adquisición MASS:\n\n" + menuR3Legacy, "1"
+);
+if (eleccionR3Legacy === null) return;
+const indiceR3Legacy = Number(eleccionR3Legacy.trim()) - 1;
+if (!Number.isSafeInteger(indiceR3Legacy) ||
+    indiceR3Legacy < 0 || indiceR3Legacy >= opcionesR3Legacy.length) {
+    alert("❌ Derecho comercial inválido."); return;
+}
+const adquisicionR3Legacy = String(
+    opcionesR3Legacy[indiceR3Legacy].adquisicion_id
+);
+if (!MASS_R3_CREACION_BACKEND_LISTO) {
+    alert("🔒 R3 pendiente en Supabase. No se creará ninguna dinámica.");
+    return;
 }
 
 const modalidadIngresada = prompt(
@@ -32179,7 +32341,8 @@ const imagen = prompt(
           cifras_sorteo: cifrasSorteo,
           imagen_url: imagen,
           estado: "programada",
-          organizador_id: organizadorId
+          organizador_id: organizadorId,
+          adquisicion_id: adquisicionR3Legacy
         },
 
         p_premios: [
@@ -32196,7 +32359,9 @@ const imagen = prompt(
   if (
     error ||
     resultadoCreacion?.ok !== true ||
-    !resultadoCreacion?.rifa_id
+    !resultadoCreacion?.rifa_id ||
+    resultadoCreacion?.asociacion_comercial_r3 !== true ||
+    String(resultadoCreacion?.adquisicion_id) !== adquisicionR3Legacy
   ) {
     console.error(
       "Error en creación segura de dinámica:",
@@ -65842,6 +66007,104 @@ function () {
         "";
 };
 
+
+/* =========================================================
+   D3JG-BG-05-H-11-G-05-H-06-A — SELECTOR PUBLICO R3 EN QA
+   Vigencias desde RPC publica, sin compras ni pagos R3.
+========================================================= */
+const MASS_R3_PLANES_DINAMICA_CONOCIDOS = new Set(["mass_mini_100","mass_start_1k","mass_growth_10k","mass_pro_100k"]);
+const MASS_R3_PLANES_MENSUALES_CONOCIDOS = new Set(["mass_multi_3","mass_multi_5"]);
+let MASS_R3_PLANES_PUBLICOS_TIPO = new Map();
+let MASS_R3_PUBLICOS_TARIFAS = [];
+function massR3SeleccionGuardada() {
+  try { const v=JSON.parse(sessionStorage.getItem("mass_r3_vigencia_publica_qa")||"null");return v&&typeof v==="object"?v:null; }
+  catch {return null;}
+}
+async function massR3CargarTarifasPublicasParaSelector() {
+  MASS_R3_PUBLICOS_TARIFAS=[];
+  try {
+    const {data,error}=await supabaseClient.rpc("listar_tarifas_vigencia_r3_publicas_segura");
+    if(error||!data||data.ok!==true||data.moneda_maestra!=="USD"||
+      !Array.isArray(data.tarifas)||data.total!==data.tarifas.length||data.total>16) {
+      console.warn("MASS R3: tarifas públicas no disponibles; selector bloqueado.");return false;
+    }
+    const uuid=/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    const duplicados=new Set();
+    for(const t of data.tarifas) {
+      const meses=Number(t.duracion_meses),version=Number(t.version),usd=Number(t.precio_usd),mxn=Number(t.precio_mxn_estimado);
+      const tipo=String(t.tipo_tarifa||""),clave=String(t.plan_id)+":"+tipo+":"+meses;
+      if(!uuid.test(String(t.tarifa_id||""))||!uuid.test(String(t.plan_id||""))||
+        !String(t.plan_codigo||"").trim()||t.tipo_cobro!=="por_dinamica"||
+        !((tipo==="inicial"&&[3,6,12].includes(meses))||(tipo==="ampliacion"&&meses===1))||
+        !Number.isInteger(version)||version<1||!Number.isFinite(usd)||usd<=0||
+        !Number.isFinite(mxn)||mxn<=0||Math.abs(usd*100-Math.round(usd*100))>0.00001||
+        duplicados.has(clave)) {console.warn("MASS R3: respuesta tarifaria inválida; selector bloqueado.");return false;}
+      duplicados.add(clave);
+    }
+    MASS_R3_PUBLICOS_TARIFAS=data.tarifas.filter(t=>t.tipo_tarifa==="inicial");
+    return true;
+  } catch(error) {console.warn("MASS R3: no se pudo cargar el selector.",error);return false;}
+}
+function massR3CrearHtmlVigenciasPublicas(plan) {
+  const codigo=String(plan.codigo||"").trim().toLowerCase(),planId=String(plan.id||"");
+  const disponibles=MASS_R3_PUBLICOS_TARIFAS.filter(t=>t.plan_codigo===codigo&&
+    String(t.plan_id)===planId&&t.tipo_tarifa==="inicial"&&[3,6,12].includes(Number(t.duracion_meses)));
+  const guardada=massR3SeleccionGuardada();
+  // H-06-B: Nunca sustituir silenciosamente una vigencia guardada.
+  const seleccionDeEstePlan=!!guardada&&guardada.codigo===codigo;
+  const elegida=disponibles.find(t=>seleccionDeEstePlan&&
+    guardada.tarifa_id===t.tarifa_id&&Number(guardada.version)===Number(t.version)&&
+    Number(guardada.duracion_meses)===Number(t.duracion_meses))||null;
+  const seleccionDesactualizada=seleccionDeEstePlan&&!elegida&&disponibles.length>0;
+  const opciones=[3,6,12].map(m=>{
+    const t=disponibles.find(x=>Number(x.duracion_meses)===m);
+    return `<option value="${m}"${t?"":" disabled"}${t&&elegida&&t.tarifa_id===elegida.tarifa_id?" selected":""}>${m} meses${t?"":" · no disponible"}</option>`;
+  }).join("");
+  const detalle=elegida
+    ? `${Number(elegida.duracion_meses)} meses · ${Number(elegida.precio_usd).toFixed(2)} USD · ≈ ${Number(elegida.precio_mxn_estimado).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
+    : seleccionDesactualizada
+      ? "Tu vigencia guardada requiere nueva confirmación porque su tarifa cambió. Vuelve a elegir los meses."
+      : disponibles.length
+        ? "Elige una vigencia para consultar su precio. La contratación R3 continúa en QA."
+        : "Las vigencias R3 aún no están habilitadas para contratación.";
+  return `<div style="margin:16px 0;padding:14px;border:1px solid #666;border-radius:12px;background:#181818;">
+  <div style="font-weight:800;color:#39ff14;margin-bottom:8px;">🗓️ Vigencia MASS R3</div>
+  <label for="massR3VigenciaPublica_${massEscaparHTML(planId)}" style="display:block;color:#ddd;font-size:14px;margin-bottom:6px;">Selecciona 3, 6 o 12 meses</label>
+  <select id="massR3VigenciaPublica_${massEscaparHTML(planId)}"
+    data-mass-r3-plan-id="${massEscaparHTML(planId)}"
+    data-mass-r3-codigo="${massEscaparHTML(codigo)}"
+    onchange="massR3GuardarSeleccionVigenciaPublica(this)"
+    ${disponibles.length?"":"disabled"}
+    style="width:100%;max-width:100%;box-sizing:border-box;padding:12px;background:#242424;color:white;border:1px solid #777;border-radius:9px;font-size:16px;">
+    <option value=""${elegida?"":" selected"} disabled>Elige una vigencia</option>
+    ${opciones}
+  </select>
+  <div id="massR3DetallePublico_${massEscaparHTML(planId)}" role="status" aria-live="polite"
+    style="margin-top:9px;color:#ddd;font-size:13px;line-height:1.5;">${massEscaparHTML(detalle)}</div>
+  <div style="margin-top:8px;color:#aaa;font-size:12px;line-height:1.4;">USD es el precio maestro. La conversión MXN es informativa hasta contratar legítimamente.</div>
+</div>`;
+}
+function massR3HtmlAvisoCompra() {
+  return `<div role="status" style="padding:12px;margin-top:16px;border:1px solid #777;border-radius:10px;background:#242424;color:#eee;text-align:center;line-height:1.5;">🔒 Contratación por dinámica pendiente de QA R3. No se habilitan compras desde esta vista previa.</div>`;
+}
+window.massR3GuardarSeleccionVigenciaPublica = function massR3GuardarSeleccionVigenciaPublica(select) {
+  if(!select||!select.dataset)return false;
+  const codigo=String(select.dataset.massR3Codigo||"").trim().toLowerCase();
+  const planId=String(select.dataset.massR3PlanId||"");
+  const meses=Number(select.value);
+  const tarifa=MASS_R3_PUBLICOS_TARIFAS.find(t=>t.plan_codigo===codigo&&
+    String(t.plan_id)===planId&&t.tipo_tarifa==="inicial"&&Number(t.duracion_meses)===meses);
+  if(!tarifa)return false;
+  try {
+    sessionStorage.setItem("mass_r3_vigencia_publica_qa",JSON.stringify({
+      codigo,tarifa_id:String(tarifa.tarifa_id),version:Number(tarifa.version),duracion_meses:meses
+    }));
+  } catch{return false;}
+  const detalle=document.getElementById("massR3DetallePublico_"+planId);
+  if(detalle)detalle.textContent=`${meses} meses · ${Number(tarifa.precio_usd).toFixed(2)} USD · ≈ ${Number(tarifa.precio_mxn_estimado).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`;
+  return true;
+};
+
 window.mostrarPlanesOrganizadorPublicos =
 async function () {
 
@@ -65944,6 +66207,12 @@ async function () {
             : [];
 
 
+    MASS_R3_PLANES_PUBLICOS_TIPO = new Map(planes.map(p => [
+        String(p.codigo || "").trim().toLowerCase(),
+        String(p.tipo_cobro || "")
+    ]));
+    await massR3CargarTarifasPublicasParaSelector();
+
     const tarjetas =
         planes.map(
             plan => {
@@ -66038,7 +66307,7 @@ async function () {
                         <div
                             style="
                                 margin:18px 0;
-                                display:grid;
+                                display:${mensual ? "grid" : "none"};
                                 grid-template-columns:
                                     repeat(
                                         2,
@@ -66116,6 +66385,8 @@ async function () {
                         </div>
 
 
+                        ${mensual ? "" : massR3CrearHtmlVigenciasPublicas(plan)}
+
                         <div
                             style="
                                 color:#ddd;
@@ -66147,7 +66418,7 @@ async function () {
 
                         <div
                             style="
-                                display:grid;
+                                display:${mensual ? "grid" : "none"};
                                 grid-template-columns:
                                     repeat(
                                         2,
@@ -66160,6 +66431,7 @@ async function () {
 
                             <button
                                 type="button"
+                                ${mensual ? "" : "disabled"}
                                 onclick='
                                     adquirirPlanOrganizadorPublico(
                                         ${JSON.stringify(
@@ -66183,6 +66455,7 @@ async function () {
 
                             <button
                                 type="button"
+                                ${mensual ? "" : "disabled"}
                                 onclick='
                                     adquirirPlanOrganizadorPublico(
                                         ${JSON.stringify(
@@ -66204,6 +66477,8 @@ async function () {
                             </button>
 
                         </div>
+
+                        ${mensual ? "" : massR3HtmlAvisoCompra()}
 
                     </div>
                 `;
@@ -66764,6 +67039,27 @@ async function (
 
     }
 
+
+    // H-06-A: La ruta legacy no debe vender planes por dinamica R3.
+    // No crear organizadores, adquisiciones, pagos ni derechos desde este selector.
+    const tipoPlan = MASS_R3_PLANES_PUBLICOS_TIPO.get(codigoLimpio);
+    if (MASS_R3_PLANES_DINAMICA_CONOCIDOS.has(codigoLimpio) ||
+        tipoPlan === "por_dinamica") {
+        try {
+            const previo = JSON.parse(sessionStorage.getItem("mass_plan_compra_pendiente") || "null");
+            if (previo && String(previo.codigo || "").toLowerCase() === codigoLimpio) {
+                sessionStorage.removeItem("mass_plan_compra_pendiente");
+            }
+        } catch { /* Compra bloqueada independientemente del almacenamiento. */ }
+        alert("🔒 La contratación por dinámica MASS R3 continúa en QA; no se realizó ninguna compra.");
+        return;
+    }
+    // Mantener únicamente la ruta legacy de los planes mensuales.
+    if (tipoPlan !== "mensual" &&
+        !MASS_R3_PLANES_MENSUALES_CONOCIDOS.has(codigoLimpio)) {
+        alert("⚠️ Este plan no está disponible para contratación.");
+        return;
+    }
 
     const {
         data: datosSesion,
@@ -107872,6 +108168,901 @@ async function cargarPlanesOrganizadorSuperAdmin() {
 }
 
 
+
+/* =========================================================
+   D3JG-BG-05-H-10-A — TARIFAS R3 SÚPER ADMIN
+   Lectura solamente; sin editar ni activar ventas.
+========================================================= */
+let MASS_TARIFAS_R3_ADMIN = [];
+let MASS_TARIFAS_R3_ADMIN_CARGADAS = false;
+
+async function cargarTarifasVigenciaR3SuperAdmin() {
+    MASS_TARIFAS_R3_ADMIN = [];
+    MASS_TARIFAS_R3_ADMIN_CARGADAS = false;
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_tarifas_vigencia_r3_super_admin_segura"
+        );
+
+        if (
+            error || !data || data.ok !== true ||
+            !Array.isArray(data.tarifas) ||
+            data.total !== 16 || data.tarifas.length !== 16
+        ) {
+            console.error("R3: consulta de tarifas no disponible", error || data);
+            return false;
+        }
+
+        const permitidas = new Set(["inicial:3", "inicial:6", "inicial:12", "ampliacion:1"]);
+        const claves = new Set();
+        const grupos = new Map();
+
+        for (const t of data.tarifas) {
+            const planId = String(t?.plan_id || "");
+            const codigo = String(t?.plan_codigo || "");
+            const opcion = String(t?.tipo_tarifa || "") + ":" + Number(t?.duracion_meses);
+            const clave = planId + "|" + opcion;
+
+            if (
+                !planId || !codigo || !String(t?.plan_nombre || "") ||
+                !String(t?.tarifa_id || "") ||
+                t?.tipo_cobro !== "por_dinamica" ||
+                !permitidas.has(opcion) || claves.has(clave) ||
+                !Number.isFinite(Number(t?.precio_usd)) ||
+                Number(t?.precio_usd) <= 0 ||
+                !Number.isInteger(Number(t?.version)) ||
+                Number(t?.version) < 1 ||
+                typeof t?.activo !== "boolean" ||
+                typeof t?.fx_ok !== "boolean" ||
+                (t.fx_ok === true && (
+                    t.precio_mxn_estimado == null ||
+                    !Number.isFinite(Number(t.precio_mxn_estimado))
+                ))
+            ) {
+                console.error("R3: respuesta tarifaria incompleta o inválida");
+                return false;
+            }
+            claves.add(clave);
+            const anterior = grupos.get(planId);
+            if (anterior && anterior.codigo !== codigo) {
+                console.error("R3: identidad del plan inconsistente");
+                return false;
+            }
+            grupos.set(planId, {
+                codigo: codigo,
+                cantidad: (anterior ? anterior.cantidad : 0) + 1
+            });
+        }
+
+        if (
+            grupos.size !== 4 ||
+            Array.from(grupos.values()).some(g => g.cantidad !== 4)
+        ) {
+            console.error("R3: faltan variantes del catálogo");
+            return false;
+        }
+
+        MASS_TARIFAS_R3_ADMIN = data.tarifas;
+        MASS_TARIFAS_R3_ADMIN_CARGADAS = true;
+        return true;
+    } catch (error) {
+        console.error("R3: error consultando tarifas", error);
+        return false;
+    }
+}
+
+function crearHtmlTarifasVigenciaR3SuperAdmin() {
+    if (!MASS_TARIFAS_R3_ADMIN_CARGADAS) {
+        return '<p role="alert" style="color:#f4b46b;">' +
+            '⚠️ No se pudieron consultar las tarifas R3. ' +
+            'No se muestran precios ni se habilitan operaciones.</p>';
+    }
+    const grupos = new Map();
+    for (const t of MASS_TARIFAS_R3_ADMIN) {
+        const id = String(t.plan_id);
+        if (!grupos.has(id)) {
+            grupos.set(id, {
+                nombre: String(t.plan_nombre),
+                codigo: String(t.plan_codigo),
+                filas: []
+            });
+        }
+        grupos.get(id).filas.push(t);
+    }
+
+    return Array.from(grupos.values()).map(g => {
+        const tarjetas = g.filas.map(t => {
+            const nombre = t.tipo_tarifa === "ampliacion"
+                ? "+1 mes adicional"
+                : String(t.duracion_meses) + " meses";
+            const usd = Number(t.precio_usd).toFixed(2);
+            const mxn = t.fx_ok === true
+                ? "≈ $" + Number(t.precio_mxn_estimado).toLocaleString(
+                    "es-MX", { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+                  ) + " MXN"
+                : "MXN no disponible";
+            const estado = t.activo === true ? "Activa" : "Inactiva";
+
+            const idSeguro = massEscaparHTML(String(t.tarifa_id));
+            const bloqueo = MASS_R3_TARIFAS_EDITOR_HABILITADO ? "" : " disabled";
+            const textoGuardar = MASS_R3_TARIFAS_EDITOR_HABILITADO
+                ? "💾 Guardar precio"
+                : "🔒 Guardado pendiente de QA";
+
+            return [
+                '<div style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
+                '<div style="color:#ddd;font-weight:600;">', massEscaparHTML(nombre), '</div>',
+                '<div style="font-size:20px;font-weight:bold;color:white;margin-top:8px;">$',
+                massEscaparHTML(usd), ' USD</div>',
+                '<div style="color:#bbb;font-size:13px;margin-top:5px;">',
+                massEscaparHTML(mxn), '</div>',
+                '<div style="color:#999;font-size:12px;margin-top:7px;">Versión ',
+                Number(t.version), ' · ', massEscaparHTML(estado), '</div>',
+                '<label for="precioTarifaR3_', idSeguro,
+                '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
+                'Nuevo precio USD</label>',
+                '<input id="precioTarifaR3_', idSeguro,
+                '" type="number" inputmode="decimal" min="0.01" max="9999999999.99"',
+                ' step="0.01" autocomplete="off" value="', massEscaparHTML(usd),
+                '" style="width:100%;box-sizing:border-box;font-size:16px;margin-top:5px;',
+                'padding:9px;border-radius:7px;background:#202020;color:#fff;',
+                'border:1px solid #555;"', bloqueo, '>',
+                '<button type="button" id="btnTarifaR3_', idSeguro,
+                '" data-mass-r3-guardar="', idSeguro,
+                '" style="width:100%;margin-top:8px;padding:9px;border-radius:8px;',
+                'border:1px solid #888;background:#292929;color:#fff;"',
+                bloqueo, '>', massEscaparHTML(textoGuardar), '</button>',
+                '</div>'
+            ].join("");
+        }).join("");
+
+        return [
+            '<section style="border:1px solid #555;border-radius:12px;padding:14px;margin-top:12px;">',
+            '<div style="font-weight:700;margin-bottom:3px;">',
+            massEscaparHTML(g.nombre), '</div>',
+            '<div style="color:#999;font-size:12px;margin-bottom:12px;">',
+            massEscaparHTML(g.codigo), '</div>',
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">',
+            tarjetas, '</div></section>'
+        ].join("");
+    }).join("");
+}
+
+
+
+/* =========================================================
+   PM-06-E-02 — COMPLEMENTOS MASS SÚPER ADMIN
+   Consulta de catálogo; el editor PM-06-E-03 controla sus cambios.
+========================================================= */
+let MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = [];
+let MASS_COMPLEMENTOS_ADMIN_PAQUETES = [];
+let MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+
+async function cargarComplementosMassSuperAdmin() {
+    MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+    MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = [];
+    MASS_COMPLEMENTOS_ADMIN_PAQUETES = [];
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "listar_complementos_mass_super_admin_seguro"
+        );
+        const productos = data?.productos;
+        const paquetes = data?.paquetes;
+        if (error || data?.ok !== true ||
+            !Array.isArray(productos) || !Array.isArray(paquetes) ||
+            productos.length !== 2 || paquetes.length < 8 ||
+            Number(data.total_productos) !== productos.length ||
+            Number(data.total_paquetes) !== paquetes.length) {
+            throw new Error("COMPLEMENTOS_RESPUESTA_INVALIDA");
+        }
+        const unidades = {
+            mi_equipo_mass: "plaza_colaborador",
+            puntos_mass_pro: "relacion_punto_organizador"
+        };
+        const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+        const vistosProductos = new Set();
+        for (const p of productos) {
+            if (!Object.prototype.hasOwnProperty.call(unidades, p.codigo) ||
+                vistosProductos.has(p.codigo) ||
+                !uuid.test(String(p.producto_id || "")) ||
+                typeof p.nombre_publico !== "string" || !p.nombre_publico.trim() ||
+                p.unidad_comercial !== unidades[p.codigo] ||
+                p.tipo_cobro !== "mensual" ||
+                typeof p.activo !== "boolean" ||
+                typeof p.visible_publico !== "boolean" ||
+                !Number.isInteger(Number(p.version)) ||
+                Number(p.version) < 1) {
+                throw new Error("COMPLEMENTO_PRODUCTO_INVALIDO");
+            }
+            vistosProductos.add(p.codigo);
+        }
+        const vistosPaquetes = new Set();
+        for (const p of paquetes) {
+            const clave = String(p.complemento_codigo || "") + "|" + String(p.codigo || "");
+            const precio = Number(p.precio_usd);
+            if (!vistosProductos.has(p.complemento_codigo) ||
+                !uuid.test(String(p.paquete_id || "")) ||
+                !/^[a-z][a-z0-9_]{2,63}$/.test(String(p.codigo || "")) ||
+                vistosPaquetes.has(clave) ||
+                typeof p.nombre_publico !== "string" || !p.nombre_publico.trim() ||
+                p.unidad_comercial !== unidades[p.complemento_codigo] ||
+                !["base", "adicional"].includes(p.tipo_paquete) ||
+                !Number.isInteger(Number(p.capacidad_unidades)) ||
+                Number(p.capacidad_unidades) < 1 ||
+                Number(p.duracion_meses) !== 1 ||
+                p.precio_usd == null || !Number.isFinite(precio) ||
+                precio <= 0 || precio > 9999999999.99 ||
+                Math.abs(precio - Math.round(precio * 100) / 100) > 0.000001 ||
+                !Number.isInteger(Number(p.version)) || Number(p.version) < 1 ||
+                typeof p.activo !== "boolean" ||
+                typeof p.visible_publico !== "boolean") {
+                throw new Error("COMPLEMENTO_PAQUETE_INVALIDO");
+            }
+            vistosPaquetes.add(clave);
+        }
+        const esperados = [
+            "mi_equipo_mass|equipo_1",
+            "mi_equipo_mass|equipo_3",
+            "mi_equipo_mass|equipo_10",
+            "mi_equipo_mass|equipo_extra_1",
+            "puntos_mass_pro|puntos_1",
+            "puntos_mass_pro|puntos_3",
+            "puntos_mass_pro|puntos_10",
+            "puntos_mass_pro|puntos_extra_1"
+        ];
+        if (!esperados.every(c => vistosPaquetes.has(c))) {
+            throw new Error("COMPLEMENTOS_PAQUETES_INCOMPLETOS");
+        }
+        MASS_COMPLEMENTOS_ADMIN_PRODUCTOS = productos;
+        MASS_COMPLEMENTOS_ADMIN_PAQUETES = paquetes;
+        MASS_COMPLEMENTOS_ADMIN_LISTO = true;
+        return true;
+    } catch (error) {
+        console.error("MASS: no se pudo validar el listado de complementos", error);
+        return false;
+    }
+}
+
+function crearHtmlComplementosMassSuperAdmin() {
+    if (!MASS_COMPLEMENTOS_ADMIN_LISTO) {
+        return '<p role="alert" style="color:#f4b46b;">' +
+            '⚠️ Catálogo no disponible. No se muestran precios ni se habilitan operaciones.</p>';
+    }
+    return MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.map(function(producto) {
+        const tarjetas = MASS_COMPLEMENTOS_ADMIN_PAQUETES
+            .filter(p => p.complemento_codigo === producto.codigo)
+            .map(function(p) {
+                const id = massEscaparHTML(String(p.paquete_id));
+                const usd = massEscaparHTML(Number(p.precio_usd).toFixed(2));
+                const editable = MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO === true;
+                const bloqueo = editable ? "" : " disabled";
+                const textoGuardar = editable
+                    ? "💾 Guardar nuevo precio"
+                    : "🔒 Guardado pendiente de QA y autorización";
+                const unidad = producto.codigo === "mi_equipo_mass"
+                    ? (Number(p.capacidad_unidades) === 1 ? "colaborador" : "colaboradores")
+                    : (Number(p.capacidad_unidades) === 1 ? "punto por organizador" : "puntos por organizador");
+                return [
+                    '<article style="border:1px solid #444;border-radius:10px;padding:12px;background:#151515;">',
+                    '<div style="font-weight:700;color:#fff;">',
+                    massEscaparHTML(p.nombre_publico), '</div>',
+                    '<div style="color:#bbb;font-size:12px;margin-top:5px;">',
+                    massEscaparHTML(String(p.capacidad_unidades)), ' ',
+                    massEscaparHTML(unidad), ' · ',
+                    p.tipo_paquete === "adicional" ? "Adicional" : "Base",
+                    ' · 1 mes</div>',
+                    '<div style="font-size:20px;font-weight:bold;color:#fff;margin-top:8px;">',
+                    'USD ', usd, ' / mes</div>',
+                    '<div style="font-size:12px;color:#aaa;margin-top:5px;">',
+                    'Versión ', massEscaparHTML(String(p.version)), ' · ',
+                    p.activo ? "Activo" : "Inactivo", ' · ',
+                    p.visible_publico ? "Visible" : "Oculto", '</div>',
+                    '<label for="massPrecioComplemento_', id,
+                    '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
+                    editable ? 'Nuevo precio USD</label>' : 'Nuevo precio USD · Edición bloqueada</label>',
+                    '<input id="massPrecioComplemento_', id,
+                    '" type="text" inputmode="decimal" maxlength="20" autocomplete="off" value="', usd,
+                    '" style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
+                    'background:#202020;color:#aaa;border:1px solid #555;"', bloqueo, '>',
+                    '<label for="massMotivoComplemento_', id,
+                    '" style="display:block;color:#bbb;font-size:12px;margin-top:10px;">',
+                    editable ? 'Motivo obligatorio (10 a 1000 caracteres)</label>' : 'Motivo · Edición bloqueada</label>',
+                    '<input id="massMotivoComplemento_', id,
+                    '" type="text" maxlength="1000" autocomplete="off" value="" ',
+                    'style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
+                    'background:#202020;color:#aaa;border:1px solid #555;"', bloqueo, '>',
+                    '<button type="button" id="massBtnGuardarComplemento_', id,
+                    '" data-mass-complemento-guardar="', id,
+                    '" style="width:100%;margin-top:9px;',
+                    'padding:9px;border-radius:8px;background:#292929;color:#bbb;',
+                    'border:1px solid #888;"', bloqueo, '>', massEscaparHTML(textoGuardar), '</button>',
+                    '</article>'
+                ].join("");
+            }).join("");
+        return [
+            '<section style="border:1px solid #555;border-radius:12px;padding:14px;margin-top:12px;">',
+            '<div style="font-weight:700;margin-bottom:4px;">',
+            massEscaparHTML(producto.nombre_publico), '</div>',
+            '<div style="font-size:12px;color:#999;margin-bottom:12px;">',
+            massEscaparHTML(producto.codigo), ' · ',
+            producto.activo ? "Producto activo" : "Producto inactivo",
+            ' · ', producto.visible_publico ? "Público" : "No público",
+            '</div>',
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;">',
+            tarjetas, '</div></section>'
+        ].join("");
+    }).join("");
+}
+
+
+/* =========================================================
+   PM-06-E-03 — EDITOR DE PRECIOS DE COMPLEMENTOS, PR #10
+   Sólo Súper Admin. El servidor valida, versiona y audita.
+   NO activa contrataciones, derechos o planes R3.
+========================================================= */
+// Edición preparada; habilitación sólo tras QA y aprobación.
+const MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO = false;
+const MASS_COMPLEMENTOS_ADMIN_GUARDANDO = new Set();
+
+window.guardarPrecioComplementoMassSuperAdmin = async function(paqueteId) {
+    if (!MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO ||
+        !MASS_COMPLEMENTOS_ADMIN_LISTO) {
+        alert("🔒 Catálogo no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const id = String(paqueteId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id) || MASS_COMPLEMENTOS_ADMIN_GUARDANDO.has(id)) return false;
+
+    const contenedor = document.getElementById("complementosMassSuperAdmin");
+    const lista = document.getElementById("listaComplementosMassSuperAdmin");
+    const precioInput = document.getElementById("massPrecioComplemento_" + id);
+    const motivoInput = document.getElementById("massMotivoComplemento_" + id);
+    const boton = document.getElementById("massBtnGuardarComplemento_" + id);
+    const paquete = MASS_COMPLEMENTOS_ADMIN_PAQUETES.find(
+        p => String(p.paquete_id) === id
+    );
+
+    if (!contenedor || !lista || !paquete || !precioInput || !motivoInput ||
+        !boton || boton.disabled || !contenedor.contains(boton)) {
+        alert("⚠️ Paquete no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const entrada = String(precioInput.value || "").trim();
+    const precioNuevo = Number(entrada);
+    const precioActual = Number(paquete.precio_usd);
+    const version = Number(paquete.version);
+    const motivo = String(motivoInput.value || "").trim();
+
+    if (!/^[0-9]+(?:\.[0-9]{1,2})?$/.test(entrada) ||
+        !Number.isFinite(precioNuevo) || precioNuevo <= 0 ||
+        precioNuevo > 9999999999.99 ||
+        !Number.isFinite(precioActual) || precioActual <= 0 ||
+        !Number.isInteger(version) || version < 1) {
+        alert("❌ Precio USD inválido. Usa un valor positivo con máximo 2 decimales.");
+        return false;
+    }
+    if (precioNuevo.toFixed(2) === precioActual.toFixed(2)) {
+        alert("ℹ️ El precio no ha cambiado. No se guardará nada.");
+        return false;
+    }
+    if (motivo.length < 10 || motivo.length > 1000) {
+        alert("❌ El motivo debe tener de 10 a 1000 caracteres.");
+        return false;
+    }
+
+    if (!confirm(
+        "¿Confirmas cambiar el precio REAL del catálogo?\n\n" +
+        String(paquete.nombre_publico) +
+        "\nDe: USD " + precioActual.toFixed(2) +
+        "\nA: USD " + precioNuevo.toFixed(2) +
+        "\nMotivo: " + motivo +
+        "\n\nSe registrará auditoría. No habilita contrataciones. " +
+        "Los cambios futuros no modifican las adquisiciones anteriores."
+    )) return false;
+
+    MASS_COMPLEMENTOS_ADMIN_GUARDANDO.add(id);
+    boton.disabled = true;
+    boton.textContent = "⏳ Guardando y auditando...";
+    precioInput.disabled = true;
+    motivoInput.disabled = true;
+
+    try {
+        const { data: auth, error: authError } = await supabaseClient.auth.getUser();
+        if (authError || !auth?.user) {
+            alert("🔒 Sesión Auth inválida. No se solicitó el cambio.");
+            return false;
+        }
+
+        const { data: esSuperAdmin, error: rolError } =
+            await supabaseClient.rpc("is_super_admin");
+        if (rolError || esSuperAdmin !== true) {
+            alert("🔒 Solo Súper Admin puede editar estos precios.");
+            return false;
+        }
+
+        const { data, error } = await supabaseClient.rpc(
+            "guardar_precio_paquete_complemento_super_admin_segura",
+            {
+                p_paquete_id: id,
+                p_precio_usd: precioNuevo,
+                p_version_esperada: version,
+                p_motivo: motivo
+            }
+        );
+
+        if (error || !data || data.ok !== true) {
+            console.error("MASS: cambio de precio no confirmado", error || data);
+            const codigo = String(error?.code || "");
+            const mensaje = String(error?.message || data?.codigo || "");
+            if (mensaje.includes("VERSION_DESACTUALIZADA")) {
+                alert("⚠️ Versión desactualizada. Recarga Billing / Cobros antes de continuar.");
+            } else if (mensaje.includes("ACTUALIZACION_CONCURRENTE")) {
+                alert("⚠️ Otra actualización del paquete está en curso. Recarga Billing / Cobros.");
+            } else if (codigo === "PT409" || codigo === "40001") {
+                alert("⚠️ Conflicto de actualización. Recarga Billing / Cobros antes de continuar.");
+            } else if (codigo === "42501" || mensaje.includes("SUPER_ADMIN_REQUERIDO")) {
+                alert("🔒 No autorizado para cambiar el precio.");
+            } else {
+                alert("❌ Cambio no confirmado. Consulta el precio antes de reintentar.");
+            }
+            return false;
+        }
+
+        const auditoriaCorrecta = typeof data.auditoria_id === "string" &&
+            uuid.test(data.auditoria_id);
+
+        if (data.sin_cambios !== false ||
+            String(data.paquete_id) !== id ||
+            Number(data.precio_usd_anterior) !== precioActual ||
+            Number(data.precio_usd_nuevo) !== precioNuevo ||
+            Number(data.version_anterior) !== version ||
+            Number(data.version_nueva) !== version + 1 ||
+            !auditoriaCorrecta) {
+            console.error("MASS: respuesta de precio inesperada", data);
+            alert("⚠️ Respuesta no verificable. Recarga el panel antes de reintentar.");
+            return false;
+        }
+
+        if (!(await cargarComplementosMassSuperAdmin())) {
+            lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+            alert("⚠️ No se pudo refrescar el catálogo. Recarga el panel; no repitas el guardado.");
+            return false;
+        }
+
+        const actualizado = MASS_COMPLEMENTOS_ADMIN_PAQUETES.find(
+            p => String(p.paquete_id) === id
+        );
+        if (!actualizado ||
+            Number(actualizado.precio_usd) !== precioNuevo ||
+            Number(actualizado.version) !== version + 1) {
+            MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+            lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+            alert("⚠️ Precio pendiente de verificación. Recarga el panel; no repitas el guardado.");
+            return false;
+        }
+
+        lista.innerHTML = crearHtmlComplementosMassSuperAdmin();
+        alert("✅ Precio actualizado y auditado: USD " + precioNuevo.toFixed(2));
+        return true;
+
+    } catch (error) {
+        console.error("MASS: error al guardar precio de complemento", error);
+        alert("❌ Error inesperado. Recarga el panel y verifica antes de reintentar.");
+        return false;
+    } finally {
+        MASS_COMPLEMENTOS_ADMIN_GUARDANDO.delete(id);
+        if (boton.isConnected) {
+            boton.disabled = !MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO ||
+                !MASS_COMPLEMENTOS_ADMIN_LISTO;
+            precioInput.disabled = boton.disabled;
+            motivoInput.disabled = boton.disabled;
+            boton.textContent = boton.disabled
+                ? "🔒 Recarga Billing / Cobros" : "💾 Guardar nuevo precio";
+        }
+    }
+};
+
+document.addEventListener("click", function massComplementosAdminClick(event) {
+    if (!event.target || typeof event.target.closest !== "function") return;
+    const boton = event.target.closest("button[data-mass-complemento-guardar]");
+    const contenedor = document.getElementById("complementosMassSuperAdmin");
+    if (!boton || !contenedor || !contenedor.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPrecioComplementoMassSuperAdmin(
+        boton.getAttribute("data-mass-complemento-guardar")
+    );
+});
+
+
+/* =========================================================
+   PM-06-F-03-B — PRESENTACIÓN COMERCIAL EN PANEL SUPER ADMIN
+   VISTA QA. Editor habilitado en PR #10; cambios requieren confirmación.
+========================================================= */
+const MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO = true;
+const MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO = new Set();
+
+function crearHtmlCamposPresentacionMass(tipo, r) {
+    if (!["producto", "paquete"].includes(tipo)) return "";
+    const rawId = String(tipo === "producto" ? r.producto_id : r.paquete_id);
+    if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(rawId)) return "";
+    const e = s => massEscaparHTML(String(s ?? ""));
+    const id = e(rawId), suf = tipo + "_" + id;
+    const editable = MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO === true &&
+        MASS_COMPLEMENTOS_ADMIN_LISTO === true;
+    const disabled = editable ? "" : " disabled";
+    const inputCss = ' style="width:100%;box-sizing:border-box;padding:9px;background:#202020;' +
+        'color:#fff;border:1px solid #555;border-radius:7px;"';
+    return [
+        '<div style="display:grid;gap:8px;margin-top:12px;">',
+        '<label for="massPresentNombre_', suf, '">Nombre público (3 a 120 caracteres)</label>',
+        '<input type="text" id="massPresentNombre_', suf, '" maxlength="120" autocomplete="off"',
+        ' value="', e(r.nombre_publico), '"', inputCss, disabled, '>',
+        '<label for="massPresentDescripcion_', suf, '">Descripción pública (opcional, máximo 1000)</label>',
+        '<textarea id="massPresentDescripcion_', suf, '" rows="3" maxlength="1000"',
+        inputCss, disabled, '>', e(r.descripcion_publica), '</textarea>',
+        '<label for="massPresentMotivo_', suf, '">Motivo obligatorio (10 a 1000 caracteres)</label>',
+        '<textarea id="massPresentMotivo_', suf, '" rows="2" maxlength="1000"',
+        inputCss, disabled, '></textarea>',
+        '<button type="button" id="massPresentBtn_', suf,
+        '" data-mass-presentacion-tipo="', tipo, '" data-mass-presentacion-id="', id,
+        '" style="width:100%;padding:10px;background:#292929;color:#ddd;',
+        'border:1px solid #888;border-radius:8px;"', disabled, '>',
+        e(editable ? "💾 Guardar presentación" : "🔒 Guardado pendiente de QA y autorización"),
+        '</button></div>'
+    ].join("");
+}
+
+function crearHtmlPresentacionComplementosMassSuperAdmin() {
+    if (!MASS_COMPLEMENTOS_ADMIN_LISTO)
+        return '<p role="alert">⚠️ Catálogo no disponible. Operaciones bloqueadas.</p>';
+    const e = s => massEscaparHTML(String(s ?? ""));
+    return MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.map(producto => {
+        const paquetes = MASS_COMPLEMENTOS_ADMIN_PAQUETES
+            .filter(p => p.complemento_codigo === producto.codigo)
+            .map(p => [
+                '<details style="background:#181818;border:1px solid #444;',
+                'border-radius:9px;padding:10px;margin-top:9px;">',
+                '<summary style="cursor:pointer;color:#eee;font-weight:600;">',
+                e(p.nombre_publico), ' · Versión ', e(p.version),
+                ' · USD ', e(Number(p.precio_usd).toFixed(2)), '/mes</summary>',
+                '<p style="font-size:12px;color:#aaa;">Capacidad ', e(p.capacidad_unidades),
+                ' · ', p.tipo_paquete === "adicional" ? "Adicional" : "Base",
+                ' · ', p.activo ? "Activo" : "Inactivo",
+                ' · ', p.visible_publico ? "Visible" : "Oculto",
+                ' · Precio y capacidad no editables.</p>',
+                crearHtmlCamposPresentacionMass("paquete", p), '</details>'
+            ].join("")).join("");
+        return [
+            '<details style="background:#151515;border:1px solid #555;',
+            'border-radius:11px;padding:12px;margin-top:12px;">',
+            '<summary style="cursor:pointer;color:#fff;font-weight:700;">',
+            e(producto.nombre_publico), ' · Versión ', e(producto.version),
+            ' · ', producto.activo ? "Activo" : "Inactivo",
+            ' · ', producto.visible_publico ? "Visible" : "Oculto", '</summary>',
+            '<p style="font-size:12px;color:#aaa;">Producto: ', e(producto.codigo),
+            ' · Solo nombre y descripción.</p>',
+            crearHtmlCamposPresentacionMass("producto", producto),
+            '<p style="font-weight:600;color:#ddd;margin-top:15px;">Paquetes (4)</p>',
+            paquetes, '</details>'
+        ].join("");
+    }).join("");
+}
+
+window.guardarPresentacionComplementosMassSuperAdmin = async function(tipo, identificador) {
+    // Bloqueo en código, además de los controles HTML deshabilitados.
+    if (MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO !== true ||
+        MASS_COMPLEMENTOS_ADMIN_LISTO !== true ||
+        !["producto", "paquete"].includes(tipo)) return false;
+    const id = String(identificador || "");
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    const clave = tipo + ":" + id;
+    if (!uuid.test(id) || MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.has(clave)) return false;
+
+    const registro = (tipo === "producto" ? MASS_COMPLEMENTOS_ADMIN_PRODUCTOS :
+        MASS_COMPLEMENTOS_ADMIN_PAQUETES).find(p =>
+        String(tipo === "producto" ? p.producto_id : p.paquete_id) === id);
+    const version = Number(registro?.version);
+    const suf = tipo + "_" + id;
+    const root = document.getElementById("presentacionComplementosMassSuperAdmin");
+    const lista = document.getElementById("listaPresentacionComplementosMassSuperAdmin");
+    const nombreInput = document.getElementById("massPresentNombre_" + suf);
+    const descripcionInput = document.getElementById("massPresentDescripcion_" + suf);
+    const motivoInput = document.getElementById("massPresentMotivo_" + suf);
+    const boton = document.getElementById("massPresentBtn_" + suf);
+    if (!registro || !root || !lista || !nombreInput || !descripcionInput ||
+        !motivoInput || !boton || boton.disabled || !root.contains(boton) ||
+        !Number.isInteger(version) || version < 1 || version >= 2147483647) {
+        alert("⚠️ Registro o versión no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+    if (registro.activo !== false || registro.visible_publico !== false) {
+        alert("🔒 Producto o paquete activo o publicado.");
+        return false;
+    }
+    if (tipo === "paquete") {
+        const padre = MASS_COMPLEMENTOS_ADMIN_PRODUCTOS.find(
+            p => p.codigo === registro.complemento_codigo);
+        if (!padre || padre.activo !== false || padre.visible_publico !== false) {
+            alert("🔒 Producto padre no elegible.");
+            return false;
+        }
+    }
+
+    const nombre = String(nombreInput.value ?? "");
+    const textoDesc = String(descripcionInput.value ?? "");
+    const descripcion = textoDesc === "" ? null : textoDesc;
+    const motivo = String(motivoInput.value ?? "").trim();
+    const antesNombre = String(registro.nombre_publico);
+    const antesDesc = registro.descripcion_publica ?? null;
+    if (nombre.length < 3 || nombre.length > 120 || nombre.trim() !== nombre) {
+        alert("❌ Nombre inválido (3 a 120 caracteres, sin espacios exteriores).");
+        return false;
+    }
+    if (descripcion !== null &&
+        (descripcion.length > 1000 || descripcion.trim() !== descripcion)) {
+        alert("❌ Descripción inválida (máximo 1000 caracteres).");
+        return false;
+    }
+    if (motivo.length < 10 || motivo.length > 1000) {
+        alert("❌ Motivo obligatorio de 10 a 1000 caracteres.");
+        return false;
+    }
+    if (nombre === antesNombre && descripcion === antesDesc) {
+        alert("ℹ️ No hay cambios de presentación.");
+        return false;
+    }
+    if (!confirm(
+        "¿Confirmas modificar la presentación REAL de este " + tipo + "?\n\n" +
+        "Nombre: " + antesNombre + " → " + nombre +
+        "\nDescripción anterior: " + (antesDesc ?? "(sin descripción)") +
+        "\nDescripción nueva: " + (descripcion ?? "(sin descripción)") +
+        "\nVersión: " + version + " → " + (version + 1) +
+        "\nMotivo: " + motivo +
+        "\n\nHabrá auditoría permanente. Precios, capacidades y estados no cambiarán."
+    )) return false;
+
+    MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.add(clave);
+    for (const campo of [nombreInput, descripcionInput, motivoInput, boton]) campo.disabled = true;
+    boton.textContent = "⏳ Guardando y auditando...";
+    try {
+        const { data: sesion, error: eAuth } = await supabaseClient.auth.getUser();
+        if (eAuth || !sesion?.user) {
+            alert("🔒 Sesión Auth inválida. No se solicitó el cambio.");
+            return false;
+        }
+        const { data: admin, error: eRol } = await supabaseClient.rpc("is_super_admin");
+        if (eRol || admin !== true) {
+            alert("🔒 Solo Súper Admin puede modificar presentaciones.");
+            return false;
+        }
+
+        const rpc = tipo === "producto"
+            ? "actualizar_presentacion_producto_mass_super_admin_segura"
+            : "actualizar_presentacion_paquete_mass_super_admin_segura";
+        const parametros = {
+            p_nombre_publico: nombre,
+            p_descripcion_publica: descripcion,
+            p_version_esperada: version,
+            p_motivo: motivo
+        };
+        if (tipo === "producto") parametros.p_producto_id = id;
+        else parametros.p_paquete_id = id;
+        const { data, error } = await supabaseClient.rpc(rpc, parametros);
+        if (error || data?.ok !== true) {
+            console.error("MASS presentación: cambio no confirmado", error || data);
+            const codigo = String(error?.code || "");
+            const mensaje = String(error?.message || data?.codigo || "");
+            if (codigo === "PT409" || mensaje.includes("VERSION_DESACTUALIZADA") ||
+                mensaje.includes("ACTUALIZACION_CONCURRENTE")) {
+                alert("⚠️ Conflicto de versión. Recarga el panel sin repetir el guardado.");
+            } else if (codigo === "42501" || mensaje.includes("SUPER_ADMIN_REQUERIDO")) {
+                alert("🔒 Cambio no autorizado.");
+            } else if (codigo === "22023") {
+                alert("❌ Nombre, descripción o motivo inválidos.");
+            } else {
+                alert("❌ Cambio no confirmado. Verifica en Supabase antes de reintentar.");
+            }
+            return false;
+        }
+
+        const respuestaId = tipo === "producto" ? data.producto_id : data.paquete_id;
+        if (data.sin_cambios !== false || String(respuestaId) !== id ||
+            Number(data.version_anterior) !== version ||
+            Number(data.version_nueva) !== version + 1 ||
+            typeof data.auditoria_id !== "string" || !uuid.test(data.auditoria_id) ||
+            data.valores_anteriores?.nombre_publico !== antesNombre ||
+            data.valores_anteriores?.descripcion_publica !== antesDesc ||
+            data.valores_nuevos?.nombre_publico !== nombre ||
+            data.valores_nuevos?.descripcion_publica !== descripcion) {
+            console.error("MASS presentación: auditoría no verificable", data);
+            alert("⚠️ Respuesta no verificable. No repitas el guardado.");
+            return false;
+        }
+
+        const refrescado = await cargarComplementosMassSuperAdmin();
+        const actual = (tipo === "producto" ? MASS_COMPLEMENTOS_ADMIN_PRODUCTOS :
+            MASS_COMPLEMENTOS_ADMIN_PAQUETES).find(p =>
+            String(tipo === "producto" ? p.producto_id : p.paquete_id) === id);
+        const coincide = refrescado && actual &&
+            actual.nombre_publico === nombre &&
+            (actual.descripcion_publica ?? null) === descripcion &&
+            Number(actual.version) === version + 1 &&
+            actual.activo === false && actual.visible_publico === false &&
+            (tipo === "producto" || (
+                Number(actual.precio_usd) === Number(registro.precio_usd) &&
+                Number(actual.capacidad_unidades) === Number(registro.capacidad_unidades) &&
+                Number(actual.duracion_meses) === Number(registro.duracion_meses) &&
+                actual.tipo_paquete === registro.tipo_paquete
+            ));
+        if (!coincide) MASS_COMPLEMENTOS_ADMIN_LISTO = false;
+        lista.innerHTML = crearHtmlPresentacionComplementosMassSuperAdmin();
+        const precios = document.getElementById("listaComplementosMassSuperAdmin");
+        if (precios) precios.innerHTML = crearHtmlComplementosMassSuperAdmin();
+        if (!coincide) {
+            alert("⚠️ No se pudo verificar la actualización. Consulta Supabase; no repitas el cambio.");
+            return false;
+        }
+        alert("✅ Presentación actualizada y auditada. Versión " + (version + 1));
+        return true;
+    } catch (error) {
+        console.error("MASS presentación: error inesperado", error);
+        alert("❌ Cambio no confirmado. Consulta el catálogo antes de reintentar.");
+        return false;
+    } finally {
+        MASS_COMPLEMENTOS_PRESENTACION_GUARDANDO.delete(clave);
+        if (boton.isConnected) {
+            const disabled = MASS_COMPLEMENTOS_PRESENTACION_EDITOR_HABILITADO !== true ||
+                MASS_COMPLEMENTOS_ADMIN_LISTO !== true;
+            for (const campo of [nombreInput, descripcionInput, motivoInput, boton]) campo.disabled = disabled;
+            boton.textContent = disabled ? "🔒 Guardado pendiente de QA" : "💾 Guardar presentación";
+        }
+    }
+};
+
+document.addEventListener("click", function massPresentacionComplementosClick(event) {
+    if (!event.target || typeof event.target.closest !== "function") return;
+    const boton = event.target.closest("button[data-mass-presentacion-tipo]");
+    const root = document.getElementById("presentacionComplementosMassSuperAdmin");
+    if (!boton || !root || !root.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPresentacionComplementosMassSuperAdmin(
+        boton.getAttribute("data-mass-presentacion-tipo"),
+        boton.getAttribute("data-mass-presentacion-id")
+    );
+});
+
+/* =========================================================
+   D3JG-BG-05-H-10-B — EDITOR INDIVIDUAL TARIFAS R3
+   Guardado bloqueado hasta autorizar QA y edición real.
+========================================================= */
+const MASS_R3_TARIFAS_EDITOR_HABILITADO = false;
+const MASS_R3_TARIFAS_GUARDANDO = new Set();
+
+window.guardarPrecioTarifaVigenciaR3SuperAdmin = async function(tarifaId) {
+    if (!MASS_R3_TARIFAS_EDITOR_HABILITADO) {
+        alert("🔒 Edición R3 pendiente de QA y autorización. No se modificó ningún precio.");
+        return false;
+    }
+
+    if (!MASS_TARIFAS_R3_ADMIN_CARGADAS) {
+        alert("⚠️ Recarga Billing / Cobros antes de editar una tarifa.");
+        return false;
+    }
+
+    const id = String(tarifaId || "").trim();
+    const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+    if (!uuid.test(id) || MASS_R3_TARIFAS_GUARDANDO.has(id)) return false;
+
+    const tarifa = MASS_TARIFAS_R3_ADMIN.find(t => String(t.tarifa_id) === id);
+    const input = document.getElementById("precioTarifaR3_" + id);
+    const boton = document.getElementById("btnTarifaR3_" + id);
+    if (!tarifa || !input || !boton || !document.getElementById("tarifasR3SuperAdmin")) {
+        alert("⚠️ Tarifa no disponible. Recarga Billing / Cobros.");
+        return false;
+    }
+
+    const texto = String(input.value || "").trim();
+    const nuevo = Number(texto);
+    const actual = Number(tarifa.precio_usd);
+    const version = Number(tarifa.version);
+    if (
+        !/^[0-9]+(?:\.[0-9]{1,2})?$/.test(texto) ||
+        !Number.isFinite(nuevo) || nuevo <= 0 || nuevo > 9999999999.99 ||
+        !Number.isInteger(version) || version < 1
+    ) {
+        alert("❌ Introduce un precio USD positivo, con máximo dos decimales.");
+        return false;
+    }
+    if (nuevo.toFixed(2) === actual.toFixed(2)) {
+        alert("ℹ️ El precio no ha cambiado.");
+        return false;
+    }
+
+    const periodo = tarifa.tipo_tarifa === "ampliacion"
+        ? "mes adicional" : String(tarifa.duracion_meses) + " meses";
+    if (!confirm(
+        "¿Confirmas actualizar el precio maestro USD?\n\n" +
+        String(tarifa.plan_nombre) + " · " + periodo +
+        "\nDe: $" + actual.toFixed(2) + " USD" +
+        "\nA: $" + nuevo.toFixed(2) + " USD\n\n" +
+        "Solo afecta nuevas contrataciones; no cambia adquisiciones históricas."
+    )) return false;
+
+    MASS_R3_TARIFAS_GUARDANDO.add(id);
+    boton.disabled = true;
+    boton.textContent = "⏳ Guardando...";
+    input.disabled = true;
+
+    try {
+        const { data, error } = await supabaseClient.rpc(
+            "guardar_precio_tarifa_vigencia_r3_super_admin_segura",
+            {
+                p_tarifa_id: id,
+                p_precio_usd: nuevo,
+                p_version_esperada: version
+            }
+        );
+
+        if (error || !data || data.ok !== true) {
+            const codigo = String(data?.codigo || "");
+            console.error("R3: no se pudo guardar precio", error || data);
+            if (codigo === "VERSION_DESACTUALIZADA") {
+                alert("⚠️ La tarifa cambió en otra sesión. Recarga Billing / Cobros.");
+            } else if (codigo === "FX_NO_DISPONIBLE") {
+                alert("⚠️ No existe un tipo de cambio USD/MXN vigente.");
+            } else if (codigo === "NO_AUTORIZADO") {
+                alert("🔒 Solo el Súper Admin puede editar tarifas.");
+            } else if (codigo === "CAMBIO_CATALOGO_RECHAZADO" ||
+                       codigo === "PRECIO_BASE_INCONSISTENTE") {
+                alert("⚠️ Inconsistencia en el precio base del catálogo.");
+            } else {
+                alert("❌ No se pudo confirmar el cambio. Revisa Billing / Cobros.");
+            }
+            return false;
+        }
+
+        if (
+            Number(data.precio_usd) !== nuevo ||
+            Number(data.version) !== version + 1 ||
+            String(data.tarifa_id) !== id
+        ) {
+            console.error("R3: respuesta de guardado inesperada", data);
+            alert("⚠️ La respuesta del servidor debe verificarse. Recarga el panel.");
+            return false;
+        }
+
+        alert("✅ Tarifa actualizada y auditada: $" + nuevo.toFixed(2) + " USD.");
+        await mostrarBillingSuperAdmin();
+        return true;
+    } catch (error) {
+        console.error("R3: error inesperado al guardar tarifa", error);
+        alert("❌ No fue posible confirmar la modificación. Recarga el panel.");
+        return false;
+    } finally {
+        MASS_R3_TARIFAS_GUARDANDO.delete(id);
+        if (boton.isConnected) {
+            boton.disabled = !MASS_R3_TARIFAS_EDITOR_HABILITADO;
+            boton.textContent = MASS_R3_TARIFAS_EDITOR_HABILITADO
+                ? "💾 Guardar precio" : "🔒 Guardado pendiente de QA";
+        }
+        if (input.isConnected) input.disabled = !MASS_R3_TARIFAS_EDITOR_HABILITADO;
+    }
+};
+
+document.addEventListener("click", function massR3AdminTarifasClick(event) {
+    const boton = event.target.closest("button[data-mass-r3-guardar]");
+    const contenedor = document.getElementById("tarifasR3SuperAdmin");
+    if (!boton || !contenedor || !contenedor.contains(boton)) return;
+    event.preventDefault();
+    window.guardarPrecioTarifaVigenciaR3SuperAdmin(
+        boton.getAttribute("data-mass-r3-guardar")
+    );
+});
+
 /* =========================================================
    RESUMEN DEL TIPO DE CAMBIO
 ========================================================= */
@@ -111859,6 +113050,10 @@ async function mostrarBillingSuperAdmin(){
 
     await cargarPlanesOrganizadorSuperAdmin();
 
+    await cargarTarifasVigenciaR3SuperAdmin();
+
+    await cargarComplementosMassSuperAdmin();
+
     await cargarMetodosPagoPlanesSuperAdmin();
 
     await cargarPagosPlanesSuperAdmin(
@@ -111983,6 +113178,48 @@ ${crearHtmlFxPlanesSuperAdmin()}
         ${crearHtmlPlanesOrganizadorSuperAdmin()}
     </div>
 
+</div>
+
+<div class="card" id="tarifasR3SuperAdmin" style="max-width:760px;">
+    <h3>🗓️ Tarifas por vigencia MASS R3 · Editor en QA</h3>
+    <p style="color:#bbb;line-height:1.5;">
+        USD es el precio maestro y MXN se calcula en el backend.
+        Las tarifas están inactivas para contratación.
+        El guardado de precios permanece bloqueado hasta nueva autorización.
+    </p>
+    ${crearHtmlTarifasVigenciaR3SuperAdmin()}
+</div>
+
+<div class="card" id="complementosMassSuperAdmin" style="max-width:760px;">
+    <h3>🧩 Complementos MASS · Editor de precios USD · Vista QA</h3>
+    <p style="color:#bbb;line-height:1.5;">
+        MI EQUIPO MASS y PUNTOS MASS PRO. Editor preparado para QA:
+        los campos y botones de guardado permanecen bloqueados.
+        Cuando se autorice, los cambios requerirán motivo y auditoría.
+        Los productos siguen inactivos y no admiten contrataciones.
+        La conversión MXN se integrará con el motor FX más adelante.
+    </p>
+    <div id="listaComplementosMassSuperAdmin">
+        ${crearHtmlComplementosMassSuperAdmin()}
+    </div>
+</div>
+
+
+<div class="card" id="presentacionComplementosMassSuperAdmin" style="max-width:760px;">
+    <details>
+        <summary style="cursor:pointer;font-size:18px;font-weight:700;">
+            📝 Complementos MASS · Presentación comercial · Vista QA
+        </summary>
+        <p style="color:#bbb;line-height:1.5;margin-top:12px;">
+            Dos productos y ocho paquetes: nombres, descripciones y versiones.
+            Edición de nombres y descripciones habilitada para Súper Admin en Preview.
+            Guardar modifica registros reales con confirmación, versión y auditoría.
+            Precios, capacidades, estados y contrataciones permanecen protegidos.
+        </p>
+        <div id="listaPresentacionComplementosMassSuperAdmin">
+            ${crearHtmlPresentacionComplementosMassSuperAdmin()}
+        </div>
+    </details>
 </div>
 
 <div
@@ -117229,7 +118466,18 @@ font-family:Arial, sans-serif;">
     Las divisas adicionales son únicamente informativas.
   </div>
 </div>
-    <input id="formTotal" type="number" placeholder="Cantidad de números">
+    <input id="formTotal" type="number" min="100" max="1000000" step="100" placeholder="Cantidad de números">
+
+    <div id="massR3GrupoDerechoCreacion"
+         style="display:none;margin:12px auto;padding:12px;border:1px solid #39ff14;border-radius:12px;max-width:420px;">
+      <label for="massR3AdquisicionCreacion" style="color:#39ff14;font-weight:bold;display:block;">
+        🔐 Derecho comercial MASS para esta dinámica
+      </label>
+      <select id="massR3AdquisicionCreacion" disabled></select>
+      <div id="massR3EstadoDerechoCreacion" aria-live="polite"
+           style="color:#ddd;font-size:13px;"></div>
+    </div>
+
 
 <select id="formModalidad">
   <option value="1">Modalidad 1 — entrega 1 número</option>
