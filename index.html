@@ -108435,6 +108435,11 @@ function crearHtmlComplementosMassSuperAdmin() {
             .map(function(p) {
                 const id = massEscaparHTML(String(p.paquete_id));
                 const usd = massEscaparHTML(Number(p.precio_usd).toFixed(2));
+                const editable = MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO === true;
+                const bloqueo = editable ? "" : " disabled";
+                const textoGuardar = editable
+                    ? "💾 Guardar nuevo precio"
+                    : "🔒 Guardado pendiente de QA y autorización";
                 const unidad = producto.codigo === "mi_equipo_mass"
                     ? (Number(p.capacidad_unidades) === 1 ? "colaborador" : "colaboradores")
                     : (Number(p.capacidad_unidades) === 1 ? "punto por organizador" : "puntos por organizador");
@@ -108455,23 +108460,23 @@ function crearHtmlComplementosMassSuperAdmin() {
                     p.visible_publico ? "Visible" : "Oculto", '</div>',
                     '<label for="massPrecioComplemento_', id,
                     '" style="display:block;color:#bbb;font-size:12px;margin-top:12px;">',
-                    'Nuevo precio USD</label>',
+                    editable ? 'Nuevo precio USD</label>' : 'Nuevo precio USD · Edición bloqueada</label>',
                     '<input id="massPrecioComplemento_', id,
                     '" type="text" inputmode="decimal" maxlength="20" autocomplete="off" value="', usd,
                     '" style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
-                    'background:#202020;color:#aaa;border:1px solid #555;">',
+                    'background:#202020;color:#aaa;border:1px solid #555;"', bloqueo, '>',
                     '<label for="massMotivoComplemento_', id,
                     '" style="display:block;color:#bbb;font-size:12px;margin-top:10px;">',
-                    'Motivo obligatorio (10 a 1000 caracteres)</label>',
+                    editable ? 'Motivo obligatorio (10 a 1000 caracteres)</label>' : 'Motivo · Edición bloqueada</label>',
                     '<input id="massMotivoComplemento_', id,
                     '" type="text" maxlength="1000" autocomplete="off" value="" ',
                     'style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;',
-                    'background:#202020;color:#aaa;border:1px solid #555;">',
+                    'background:#202020;color:#aaa;border:1px solid #555;"', bloqueo, '>',
                     '<button type="button" id="massBtnGuardarComplemento_', id,
                     '" data-mass-complemento-guardar="', id,
                     '" style="width:100%;margin-top:9px;',
                     'padding:9px;border-radius:8px;background:#292929;color:#bbb;',
-                    'border:1px solid #888;">💾 Guardar nuevo precio</button>',
+                    'border:1px solid #888;"', bloqueo, '>', massEscaparHTML(textoGuardar), '</button>',
                     '</article>'
                 ].join("");
             }).join("");
@@ -108496,7 +108501,8 @@ function crearHtmlComplementosMassSuperAdmin() {
    Sólo Súper Admin. El servidor valida, versiona y audita.
    NO activa contrataciones, derechos o planes R3.
 ========================================================= */
-const MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO = true;
+// Edición preparada; habilitación sólo tras QA y aprobación.
+const MASS_COMPLEMENTOS_ADMIN_EDITOR_HABILITADO = false;
 const MASS_COMPLEMENTOS_ADMIN_GUARDANDO = new Set();
 
 window.guardarPrecioComplementoMassSuperAdmin = async function(paqueteId) {
@@ -112925,10 +112931,10 @@ ${crearHtmlFxPlanesSuperAdmin()}
 <div class="card" id="complementosMassSuperAdmin" style="max-width:760px;">
     <h3>🧩 Complementos MASS · Editor de precios USD · Vista QA</h3>
     <p style="color:#bbb;line-height:1.5;">
-        MI EQUIPO MASS y PUNTOS MASS PRO. Guardar cambia el precio real
-        del catálogo interno y genera auditoría. Confirma cada cambio.
+        MI EQUIPO MASS y PUNTOS MASS PRO. Editor preparado para QA:
+        los campos y botones de guardado permanecen bloqueados.
+        Cuando se autorice, los cambios requerirán motivo y auditoría.
         Los productos siguen inactivos y no admiten contrataciones.
-        Durante QA visual, no pulses Guardar sin autorizar un cambio real.
         La conversión MXN se integrará con el motor FX más adelante.
     </p>
     <div id="listaComplementosMassSuperAdmin">
