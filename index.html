@@ -3544,16 +3544,8 @@ async function volverPanelSuperAdmin(){
 </button>
 
     <button type="button"
-      onclick="mostrarBorradorContratoComplementosMassBJ118()">
-      📄 Contrato Complementos MASS · Borrador 1.0
-    </button>
-    <button type="button"
-      onclick="mostrarRevisionInternaContratoComplementosBJ122()">
-      🧾 Revisión interna del contrato 1.0
-    </button>
-    <button type="button"
-      onclick="mostrarBorradorContratoComplementosV11BJ124M()">
-      📝 Contrato Complementos MASS · Borrador 1.1
+      onclick="mostrarCentroJuridicoMassPM06()">
+      ⚖️ Centro Jurídico MASS
     </button>
 
 	<button
@@ -13909,16 +13901,8 @@ if(btnVolverSuperAdmin){
 </button>
 
     <button type="button"
-      onclick="mostrarBorradorContratoComplementosMassBJ118()">
-      📄 Contrato Complementos MASS · Borrador 1.0
-    </button>
-    <button type="button"
-      onclick="mostrarRevisionInternaContratoComplementosBJ122()">
-      🧾 Revisión interna del contrato 1.0
-    </button>
-    <button type="button"
-      onclick="mostrarBorradorContratoComplementosV11BJ124M()">
-      📝 Contrato Complementos MASS · Borrador 1.1
+      onclick="mostrarCentroJuridicoMassPM06()">
+      ⚖️ Centro Jurídico MASS
     </button>
 
 	<button
@@ -121833,6 +121817,135 @@ async function mostrarBorradorContratoComplementosV11BJ124M() {
     });
 
     volver.addEventListener("click", () => volverPanelSuperAdmin());
+}
+</script>
+
+
+<!-- BJ-124-N-UI: único acceso al historial jurídico de Complementos MASS.
+     UI organizativa: no consulta, publica, acepta contratos ni crea pagos. -->
+<script>
+async function mostrarCentroJuridicoMassPM06() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+    if (localStorage.getItem("admin_rol") !== "super_admin") return;
+    const raiz = document.getElementById("superAdminContenido");
+    if (!raiz || !document.getElementById("panelSuperAdmin") ||
+        document.getElementById("panelSuperAdmin").style.display === "none") {
+        return;
+    }
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:860px;margin:12px auto;padding:20px;text-align:left;line-height:1.55";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = "⚖️ Centro Jurídico MASS";
+
+    const intro = document.createElement("p");
+    intro.textContent =
+        "Aquí se agrupan contratos, versiones y revisiones internas. " +
+        "Ya no añadiremos un botón al Panel Súper Admin por cada nueva versión.";
+
+    const modulo = document.createElement("h4");
+    modulo.textContent = "📚 Complementos MASS";
+    modulo.style.cssText = "margin:18px 0 10px";
+
+    const nota = document.createElement("p");
+    nota.textContent =
+        "Registro informativo del QA completado el 31 de octubre de 2026. " +
+        "Esta pantalla aún no consulta en tiempo real los estados de Supabase. " +
+        "No equivale a revisión o publicación legal.";
+    nota.style.cssText = "font-size:13px;color:#ffd966";
+
+    const lista = document.createElement("div");
+    lista.style.cssText =
+        "border:1px solid #777;border-radius:12px;padding:14px;" +
+        "display:grid;gap:14px;overflow-wrap:anywhere";
+
+    const filas = [
+        {
+            version: "1.0 · Histórico",
+            estado: "Borrador original; revisión interna registrada: requiere corrección (ID 1).",
+            detalle: "Conservado, sin publicación."
+        },
+        {
+            version: "1.1 · Borrador corregido",
+            estado: "Registro confirmado, integridad SHA-256 validada.",
+            detalle: "Pendiente de revisión jurídica y fiscal; no publicado."
+        }
+    ];
+    filas.forEach((fila, i) => {
+        const item = document.createElement("div");
+        const nombre = document.createElement("strong");
+        nombre.textContent = fila.version;
+        const estado = document.createElement("p");
+        estado.textContent = fila.estado;
+        estado.style.cssText = "margin:4px 0";
+        const detalle = document.createElement("p");
+        detalle.textContent = fila.detalle;
+        detalle.style.cssText = "margin:4px 0;font-size:13px;color:#bbb";
+        item.append(nombre, estado, detalle);
+        if (i !== filas.length - 1) {
+            item.style.cssText =
+                "padding-bottom:12px;border-bottom:1px solid #555";
+        }
+        lista.appendChild(item);
+    });
+
+    const pendiente = document.createElement("p");
+    pendiente.textContent =
+        "Las futuras versiones y otros documentos del módulo se organizarán " +
+        "aquí, sin crear nuevas tarjetas en el panel principal.";
+    pendiente.style.cssText = "color:#ddd";
+
+    const detalles = document.createElement("details");
+    detalles.style.cssText =
+        "border:1px solid #777;border-radius:10px;padding:12px;margin:16px 0";
+    const resumen = document.createElement("summary");
+    resumen.textContent =
+        "Herramientas históricas del módulo (ya utilizadas)";
+    resumen.style.cssText =
+        "cursor:pointer;font-weight:600;padding:4px 0";
+    const advertencia = document.createElement("p");
+    advertencia.textContent =
+        "Estas pantallas originales se conservan para soporte técnico. " +
+        "Los registros de 1.0 y 1.1 ya se efectuaron; NO vuelvas a registrarlos.";
+    advertencia.style.cssText =
+        "font-size:13px;color:#ffd966;margin:12px 0";
+    detalles.append(resumen, advertencia);
+
+    const herramientas = [
+        {
+            label: "📄 Formulario inicial 1.0 (histórico)",
+            action: mostrarBorradorContratoComplementosMassBJ118
+        },
+        {
+            label: "🧾 Revisión interna 1.0 (ya registrada)",
+            action: mostrarRevisionInternaContratoComplementosBJ122
+        },
+        {
+            label: "📝 Registro del borrador 1.1 (ya realizado)",
+            action: mostrarBorradorContratoComplementosV11BJ124M
+        }
+    ];
+    const botones = document.createElement("div");
+    botones.style.cssText = "display:flex;flex-wrap:wrap;gap:10px";
+    herramientas.forEach(h => {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.textContent = h.label;
+        boton.addEventListener("click", () => h.action());
+        botones.appendChild(boton);
+    });
+    detalles.appendChild(botones);
+
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Panel Súper Admin";
+    volver.addEventListener("click", () => volverPanelSuperAdmin());
+
+    vista.append(titulo, intro, modulo, nota, lista, pendiente, detalles, volver);
+    raiz.replaceChildren(vista);
 }
 </script>
 
