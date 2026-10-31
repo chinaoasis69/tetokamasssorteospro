@@ -121205,8 +121205,91 @@ async function mostrarPreviaComplementosBJ123() {
     estado.setAttribute("aria-live", "polite");
     const detalle = document.createElement("div");
     detalle.style.cssText = "margin-top:12px;overflow-wrap:anywhere";
-    vista.append(titulo, aviso, etiqueta, id, consultar, volver, estado, detalle);
+    // BJ-123-D: mostrar catálogo real sin crear solicitudes ni pedir UUID.
+    const catalogoTitulo = document.createElement("h4");
+    catalogoTitulo.textContent = "Complementos disponibles para mi organizador";
+    const catalogoEstado = document.createElement("p");
+    catalogoEstado.setAttribute("role", "status");
+    const catalogoLista = document.createElement("div");
+    catalogoLista.style.cssText = "display:grid;gap:12px;margin:12px 0";
+    const catalogoBoton = document.createElement("button");
+    catalogoBoton.type = "button";
+    catalogoBoton.textContent = "🔄 Consultar catálogo oficial";
+    const avisoCatalogo = document.createElement("p");
+    avisoCatalogo.textContent = "Consulta informativa. Los paquetes no se pueden contratar ni pagar desde esta pantalla.";
+    const bloqueCatalogo = document.createElement("div");
+    bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, catalogoBoton, catalogoEstado, catalogoLista);
+    const bloqueTecnico = document.createElement("details");
+    const resumenTecnico = document.createElement("summary");
+    resumenTecnico.textContent = "Consulta técnica de una adquisición existente (QA)";
+    bloqueTecnico.append(resumenTecnico, etiqueta, id, consultar);
+    vista.append(titulo, aviso, bloqueCatalogo, bloqueTecnico, volver, estado, detalle);
     raiz.replaceChildren(vista);
+
+    let consultandoCatalogo = false;
+    catalogoBoton.addEventListener("click", async () => {
+        if (consultandoCatalogo || !vista.isConnected) return;
+        consultandoCatalogo = true;
+        catalogoBoton.disabled = true;
+        catalogoLista.replaceChildren();
+        catalogoEstado.textContent = "Consultando catálogo seguro...";
+        try {
+            const sesion = await supabaseClient.auth.getUser();
+            if (sesion.error || !sesion.data?.user) {
+                catalogoEstado.textContent = "🔒 Debes iniciar sesión.";
+                return;
+            }
+            const organizadorId = localStorage.getItem("admin_organizador_id") ||
+                localStorage.getItem("organizador_id");
+            if (!organizadorId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(organizadorId)) {
+                catalogoEstado.textContent = "🔒 No se encontró un organizador válido.";
+                return;
+            }
+            const {data, error} = await supabaseClient.rpc(
+                "listar_catalogo_complementos_bj123_seguro",
+                {p_organizador_id: organizadorId}
+            );
+            if (!vista.isConnected) return;
+            if (error || data?.ok !== true || data?.codigo !== "CATALOGO_CONSULTADO" ||
+                data?.solo_lectura !== true || data?.pago_iniciado !== false ||
+                data?.derechos_activados !== false || !Array.isArray(data?.paquetes)) {
+                catalogoEstado.textContent = "🔒 Catálogo no disponible. No se permiten pagos.";
+                return;
+            }
+            if (!data.paquetes.length) {
+                catalogoEstado.textContent = "ℹ️ No hay paquetes habilitados para contratación actualmente.";
+                return;
+            }
+            for (const paquete of data.paquetes) {
+                const tarjeta = document.createElement("div");
+                tarjeta.className = "card";
+                tarjeta.style.cssText = "padding:14px;text-align:left";
+                const nombre = document.createElement("h4");
+                nombre.textContent = String(paquete.producto_nombre || "Complemento MASS");
+                const descripcion = document.createElement("p");
+                descripcion.textContent = String(paquete.paquete_nombre || "") + " · " +
+                    String(paquete.paquete_descripcion || "");
+                const capacidad = document.createElement("p");
+                capacidad.textContent = "Capacidad: " + String(paquete.capacidad ?? "—") +
+                    " · Duración: " + String(paquete.duracion_meses ?? "—") +
+                    " mes · Renovación automática: No";
+                const precio = document.createElement("p");
+                precio.textContent = "Precio de referencia: " +
+                    String(paquete.precio_usd ?? "—") + " USD";
+                const pendiente = document.createElement("p");
+                pendiente.textContent = "🔒 Contratación deshabilitada hasta completar el contrato oficial y el checkout.";
+                tarjeta.append(nombre, descripcion, capacidad, precio, pendiente);
+                catalogoLista.append(tarjeta);
+            }
+            catalogoEstado.textContent = "✅ Catálogo consultado. Esta vista no inicia pagos.";
+        } catch (_error) {
+            if (vista.isConnected) catalogoEstado.textContent = "❌ No fue posible consultar el catálogo.";
+        } finally {
+            consultandoCatalogo = false;
+            if (catalogoBoton.isConnected) catalogoBoton.disabled = false;
+        }
+    });
+    catalogoBoton.click();
 
     let ocupado = false;
     consultar.addEventListener("click", async () => {
