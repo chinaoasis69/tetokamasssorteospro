@@ -121217,8 +121217,20 @@ async function mostrarPreviaComplementosBJ123() {
     catalogoBoton.textContent = "🔄 Consultar catálogo oficial";
     const avisoCatalogo = document.createElement("p");
     avisoCatalogo.textContent = "Consulta informativa. Los paquetes no se pueden contratar ni pagar desde esta pantalla.";
+    // BJ-124-G: contacto de soporte verificado, sin publicar políticas jurídicas.
+    const avisoSoporte = document.createElement("p");
+    avisoSoporte.textContent = "¿Necesitas ayuda con Complementos MASS? Contacta al soporte oficial: ";
+    const enlaceSoporte = document.createElement("a");
+    enlaceSoporte.href = "mailto:soportesorteospro@tetokamass.com?subject=Consulta%20sobre%20Complementos%20MASS";
+    enlaceSoporte.textContent = "soportesorteospro@tetokamass.com";
+    enlaceSoporte.setAttribute("aria-label", "Contactar a Soporte MASS Sorteos Pro por correo electrónico");
+    avisoSoporte.appendChild(enlaceSoporte);
+    const avisoPrivacidadSoporte = document.createElement("p");
+    avisoPrivacidadSoporte.textContent = "No compartas contraseñas, códigos de verificación ni datos bancarios completos por correo.";
+    avisoPrivacidadSoporte.style.cssText = "font-size:13px;opacity:.85";
     const bloqueCatalogo = document.createElement("div");
-    bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, catalogoBoton, catalogoEstado, catalogoLista);
+    bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, avisoSoporte, avisoPrivacidadSoporte,
+        catalogoBoton, catalogoEstado, catalogoLista);
     const bloqueTecnico = document.createElement("details");
     const resumenTecnico = document.createElement("summary");
     resumenTecnico.textContent = "Consulta técnica de una adquisición existente (QA)";
