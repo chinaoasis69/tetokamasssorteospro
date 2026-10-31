@@ -121504,9 +121504,10 @@ async function mostrarBorradorContratoComplementosV11BJ124M() {
 
     const advertencia = document.createElement("p");
     advertencia.textContent =
-        "⚠️ Propuesta jurídica NO aprobada. Carga exclusivamente " +
-        "Contrato_MASS_1_1_LIMPIO.txt. Este texto requiere revisión " +
-        "jurídica y fiscal antes de cualquier publicación.";
+        "⚠️ Propuesta jurídica NO aprobada. Puedes usar el archivo " +
+        "Contrato_MASS_1_1.txt que ya tienes (con portada) o el archivo " +
+        "LIMPIO. La pantalla separa el contrato y verifica su SHA-256. " +
+        "Requiere revisión jurídica y fiscal antes de publicarse.";
     advertencia.style.cssText = "color:#ffd966;line-height:1.6";
 
     const metadatos = document.createElement("p");
@@ -121628,12 +121629,55 @@ async function mostrarBorradorContratoComplementosV11BJ124M() {
         }
         estado.textContent = "Leyendo TXT local, sin enviar el archivo...";
         try {
-            const texto = await seleccionado.text();
+            const textoOriginal = (await seleccionado.text()).replace(/\r\n/g, "\n");
             if (!vista.isConnected || token !== secuencia) return;
+
+            let texto = textoOriginal;
+            let extraidoDePortada = false;
+            const marcaPortada =
+                "BORRADOR JURÍDICO DE TRABAJO — NO PUBLICAR / NO ACTIVAR COBROS\n";
+            const inicioContrato = "\nCONTRATO GENERAL DE COMPLEMENTOS MASS\n";
+            const cierrePortada =
+                "\nFIN DE LA PROPUESTA 1.1 — BORRADOR NO PUBLICAR.\n";
+            const versionPortada = "Versión propuesta: 1.1 (NO VIGENTE)";
+
+            if (texto.startsWith(marcaPortada)) {
+                const indiceInicio = texto.indexOf(inicioContrato);
+                if (indiceInicio === -1 ||
+                    !texto.endsWith(cierrePortada) ||
+                    !texto.includes(versionPortada)) {
+                    estado.textContent =
+                        "❌ No se pudo reconocer el formato del archivo con portada. " +
+                        "No se registrará ningún contrato.";
+                    return;
+                }
+                texto = texto.slice(
+                    indiceInicio + 1,
+                    texto.length - cierrePortada.length
+                ).replace(versionPortada, "Versión: 1.1");
+                extraidoDePortada = true;
+            }
+
+            // Incluso si el archivo contiene una portada, el servidor
+            // recibirá únicamente el texto exacto del contrato limpio.
+            const hash = await calcularSHA256(texto);
+            if (!vista.isConnected || token !== secuencia) return;
+            if (texto.length !== CARACTERES_ESPERADOS ||
+                hash !== HUella_ESPERADA) {
+                estado.textContent =
+                    "❌ Este archivo no coincide con el contrato 1.1 esperado. " +
+                    "No se modificó el registro y no se activarán pagos.";
+                return;
+            }
+
             contenido.value = texto;
-            estado.textContent =
-                "📄 TXT cargado. Presiona Verificar integridad SHA-256. " +
-                "Todavía no se ha registrado nada.";
+            estado.textContent = extraidoDePortada
+                ? "✅ Archivo que ya tenías reconocido. Se separó la portada " +
+                  "y quedó solo el contrato 1.1 íntegro.\n" +
+                  "SHA-256 verificado. Presiona Verificar integridad SHA-256 " +
+                  "y confirma únicamente si revisaste el texto completo."
+                : "✅ Contrato 1.1 cargado íntegro y SHA-256 comprobado. " +
+                  "Presiona Verificar integridad SHA-256 antes de continuar.";
         } catch (_e) {
             if (vista.isConnected && token === secuencia) {
                 estado.textContent =
