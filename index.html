@@ -2589,6 +2589,9 @@ Cargando historial...
   📊 Dashboard
 </button>
 
+<!-- BJ-123-C: lectura contractual previa; sin checkout ni pagos -->
+<button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarPreviaComplementosBJ123()">📄 Complementos MASS · Consultar condiciones</button>
+
 <button
   id="btnMensajesClientesAdmin"
   type="button"
@@ -121161,6 +121164,117 @@ async function mostrarRevisionInternaContratoComplementosBJ122() {
                 "Puedes cargar el TXT íntegro y verificar su SHA-256.";
         }
     }
+}
+</script>
+
+
+<!-- BJ-123-C: vista informativa, solo lectura; nunca autoriza pagos -->
+<script>
+async function mostrarPreviaComplementosBJ123() {
+    const raiz = document.getElementById("adminContenido");
+    if (!raiz || document.getElementById("panelAdmin")?.style.display === "none") return;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText = "max-width:860px;margin:12px auto;padding:18px;text-align:left";
+    const titulo = document.createElement("h3");
+    titulo.textContent = "📄 Complementos MASS · Condiciones antes del pago";
+    const aviso = document.createElement("p");
+    aviso.textContent = "Consulta informativa de una solicitud propia existente. Esta pantalla NO crea adquisiciones, NO solicita pagos, NO registra aceptación y NO activa derechos. El checkout comercial sigue deshabilitado.";
+    const etiqueta = document.createElement("label");
+    etiqueta.textContent = "Identificador de adquisición (UUID)";
+    etiqueta.style.cssText = "display:block;margin:12px 0 6px;font-weight:bold";
+    const id = document.createElement("input");
+    id.type = "text";
+    id.placeholder = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+    id.maxLength = 36;
+    id.setAttribute("aria-label", "Identificador de adquisición");
+    id.style.cssText = "display:block;width:100%;box-sizing:border-box;padding:10px";
+    const consultar = document.createElement("button");
+    consultar.type = "button";
+    consultar.textContent = "🔎 Consultar condiciones sin pagar";
+    consultar.style.marginTop = "12px";
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Dashboard";
+    volver.style.marginLeft = "8px";
+    const estado = document.createElement("p");
+    estado.setAttribute("role", "status");
+    estado.setAttribute("aria-live", "polite");
+    const detalle = document.createElement("div");
+    detalle.style.cssText = "margin-top:12px;overflow-wrap:anywhere";
+    vista.append(titulo, aviso, etiqueta, id, consultar, volver, estado, detalle);
+    raiz.replaceChildren(vista);
+
+    let ocupado = false;
+    consultar.addEventListener("click", async () => {
+        if (ocupado || !vista.isConnected) return;
+        detalle.replaceChildren();
+        const uuid = id.value.trim();
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuid)) {
+            estado.textContent = "⚠️ Introduce un UUID válido de una adquisición propia.";
+            return;
+        }
+        ocupado = true;
+        consultar.disabled = true;
+        estado.textContent = "Consultando condiciones oficiales...";
+        try {
+            const sesion = await supabaseClient.auth.getUser();
+            if (sesion.error || !sesion.data?.user) {
+                estado.textContent = "❌ Debes iniciar sesión.";
+                return;
+            }
+            const {data, error} = await supabaseClient.rpc(
+                "presentar_condiciones_complemento_pre_pago_bj123",
+                {p_adquisicion_id: uuid, p_idioma_codigo: "es"}
+            );
+            if (!vista.isConnected) return;
+            if (error || data?.ok !== true || data?.codigo !== "CONDICIONES_PREVIAS_DISPONIBLES" ||
+                data?.pago_aprobado !== false || data?.aceptacion_registrada !== false ||
+                data?.derechos_activados !== false || data?.presentacion_informativa !== true) {
+                const codigo = String(data?.codigo || error?.code || "RESPUESTA_NO_VALIDA");
+                estado.textContent = "🔒 No se pueden presentar condiciones oficiales (" + codigo + "). No realices pagos.";
+                return;
+            }
+            const add = (nombre, valor) => {
+                const p = document.createElement("p");
+                const fuerte = document.createElement("strong");
+                fuerte.textContent = nombre + ": ";
+                p.append(fuerte, document.createTextNode(String(valor ?? "No informado")));
+                detalle.appendChild(p);
+            };
+            add("Producto", data.producto_nombre);
+            add("Paquete", data.paquete_nombre);
+            add("Capacidad", data.capacidad);
+            add("Importe total", String(data.monto_total) + " " + String(data.moneda));
+            add("Duración", String(data.duracion_meses) + " mes calendario");
+            add("Renovación automática", "No");
+            add("Documento", String(data.documento_titulo) + " · " + String(data.documento_version));
+            add("SHA-256", data.documento_hash);
+            const subtitulo = document.createElement("h4");
+            subtitulo.textContent = "Condiciones comerciales registradas";
+            const comercial = document.createElement("pre");
+            comercial.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere";
+            comercial.textContent = JSON.stringify(data.condiciones_comerciales || {}, null, 2);
+            const subtituloLegal = document.createElement("h4");
+            subtituloLegal.textContent = "Contrato oficial vigente (solo lectura)";
+            const contrato = document.createElement("textarea");
+            contrato.readOnly = true;
+            contrato.rows = 17;
+            contrato.style.cssText = "display:block;width:100%;box-sizing:border-box;min-height:300px";
+            contrato.value = String(data.documento_contenido || "");
+            const cierre = document.createElement("p");
+            cierre.textContent = "🔒 Consulta informativa completada. Pagos, aceptación y activación continúan deshabilitados en esta pantalla.";
+            detalle.append(subtitulo, comercial, subtituloLegal, contrato, cierre);
+            estado.textContent = "✅ Condiciones oficiales recuperadas. No se registró ninguna operación comercial.";
+        } catch (_e) {
+            if (vista.isConnected) estado.textContent = "❌ Consulta no disponible. No realices pagos.";
+        } finally {
+            ocupado = false;
+            if (consultar.isConnected) consultar.disabled = false;
+        }
+    });
+    volver.addEventListener("click", () => mostrarDashboardOrganizador());
 }
 </script>
 
