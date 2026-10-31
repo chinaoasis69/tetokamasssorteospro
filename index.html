@@ -3540,6 +3540,11 @@ async function volverPanelSuperAdmin(){
     ⚖️ Verificación de Perfiles Legales
 </button>
 
+    <button type="button"
+      onclick="mostrarBorradorContratoComplementosMassBJ118()">
+      📄 Contrato Complementos MASS · Borrador 1.0
+    </button>
+
 	<button
   type="button"
   onclick="mostrarGestionAccesosOrganizadores()"
@@ -13891,6 +13896,11 @@ if(btnVolverSuperAdmin){
 >
     ⚖️ Verificación de Perfiles Legales
 </button>
+
+    <button type="button"
+      onclick="mostrarBorradorContratoComplementosMassBJ118()">
+      📄 Contrato Complementos MASS · Borrador 1.0
+    </button>
 
 	<button
   type="button"
@@ -120521,6 +120531,209 @@ if (data.estado_verificacion === "en_revision") {
             estado.textContent = "❌ Error inesperado consultando el expediente.";
         }
     }
+}
+</script>
+
+
+<!-- BJ-118: formulario jurídico Súper Admin, solo borrador -->
+<script>
+async function mostrarBorradorContratoComplementosMassBJ118() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+
+    const raiz = document.getElementById("superAdminContenido");
+    if (!raiz) return;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:840px;margin:12px auto;padding:18px;text-align:left";
+
+    const encabezado = document.createElement("h3");
+    encabezado.textContent = "📄 Contrato Complementos MASS · Borrador 1.0";
+
+    const aviso = document.createElement("p");
+    aviso.textContent =
+        "Esta operación crea únicamente la plantilla y su versión 1.0 como BORRADOR. " +
+        "No publica ni aprueba el contrato, no acepta términos por clientes, " +
+        "no habilita pagos y no activa derechos.";
+    aviso.style.cssText = "line-height:1.6;color:#ddd";
+
+    const avisoPrecios = document.createElement("p");
+    avisoPrecios.textContent =
+        "Los precios y paquetes se gestionan en el catálogo comercial. " +
+        "No incluyas importes fijos en el contrato general.";
+    avisoPrecios.style.cssText = "line-height:1.6;color:#ffd966";
+
+    const etiquetaTitulo = document.createElement("label");
+    etiquetaTitulo.textContent = "Título del contrato";
+    etiquetaTitulo.style.cssText = "display:block;font-weight:700;margin:12px 0 6px";
+
+    const titulo = document.createElement("input");
+    titulo.type = "text";
+    titulo.value = "Contrato general de Complementos MASS";
+    titulo.maxLength = 200;
+    titulo.setAttribute("aria-label", "Título del contrato de Complementos MASS");
+    titulo.style.cssText =
+        "display:block;width:100%;max-width:100%;box-sizing:border-box;" +
+        "padding:10px;margin-bottom:12px";
+
+    const etiquetaContenido = document.createElement("label");
+    etiquetaContenido.textContent = "Texto jurídico completo para revisión";
+    etiquetaContenido.style.cssText =
+        "display:block;font-weight:700;margin:12px 0 6px";
+
+    const contenido = document.createElement("textarea");
+    contenido.rows = 19;
+    contenido.maxLength = 100000;
+    contenido.placeholder =
+        "Pega aquí el texto completo del contrato 1.0 revisado. " +
+        "No se enviará hasta que confirmes expresamente.";
+    contenido.setAttribute("aria-label", "Contenido del borrador legal 1.0");
+    contenido.style.cssText =
+        "display:block;width:100%;max-width:100%;box-sizing:border-box;" +
+        "padding:12px;min-height:280px;resize:vertical";
+
+    const contador = document.createElement("p");
+    contador.style.cssText = "color:#bbb;font-size:13px";
+    const actualizarContador = () => {
+        contador.textContent = contenido.value.length +
+            " / 100000 caracteres · Documento no publicado";
+    };
+    contenido.addEventListener("input", actualizarContador);
+    actualizarContador();
+
+    const confirma = document.createElement("input");
+    confirma.type = "checkbox";
+    confirma.id = "bj118ConfirmacionContratoMass";
+    const etiquetaConfirma = document.createElement("label");
+    etiquetaConfirma.htmlFor = confirma.id;
+    etiquetaConfirma.style.cssText =
+        "display:flex;align-items:flex-start;gap:8px;margin:16px 0";
+    etiquetaConfirma.append(
+        confirma,
+        document.createTextNode(
+            "Confirmo que revisé este texto para registrarlo únicamente " +
+            "como BORRADOR 1.0, sin precios fijos. No equivale a aprobación jurídica."
+        )
+    );
+
+    const botones = document.createElement("div");
+    botones.style.cssText = "display:flex;gap:10px;flex-wrap:wrap";
+
+    const guardar = document.createElement("button");
+    guardar.type = "button";
+    guardar.textContent = "📝 Registrar BORRADOR 1.0";
+
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Panel Súper Admin";
+
+    botones.append(guardar, volver);
+
+    const estado = document.createElement("p");
+    estado.setAttribute("role", "status");
+    estado.setAttribute("aria-live", "polite");
+    estado.style.cssText =
+        "margin-top:16px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere";
+
+    vista.append(
+        encabezado, aviso, avisoPrecios,
+        etiquetaTitulo, titulo,
+        etiquetaContenido, contenido, contador,
+        etiquetaConfirma, botones, estado
+    );
+    raiz.replaceChildren(vista);
+
+    let registrado = false;
+    let enProceso = false;
+
+    volver.addEventListener("click", async () => {
+        if (enProceso) return;
+        if (!registrado && contenido.value.trim() &&
+            !confirm("¿Salir sin registrar el borrador? El texto no se guardó.")) {
+            return;
+        }
+        await volverPanelSuperAdmin();
+    });
+
+    guardar.addEventListener("click", async () => {
+        if (enProceso || registrado || !vista.isConnected) return;
+
+        const tituloFinal = titulo.value.trim();
+        const contenidoFinal = contenido.value;
+        if (tituloFinal.length < 3 || tituloFinal.length > 200 ||
+            contenidoFinal.length < 1 ||
+            contenidoFinal.length > 100000 ||
+            !contenidoFinal.trim()) {
+            estado.textContent = "⚠️ Revisa el título y el contenido contractual completo.";
+            return;
+        }
+        if (!confirma.checked) {
+            estado.textContent =
+                "⚠️ Debes confirmar que revisaste el borrador y que no incluye precios fijos.";
+            return;
+        }
+        if (!confirm(
+            "¿CONFIRMAS registrar el contrato como BORRADOR jurídico 1.0? " +
+            "Se crearán una plantilla y una versión de borrador, sin publicar."
+        )) return;
+
+        enProceso = true;
+        guardar.disabled = true;
+        estado.textContent = "Validando sesión Súper Admin y registrando el borrador...";
+
+        try {
+            if (!(await verificarAccesoSuperAdmin())) {
+                if (vista.isConnected) estado.textContent = "❌ Acceso no autorizado.";
+                return;
+            }
+            if (!vista.isConnected) return;
+
+            const { data, error } = await supabaseClient.rpc(
+                "registrar_borrador_contrato_complementos_mass_bj117",
+                { p_titulo: tituloFinal, p_contenido: contenidoFinal }
+            );
+            if (!vista.isConnected) return;
+
+            if (!error && data?.ok === true &&
+                data.version === "1.0" &&
+                data.estado_version === "borrador" &&
+                data.documento_publicado === false &&
+                data.contrato_vigente === false &&
+                data.aceptacion_registrada === false &&
+                data.derechos_activados === false &&
+                typeof data.plantilla_id === "string" &&
+                typeof data.version_id === "string") {
+                registrado = true;
+                titulo.disabled = true;
+                contenido.disabled = true;
+                confirma.disabled = true;
+                estado.textContent =
+                    "✅ BORRADOR 1.0 registrado correctamente. " +
+                    "Pendiente de revisión jurídica y publicación autorizada.\n" +
+                    "Plantilla: " + data.plantilla_id + "\n" +
+                    "Versión: " + data.version_id + "\n" +
+                    "SHA-256 propuesto: " +
+                    String(data.contenido_sha256_propuesto || "no disponible");
+                return;
+            }
+
+            const codigo = String(data?.codigo || error?.code || "RESPUESTA_INVALIDA");
+            estado.textContent =
+                codigo === "PLANTILLA_COMPLEMENTOS_EXISTENTE" ||
+                codigo === "DOCUMENTO_COMPLEMENTOS_EXISTENTE"
+                    ? "ℹ️ Ya existe una plantilla o documento. No se creó un duplicado."
+                    : "❌ El servidor no confirmó el borrador (" + codigo + ").";
+            if (error) console.error("BJ118 REGISTRO BORRADOR:", error.code);
+        } catch (_error) {
+            if (vista.isConnected) {
+                estado.textContent = "❌ Error inesperado; verifica el estado antes de reintentar.";
+            }
+        } finally {
+            enProceso = false;
+            if (guardar.isConnected && !registrado) guardar.disabled = false;
+        }
+    });
 }
 </script>
 
