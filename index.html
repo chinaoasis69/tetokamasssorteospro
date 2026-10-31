@@ -3551,6 +3551,10 @@ async function volverPanelSuperAdmin(){
       onclick="mostrarRevisionInternaContratoComplementosBJ122()">
       🧾 Revisión interna del contrato 1.0
     </button>
+    <button type="button"
+      onclick="mostrarBorradorContratoComplementosV11BJ124M()">
+      📝 Contrato Complementos MASS · Borrador 1.1
+    </button>
 
 	<button
   type="button"
@@ -13911,6 +13915,10 @@ if(btnVolverSuperAdmin){
     <button type="button"
       onclick="mostrarRevisionInternaContratoComplementosBJ122()">
       🧾 Revisión interna del contrato 1.0
+    </button>
+    <button type="button"
+      onclick="mostrarBorradorContratoComplementosV11BJ124M()">
+      📝 Contrato Complementos MASS · Borrador 1.1
     </button>
 
 	<button
@@ -121460,6 +121468,327 @@ async function mostrarPreviaComplementosBJ123() {
         }
     });
     volver.addEventListener("click", () => mostrarDashboardOrganizador());
+}
+</script>
+
+
+
+<!-- BJ-124-M-02: formulario versión 1.1, sólo borrador; sin publicación ni cobros -->
+<script>
+async function mostrarBorradorContratoComplementosV11BJ124M() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+    const raiz = document.getElementById("superAdminContenido");
+    if (!raiz) return;
+
+    const HUella_ESPERADA = "c0723f7fae901e8b3c86794de08126ec620e6019d12ac01acebc92c21a47c611";
+    const CARACTERES_ESPERADOS = 14951;
+    let verificado = null;
+    let secuencia = 0;
+    let enviando = false;
+    let registrado = false;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:850px;margin:12px auto;padding:18px;text-align:left";
+
+    const encabezado = document.createElement("h3");
+    encabezado.textContent = "📝 Contrato Complementos MASS · Borrador 1.1";
+
+    const aviso = document.createElement("p");
+    aviso.textContent =
+        "Esta pantalla registra una NUEVA versión 1.1 como borrador, " +
+        "sin reemplazar el contrato histórico 1.0. No publica el contrato, " +
+        "no habilita compras ni pagos y no activa derechos.";
+    aviso.style.cssText = "color:#ddd;line-height:1.6";
+
+    const advertencia = document.createElement("p");
+    advertencia.textContent =
+        "⚠️ Propuesta jurídica NO aprobada. Carga exclusivamente " +
+        "Contrato_MASS_1_1_LIMPIO.txt. Este texto requiere revisión " +
+        "jurídica y fiscal antes de cualquier publicación.";
+    advertencia.style.cssText = "color:#ffd966;line-height:1.6";
+
+    const metadatos = document.createElement("p");
+    metadatos.textContent =
+        "Versión: 1.1 · 17 apartados · " + CARACTERES_ESPERADOS +
+        " caracteres\nSHA-256 esperado: " + HUella_ESPERADA;
+    metadatos.style.cssText =
+        "color:#bbb;overflow-wrap:anywhere;white-space:pre-wrap;font-size:13px";
+
+    const etiquetaTitulo = document.createElement("label");
+    etiquetaTitulo.textContent = "Título del contrato 1.1";
+    etiquetaTitulo.style.cssText = "display:block;font-weight:700;margin:12px 0 6px";
+    const titulo = document.createElement("input");
+    titulo.type = "text";
+    titulo.value = "Contrato general de Complementos MASS";
+    titulo.maxLength = 200;
+    titulo.style.cssText =
+        "display:block;box-sizing:border-box;width:100%;padding:10px";
+    etiquetaTitulo.appendChild(titulo);
+
+    const etiquetaContenido = document.createElement("label");
+    etiquetaContenido.textContent = "Contenido íntegro del contrato 1.1";
+    etiquetaContenido.style.cssText =
+        "display:block;font-weight:700;margin:16px 0 6px";
+    const contenido = document.createElement("textarea");
+    contenido.rows = 18;
+    contenido.placeholder =
+        "Selecciona el TXT LIMPIO que descargaste o pega aquí " +
+        "el contrato completo de la versión 1.1.";
+    contenido.style.cssText =
+        "display:block;width:100%;box-sizing:border-box;min-height:320px;" +
+        "padding:12px;resize:vertical";
+    etiquetaContenido.appendChild(contenido);
+
+    const fileLabel = document.createElement("label");
+    fileLabel.textContent = "Archivo original de la versión corregida (.txt)";
+    fileLabel.style.cssText = "display:block;font-weight:700;margin:12px 0 6px";
+    const archivo = document.createElement("input");
+    archivo.type = "file";
+    archivo.accept = ".txt,text/plain";
+    archivo.setAttribute("aria-label", "Elegir contrato limpio 1.1");
+    archivo.style.cssText = "display:block;max-width:100%;margin:5px 0 15px";
+    fileLabel.appendChild(archivo);
+
+    const verificar = document.createElement("button");
+    verificar.type = "button";
+    verificar.textContent = "🔎 Verificar integridad SHA-256";
+
+    const estado = document.createElement("p");
+    estado.setAttribute("role", "status");
+    estado.style.cssText =
+        "white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6;color:#ffd966";
+    estado.textContent =
+        "Carga el archivo TXT limpio 1.1 y verifica su contenido antes de registrar.";
+
+    const confirmarLabel = document.createElement("label");
+    confirmarLabel.style.cssText =
+        "display:flex;align-items:flex-start;gap:9px;margin:15px 0;line-height:1.5";
+    const confirmar = document.createElement("input");
+    confirmar.type = "checkbox";
+    confirmar.checked = false;
+    confirmarLabel.append(
+        confirmar,
+        document.createTextNode(
+            "Confirmo que revisé el documento íntegro identificado por su SHA-256 " +
+            "y solicito registrar únicamente un BORRADOR 1.1. Comprendo que " +
+            "requiere revisión jurídica y fiscal y que no se publicará ni activará ningún pago."
+        )
+    );
+
+    const guardar = document.createElement("button");
+    guardar.type = "button";
+    guardar.textContent = "📝 Registrar borrador 1.1";
+    guardar.disabled = true;
+
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Panel Súper Admin";
+
+    const botones = document.createElement("div");
+    botones.style.cssText = "display:flex;gap:12px;flex-wrap:wrap;margin:16px 0";
+    botones.append(guardar, volver);
+
+    vista.append(
+        encabezado, aviso, advertencia, metadatos, etiquetaTitulo,
+        etiquetaContenido, fileLabel, verificar, estado,
+        confirmarLabel, botones
+    );
+    raiz.replaceChildren(vista);
+
+    function invalidar() {
+        secuencia += 1;
+        verificado = null;
+        confirmar.checked = false;
+        guardar.disabled = true;
+        if (!registrado && !enviando) {
+            estado.textContent =
+                "⚠️ Contenido o título actualizado. Verifica nuevamente el SHA-256.";
+        }
+    }
+    contenido.addEventListener("input", invalidar);
+    titulo.addEventListener("input", invalidar);
+    confirmar.addEventListener("change", () => {
+        guardar.disabled = enviando || registrado ||
+            !verificado || !confirmar.checked;
+    });
+
+    archivo.addEventListener("change", async () => {
+        if (registrado || enviando) return;
+        invalidar();
+        const token = secuencia;
+        const seleccionado = archivo.files?.[0];
+        if (!seleccionado) return;
+        if (!seleccionado.name.toLowerCase().endsWith(".txt") ||
+            seleccionado.size > 200000) {
+            estado.textContent =
+                "❌ Selecciona un TXT válido (máximo 200 KB).";
+            return;
+        }
+        estado.textContent = "Leyendo TXT local, sin enviar el archivo...";
+        try {
+            const texto = await seleccionado.text();
+            if (!vista.isConnected || token !== secuencia) return;
+            contenido.value = texto;
+            estado.textContent =
+                "📄 TXT cargado. Presiona Verificar integridad SHA-256. " +
+                "Todavía no se ha registrado nada.";
+        } catch (_e) {
+            if (vista.isConnected && token === secuencia) {
+                estado.textContent =
+                    "❌ No se pudo leer el archivo TXT. Intenta seleccionarlo de nuevo.";
+            }
+        }
+    });
+
+    async function calcularSHA256(texto) {
+        if (!window.crypto?.subtle || !window.TextEncoder) {
+            throw new Error("SHA256_NO_DISPONIBLE");
+        }
+        const bytes = new TextEncoder().encode(texto);
+        const resumen = await window.crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(resumen), n =>
+            n.toString(16).padStart(2, "0")
+        ).join("");
+    }
+
+    verificar.addEventListener("click", async () => {
+        if (enviando || registrado) return;
+        invalidar();
+        const token = secuencia;
+        const texto = contenido.value;
+        const tituloVerificado = titulo.value.trim();
+        verificar.disabled = true;
+        estado.textContent = "Calculando la huella del texto exacto...";
+        try {
+            if (texto.length !== CARACTERES_ESPERADOS ||
+                !texto.includes("CONTRATO GENERAL DE COMPLEMENTOS MASS") ||
+                !texto.includes("Versión: 1.1") ||
+                tituloVerificado.length < 3 ||
+                tituloVerificado.length > 200) {
+                estado.textContent =
+                    "❌ El texto o título no coincide con el borrador 1.1 previsto. " +
+                    "Usa Contrato_MASS_1_1_LIMPIO.txt (" +
+                    CARACTERES_ESPERADOS + " caracteres).";
+                return;
+            }
+            const huella = await calcularSHA256(texto);
+            if (!vista.isConnected || token !== secuencia) return;
+            if (huella !== HUella_ESPERADA) {
+                estado.textContent =
+                    "❌ SHA-256 diferente al borrador corregido. " +
+                    "No se registrará un texto distinto por accidente.\n" +
+                    "Huella obtenida: " + huella;
+                return;
+            }
+            verificado = {
+                texto, titulo: tituloVerificado, hash: huella
+            };
+            estado.textContent =
+                "✅ BORRADOR 1.1 ÍNTEGRO VERIFICADO.\n" +
+                "Caracteres: " + texto.length + "\nSHA-256: " +
+                huella + "\nPendiente de confirmación para registrar BORRADOR.";
+        } catch (_e) {
+            if (vista.isConnected && token === secuencia) {
+                estado.textContent =
+                    "❌ No fue posible calcular SHA-256 en este navegador.";
+            }
+        } finally {
+            if (verificar.isConnected && !registrado) verificar.disabled = false;
+        }
+    });
+
+    guardar.addEventListener("click", async () => {
+        if (enviando || registrado || !verificado || !confirmar.checked) return;
+        const copia = verificado;
+        if (contenido.value !== copia.texto ||
+            titulo.value.trim() !== copia.titulo) {
+            invalidar();
+            return;
+        }
+        if (!window.confirm(
+            "¿CONFIRMAS registrar el Contrato Complementos MASS versión 1.1 " +
+            "exclusivamente como BORRADOR? Se conservará íntegra la versión 1.0. " +
+            "NO se publicará el contrato ni se habilitarán pagos."
+        )) return;
+
+        enviando = true;
+        guardar.disabled = true;
+        verificar.disabled = true;
+        estado.textContent = "Confirmando integridad, sesión y registro...";
+        try {
+            if (!(await verificarAccesoSuperAdmin()) || !vista.isConnected) {
+                if (vista.isConnected) {
+                    estado.textContent = "❌ Sesión de Súper Admin no confirmada.";
+                }
+                return;
+            }
+            const hashActual = await calcularSHA256(contenido.value);
+            if (!vista.isConnected ||
+                hashActual !== HUella_ESPERADA ||
+                contenido.value !== copia.texto ||
+                titulo.value.trim() !== copia.titulo ||
+                !confirmar.checked) {
+                invalidar();
+                if (vista.isConnected) {
+                    estado.textContent = "❌ El contenido cambió. Vuelve a verificar.";
+                }
+                return;
+            }
+            const { data, error } = await supabaseClient.rpc(
+                "registrar_borrador_contrato_complementos_v11_bj124m",
+                {
+                    p_titulo: copia.titulo,
+                    p_contenido: copia.texto,
+                    p_sha256_presentado: copia.hash,
+                    p_confirmacion_expresa: true
+                }
+            );
+            if (!vista.isConnected) return;
+            const codigo = String(data?.codigo || error?.code || "SIN_RESPUESTA");
+            if (!error && data?.ok === true &&
+                (codigo === "BORRADOR_1_1_REGISTRADO" ||
+                 codigo === "BORRADOR_1_1_YA_EXISTENTE") &&
+                data.estado === "borrador" &&
+                data.publicado === false &&
+                data.derechos_activados === false &&
+                data.contenido_sha256_propuesto === HUella_ESPERADA &&
+                typeof data.version_id === "string") {
+                registrado = true;
+                contenido.disabled = true;
+                titulo.disabled = true;
+                archivo.disabled = true;
+                confirmar.disabled = true;
+                estado.textContent =
+                    "✅ BORRADOR 1.1 REGISTRADO CORRECTAMENTE.\n" +
+                    "Versión ID: " + data.version_id + "\n" +
+                    "SHA-256: " + HUella_ESPERADA + "\n" +
+                    (data.reutilizado ? "Registro ya existente verificado.\n" : "") +
+                    "Contrato NO publicado. Pagos y derechos NO activados.";
+                return;
+            }
+            estado.textContent =
+                "❌ Supabase no confirmó el registro (" + codigo + "). " +
+                "Revisa el resultado antes de intentar otra vez.";
+            if (error) console.error("BJ124M BORRADOR 1.1:", error.code);
+        } catch (_e) {
+            if (vista.isConnected) {
+                estado.textContent =
+                    "❌ Falló el registro. No repitas sin verificar antes el estado.";
+            }
+        } finally {
+            enviando = false;
+            if (!registrado && guardar.isConnected) {
+                guardar.disabled = !verificado || !confirmar.checked;
+            }
+            if (!registrado && verificar.isConnected) {
+                verificar.disabled = false;
+            }
+        }
+    });
+
+    volver.addEventListener("click", () => volverPanelSuperAdmin());
 }
 </script>
 
