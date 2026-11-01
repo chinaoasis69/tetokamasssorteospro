@@ -121889,6 +121889,16 @@ async function mostrarCentroJuridicoMassPM06() {
             item.style.cssText =
                 "padding-bottom:12px;border-bottom:1px solid #555";
         }
+        if (fila.version.startsWith("1.1")) {
+            const revisar = document.createElement("button");
+            revisar.type = "button";
+            revisar.textContent = "🧾 Revisar contrato 1.1";
+            revisar.style.cssText = "margin:9px 0 2px";
+            revisar.addEventListener("click", () => {
+                mostrarRevisionInternaContratoV11BJ124N02();
+            });
+            item.appendChild(revisar);
+        }
         lista.appendChild(item);
     });
 
@@ -121946,6 +121956,459 @@ async function mostrarCentroJuridicoMassPM06() {
 
     vista.append(titulo, intro, modulo, nota, lista, pendiente, detalles, volver);
     raiz.replaceChildren(vista);
+}
+</script>
+
+
+<!-- PM-06 BJ-124-N-02: revisión interna 1.1, sin publicar ni habilitar pagos -->
+<script>
+async function mostrarRevisionInternaContratoV11BJ124N02() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+    if (localStorage.getItem("admin_rol") !== "super_admin") return;
+
+    const raiz = document.getElementById("superAdminContenido");
+    const panel = document.getElementById("panelSuperAdmin");
+    if (!raiz || !panel || panel.style.display === "none") return;
+
+    const VERSION_ID = "045cd82b-536b-44c4-975d-ef681643edc6";
+    const HUella_ESPERADA =
+        "c0723f7fae901e8b3c86794de08126ec620e6019d12ac01acebc92c21a47c611";
+    const CARACTERES_ESPERADOS = 14951;
+    let textoVerificado = null;
+    let hashVerificado = null;
+    let secuencia = 0;
+    let verificando = false;
+    let enviando = false;
+    let registrado = false;
+    let intentoRemoto = false;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:860px;margin:12px auto;padding:18px;text-align:left;line-height:1.5";
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = "🧾 Revisión interna · Complementos MASS 1.1";
+
+    const aviso = document.createElement("p");
+    aviso.textContent =
+        "Revisa el contrato 1.1 íntegro antes de registrar una decisión real. " +
+        "La revisión es INTERNA y NO constituye dictamen legal externo, publicación, " +
+        "contratación, pago ni activación de derechos.";
+
+    const advertencia = document.createElement("p");
+    advertencia.textContent =
+        "⚠️ Siguen pendientes validaciones jurídicas y fiscales. No selecciones " +
+        "aprobación interna si no refleja tu revisión efectiva. " +
+        "El servidor exige el documento exacto ya registrado como borrador.";
+    advertencia.style.cssText = "color:#ffd966";
+
+    const metadatos = document.createElement("p");
+    metadatos.textContent =
+        "Versión 1.1 · 17 apartados · " + CARACTERES_ESPERADOS +
+        " caracteres\nVersión ID: " + VERSION_ID + "\nSHA-256: " +
+        HUella_ESPERADA;
+    metadatos.style.cssText =
+        "font-size:13px;color:#bbb;white-space:pre-wrap;overflow-wrap:anywhere";
+
+    const etiquetaContenido = document.createElement("label");
+    etiquetaContenido.textContent = "Contrato 1.1 íntegro para revisión";
+    etiquetaContenido.style.cssText =
+        "display:block;font-weight:700;margin:16px 0 7px";
+    const contenido = document.createElement("textarea");
+    contenido.rows = 18;
+    contenido.maxLength = 100000;
+    contenido.placeholder =
+        "Carga el archivo Contrato_MASS_1_1.txt que ya tienes o " +
+        "pega el texto limpio de la versión 1.1.";
+    contenido.setAttribute("aria-label", "Contenido del contrato 1.1 para revisión");
+    contenido.style.cssText =
+        "display:block;box-sizing:border-box;width:100%;min-height:320px;" +
+        "padding:12px;resize:vertical";
+    etiquetaContenido.appendChild(contenido);
+
+    const etiquetaArchivo = document.createElement("label");
+    etiquetaArchivo.textContent =
+        "Seleccionar TXT de la versión 1.1 (con portada o limpio)";
+    etiquetaArchivo.style.cssText = "display:block;font-weight:700;margin:12px 0 7px";
+    const archivo = document.createElement("input");
+    archivo.type = "file";
+    archivo.accept = ".txt,text/plain";
+    archivo.setAttribute("aria-label", "Elegir contrato versión 1.1");
+    archivo.style.cssText = "display:block;max-width:100%;margin:5px 0 16px";
+    etiquetaArchivo.appendChild(archivo);
+
+    const verificar = document.createElement("button");
+    verificar.type = "button";
+    verificar.textContent = "🔎 Verificar integridad SHA-256";
+
+    const estadoContenido = document.createElement("p");
+    estadoContenido.setAttribute("role", "status");
+    estadoContenido.setAttribute("aria-live", "polite");
+    estadoContenido.style.cssText =
+        "color:#ffd966;white-space:pre-wrap;overflow-wrap:anywhere";
+    estadoContenido.textContent =
+        "Selecciona el mismo TXT que ya utilizaste en BJ-124-M. " +
+        "No tienes que descargar otro archivo.";
+
+    const etiquetaDecision = document.createElement("label");
+    etiquetaDecision.textContent = "Decisión interna";
+    etiquetaDecision.style.cssText =
+        "display:block;font-weight:700;margin:18px 0 7px";
+    const decision = document.createElement("select");
+    decision.setAttribute("aria-label", "Decisión de revisión interna versión 1.1");
+    decision.style.cssText =
+        "display:block;width:100%;padding:10px;box-sizing:border-box";
+    for (const [value, name] of [
+        ["", "Seleccionar después de leer el contrato"],
+        ["requiere_correccion", "Requiere corrección"],
+        ["aprobado_internamente", "Aprobado internamente (sin dictamen externo)"],
+        ["rechazado", "Rechazado"]
+    ]) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = name;
+        decision.appendChild(option);
+    }
+
+    function textareaConEtiqueta(titulo, ayuda, maximo) {
+        const etiqueta = document.createElement("label");
+        etiqueta.textContent = titulo;
+        etiqueta.style.cssText =
+            "display:block;font-weight:700;margin:14px 0 7px";
+        const campo = document.createElement("textarea");
+        campo.rows = 4;
+        campo.maxLength = maximo;
+        campo.placeholder = ayuda;
+        campo.style.cssText =
+            "display:block;box-sizing:border-box;width:100%;padding:10px";
+        etiqueta.appendChild(campo);
+        return {etiqueta, campo};
+    }
+    const motivo = textareaConEtiqueta(
+        "Motivo de la decisión (20–3,000 caracteres)",
+        "Explica las observaciones y motivos reales de esta revisión.", 3000
+    );
+    const declaracion = textareaConEtiqueta(
+        "Declaración expresa del revisor (30–3,000 caracteres)",
+        "Describe tu decisión interna. No atribuyas un dictamen legal externo inexistente.",
+        3000
+    );
+
+    const etiquetaReferencia = document.createElement("label");
+    etiquetaReferencia.textContent =
+        "Referencia de evidencia (opcional, 3–1,000 caracteres)";
+    etiquetaReferencia.style.cssText =
+        "display:block;font-weight:700;margin:14px 0 7px";
+    const referencia = document.createElement("input");
+    referencia.type = "text";
+    referencia.maxLength = 1000;
+    referencia.style.cssText =
+        "display:block;box-sizing:border-box;width:100%;padding:10px";
+    etiquetaReferencia.appendChild(referencia);
+
+    const etiquetaConfirmar = document.createElement("label");
+    etiquetaConfirmar.style.cssText =
+        "display:flex;align-items:flex-start;gap:9px;margin:18px 0";
+    const confirmar = document.createElement("input");
+    confirmar.type = "checkbox";
+    confirmar.checked = false;
+    etiquetaConfirmar.append(
+        confirmar,
+        document.createTextNode(
+            "Confirmo que leí el contrato íntegro identificado por su SHA-256 " +
+            "y que esta decisión, su motivo y declaración reflejan mi revisión " +
+            "interna real. No publica ningún documento ni activa cobros."
+        )
+    );
+
+    const guardar = document.createElement("button");
+    guardar.type = "button";
+    guardar.textContent = "🧾 Registrar revisión interna 1.1";
+    guardar.disabled = true;
+
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Centro Jurídico MASS";
+
+    const botones = document.createElement("div");
+    botones.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;margin:12px 0";
+    botones.append(guardar, volver);
+
+    const estado = document.createElement("p");
+    estado.setAttribute("role", "status");
+    estado.setAttribute("aria-live", "polite");
+    estado.style.cssText =
+        "white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.6";
+
+    vista.append(
+        titulo, aviso, advertencia, metadatos, etiquetaContenido,
+        etiquetaArchivo, verificar, estadoContenido,
+        etiquetaDecision, decision, motivo.etiqueta, declaracion.etiqueta,
+        etiquetaReferencia, etiquetaConfirmar, botones, estado
+    );
+    raiz.replaceChildren(vista);
+
+    function puedeRegistrar() {
+        return !registrado && !enviando && !verificando && !intentoRemoto &&
+            textoVerificado !== null && confirmar.checked &&
+            decision.value !== "";
+    }
+    function actualizarBoton() {
+        if (guardar.isConnected) guardar.disabled = !puedeRegistrar();
+    }
+    function invalidarDocumento() {
+        secuencia += 1;
+        textoVerificado = null;
+        hashVerificado = null;
+        confirmar.checked = false;
+        if (!enviando && !registrado) {
+            estadoContenido.textContent =
+                "⚠️ El texto cambió; verifica nuevamente el SHA-256.";
+        }
+        actualizarBoton();
+    }
+    contenido.addEventListener("input", invalidarDocumento);
+    decision.addEventListener("change", actualizarBoton);
+    confirmar.addEventListener("change", actualizarBoton);
+
+    async function sha256UTF8(texto) {
+        if (!window.crypto?.subtle || !window.TextEncoder) {
+            throw new Error("SHA256_NO_DISPONIBLE");
+        }
+        const bytes = new TextEncoder().encode(texto);
+        const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+        return Array.from(new Uint8Array(digest), x =>
+            x.toString(16).padStart(2, "0")
+        ).join("");
+    }
+
+    archivo.addEventListener("change", async () => {
+        if (registrado || enviando || intentoRemoto) return;
+        invalidarDocumento();
+        const token = secuencia;
+        const f = archivo.files?.[0];
+        if (!f) return;
+        if (!f.name.toLowerCase().endsWith(".txt") || f.size > 200000) {
+            estadoContenido.textContent =
+                "❌ Archivo inválido. Selecciona un TXT de máximo 200 KB.";
+            return;
+        }
+        estadoContenido.textContent = "Leyendo TXT local sin enviar datos...";
+        try {
+            const original = (await f.text()).replace(/\r\n/g, "\n");
+            if (!vista.isConnected || token !== secuencia) return;
+            let texto = original;
+            const marca =
+                "BORRADOR JURÍDICO DE TRABAJO — NO PUBLICAR / NO ACTIVAR COBROS\n";
+            const inicio = "\nCONTRATO GENERAL DE COMPLEMENTOS MASS\n";
+            const fin = "\nFIN DE LA PROPUESTA 1.1 — BORRADOR NO PUBLICAR.\n";
+            const variante = "Versión propuesta: 1.1 (NO VIGENTE)";
+            if (original.startsWith(marca)) {
+                const indice = original.indexOf(inicio);
+                if (indice < 0 || !original.endsWith(fin) ||
+                    !original.includes(variante)) {
+                    estadoContenido.textContent =
+                        "❌ Portada no reconocida. No continúes con este archivo.";
+                    return;
+                }
+                texto = original.slice(
+                    indice + 1,
+                    original.length - fin.length
+                ).replace(variante, "Versión: 1.1");
+            }
+            const hash = await sha256UTF8(texto);
+            if (!vista.isConnected || token !== secuencia) return;
+            if (texto.length !== CARACTERES_ESPERADOS ||
+                hash !== HUella_ESPERADA) {
+                estadoContenido.textContent =
+                    "❌ Archivo distinto de la versión 1.1 registrada. " +
+                    "No se modificará el expediente.";
+                return;
+            }
+            contenido.value = texto;
+            estadoContenido.textContent =
+                "✅ TXT cargado. Pulsa Verificar integridad SHA-256, " +
+                "lee el documento completo y registra únicamente tu decisión real.";
+        } catch (_e) {
+            if (vista.isConnected && token === secuencia) {
+                estadoContenido.textContent =
+                    "❌ No se pudo leer o verificar el archivo local.";
+            }
+        }
+    });
+
+    verificar.addEventListener("click", async () => {
+        if (verificando || registrado || enviando || intentoRemoto) return;
+        const token = ++secuencia;
+        textoVerificado = null;
+        hashVerificado = null;
+        confirmar.checked = false;
+        verificando = true;
+        verificar.disabled = true;
+        actualizarBoton();
+        estadoContenido.textContent = "Calculando SHA-256 del texto...";
+        const texto = contenido.value;
+        try {
+            if (texto.length !== CARACTERES_ESPERADOS ||
+                !texto.includes("Versión: 1.1") ||
+                !texto.includes("CONTRATO GENERAL DE COMPLEMENTOS MASS")) {
+                estadoContenido.textContent =
+                    "❌ El contenido no coincide con la versión contractual 1.1.";
+                return;
+            }
+            const hash = await sha256UTF8(texto);
+            if (!vista.isConnected || token !== secuencia) return;
+            if (hash !== HUella_ESPERADA) {
+                estadoContenido.textContent =
+                    "❌ SHA-256 diferente. No se registrará una revisión.";
+                return;
+            }
+            textoVerificado = texto;
+            hashVerificado = hash;
+            estadoContenido.textContent =
+                "✅ CONTRATO 1.1 ÍNTEGRO VERIFICADO.\n" +
+                "Caracteres: " + texto.length + "\nSHA-256: " + hash +
+                "\nRevisa íntegramente los 17 apartados antes de decidir.";
+        } catch (_e) {
+            if (vista.isConnected && token === secuencia) {
+                estadoContenido.textContent =
+                    "❌ No fue posible verificar SHA-256 en este navegador.";
+            }
+        } finally {
+            verificando = false;
+            if (verificar.isConnected && !registrado) verificar.disabled = false;
+            actualizarBoton();
+        }
+    });
+
+    volver.addEventListener("click", () => {
+        if (!enviando) mostrarCentroJuridicoMassPM06();
+    });
+
+    guardar.addEventListener("click", async () => {
+        if (!puedeRegistrar() || !vista.isConnected) return;
+        const vDecision = decision.value;
+        const vMotivo = motivo.campo.value.trim();
+        const vDeclaracion = declaracion.campo.value.trim();
+        const vReferencia = referencia.value.trim();
+
+        if (!["requiere_correccion", "aprobado_internamente", "rechazado"]
+                .includes(vDecision) ||
+            vMotivo.length < 20 || vMotivo.length > 3000 ||
+            vDeclaracion.length < 30 || vDeclaracion.length > 3000 ||
+            (vReferencia && (vReferencia.length < 3 ||
+                vReferencia.length > 1000))) {
+            estado.textContent =
+                "⚠️ Selecciona una decisión y completa motivo y declaración válidos.";
+            return;
+        }
+        if (contenido.value !== textoVerificado ||
+            hashVerificado !== HUella_ESPERADA) {
+            invalidarDocumento();
+            estado.textContent = "❌ El texto cambió. Debes verificarlo de nuevo.";
+            return;
+        }
+        let hashActual;
+        try {
+            hashActual = await sha256UTF8(contenido.value);
+        } catch (_e) {
+            estado.textContent = "❌ Falló la verificación SHA-256.";
+            return;
+        }
+        if (!vista.isConnected || hashActual !== HUella_ESPERADA ||
+            !confirmar.checked) {
+            estado.textContent = "❌ Integridad o confirmación no válida.";
+            return;
+        }
+
+        if (vDecision === "aprobado_internamente" && !window.confirm(
+            "⚠️ Todavía existen pendientes jurídicos y fiscales. " +
+            "¿Confirmas que tu propia revisión real justifica una APROBACIÓN INTERNA " +
+            "(NO es dictamen legal externo ni autorización de publicación)?"
+        )) return;
+
+        if (!window.confirm(
+            "¿CONFIRMAS registrar la decisión '" + vDecision +
+            "' sobre el contrato 1.1 en el historial jurídico INMUTABLE? " +
+            "No se publicará el contrato ni se activarán pagos."
+        )) return;
+
+        enviando = true;
+        intentoRemoto = true;
+        guardar.disabled = true;
+        verificar.disabled = true;
+        estado.textContent =
+            "Comprobando sesión Súper Admin y registrando revisión interna...";
+        try {
+            if (!(await verificarAccesoSuperAdmin()) || !vista.isConnected ||
+                !confirmar.checked || decision.value !== vDecision ||
+                motivo.campo.value.trim() !== vMotivo ||
+                declaracion.campo.value.trim() !== vDeclaracion ||
+                referencia.value.trim() !== vReferencia ||
+                contenido.value !== textoVerificado) {
+                estado.textContent =
+                    "❌ Los datos o la sesión cambiaron. No se envió la revisión.";
+                return;
+            }
+            const {data, error} = await supabaseClient.rpc(
+                "registrar_revision_contrato_complementos_v11_bj124n",
+                {
+                    p_decision: vDecision,
+                    p_hash_presentado: HUella_ESPERADA,
+                    p_motivo_revision: vMotivo,
+                    p_declaracion_expresa: vDeclaracion,
+                    p_referencia_evidencia: vReferencia || null,
+                    p_confirmacion_explicita: true
+                }
+            );
+            if (!vista.isConnected) return;
+            if (!error && data?.ok === true &&
+                data.version_id === VERSION_ID &&
+                data.decision === vDecision &&
+                data.contenido_sha256 === HUella_ESPERADA &&
+                data.revision_interna === true &&
+                data.documento_publicado === false &&
+                data.derechos_activados === false &&
+                (typeof data.revision_id === "number" ||
+                 typeof data.revision_id === "string")) {
+                registrado = true;
+                [
+                    contenido, archivo, decision, motivo.campo,
+                    declaracion.campo, referencia, confirmar
+                ].forEach(x => x.disabled = true);
+                estado.textContent =
+                    "✅ REVISIÓN INTERNA 1.1 REGISTRADA.\n" +
+                    "Decisión: " + vDecision + "\n" +
+                    "Revisión ID: " + String(data.revision_id) + "\n" +
+                    "SHA-256: " + HUella_ESPERADA + "\n" +
+                    (data.ya_registrada ? "Revisión existente reconocida.\n" : "") +
+                    "Contrato NO publicado. Pagos y derechos NO activados.";
+                return;
+            }
+            estado.textContent =
+                "❌ No se confirmó el registro (" +
+                String(data?.codigo || error?.code || "RESPUESTA_NO_CONFIRMADA") +
+                "). Comprueba el historial antes de intentarlo nuevamente.";
+            if (error) console.error("BJ124N02 REVISION:", error.code);
+        } catch (_e) {
+            if (vista.isConnected) {
+                estado.textContent =
+                    "❌ Error del servidor. No repitas la operación " +
+                    "sin verificar el historial jurídico.";
+            }
+        } finally {
+            enviando = false;
+            if (!registrado && vista.isConnected) {
+                estado.textContent +=
+                    "\nLa pantalla bloqueará nuevos intentos para evitar duplicados.";
+            }
+            actualizarBoton();
+            if (verificar.isConnected && !registrado && !intentoRemoto) {
+                verificar.disabled = false;
+            }
+        }
+    });
 }
 </script>
 
