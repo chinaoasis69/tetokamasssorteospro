@@ -121312,31 +121312,72 @@ async function mostrarPreviaComplementosBJ123() {
                     "). No se han habilitado compras.";
                 return;
             }
+            // BJ-124-P-04-E: acordeones compactos por producto y paquete.
+            // Los dos niveles inician cerrados y conservan los datos QA originales.
+            const gruposQA = new Map();
             for (const paquete of data.paquetes) {
-                const tarjeta = document.createElement("div");
-                tarjeta.className = "card";
-                tarjeta.style.cssText = "padding:12px;text-align:left;margin:0";
-                const nombre = document.createElement("h4");
-                nombre.textContent = String(paquete.producto_nombre || "Complemento MASS");
+                const codigoProducto = String(paquete.producto_codigo || "").trim();
+                const nombreProducto = String(paquete.producto_nombre || "Complemento MASS");
+                let grupo = gruposQA.get(codigoProducto);
+
+                if (!grupo) {
+                    const desplegable = document.createElement("details");
+                    desplegable.style.cssText =
+                        "border:1px solid #39ff14;border-radius:12px;" +
+                        "padding:6px 12px;text-align:left;overflow-wrap:anywhere";
+                    const encabezado = document.createElement("summary");
+                    encabezado.style.cssText =
+                        "cursor:pointer;padding:10px 2px;font-weight:700;line-height:1.45";
+                    const listaPaquetes = document.createElement("div");
+                    listaPaquetes.style.cssText = "display:grid;gap:8px;padding:8px 0";
+                    desplegable.append(encabezado, listaPaquetes);
+                    qaLista.appendChild(desplegable);
+                    grupo = { encabezado, listaPaquetes, nombreProducto, total: 0 };
+                    gruposQA.set(codigoProducto, grupo);
+                }
+
+                grupo.total += 1;
+                grupo.encabezado.textContent = "📦 " + grupo.nombreProducto +
+                    " · " + String(grupo.total) +
+                    (grupo.total === 1 ? " paquete" : " paquetes");
+
+                const usd = Number(paquete.precio_usd);
+                const precioUsdTexto = Number.isFinite(usd) && usd > 0
+                    ? usd.toFixed(2) + " USD"
+                    : "USD no disponible";
+                const mxn = paquete.precio_mxn === null ? NaN : Number(paquete.precio_mxn);
+                const precioMxnTexto = paquete.fx_disponible === true &&
+                    Number.isFinite(mxn) && mxn > 0
+                    ? mxn.toFixed(2) + " MXN (informativo)"
+                    : "MXN no disponible (FX pendiente)";
+
+                const detallePaquete = document.createElement("details");
+                detallePaquete.style.cssText =
+                    "border:1px solid #777;border-radius:9px;" +
+                    "padding:0 10px;overflow-wrap:anywhere";
+                const resumenPaquete = document.createElement("summary");
+                resumenPaquete.style.cssText =
+                    "cursor:pointer;padding:12px 2px;font-weight:600;" +
+                    "line-height:1.5;overflow-wrap:anywhere";
+                resumenPaquete.textContent =
+                    String(paquete.paquete_nombre || "Paquete MASS") +
+                    " · " + precioUsdTexto;
+                const info = document.createElement("div");
+                info.style.cssText = "padding:0 6px 10px;line-height:1.5";
+
                 const datos = document.createElement("p");
-                datos.textContent = String(paquete.paquete_nombre || "") +
-                    " · " + String(paquete.paquete_codigo || "") +
+                datos.textContent = "Código: " +
+                    String(paquete.paquete_codigo || "—") +
                     " · Versión " + String(paquete.paquete_version ?? "—");
                 const capacidad = document.createElement("p");
                 capacidad.textContent = "Capacidad: " +
                     String(paquete.capacidad ?? "—") +
                     " · Vigencia: " + String(paquete.duracion_meses ?? "—") +
-                    " mes · Sin renovación automática";
-                const usd = Number(paquete.precio_usd);
+                    " mes · Renovación automática: No";
                 const precioUSD = document.createElement("p");
-                precioUSD.textContent = "Subtotal base USD: " +
-                    (Number.isFinite(usd) && usd > 0 ? usd.toFixed(2) + " USD" : "No disponible");
-                const mxn = paquete.precio_mxn === null ? NaN : Number(paquete.precio_mxn);
+                precioUSD.textContent = "Subtotal comercial: " + precioUsdTexto;
                 const precioMXN = document.createElement("p");
-                precioMXN.textContent = "Subtotal informativo MXN: " +
-                    (paquete.fx_disponible === true && Number.isFinite(mxn) && mxn > 0
-                        ? mxn.toFixed(2) + " MXN"
-                        : "No disponible (FX pendiente)");
+                precioMXN.textContent = "Subtotal: " + precioMxnTexto;
                 const estadoPaquete = document.createElement("p");
                 const activo = paquete.producto_activo === true &&
                     paquete.producto_visible === true &&
@@ -121344,13 +121385,14 @@ async function mostrarPreviaComplementosBJ123() {
                     paquete.paquete_visible === true;
                 estadoPaquete.textContent = activo
                     ? "Catálogo: paquete habilitado. Esta vista QA NO permite contratar."
-                    : "🔒 Catálogo: paquete inactivo u oculto. La venta sigue deshabilitada.";
+                    : "🔒 Producto o paquete inactivo u oculto para contratación.";
                 const fiscal = document.createElement("p");
                 fiscal.textContent = "IVA / Sales tax: pendiente de determinación. " +
-                    "Total final: no disponible. Sin cobros.";
-                tarjeta.append(nombre, datos, capacidad, precioUSD,
-                    precioMXN, estadoPaquete, fiscal);
-                qaLista.appendChild(tarjeta);
+                    "Total definitivo: no disponible. Sin cobros.";
+
+                info.append(datos, capacidad, precioUSD, precioMXN, estadoPaquete, fiscal);
+                detallePaquete.append(resumenPaquete, info);
+                grupo.listaPaquetes.appendChild(detallePaquete);
             }
             qaEstado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes leídos desde Supabase. Solo QA; sin operaciones comerciales.";
