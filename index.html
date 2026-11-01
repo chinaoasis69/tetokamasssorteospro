@@ -121264,12 +121264,126 @@ async function mostrarPreviaComplementosBJ123() {
     bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, resumenFiscal,
         avisoSoporte, avisoPrivacidadSoporte,
         catalogoBoton, catalogoEstado, catalogoLista);
+    // BJ-124-P-04-C: vista de catálogo QA exclusiva del Súper Admin.
+    // Usa una RPC de solo lectura; no habilita paquetes, pagos ni adquisiciones.
+    const qaPanel = document.createElement("section");
+    qaPanel.hidden = true;
+    qaPanel.style.cssText = "border:1px dashed #39ff14;border-radius:12px;" +
+        "margin:16px 0;padding:14px;text-align:left;overflow-wrap:anywhere";
+    const qaTitulo = document.createElement("h4");
+    qaTitulo.textContent = "🔬 QA Súper Admin · Precios reales de complementos";
+    const qaAviso = document.createElement("p");
+    qaAviso.textContent = "Consulta interna de paquetes, incluso deshabilitados. " +
+        "Precios base sin impuestos; el importe MXN depende de un FX válido. " +
+        "No crea adquisiciones, no habilita venta ni permite pagar.";
+    const qaBoton = document.createElement("button");
+    qaBoton.type = "button";
+    qaBoton.textContent = "🔎 Ver catálogo de prueba sin contratar";
+    const qaEstado = document.createElement("p");
+    qaEstado.setAttribute("role", "status");
+    qaEstado.setAttribute("aria-live", "polite");
+    const qaLista = document.createElement("div");
+    qaLista.style.cssText = "display:grid;gap:12px;margin-top:12px";
+    qaPanel.append(qaTitulo, qaAviso, qaBoton, qaEstado, qaLista);
+    bloqueCatalogo.appendChild(qaPanel);
+
+    let qaOcupado = false;
+    qaBoton.addEventListener("click", async () => {
+        if (qaOcupado || qaPanel.hidden || !vista.isConnected) return;
+        qaOcupado = true;
+        qaBoton.disabled = true;
+        qaLista.replaceChildren();
+        qaEstado.textContent = "Consultando catálogo interno seguro...";
+        try {
+            const {data, error} = await supabaseClient.rpc(
+                "consultar_catalogo_complementos_qa_bj124_super_admin_seguro"
+            );
+            if (!vista.isConnected) return;
+            if (error || data?.ok !== true ||
+                data?.codigo !== "CATALOGO_QA_SUPER_ADMIN" ||
+                data?.qa_solo_super_admin !== true ||
+                data?.solo_lectura !== true ||
+                data?.checkout_habilitado !== false ||
+                data?.pago_habilitado !== false ||
+                data?.adquisicion_generada !== false ||
+                !Array.isArray(data?.paquetes)) {
+                qaEstado.textContent = "🔒 Vista QA no disponible (" +
+                    String(data?.codigo || error?.code || "SIN_AUTORIZACION") +
+                    "). No se han habilitado compras.";
+                return;
+            }
+            for (const paquete of data.paquetes) {
+                const tarjeta = document.createElement("div");
+                tarjeta.className = "card";
+                tarjeta.style.cssText = "padding:12px;text-align:left;margin:0";
+                const nombre = document.createElement("h4");
+                nombre.textContent = String(paquete.producto_nombre || "Complemento MASS");
+                const datos = document.createElement("p");
+                datos.textContent = String(paquete.paquete_nombre || "") +
+                    " · " + String(paquete.paquete_codigo || "") +
+                    " · Versión " + String(paquete.paquete_version ?? "—");
+                const capacidad = document.createElement("p");
+                capacidad.textContent = "Capacidad: " +
+                    String(paquete.capacidad ?? "—") +
+                    " · Vigencia: " + String(paquete.duracion_meses ?? "—") +
+                    " mes · Sin renovación automática";
+                const usd = Number(paquete.precio_usd);
+                const precioUSD = document.createElement("p");
+                precioUSD.textContent = "Subtotal base USD: " +
+                    (Number.isFinite(usd) && usd > 0 ? usd.toFixed(2) + " USD" : "No disponible");
+                const mxn = paquete.precio_mxn === null ? NaN : Number(paquete.precio_mxn);
+                const precioMXN = document.createElement("p");
+                precioMXN.textContent = "Subtotal informativo MXN: " +
+                    (paquete.fx_disponible === true && Number.isFinite(mxn) && mxn > 0
+                        ? mxn.toFixed(2) + " MXN"
+                        : "No disponible (FX pendiente)");
+                const estadoPaquete = document.createElement("p");
+                const activo = paquete.producto_activo === true &&
+                    paquete.producto_visible === true &&
+                    paquete.paquete_activo === true &&
+                    paquete.paquete_visible === true;
+                estadoPaquete.textContent = activo
+                    ? "Catálogo: paquete habilitado. Esta vista QA NO permite contratar."
+                    : "🔒 Catálogo: paquete inactivo u oculto. La venta sigue deshabilitada.";
+                const fiscal = document.createElement("p");
+                fiscal.textContent = "IVA / Sales tax: pendiente de determinación. " +
+                    "Total final: no disponible. Sin cobros.";
+                tarjeta.append(nombre, datos, capacidad, precioUSD,
+                    precioMXN, estadoPaquete, fiscal);
+                qaLista.appendChild(tarjeta);
+            }
+            qaEstado.textContent = "✅ " + String(data.paquetes.length) +
+                " paquetes leídos desde Supabase. Solo QA; sin operaciones comerciales.";
+        } catch (_error) {
+            if (vista.isConnected) qaEstado.textContent =
+                "🔒 No fue posible consultar el catálogo QA. Sin pagos.";
+        } finally {
+            qaOcupado = false;
+            if (qaBoton.isConnected) qaBoton.disabled = false;
+        }
+    });
+
     const bloqueTecnico = document.createElement("details");
     const resumenTecnico = document.createElement("summary");
     resumenTecnico.textContent = "Consulta técnica de una adquisición existente (QA)";
     bloqueTecnico.append(resumenTecnico, etiqueta, id, consultar);
     vista.append(titulo, aviso, bloqueCatalogo, bloqueTecnico, volver, estado, detalle);
     raiz.replaceChildren(vista);
+
+    // Verificación visual de acceso; la RPC valida Súper Admin de nuevo.
+    (async () => {
+        try {
+            const sesionQA = await supabaseClient.auth.getUser();
+            if (sesionQA.error || !sesionQA.data?.user) return;
+            const {data: esSuperAdmin, error: errorSuperAdmin} =
+                await supabaseClient.rpc("is_super_admin");
+            if (vista.isConnected && !errorSuperAdmin && esSuperAdmin === true) {
+                qaPanel.hidden = false;
+            }
+        } catch (_error) {
+            // Vista QA permanece oculta si falla la verificación.
+        }
+    })();
 
     let consultandoCatalogo = false;
     catalogoBoton.addEventListener("click", async () => {
