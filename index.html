@@ -121219,6 +121219,7 @@ async function mostrarPreviaComplementosBJ123() {
     tituloFiscal.textContent = "🧾 Vista previa del checkout — Impuestos";
     const notaFiscal = document.createElement("p");
     notaFiscal.textContent =
+        "Vista conectada al subtotal oficial de Supabase cuando existan paquetes habilitados. " +
         "Diseño informativo; no es una cotización. " +
         "El importe definitivo se conocerá al calcular los impuestos aplicables " +
         "por ubicación, tipo de complemento y situación fiscal. " +
@@ -121354,13 +121355,55 @@ async function mostrarPreviaComplementosBJ123() {
                             estadoOferta.textContent = "🔒 Versión de paquete no válida.";
                             return;
                         }
+                        // BJ-124-P-04-B: subtotal auténtico desde Supabase, sin cobro.
+                        const monedaSolicitada = moneda.value;
+                        const {data: vistaCheckout, error: errorCheckout} = await supabaseClient.rpc(
+                            "previsualizar_checkout_complemento_mass_bj124_seguro",
+                            {
+                                p_organizador_id: organizadorId,
+                                p_paquete_id: paquete.paquete_id,
+                                p_paquete_version_esperada: version,
+                                p_moneda: monedaSolicitada
+                            }
+                        );
+                        if (!tarjeta.isConnected) return;
+                        const subtotal = Number(vistaCheckout?.subtotal);
+                        if (errorCheckout || vistaCheckout?.ok !== true ||
+                            vistaCheckout?.codigo !== "PREVISUALIZACION_DISPONIBLE" ||
+                            vistaCheckout?.estado_fiscal !== "pendiente_determinacion" ||
+                            vistaCheckout?.checkout_habilitado !== false ||
+                            vistaCheckout?.pago_habilitado !== false ||
+                            vistaCheckout?.adquisicion_generada !== false ||
+                            vistaCheckout?.pago_generado !== false ||
+                            String(vistaCheckout?.organizador_id || "").toLowerCase() !== String(organizadorId).toLowerCase() ||
+                            String(vistaCheckout?.paquete_id || "").toLowerCase() !== String(paquete.paquete_id).toLowerCase() ||
+                            Number(vistaCheckout?.paquete_version) !== version ||
+                            vistaCheckout?.moneda !== monedaSolicitada ||
+                            !Number.isFinite(subtotal) || subtotal <= 0) {
+                            estadoOferta.textContent = "🔒 No se pudo verificar el subtotal comercial. No realices pagos.";
+                            return;
+                        }
+                        const agregar = (etiqueta, valor) => {
+                            const linea = document.createElement("p");
+                            const fuerte = document.createElement("strong");
+                            fuerte.textContent = etiqueta + ": ";
+                            linea.append(fuerte, document.createTextNode(String(valor ?? "No informado")));
+                            resultadoOferta.append(linea);
+                        };
+                        agregar("Producto", vistaCheckout.producto_nombre);
+                        agregar("Paquete", vistaCheckout.paquete_nombre);
+                        agregar("Capacidad", vistaCheckout.capacidad);
+                        agregar("Subtotal verificado (sin impuestos)", subtotal.toFixed(2) + " " + monedaSolicitada);
+                        agregar("IVA / Sales tax", "Pendiente de determinación fiscal");
+                        agregar("Total final a pagar", "No disponible; checkout bloqueado");
+                        estadoOferta.textContent = "✅ Subtotal consultado. Validando contrato oficial...";
                         const {data: oferta, error: errorOferta} = await supabaseClient.rpc(
                             "previsualizar_oferta_complemento_bj123_segura",
                             {
                                 p_organizador_id: organizadorId,
                                 p_paquete_id: paquete.paquete_id,
                                 p_paquete_version_esperada: version,
-                                p_moneda: moneda.value,
+                                p_moneda: monedaSolicitada,
                                 p_idioma_codigo: "es"
                             }
                         );
@@ -121372,25 +121415,20 @@ async function mostrarPreviaComplementosBJ123() {
                             oferta?.pago_iniciado !== false ||
                             oferta?.aceptacion_registrada !== false ||
                             oferta?.derechos_activados !== false) {
-                            estadoOferta.textContent = "🔒 Oferta no disponible (" +
+                            estadoOferta.textContent = "ℹ️ Subtotal consultado, pero aún no hay contrato oficial presentable (" +
                                 String(oferta?.codigo || errorOferta?.code || "SIN_CONTRATO_VIGENTE") +
                                 "). No realices pagos.";
                             return;
                         }
-                        const agregar = (etiqueta, valor) => {
-                            const linea = document.createElement("p");
-                            const fuerte = document.createElement("strong");
-                            fuerte.textContent = etiqueta + ": ";
-                            linea.append(fuerte, document.createTextNode(String(valor ?? "No informado")));
-                            resultadoOferta.append(linea);
-                        };
-                        agregar("Producto", oferta.producto_nombre);
-                        agregar("Paquete", oferta.paquete_nombre);
-                        agregar("Capacidad", oferta.capacidad);
-                        agregar("Subtotal informativo (sin impuesto calculado)",
-                            String(oferta.monto) + " " + String(oferta.moneda));
-                        agregar("IVA / Sales tax", "Pendiente de determinación fiscal");
-                        agregar("Total final a pagar", "No disponible; checkout bloqueado");
+                        // No presentar contratos con importes discrepantes tras un cambio de FX.
+                        if (Number(oferta.monto) !== subtotal ||
+                            oferta.moneda !== monedaSolicitada ||
+                            String(oferta.producto_codigo) !== String(vistaCheckout.producto_codigo) ||
+                            String(oferta.paquete_codigo) !== String(vistaCheckout.paquete_codigo)) {
+                            resultadoOferta.replaceChildren();
+                            estadoOferta.textContent = "🔒 Los importes comerciales no coinciden. Vuelve a consultar. Sin pagos.";
+                            return;
+                        }
                         agregar("Vigencia", "1 mes calendario, sin renovación automática");
                         agregar("Contrato", String(oferta.documento_titulo) + " · " + String(oferta.documento_version));
                         agregar("SHA-256", oferta.documento_hash);
