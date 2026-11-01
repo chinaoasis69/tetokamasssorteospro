@@ -121852,9 +121852,9 @@ async function mostrarCentroJuridicoMassPM06() {
 
     const nota = document.createElement("p");
     nota.textContent =
-        "Registro informativo del QA completado el 31 de octubre de 2026. " +
-        "Esta pantalla aún no consulta en tiempo real los estados de Supabase. " +
-        "No equivale a revisión o publicación legal.";
+        "Estado de referencia según las pruebas reales confirmadas hasta el " +
+        "1 de noviembre de 2026. Esta pantalla aún no consulta en tiempo real " +
+        "los estados de Supabase. No equivale a aprobación o publicación legal.";
     nota.style.cssText = "font-size:13px;color:#ffd966";
 
     const lista = document.createElement("div");
@@ -121870,8 +121870,8 @@ async function mostrarCentroJuridicoMassPM06() {
         },
         {
             version: "1.1 · Borrador corregido",
-            estado: "Registro confirmado, integridad SHA-256 validada.",
-            detalle: "Pendiente de revisión jurídica y fiscal; no publicado."
+            estado: "Revisión interna registrada: requiere corrección (ID 2).",
+            detalle: "Pendiente de resolver requisitos jurídicos y fiscales. No publicado."
         }
     ];
     filas.forEach((fila, i) => {
@@ -121889,16 +121889,8 @@ async function mostrarCentroJuridicoMassPM06() {
             item.style.cssText =
                 "padding-bottom:12px;border-bottom:1px solid #555";
         }
-        if (fila.version.startsWith("1.1")) {
-            const revisar = document.createElement("button");
-            revisar.type = "button";
-            revisar.textContent = "🧾 Revisar contrato 1.1";
-            revisar.style.cssText = "margin:9px 0 2px";
-            revisar.addEventListener("click", () => {
-                mostrarRevisionInternaContratoV11BJ124N02();
-            });
-            item.appendChild(revisar);
-        }
+        // La revisión interna 1.1 (ID 2) ya está registrada.
+        // No ofrecer otro registro desde el expediente histórico.
         lista.appendChild(item);
     });
 
@@ -121954,7 +121946,18 @@ async function mostrarCentroJuridicoMassPM06() {
     volver.textContent = "← Volver al Panel Súper Admin";
     volver.addEventListener("click", () => volverPanelSuperAdmin());
 
-    vista.append(titulo, intro, modulo, nota, lista, pendiente, detalles, volver);
+    const politica = document.createElement("button");
+    politica.type = "button";
+    politica.textContent = "📄 Consultar política de reembolsos (borrador)";
+    politica.style.cssText = "margin:12px 0";
+    politica.addEventListener("click", () => {
+        mostrarPoliticaReembolsosComplementosMassBJ124O();
+    });
+
+    vista.append(
+        titulo, intro, modulo, nota, lista, politica,
+        pendiente, detalles, volver
+    );
     raiz.replaceChildren(vista);
 }
 </script>
@@ -122409,6 +122412,67 @@ async function mostrarRevisionInternaContratoV11BJ124N02() {
             }
         }
     });
+}
+</script>
+
+
+<!-- PM-06 BJ-124-O-01: Política de reembolsos, consulta interna informativa.
+     No registra, publica, cobra ni activa derechos. -->
+<script>
+async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+    if (localStorage.getItem("admin_rol") !== "super_admin") return;
+    const raiz = document.getElementById("superAdminContenido");
+    const panel = document.getElementById("panelSuperAdmin");
+    if (!raiz || !panel || panel.style.display === "none") return;
+
+    const politica = "BORRADOR DE TRABAJO — NO PUBLICAR / NO HABILITAR COBROS\nTE-TO-KA SOLUTIONS LLC / TE-TO-KA MASS\nPOLÍTICA DE CANCELACIONES Y REEMBOLSOS DE COMPLEMENTOS MASS\nVersión de trabajo: 1.0 (NO REGISTRADA NI APROBADA)\nDocumento vinculado: Contrato General de Complementos MASS\n\n1. ALCANCE\nEsta propuesta regula solicitudes de cancelación y reembolso relativas a MI EQUIPO MASS y PUNTOS MASS PRO, cuando hayan sido ofrecidos y contratados válidamente. Ninguna frase implica que los productos estén actualmente habilitados, que se haya recibido un pago real o que existan derechos activos.\n\n2. PRESENTACIÓN ANTES DEL PAGO\nAntes de realizar un desembolso, el organizador deberá poder consultar y conservar el contrato aplicable, el paquete elegido, su capacidad, la duración mensual, ausencia de renovación automática, moneda e importe total, impuestos aplicables cuando correspondan y esta política. La previsualización de una oferta no genera un cargo ni una aceptación final por sí misma.\n\n3. SOLICITUD SIN PAGO ACREDITADO\nUna solicitud pendiente de pago que no haya generado fondos efectivamente acreditados podrá cancelarse según el procedimiento comercial sin generar un reembolso ficticio. La carga de un comprobante o su rechazo no prueba por sí sola la recepción o ausencia de fondos.\n\n4. PAGO ACREDITADO SIN ACTIVACIÓN\nCuando el pago haya sido efectivamente acreditado y no se haya activado ningún derecho, si el organizador decide no aceptar las condiciones contractuales requeridas, podrá solicitar la cancelación y la devolución íntegra del importe efectivamente pagado y acreditado para esa adquisición. La verificación se realizará contra la adquisición, el pago, la evidencia de acreditación y la inexistencia de activación.\n\n5. PAGO O COMPROBANTE DISPUTADO\nSi un comprobante fue rechazado, hubo un pago duplicado, un importe incorrecto o una inconsistencia de conciliación, TE-TO-KA investigará si recibió fondos reales. Si procede un reembolso, éste se calculará sobre los importes comprobados, sin crear saldos, aprobaciones o transferencias ficticias.\n\n6. DESPUÉS DE LA ACTIVACIÓN\nLas reclamaciones posteriores al inicio efectivo del servicio se evaluarán individualmente según la prestación realizada, fallas, interrupciones atribuibles al proveedor, derechos irrenunciables y reglas aplicables. No se establece una prohibición general de reembolso una vez activado el complemento.\n\n7. RENOVACIÓN Y VENCIMIENTO\nLos complementos se contratan por períodos mensuales sin renovación ni cargos automáticos. No contratar una renovación no genera por sí solo un cobro, ni un reembolso de un período ya prestado. La cancelación de una renovación ya pagada se resolverá atendiendo a su estado de activación y las reglas anteriores.\n\n8. CANAL DE SOLICITUD\nEl organizador podrá presentar la solicitud mediante los canales oficiales de soporte publicados por TE-TO-KA MASS, identificando la adquisición y describiendo el motivo. TE-TO-KA solicitará únicamente información necesaria para la identificación, conciliación y cumplimiento legal; no exigirá datos sensibles innecesarios. Para consultas y reclamaciones puede utilizarse el correo oficial soportesorteospro@tetokamass.com, cuyo envío y recepción fueron comprobados en QA. El procedimiento formal de reembolso y los canales obligatorios adicionales deberán confirmarse antes del lanzamiento. No se solicitarán contraseñas, códigos de verificación ni datos bancarios completos por correo.\n\n9. REVISIÓN, DECISIÓN Y EVIDENCIA\nLa solicitud se registrará con referencia verificable, fecha, identidad del solicitante, adquisición y motivo. La decisión corresponderá al personal autorizado conforme a los controles internos. Deben preservarse las razones, evidencia de acreditación, estado de los derechos y auditoría. Si el reembolso procede, se registrará su autorización y ejecución efectiva por separado; el cambio de estado de una fila no significa que se haya enviado dinero.\n\n10. MEDIO Y MONEDA DEL REEMBOLSO\nComo criterio propuesto, el reembolso se hará por el mismo medio y en la moneda de pago original cuando sea legal y operativamente posible. Si no puede utilizarse ese medio, cualquier alternativa deberá estar permitida por las normas aplicables y aceptada de manera expresa cuando sea necesario. No se impondrán créditos internos, monederos o beneficios MASS en sustitución de dinero sin una base válida. Los ajustes de tipo de cambio y comisiones solo podrán aplicarse conforme a términos divulgados y a la ley; no se inventarán importes.\n\n11. PLAZOS Y COMUNICACIÓN\nComo objetivos operativos aprobados internamente para este borrador: TE-TO-KA confirmará la recepción de la solicitud dentro de 1 día hábil; resolverá la solicitud dentro de 5 días hábiles una vez recibida la evidencia necesaria; y, si autoriza el reembolso, emitirá la devolución dentro de los 3 días hábiles adicionales siguientes. El tiempo para que el banco o proveedor de pago acredite efectivamente los fondos se informará por separado y no se confundirá con la orden de devolución. Estos objetivos están sujetos a revisión jurídica, y no sustituyen los plazos y derechos obligatorios más favorables que correspondan. Esta política sigue siendo un borrador no publicado.\n\n12. RECLAMACIONES Y DERECHOS LEGALES\nEl organizador podrá acudir a los canales de reclamación y mecanismos legales disponibles sin que la revisión interna implique renuncia de derechos, plazos o acciones. Las disposiciones de protección del consumidor y otras normas obligatorias prevalecerán en las circunstancias en que resulten aplicables. Cualquier relación comercial empresarial y cualquier consumidor deberán clasificarse correctamente antes de aplicar las reglas respectivas.\n\n13. PRIVACIDAD Y CONSERVACIÓN\nLa documentación de solicitudes, conciliaciones, decisiones y ejecución del reembolso se conservará de forma segura por los plazos aprobados y legalmente exigibles, con acceso restringido y eliminación o anonimización cuando proceda. No se establece una retención indefinida.\n\n14. VIGENCIA Y APROBACIÓN\nEsta política no entra en vigor mediante su mera preparación. Requiere revisión jurídica y operativa, definición explícita de plazos y canales, aprobación interna, publicación oficial y vinculación a las pantallas previas al pago. Ninguna de esas acciones se considera completada por este borrador.\n\nFIN DEL BORRADOR.";
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:880px;margin:12px auto;padding:18px;text-align:left;line-height:1.55";
+
+    const encabezado = document.createElement("h3");
+    encabezado.textContent =
+        "📄 Complementos MASS · Política de cancelaciones y reembolsos";
+
+    const aviso = document.createElement("p");
+    aviso.textContent =
+        "DOCUMENTO DE TRABAJO — NO REGISTRADO, NO APROBADO Y NO PUBLICADO. " +
+        "El contenido procede del borrador BJ-124 y añade los plazos operativos " +
+        "aprobados (1, 5 y 3 días hábiles) y el correo de soporte confirmado. " +
+        "No habilita cobros ni constituye una política vigente.";
+    aviso.style.cssText = "color:#ffd966;white-space:pre-wrap";
+
+    const etiqueta = document.createElement("label");
+    etiqueta.textContent = "Texto íntegro del borrador — 14 secciones";
+    etiqueta.style.cssText = "display:block;font-weight:700;margin:16px 0 8px";
+
+    const texto = document.createElement("textarea");
+    texto.readOnly = true;
+    texto.rows = 23;
+    texto.value = politica;
+    texto.setAttribute("aria-label","Texto completo de la política de reembolsos");
+    texto.style.cssText =
+        "display:block;box-sizing:border-box;width:100%;min-height:420px;" +
+        "padding:14px;resize:vertical";
+    etiqueta.appendChild(texto);
+
+    const pendientes = document.createElement("p");
+    pendientes.textContent =
+        "Pendiente antes de publicar: validación jurídica por territorio; " +
+        "tratamiento fiscal; reglas de privacidad y conservación; " +
+        "integración de esta política al consentimiento previo al pago. " +
+        "Los cambios futuros deberán gestionarse en el Centro Jurídico MASS.";
+    pendientes.style.cssText = "color:#ffd966;line-height:1.6";
+
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Centro Jurídico MASS";
+    volver.addEventListener("click", () => mostrarCentroJuridicoMassPM06());
+
+    vista.append(encabezado,aviso,etiqueta,pendientes,volver);
+    raiz.replaceChildren(vista);
 }
 </script>
 
