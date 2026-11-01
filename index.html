@@ -121209,6 +121209,44 @@ async function mostrarPreviaComplementosBJ123() {
     catalogoBoton.textContent = "🔄 Consultar catálogo oficial";
     const avisoCatalogo = document.createElement("p");
     avisoCatalogo.textContent = "Consulta informativa. Los paquetes no se pueden contratar ni pagar desde esta pantalla.";
+
+    // BJ-124-P-01: diseño visible de desglose fiscal en checkout.
+    // No se calculan tasas ni se infiere exención sin cotización fiscal verificable.
+    const resumenFiscal = document.createElement("section");
+    resumenFiscal.style.cssText =
+        "border:1px solid #777;border-radius:12px;padding:14px;margin:12px 0;text-align:left";
+    const tituloFiscal = document.createElement("h4");
+    tituloFiscal.textContent = "🧾 Vista previa del checkout — Impuestos";
+    const notaFiscal = document.createElement("p");
+    notaFiscal.textContent =
+        "Diseño informativo; no es una cotización. " +
+        "El importe definitivo se conocerá al calcular los impuestos aplicables " +
+        "por ubicación, tipo de complemento y situación fiscal. " +
+        "Si no corresponde impuesto deberá acreditarse esa condición. " +
+        "Si no puede determinarse, la compra permanecerá bloqueada.";
+    notaFiscal.style.cssText = "color:#ffd966;font-size:13px;line-height:1.6";
+    const filasFiscales = [
+        ["Subtotal del complemento", "Según paquete y moneda"],
+        ["IVA / Sales tax aplicable", "Pendiente de determinación"],
+        ["Total final a pagar", "No disponible todavía"]
+    ];
+    filasFiscales.forEach(([concepto, importe]) => {
+        const fila = document.createElement("div");
+        fila.style.cssText = "display:flex;gap:12px;justify-content:space-between;" +
+            "flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #555";
+        const nombre = document.createElement("span");
+        nombre.textContent = concepto;
+        const cantidad = document.createElement("strong");
+        cantidad.textContent = importe;
+        fila.append(nombre, cantidad);
+        resumenFiscal.appendChild(fila);
+    });
+    const cierreFiscal = document.createElement("p");
+    cierreFiscal.textContent =
+        "🔒 Checkout bloqueado hasta contar con precio, impuesto y total final " +
+        "calculados y guardados con trazabilidad. No se realizará ningún cobro.";
+    resumenFiscal.prepend(tituloFiscal, notaFiscal);
+    resumenFiscal.appendChild(cierreFiscal);
     // BJ-124-G: contacto de soporte verificado, sin publicar políticas jurídicas.
     const avisoSoporte = document.createElement("p");
     avisoSoporte.textContent = "¿Necesitas ayuda con Complementos MASS? Contacta al soporte oficial: ";
@@ -121222,7 +121260,8 @@ async function mostrarPreviaComplementosBJ123() {
     avisoPrivacidadSoporte.textContent = "No compartas contraseñas, códigos de verificación ni datos bancarios completos por correo.";
     avisoPrivacidadSoporte.style.cssText = "font-size:13px;opacity:.85";
     const bloqueCatalogo = document.createElement("div");
-    bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, avisoSoporte, avisoPrivacidadSoporte,
+    bloqueCatalogo.append(catalogoTitulo, avisoCatalogo, resumenFiscal,
+        avisoSoporte, avisoPrivacidadSoporte,
         catalogoBoton, catalogoEstado, catalogoLista);
     const bloqueTecnico = document.createElement("details");
     const resumenTecnico = document.createElement("summary");
@@ -121348,7 +121387,10 @@ async function mostrarPreviaComplementosBJ123() {
                         agregar("Producto", oferta.producto_nombre);
                         agregar("Paquete", oferta.paquete_nombre);
                         agregar("Capacidad", oferta.capacidad);
-                        agregar("Importe informativo", String(oferta.monto) + " " + String(oferta.moneda));
+                        agregar("Subtotal informativo (sin impuesto calculado)",
+                            String(oferta.monto) + " " + String(oferta.moneda));
+                        agregar("IVA / Sales tax", "Pendiente de determinación fiscal");
+                        agregar("Total final a pagar", "No disponible; checkout bloqueado");
                         agregar("Vigencia", "1 mes calendario, sin renovación automática");
                         agregar("Contrato", String(oferta.documento_titulo) + " · " + String(oferta.documento_version));
                         agregar("SHA-256", oferta.documento_hash);
@@ -121360,7 +121402,11 @@ async function mostrarPreviaComplementosBJ123() {
                         contratoTexto.style.cssText = "display:block;width:100%;box-sizing:border-box;min-height:240px";
                         contratoTexto.value = String(oferta.documento_contenido || "");
                         const avisoFinal = document.createElement("p");
-                        avisoFinal.textContent = "🔒 El importe definitivo se confirmará en el alta. Esta previsualización no inicia una contratación ni un pago.";
+                        avisoFinal.textContent =
+                            "🔒 Subtotal de referencia, NO precio final. Para contratar será " +
+                            "necesaria una cotización fiscal válida y un total definitivo " +
+                            "en la moneda seleccionada antes de confirmar. " +
+                            "Esta pantalla no permite pagos.";
                         resultadoOferta.append(contratoTitulo, contratoTexto, avisoFinal);
                         estadoOferta.textContent = "✅ Oferta y contrato presentados. Sin operaciones comerciales.";
                     } catch (_error) {
@@ -121423,7 +121469,10 @@ async function mostrarPreviaComplementosBJ123() {
             add("Producto", data.producto_nombre);
             add("Paquete", data.paquete_nombre);
             add("Capacidad", data.capacidad);
-            add("Importe total", String(data.monto_total) + " " + String(data.moneda));
+            add("Importe registrado (sin desglose fiscal)",
+                String(data.monto_total) + " " + String(data.moneda));
+            add("Impuestos", "No determinados en esta consulta histórica");
+            add("Total final con impuestos", "No disponible en esta pantalla");
             add("Duración", String(data.duracion_meses) + " mes calendario");
             add("Renovación automática", "No");
             add("Documento", String(data.documento_titulo) + " · " + String(data.documento_version));
