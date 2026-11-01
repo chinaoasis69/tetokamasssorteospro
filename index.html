@@ -122155,11 +122155,150 @@ async function mostrarCentroJuridicoMassPM06() {
         mostrarPoliticaReembolsosComplementosMassBJ124O();
     });
 
+    // BJ-124-P-04-E: acceso interno al catálogo QA, sin nueva tarjeta de menú.
+    const qaPrecios = document.createElement("button");
+    qaPrecios.type = "button";
+    qaPrecios.textContent = "🔬 QA Súper Admin · Ver precios de Complementos MASS";
+    qaPrecios.style.cssText = "margin:12px 0";
+    qaPrecios.addEventListener("click", () => {
+        mostrarPreciosComplementosSuperAdminBJ124();
+    });
+    const qaLeyenda = document.createElement("p");
+    qaLeyenda.style.cssText = "font-size:13px;color:#ffd966";
+    qaLeyenda.textContent = "Consulta de paquetes reales, incluso deshabilitados. " +
+        "Sin contrataciones, impuestos calculados ni cobros.";
+
     vista.append(
         titulo, intro, modulo, nota, lista, politica,
-        pendiente, detalles, volver
+        qaPrecios, qaLeyenda, pendiente, detalles, volver
     );
     raiz.replaceChildren(vista);
+}
+
+// BJ-124-P-04-E: la prueba de precios también es accesible desde Súper Admin.
+// No utiliza el panel Organizador, UUID de adquisición ni activa paquetes.
+async function mostrarPreciosComplementosSuperAdminBJ124() {
+    if (!(await verificarAccesoSuperAdmin())) return;
+    if (localStorage.getItem("admin_rol") !== "super_admin") return;
+    const raiz = document.getElementById("superAdminContenido");
+    const panel = document.getElementById("panelSuperAdmin");
+    if (!raiz || !panel || panel.style.display === "none") return;
+
+    const vista = document.createElement("section");
+    vista.className = "card";
+    vista.style.cssText =
+        "max-width:860px;margin:12px auto;padding:20px;text-align:left;overflow-wrap:anywhere";
+    const titulo = document.createElement("h3");
+    titulo.textContent = "🔬 QA Súper Admin · Precios de Complementos MASS";
+    const explicacion = document.createElement("p");
+    explicacion.textContent =
+        "Catálogo auténtico de Supabase, incluidos paquetes deshabilitados. " +
+        "Precios comerciales sin impuestos. No constituye cotización, " +
+        "no habilita compras ni crea adquisiciones o pagos.";
+    const actualizar = document.createElement("button");
+    actualizar.type = "button";
+    actualizar.textContent = "🔄 Consultar catálogo de prueba";
+    const volver = document.createElement("button");
+    volver.type = "button";
+    volver.textContent = "← Volver al Centro Jurídico MASS";
+    volver.style.marginLeft = "8px";
+    volver.addEventListener("click", () => mostrarCentroJuridicoMassPM06());
+    const estado = document.createElement("p");
+    estado.setAttribute("role", "status");
+    estado.setAttribute("aria-live", "polite");
+    const lista = document.createElement("div");
+    lista.style.cssText = "display:grid;gap:12px;margin:12px 0";
+    vista.append(titulo, explicacion, actualizar, volver, estado, lista);
+    raiz.replaceChildren(vista);
+
+    let ocupado = false;
+    async function consultarCatalogoQA() {
+        if (ocupado || !vista.isConnected) return;
+        ocupado = true;
+        actualizar.disabled = true;
+        estado.textContent = "Consultando precios oficiales en modo QA...";
+        lista.replaceChildren();
+        try {
+            const {data, error} = await supabaseClient.rpc(
+                "consultar_catalogo_complementos_qa_bj124_super_admin_seguro"
+            );
+            if (!vista.isConnected) return;
+            if (error || data?.ok !== true ||
+                data?.codigo !== "CATALOGO_QA_SUPER_ADMIN" ||
+                data?.qa_solo_super_admin !== true ||
+                data?.solo_lectura !== true ||
+                data?.checkout_habilitado !== false ||
+                data?.pago_habilitado !== false ||
+                data?.adquisicion_generada !== false ||
+                !Array.isArray(data?.paquetes)) {
+                estado.textContent = "🔒 Catálogo QA no disponible (" +
+                    String(data?.codigo || error?.code || "NO_AUTORIZADO") +
+                    "). No se permite contratar ni pagar.";
+                return;
+            }
+
+            if (data.paquetes.length === 0) {
+                estado.textContent = "No hay paquetes registrados en el catálogo.";
+                return;
+            }
+            for (const paquete of data.paquetes) {
+                const tarjeta = document.createElement("section");
+                tarjeta.className = "card";
+                tarjeta.style.cssText = "padding:12px;margin:0;text-align:left";
+                const nombre = document.createElement("h4");
+                nombre.textContent = String(paquete.producto_nombre || "Complemento MASS");
+                const detalle = document.createElement("p");
+                detalle.textContent =
+                    String(paquete.paquete_nombre || "") + " · " +
+                    String(paquete.paquete_codigo || "") + " · Versión " +
+                    String(paquete.paquete_version ?? "—");
+                const capacidad = document.createElement("p");
+                capacidad.textContent = "Capacidad: " +
+                    String(paquete.capacidad ?? "—") +
+                    " · Vigencia: " + String(paquete.duracion_meses ?? "—") +
+                    " mes · Renovación automática: No";
+                const usd = Number(paquete.precio_usd);
+                const subtotalUSD = document.createElement("p");
+                subtotalUSD.textContent = "Subtotal comercial USD: " +
+                    (Number.isFinite(usd) && usd > 0
+                        ? usd.toFixed(2) + " USD"
+                        : "No disponible");
+                const mxn = paquete.precio_mxn === null ?
+                    NaN : Number(paquete.precio_mxn);
+                const subtotalMXN = document.createElement("p");
+                subtotalMXN.textContent = "Subtotal informativo MXN: " +
+                    (paquete.fx_disponible === true &&
+                     Number.isFinite(mxn) && mxn > 0
+                        ? mxn.toFixed(2) + " MXN"
+                        : "No disponible (FX pendiente)");
+                const habilitado =
+                    paquete.producto_activo === true &&
+                    paquete.producto_visible === true &&
+                    paquete.paquete_activo === true &&
+                    paquete.paquete_visible === true;
+                const disponibilidad = document.createElement("p");
+                disponibilidad.textContent = habilitado
+                    ? "Catálogo habilitado; esta pantalla QA no permite contratar."
+                    : "🔒 Producto o paquete inactivo u oculto para contratación.";
+                const fiscal = document.createElement("p");
+                fiscal.textContent = "IVA / Sales tax: pendiente de determinación. " +
+                    "Total definitivo: no disponible. Sin cobros.";
+                tarjeta.append(nombre, detalle, capacidad,
+                    subtotalUSD, subtotalMXN, disponibilidad, fiscal);
+                lista.appendChild(tarjeta);
+            }
+            estado.textContent = "✅ " + String(data.paquetes.length) +
+                " paquetes consultados desde Supabase. Solo lectura, sin pagos.";
+        } catch (_error) {
+            if (vista.isConnected) estado.textContent =
+                "🔒 No fue posible consultar el catálogo QA. Sin pagos.";
+        } finally {
+            ocupado = false;
+            if (actualizar.isConnected) actualizar.disabled = false;
+        }
+    }
+    actualizar.addEventListener("click", consultarCatalogoQA);
+    await consultarCatalogoQA();
 }
 </script>
 
