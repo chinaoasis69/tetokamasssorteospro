@@ -119242,6 +119242,22 @@ async function mostrarEditorPerfilLegalMass(resultado) {
     panel.appendChild(guardar);
     cont.replaceChildren(panel);
 
+    // PL-DOC-03: documentación privada vinculada al perfil del propietario.
+    window.massMontarDocumentosPerfilLegalPLD03({
+        contenedor: panel,
+        perfilLegalId: resultado.perfil_legal_id,
+        organizadorId,
+        actualizadoEn,
+        modo: "propietario",
+        onRecargar: abrirPerfilLegalMASS,
+        contextoVigente: () => organizadorId === obtenerOrganizadorPerfilLegalMass(),
+        hayCambiosSinGuardar: () => Object.keys(nombres).some(clave => {
+            const control = document.getElementById(clave === "pais_codigo_iso2"
+                ? "massLegalPais" : "massLegalEditar_" + clave);
+            return control && String(control.value).trim() !== String(original[clave] ?? "").trim();
+        })
+    });
+
 // =====================================================
 // PLAN-MASS-DERECHOS-P34-F6-F5-F1
 // INDICACIONES DE CORRECCION PRIVADAS - MI PERFIL LEGAL
@@ -119564,8 +119580,8 @@ async function mostrarPerfilesLegalesSuperAdminMass() {
 
     const descripcion = document.createElement("p");
     descripcion.textContent =
-        "Solicitudes de identidad legal. Esta pantalla es de solo consulta; " +
-        "todavía no aprueba ni rechaza perfiles.";
+        "Solicitudes de identidad legal. Abre un expediente para revisar los datos, " +
+        "consultar sus documentos y registrar una decisión.";
     descripcion.style.color = "#bbb";
 
     const filtros = document.createElement("div");
@@ -119730,7 +119746,7 @@ async function mostrarDetallePerfilLegalSuperAdminMass(perfilLegalId) {
 
     const advertencia = document.createElement("p");
     advertencia.textContent =
-        "Información privada. Consulta administrativa; esta pantalla no aprueba ni rechaza perfiles.";
+        "Información privada. Revisa los datos y documentos antes de registrar una decisión sobre la identidad.";
     advertencia.style.cssText = "font-size:14px;color:#bbb;line-height:1.5";
 
     const regresar = document.createElement("button");
@@ -119840,6 +119856,16 @@ async function mostrarDetallePerfilLegalSuperAdminMass(perfilLegalId) {
             contenido.appendChild(acordeon);
         }
 
+        // PL-DOC-03: revisión del conjunto documental y versión del perfil mostrado.
+        window.massMontarDocumentosPerfilLegalPLD03({
+            contenedor: contenido,
+            perfilLegalId: id,
+            organizadorId: data.organizador_id,
+            actualizadoEn: data.actualizado_en,
+            modo: "revision",
+            onRecargar: () => mostrarDetallePerfilLegalSuperAdminMass(id)
+        });
+
 // =====================================================
 // PLAN-MASS-DERECHOS-P34-F8-F1
 // BOTON INICIAR REVISION - DETALLE LEGAL SUPER ADMIN
@@ -119939,207 +119965,7 @@ if (data.estado_verificacion === "pendiente") {
     });
 }
 
-// =====================================================
-// PLAN-MASS-DERECHOS-P34-F8-F2
-// APROBACION PRIVADA DE PERFIL LEGAL - SUPER ADMIN
-// Ubicar DENTRO de mostrarDetallePerfilLegalSuperAdminMass,
-// DESPUES del bloque P34-F8-F1 y ANTES del catch externo.
-// No modificar los Guardianes ni otras funciones.
-// =====================================================
-if (data.estado_verificacion === "en_revision") {
-    const seccionAprobacionLegal = document.createElement("section");
-    seccionAprobacionLegal.id = "massLegalAprobacionSuperAdmin";
-    seccionAprobacionLegal.style.cssText =
-        "border:1px solid #457c45;border-radius:12px;" +
-        "padding:16px;margin-top:20px;background:#0c180e";
-
-    const tituloAprobacionLegal = document.createElement("h3");
-    tituloAprobacionLegal.textContent = "✅ Verificar identidad legal";
-    tituloAprobacionLegal.style.cssText = "color:#91ff91;margin:0 0 10px";
-
-    const avisoAprobacionLegal = document.createElement("p");
-    avisoAprobacionLegal.textContent =
-        "Únicamente después de comprobar la evidencia auténtica. " +
-        "Esta decisión verifica identidad, NO otorga permisos para organizar sorteos. " +
-        "No escribas documentos completos ni números de identificación sensibles.";
-    avisoAprobacionLegal.style.cssText =
-        "color:#ddd;font-size:14px;line-height:1.5;white-space:pre-wrap";
-
-    const etiquetaMetodoLegal = document.createElement("label");
-    etiquetaMetodoLegal.textContent = "Método de verificación (2–120 caracteres)";
-    etiquetaMetodoLegal.style.cssText = "display:block;margin:12px 0;color:#eee";
-    const metodoLegal = document.createElement("input");
-    metodoLegal.type = "text";
-    metodoLegal.id = "massLegalMetodoVerificacionSuperAdmin";
-    metodoLegal.maxLength = 120;
-    metodoLegal.autocomplete = "off";
-    metodoLegal.placeholder = "Ej.: cotejo_documental";
-    metodoLegal.style.cssText =
-        "display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px";
-    etiquetaMetodoLegal.appendChild(metodoLegal);
-
-    const etiquetaReferenciaLegal = document.createElement("label");
-    etiquetaReferenciaLegal.textContent =
-        "Referencia interna de evidencia (6–300 caracteres)";
-    etiquetaReferenciaLegal.style.cssText = "display:block;margin:12px 0;color:#eee";
-    const referenciaLegal = document.createElement("input");
-    referenciaLegal.type = "text";
-    referenciaLegal.id = "massLegalReferenciaVerificacionSuperAdmin";
-    referenciaLegal.maxLength = 300;
-    referenciaLegal.autocomplete = "off";
-    referenciaLegal.placeholder = "Folio interno, sin datos personales completos";
-    referenciaLegal.style.cssText =
-        "display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px";
-    etiquetaReferenciaLegal.appendChild(referenciaLegal);
-
-    const etiquetaConfirmacionLegal = document.createElement("label");
-    etiquetaConfirmacionLegal.style.cssText =
-        "display:flex;gap:9px;align-items:flex-start;margin:16px 0;color:#eee;" +
-        "font-size:14px;line-height:1.5;cursor:pointer";
-    const confirmacionLegal = document.createElement("input");
-    confirmacionLegal.type = "checkbox";
-    confirmacionLegal.id = "massLegalEvidenciaConfirmadaSuperAdmin";
-    confirmacionLegal.style.cssText = "margin-top:4px;flex-shrink:0";
-    const textoConfirmacionLegal = document.createElement("span");
-    textoConfirmacionLegal.textContent =
-        "Confirmo que revisé evidencia auténtica, verifiqué la identidad " +
-        "y estoy autorizado a decidir sobre este expediente.";
-    etiquetaConfirmacionLegal.append(confirmacionLegal, textoConfirmacionLegal);
-
-    const botonAprobarLegal = document.createElement("button");
-    botonAprobarLegal.type = "button";
-    botonAprobarLegal.id = "massLegalAprobarPerfilSuperAdmin";
-    botonAprobarLegal.textContent = "✅ Aprobar identidad legal";
-    botonAprobarLegal.style.cssText =
-        "padding:12px 16px;border:2px solid #39ff14;" +
-        "border-radius:10px;cursor:pointer;max-width:100%";
-
-    const estadoAprobacionLegal = document.createElement("p");
-    estadoAprobacionLegal.setAttribute("role", "status");
-    estadoAprobacionLegal.style.cssText =
-        "color:#e3e3e3;white-space:pre-wrap;overflow-wrap:anywhere;" +
-        "font-size:14px;line-height:1.5";
-
-    seccionAprobacionLegal.append(
-        tituloAprobacionLegal,
-        avisoAprobacionLegal,
-        etiquetaMetodoLegal,
-        etiquetaReferenciaLegal,
-        etiquetaConfirmacionLegal,
-        botonAprobarLegal,
-        estadoAprobacionLegal
-    );
-    contenido.appendChild(seccionAprobacionLegal);
-
-    botonAprobarLegal.addEventListener("click", async () => {
-        if (!vista.isConnected || botonAprobarLegal.disabled) return;
-
-        if (!data.actualizado_en || data.perfil_legal_id !== id) {
-            estadoAprobacionLegal.textContent =
-                "❌ La versión o identidad del expediente no es válida. Vuelve a abrirlo.";
-            return;
-        }
-
-        const metodo = metodoLegal.value.trim();
-        const referencia = referenciaLegal.value.trim();
-        if (metodo.length < 2 || metodo.length > 120) {
-            estadoAprobacionLegal.textContent =
-                "⚠️ Escribe un método de verificación de 2 a 120 caracteres.";
-            return;
-        }
-        if (referencia.length < 6 || referencia.length > 300) {
-            estadoAprobacionLegal.textContent =
-                "⚠️ Escribe una referencia interna de 6 a 300 caracteres.";
-            return;
-        }
-        if (!confirmacionLegal.checked) {
-            estadoAprobacionLegal.textContent =
-                "⚠️ Confirma que revisaste la evidencia auténtica antes de aprobar.";
-            return;
-        }
-
-        if (!confirm(
-            "¿CONFIRMAS aprobar la identidad legal de este expediente? " +
-            "Esta decisión quedará auditada. No concede permisos de sorteos."
-        )) return;
-
-        botonAprobarLegal.disabled = true;
-        botonAprobarLegal.textContent = "⏳ Verificando identidad...";
-        estadoAprobacionLegal.textContent = "Validando la decisión en Supabase...";
-
-        try {
-            if (!(await verificarAccesoSuperAdmin())) {
-                if (vista.isConnected) {
-                    estadoAprobacionLegal.textContent = "❌ Acceso no autorizado.";
-                }
-                return;
-            }
-            if (!vista.isConnected) return;
-
-            const { data: aprobacion, error: errorAprobacion } =
-                await supabaseClient.rpc(
-                    "aprobar_perfil_legal_super_admin_seguro",
-                    {
-                        p_perfil_legal_id: id,
-                        p_actualizado_en_esperado: data.actualizado_en,
-                        p_verificacion_metodo: metodo,
-                        p_verificacion_referencia: referencia
-                    }
-                );
-
-            if (!vista.isConnected) return;
-
-            if (!errorAprobacion &&
-                aprobacion?.ok === true &&
-                aprobacion.codigo === "PERFIL_LEGAL_VERIFICADO" &&
-                aprobacion.perfil_legal_id === id &&
-                aprobacion.organizador_id === data.organizador_id &&
-                aprobacion.estado_verificacion === "verificado") {
-                // Limpiar la referencia sensible antes de reemplazar la vista.
-                metodoLegal.value = "";
-                referenciaLegal.value = "";
-                confirmacionLegal.checked = false;
-                await mostrarDetallePerfilLegalSuperAdminMass(id);
-                return;
-            }
-
-            const codigo = aprobacion?.codigo;
-            if (codigo === "DATOS_LEGALES_INCOMPLETOS") {
-                const faltantes = Array.isArray(aprobacion.campos_faltantes)
-                    ? aprobacion.campos_faltantes.join(", ") : "datos obligatorios";
-                estadoAprobacionLegal.textContent =
-                    "⚠️ El expediente está incompleto: " + faltantes + ".";
-            } else {
-                estadoAprobacionLegal.textContent =
-                    codigo === "AUTOREVISION_NO_PERMITIDA"
-                        ? "❌ No puedes verificar tu propio expediente ni uno de un organizador vinculado a ti."
-                    : codigo === "VERSION_DESACTUALIZADA"
-                        ? "ℹ️ El expediente cambió. Vuelve a abrirlo antes de decidir."
-                    : codigo === "TRANSICION_NO_PERMITIDA"
-                        ? "ℹ️ El expediente ya no está en revisión. Actualiza la lista."
-                    : codigo === "YA_VERIFICADO"
-                        ? "ℹ️ El expediente ya fue verificado. Actualiza la vista."
-                    : codigo === "NO_AUTORIZADO"
-                        ? "❌ Acceso no autorizado."
-                    : "❌ No se pudo confirmar la verificación. Revisa el expediente e inténtalo de nuevo.";
-            }
-            if (errorAprobacion) {
-                // Nunca registrar en consola el método ni la referencia interna.
-                console.error("ERROR DE APROBACIÓN LEGAL:", errorAprobacion.code);
-            }
-        } catch (_error) {
-            if (vista.isConnected) {
-                estadoAprobacionLegal.textContent =
-                    "❌ Error inesperado al verificar la identidad legal.";
-            }
-        } finally {
-            if (botonAprobarLegal.isConnected) {
-                botonAprobarLegal.disabled = false;
-                botonAprobarLegal.textContent = "✅ Aprobar identidad legal";
-            }
-        }
-    });
-}
+// PL-DOC-03: la aprobación con documentos está integrada en el bloque privado anterior.
 
 // =====================================================
 // PLAN-MASS-DERECHOS-P34-F8-F3
@@ -122899,5 +122725,327 @@ async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
 }
 </script>
 
+<script>
+// PL-DOC-03 · Mi Perfil Legal / Expediente Súper Admin. Backend PL-DOC-02.
+// Archivos solo por Storage autenticado. Sin URL pública, URL firmada ni caché persistente.
+(function () {
+    'use strict';
+    const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const BUCKET = 'perfil-legal-documentos';
+    const LIMIT = 10485760;
+    const TYPES = { identificacion: 'Identificación', domicilio: 'Comprobante de domicilio', representacion: 'Representación', otro: 'Otro documento solicitado' };
+    const EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif', 'application/pdf': 'pdf' };
+    const MESSAGES = {
+        SIN_AUTORIZACION_DOCUMENTOS: 'Tu cuenta no tiene acceso a los documentos de este expediente.',
+        NO_AUTORIZADO: 'Tu cuenta no está autorizada para esta acción.',
+        SESION_CAMBIO: 'La sesión cambió. Vuelve a abrir el expediente.',
+        GUARDA_PERFIL: 'Guarda primero los cambios del Perfil Legal y vuelve a subir el documento.',
+        ARCHIVO_INVALIDO: 'Selecciona un PDF o una imagen JPEG, PNG, WebP, HEIC o HEIF válida.',
+        ARCHIVO_GRANDE: 'El archivo debe tener contenido y pesar como máximo 10 MB.',
+        TIPO_REQUERIDO: 'Selecciona qué documento vas a subir.',
+        ARCHIVO_AUN_NO_CARGADO: 'La carga aún no está completa. Reintenta subir el archivo o retira esta reserva.',
+        ARCHIVO_NO_COINCIDE_CON_RESERVA: 'El archivo recibido no coincide con la carga preparada. Retíralo y vuelve a subirlo.',
+        RESERVA_DOCUMENTO_NO_VIGENTE: 'La reserva venció. Retírala del listado y vuelve a seleccionar el archivo.',
+        LIMITE_DOCUMENTOS: 'Llegaste al límite de 6 documentos o cargas. Retira y elimina una carga anterior.',
+        LIMITE_INTENTOS_DOCUMENTOS: 'Se alcanzó el límite de intentos de esta hora. Intenta más tarde.',
+        ESTADO_PERFIL_NO_PERMITE_CARGA: 'El estado actual del perfil no permite nuevas cargas.',
+        DOCUMENTO_VINCULADO_A_VERIFICACION: 'Este documento está vinculado a una verificación y no se puede retirar desde aquí.',
+        DOCUMENTO_NO_DISPONIBLE: 'El documento ya no está disponible. Actualiza el listado.',
+        DOCUMENTOS_CAMBIARON_O_FALTAN: 'Los documentos cambiaron o faltan. Actualiza y revisa el listado completo.',
+        CARGAS_PENDIENTES: 'Hay cargas pendientes. Deben finalizarse o retirarse antes de aprobar.',
+        AUTOREVISION_NO_PERMITIDA: 'No puedes verificar tu propio expediente ni uno de un organizador vinculado a ti.',
+        VERSION_DESACTUALIZADA: 'El perfil cambió. Vuelve a abrir el expediente para revisar los datos actuales.',
+        DATOS_LEGALES_INCOMPLETOS: 'Faltan datos del perfil. Consulta identidad, ubicación, atención y privacidad.',
+        TRANSICION_NO_PERMITIDA: 'El estado del expediente cambió. Vuelve a abrirlo.',
+        YA_VERIFICADO: 'Este perfil ya fue verificado. Vuelve a abrirlo.',
+        REVISA_DOCUMENTOS: 'Abre cada documento, compruébalo y marca su revisión antes de aprobar.',
+        CONFIRMA_REVISION: 'Confirma que revisaste evidencia auténtica y estás autorizado a decidir.',
+        RESPUESTA_INVALIDA: 'No se pudo confirmar la respuesta del expediente. Vuelve a abrirlo.',
+        ELIMINA_PRIMERO_EL_ARCHIVO_POR_STORAGE: 'El archivo sigue pendiente de eliminación. Pulsa «Completar eliminación».',
+        RED_DOCUMENTOS: 'No se pudo completar la operación. Revisa tu conexión y vuelve a intentar.'
+    };
+    function fail(code) { const e = new Error(code); e.massCode = code; return e; }
+    function codeOf(e) {
+        const raw = String(e?.massCode || e?.message || e?.codigo || '');
+        return Object.keys(MESSAGES).find(k => raw.includes(k)) || 'RED_DOCUMENTOS';
+    }
+    function el(tag, text, cls) {
+        const n = document.createElement(tag);
+        if (text !== undefined) n.textContent = text;
+        if (cls) n.className = cls;
+        return n;
+    }
+    async function mimeOf(file) {
+        if (!file || !file.size || file.size > LIMIT) throw fail('ARCHIVO_GRANDE');
+        const b = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+        const at = (s, start = 0) => [...s].every((x, i) => b[start + i] === x.charCodeAt(0));
+        if ([137,80,78,71,13,10,26,10].every((v,i) => b[i] === v)) return 'image/png';
+        if (b[0] === 255 && b[1] === 216 && b[2] === 255) return 'image/jpeg';
+        if (at('RIFF') && at('WEBP',8)) return 'image/webp';
+        if (at('%PDF-')) return 'application/pdf';
+        if (at('ftyp',4)) {
+            const brand = String.fromCharCode(...b.slice(8,12));
+            if (['heic','heix','hevc','hevx'].includes(brand)) return 'image/heic';
+            if (['mif1','msf1','heif'].includes(brand) && /\.(heic|heif)$/i.test(file.name)) return 'image/heif';
+        }
+        throw fail('ARCHIVO_INVALIDO');
+    }
+
+    window.massMontarDocumentosPerfilLegalPLD03 = function (opts) {
+        const { contenedor, perfilLegalId, organizadorId, actualizadoEn, modo, onRecargar, hayCambiosSinGuardar, contextoVigente } = opts;
+        if (!contenedor || !UUID.test(perfilLegalId || '') || !UUID.test(organizadorId || '')) return null;
+        const reviewer = modo === 'revision';
+        const client = supabaseClient;
+        const box = el('details', undefined, 'mass-pldoc03'); box.open = true;
+        const style = el('style');
+        style.textContent = `
+        .mass-pldoc03{border:1px solid #438347;border-radius:12px;padding:15px;margin:18px 0;background:#101a13;color:#eee;text-align:left;overflow-wrap:anywhere}
+        .mass-pldoc03 summary{cursor:pointer;font-size:18px;font-weight:700;color:#9aff96}
+        .mass-pldoc03 p{line-height:1.5;font-size:14px}.mass-pldoc03 label{display:block;margin:12px 0}
+        .mass-pldoc03 select,.mass-pldoc03 input[type=file]{display:block;width:100%;box-sizing:border-box;padding:10px;margin:7px 0;color:#eee;background:#0b130e;border:1px solid #708b74;border-radius:8px}
+        .mass-pldoc03 button,.mass-pldoc03 .pldoc-download{border:1px solid #73b16f;border-radius:9px;padding:11px 14px;background:#17381d;color:#f5fff4;font-size:14px;cursor:pointer;width:auto;max-width:100%;margin:0;text-decoration:none;display:inline-block}
+        .mass-pldoc03 button:disabled{opacity:.5;cursor:not-allowed}.mass-pldoc03 button:focus-visible,.mass-pldoc03 a:focus-visible{outline:3px solid #b1ff94;outline-offset:3px}
+        .mass-pldoc03 .pldoc-actions{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+        .mass-pldoc03 .pldoc-row{border:1px solid #3c6544;border-radius:10px;padding:13px;margin:12px 0;background:#0b130f}
+        .mass-pldoc03 .pldoc-row h4{margin:0 0 8px;color:#d0ffbf}.mass-pldoc03 .pldoc-check{display:flex;align-items:flex-start;gap:9px;line-height:1.5}
+        .mass-pldoc03 input[type=checkbox]{width:18px;height:18px;flex:none;margin:2px 0;accent-color:#65df50}
+        .mass-pldoc03 .pldoc-note{color:#c3cec4}.mass-pldoc03 .pldoc-status{white-space:pre-wrap}
+        .mass-pldoc03 .pldoc-approve{border-top:1px solid #527751;margin-top:16px;padding-top:15px}
+        .mass-pldoc03 dialog{box-sizing:border-box;width:min(900px,94vw);max-height:90vh;padding:17px;border:1px solid #8fce83;border-radius:14px;background:#0e1811;color:#fff;overflow:auto}
+        .mass-pldoc03 dialog::backdrop{background:rgba(0,0,0,.8)}.mass-pldoc03 dialog img{display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:auto}
+        .mass-pldoc03 dialog iframe{display:block;border:0;width:100%;height:60vh;background:#fff}
+        .mass-pldoc03 [hidden]{display:none!important}`;
+        box.append(style, el('summary','🔐 Documentos para revisión'));
+        const note = el('p', reviewer
+            ? 'Consulta los archivos privados del expediente. La verificación de identidad no otorga permisos para organizar sorteos.'
+            : 'Sube únicamente los documentos necesarios para revisar tu perfil. Puedes adjuntar el frente y reverso de la identificación por separado.', 'pldoc-note');
+        const state = el('p','Consultando documentos…','pldoc-status'); state.setAttribute('role','status'); state.setAttribute('aria-live','polite');
+        const refresh = el('button','Actualizar documentos'); refresh.type = 'button';
+        const reopen = el('button','Volver a abrir el expediente'); reopen.type = 'button'; reopen.hidden = true;
+        const toolbar = el('div',undefined,'pldoc-actions'); toolbar.append(refresh,reopen);
+        const list = el('div'); list.setAttribute('aria-label','Documentos del perfil');
+        const form = el('form'); form.hidden = true;
+        const kindLabel = el('label','Tipo de documento'); const kind = el('select'); kind.setAttribute('aria-label','Tipo de documento');
+        kind.append(new Option('Selecciona el tipo',''));
+        for (const [v,t] of Object.entries(TYPES)) kind.append(new Option(t,v));
+        kindLabel.append(kind);
+        const fileLabel = el('label','Archivo'); const file = el('input'); file.type='file'; file.setAttribute('aria-label','Archivo para revisión');
+        file.accept='.pdf,.jpg,.jpeg,.png,.webp,.heic,.heif'; fileLabel.append(file);
+        const upload = el('button','Subir documento privado'); upload.type='submit';
+        form.append(kindLabel,fileLabel,el('p','PDF, JPEG, PNG, WebP, HEIC o HEIF · Máximo 10 MB por archivo · Hasta 6 documentos o cargas.','pldoc-note'),upload);
+        const approval = el('section',undefined,'pldoc-approve'); approval.hidden=true;
+        const attestation = el('label',undefined,'pldoc-check'); const attest = el('input'); attest.type='checkbox';
+        attest.setAttribute('aria-label','Confirmo la revisión de evidencia auténtica');
+        attestation.append(attest,el('span','Confirmo que revisé evidencia auténtica, verifiqué la identidad y estoy autorizado a decidir sobre este expediente.'));
+        const approve = el('button','Aprobar identidad legal'); approve.type='button'; approve.disabled=true;
+        approval.append(el('h4','Verificar identidad legal'),el('p','Abre y marca como revisado cada documento. La aprobación registra las referencias de estos archivos y conserva la protección contra autorrevisión.','pldoc-note'),attestation,approve);
+        box.append(note,toolbar,state,form,list,approval); contenedor.append(box);
+        let dead=false, busy=false, actor=null, snapshot=null, requestId=null, subscription=null;
+        const opened = new Set(), reviewed = new Set(), dialogs = new Set();
+        const active = () => !dead && box.isConnected && (!contextoVigente || contextoVigente());
+        function status(text, error=false) { if(active()){state.textContent=text;state.style.color=error?'#ffc4aa':'#c2f8b7';} }
+        function dispose() {
+            if(dead)return; dead=true;
+            observer.disconnect(); subscription?.unsubscribe();
+            for(const close of [...dialogs]) close();
+            opened.clear();reviewed.clear();snapshot=null;file.value='';
+            box.remove();
+        }
+        const observer = new MutationObserver(() => { if(!box.isConnected || (contextoVigente && !contextoVigente()))dispose(); });
+        observer.observe(document.body,{childList:true,subtree:true});
+        async function session() {
+            if(!active())throw fail('SESION_CAMBIO');
+            const {data,error}=await client.auth.getSession();
+            const id=data?.session?.user?.id;
+            if(error || !id || (actor && id!==actor) || !active()){dispose();throw fail('SESION_CAMBIO');}
+            actor=id; return id;
+        }
+        async function rpc(name,args) {
+            await session();
+            const {data,error}=await client.rpc(name,args);
+            await session();
+            if(error)throw error;
+            if(data?.ok!==true)throw fail(data?.codigo||'RESPUESTA_INVALIDA');
+            return data;
+        }
+        function confirmed(){return snapshot?.documentos.filter(d=>d.estado==='confirmado')||[];}
+        function controls() {
+            if(!active())return;
+            refresh.disabled=busy; kind.disabled=busy; file.disabled=busy;
+            upload.disabled=busy||!snapshot?.puede_cargar;
+            for(const b of list.querySelectorAll('button'))b.disabled=busy;
+            for(const c of list.querySelectorAll('input[type=checkbox]'))c.disabled=busy||!opened.has(c.dataset.doc);
+            attest.disabled=busy;
+            approve.disabled=busy||!attest.checked||!confirmed().length||confirmed().some(d=>!reviewed.has(d.documento_id));
+        }
+        async function task(fn) {
+            if(busy||!active())return;
+            busy=true;controls();
+            try{await session();await fn();}catch(e){status(MESSAGES[codeOf(e)],true);}finally{busy=false;controls();}
+        }
+        function validateList(data) {
+            if(data.perfil_legal_id!==perfilLegalId||data.organizador_id!==organizadorId||!Array.isArray(data.documentos))throw fail('RESPUESTA_INVALIDA');
+            if(reviewer && data.actualizado_en!==actualizadoEn) {
+                snapshot=null;reviewed.clear();opened.clear();approval.hidden=true;list.replaceChildren();reopen.hidden=false;
+                throw fail('VERSION_DESACTUALIZADA');
+            }
+            const seen=new Set();
+            for(const d of data.documentos){
+                if(!UUID.test(d.documento_id||'')||seen.has(d.documento_id)||!Object.hasOwn(TYPES,d.tipo)||!Object.hasOwn(EXT,d.mime_type)
+                    ||!['reservado','confirmado','retirado'].includes(d.estado)||!Number.isSafeInteger(Number(d.tamano_bytes))||Number(d.tamano_bytes)<1||Number(d.tamano_bytes)>LIMIT)throw fail('RESPUESTA_INVALIDA');
+                seen.add(d.documento_id);
+            }
+        }
+        async function load(message) {
+            let data;
+            try{data=await rpc('listar_documentos_perfil_legal_seguro',{p_perfil_legal_id:perfilLegalId});validateList(data);}
+            catch(e){
+                snapshot=null;opened.clear();reviewed.clear();attest.checked=false;form.hidden=true;approval.hidden=true;list.replaceChildren();
+                for(const close of [...dialogs])close();
+                throw e;
+            }
+            const old=confirmed().map(d=>d.documento_id).sort().join(',');
+            const next=data.documentos.filter(d=>d.estado==='confirmado').map(d=>d.documento_id).sort().join(',');
+            if(old!==next){opened.clear();reviewed.clear();attest.checked=false;}
+            snapshot=data;render();
+            status(message || (data.documentos.length ? 'Documentos consultados. Estado del perfil: '+data.estado_verificacion+'.' : 'Todavía no hay documentos adjuntos.'));
+        }
+        function validLocation(data,id){
+            if(data.documento_id!==id||data.bucket!==BUCKET||typeof data.path!=='string'
+                || !new RegExp('^'+perfilLegalId+'/'+id+'\\.(pdf|jpg|png|webp|heic|heif)$','i').test(data.path))throw fail('RESPUESTA_INVALIDA');
+        }
+        async function openDocument(d) {
+            const info=await rpc('abrir_documento_perfil_legal_seguro',{p_documento_id:d.documento_id});validLocation(info,d.documento_id);
+            if(info.mime_type!==d.mime_type||Number(info.tamano_bytes)!==Number(d.tamano_bytes))throw fail('RESPUESTA_INVALIDA');
+            status('Abriendo documento privado…');
+            const {data:blob,error}=await client.storage.from(BUCKET).download(info.path);
+            await session();
+            if(error)throw error;
+            if(!(blob instanceof Blob)||blob.size!==Number(d.tamano_bytes))throw fail('DOCUMENTO_NO_DISPONIBLE');
+            const safeBlob=blob.slice(0,blob.size,d.mime_type), url=URL.createObjectURL(safeBlob);
+            const dialog=el('dialog');dialog.setAttribute('aria-label',TYPES[d.tipo]);
+            const actions=el('div',undefined,'pldoc-actions');const closeBtn=el('button','✕ Cerrar');closeBtn.type='button';
+            const save=el('a','Descargar documento','pldoc-download');save.href=url;save.download='documento-'+d.documento_id+'.'+EXT[d.mime_type];
+            actions.append(closeBtn,save);dialog.append(el('h3',TYPES[d.tipo]),actions);
+            if(['image/jpeg','image/png','image/webp'].includes(d.mime_type)){
+                const img=el('img');img.alt='Documento privado para revisión';img.src=url;
+                img.addEventListener('error',()=>{img.remove();dialog.append(el('p','No se pudo mostrar la imagen. Puedes descargarla para revisarla.'));},{once:true});dialog.append(img);
+            }else if(d.mime_type==='application/pdf'){
+                dialog.append(el('p','Si tu navegador no muestra el PDF, utiliza «Descargar documento».','pldoc-note'));
+                const frame=el('iframe');frame.title='Documento PDF privado';frame.setAttribute('sandbox','');frame.referrerPolicy='no-referrer';frame.src=url;dialog.append(frame);
+            }else dialog.append(el('p','Este formato se descarga para revisarlo en un visor compatible.'));
+            let closed=false;const close=()=>{if(closed)return;closed=true;URL.revokeObjectURL(url);dialog.remove();dialogs.delete(close);};
+            closeBtn.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',close,{once:true});
+            dialog.addEventListener('cancel',()=>{dialog.close();});dialogs.add(close);box.append(dialog);
+            try{dialog.showModal();closeBtn.focus();}catch(e){close();throw e;}
+            opened.add(d.documento_id);controls();status('Documento disponible para revisión.');
+        }
+        async function removeDocument(d) {
+            if(!window.confirm(d.estado==='retirado'?'¿Completar la eliminación del archivo retirado?':'¿Retirar y eliminar este documento? El historial de la operación se conserva.'))return;
+            const info=await rpc('retirar_documento_perfil_legal_seguro',{p_documento_id:d.documento_id});validLocation(info,d.documento_id);
+            for(const close of [...dialogs])close();
+            if(!info.eliminacion_confirmada){
+                const {error}=await client.storage.from(BUCKET).remove([info.path]);await session();if(error)throw error;
+                await rpc('confirmar_eliminacion_documento_perfil_legal_seguro',{p_documento_id:d.documento_id});
+            }
+            requestId=null;await load('Documento retirado y eliminación confirmada.');
+        }
+        function render(){
+            list.replaceChildren(); form.hidden=reviewer||snapshot?.puede_cargar!==true;
+            approval.hidden=!reviewer||snapshot?.estado_verificacion!=='en_revision';
+            if(!reviewer&&!snapshot.puede_cargar)list.append(el('p','El estado actual del perfil permite consultar los documentos, pero no subir nuevos archivos.','pldoc-note'));
+            for(const d of snapshot.documentos){
+                const row=el('article',undefined,'pldoc-row');row.dataset.documento=d.documento_id;
+                const expired=d.estado==='reservado'&&Date.parse(d.vence_en)<=Date.now();
+                const label=d.estado==='confirmado'?'Recibido para revisión':d.estado==='retirado'?'Retirado · eliminación pendiente':expired?'Reserva vencida':'Carga pendiente';
+                row.append(el('h4',TYPES[d.tipo]),el('p',label+' · '+(Number(d.tamano_bytes)/1048576).toFixed(2)+' MB · '+EXT[d.mime_type].toUpperCase()));
+                const actions=el('div',undefined,'pldoc-actions');
+                if(d.estado==='confirmado'){
+                    const open=el('button','Abrir documento');open.type='button';open.addEventListener('click',()=>task(()=>openDocument(d)));actions.append(open);
+                    if(reviewer){
+                        const label=el('label',undefined,'pldoc-check'), check=el('input');check.type='checkbox';check.dataset.doc=d.documento_id;
+                        check.checked=reviewed.has(d.documento_id);check.disabled=!opened.has(d.documento_id);check.setAttribute('aria-label','Documento revisado: '+TYPES[d.tipo]);
+                        check.addEventListener('change',()=>{if(check.checked)reviewed.add(d.documento_id);else reviewed.delete(d.documento_id);controls();});
+                        label.append(check,el('span','Revisé este documento y lo cotejé con el perfil.'));row.append(label);
+                    }
+                }
+                if(!reviewer&&d.estado==='reservado'&&!expired){
+                    const finish=el('button','Confirmar carga');finish.type='button';finish.addEventListener('click',()=>task(async()=>{
+                        await rpc('confirmar_documento_perfil_legal_seguro',{p_documento_id:d.documento_id});await load('Carga confirmada.');
+                    }));actions.append(finish);
+                }
+                if(!reviewer&&d.puede_retirar===true){
+                    const remove=el('button',d.estado==='retirado'?'Completar eliminación':'Retirar documento');remove.type='button';
+                    remove.addEventListener('click',()=>task(async()=>{try{await removeDocument(d);}catch(e){await load();throw e;}}));actions.append(remove);
+                }
+                if(d.usado_verificacion_en)row.append(el('p','Documento vinculado a una verificación registrada.','pldoc-note'));
+                row.append(actions);list.append(row);
+            }
+            controls();
+        }
+        file.addEventListener('change',()=>{requestId=null;upload.textContent='Subir documento privado';});
+        kind.addEventListener('change',()=>{requestId=null;});
+        form.addEventListener('submit',e=>{e.preventDefault();void task(async()=>{
+            if(hayCambiosSinGuardar?.())throw fail('GUARDA_PERFIL');
+            if(!Object.hasOwn(TYPES,kind.value))throw fail('TIPO_REQUERIDO');
+            const selected=file.files?.[0], mime=await mimeOf(selected);await session();
+            requestId=requestId||crypto.randomUUID();
+            status('Preparando carga privada…');
+            const res=await rpc('reservar_documento_perfil_legal_seguro',{
+                p_organizador_id:organizadorId,p_tipo:kind.value,p_mime_type:mime,p_tamano_bytes:selected.size,p_solicitud_id:requestId});
+            if(!UUID.test(res.documento_id||'')||res.perfil_legal_id!==perfilLegalId||res.mime_type!==mime||Number(res.tamano_bytes)!==selected.size||res.upsert!==false)throw fail('RESPUESTA_INVALIDA');
+            validLocation(res,res.documento_id);
+            try{
+                if(res.estado!=='confirmado'){
+                    let exists=false;
+                    try{await rpc('confirmar_documento_perfil_legal_seguro',{p_documento_id:res.documento_id});exists=true;}
+                    catch(e){if(codeOf(e)!=='ARCHIVO_AUN_NO_CARGADO')throw e;}
+                    if(!exists){
+                        status('Subiendo documento…');await session();
+                        const {error}=await client.storage.from(BUCKET).upload(res.path,selected,{contentType:mime,cacheControl:'0',upsert:false});
+                        await session();
+                        if(error){
+                            try{await rpc('confirmar_documento_perfil_legal_seguro',{p_documento_id:res.documento_id});}
+                            catch(_){throw error;}
+                        }else await rpc('confirmar_documento_perfil_legal_seguro',{p_documento_id:res.documento_id});
+                    }
+                }
+                file.value='';requestId=null;upload.textContent='Subir documento privado';
+                await load('Documento recibido. La identidad continúa pendiente de la decisión del revisor.');
+            }catch(e){
+                if(active()){upload.textContent='Reintentar carga';try{await load();}catch(_){/* Mantener el error de la carga. */}}
+                throw e;
+            }
+        });});
+        refresh.addEventListener('click',()=>task(()=>load()));
+        reopen.addEventListener('click',()=>{if(!busy&&onRecargar)onRecargar();});
+        attest.addEventListener('change',controls);
+        approve.addEventListener('click',()=>task(async()=>{
+            if(!reviewer||snapshot?.estado_verificacion!=='en_revision')throw fail('TRANSICION_NO_PERMITIDA');
+            const ids=confirmed().map(d=>d.documento_id).sort();
+            if(!ids.length||ids.some(id=>!opened.has(id)||!reviewed.has(id)))throw fail('REVISA_DOCUMENTOS');
+            if(!attest.checked)throw fail('CONFIRMA_REVISION');
+            if(!window.confirm('¿Confirmas aprobar la identidad con estos documentos revisados? La decisión quedará registrada.'))return;
+            try{
+                const res=await rpc('aprobar_perfil_legal_con_documentos_seguro',{
+                    p_perfil_legal_id:perfilLegalId,p_actualizado_en_esperado:actualizadoEn,p_documentos_revisados:ids});
+                if(res.codigo!=='PERFIL_LEGAL_VERIFICADO'||res.perfil_legal_id!==perfilLegalId||res.organizador_id!==organizadorId||res.estado_verificacion!=='verificado')throw fail('RESPUESTA_INVALIDA');
+                status('Identidad legal verificada.');if(onRecargar)await onRecargar();
+            }catch(e){
+                const code=codeOf(e);
+                if(['DOCUMENTOS_CAMBIARON_O_FALTAN','VERSION_DESACTUALIZADA','CARGAS_PENDIENTES','DOCUMENTO_NO_DISPONIBLE'].includes(code)){
+                    opened.clear();reviewed.clear();attest.checked=false;try{await load();}catch(_){}
+                }
+                throw e;
+            }
+        }));
+        void task(async()=>{
+            subscription=client.auth.onAuthStateChange((_event,s)=>{if(!s?.user?.id||s.user.id!==actor)dispose();})?.data?.subscription;
+            await load();
+        });
+        return { dispose };
+    };
+})();
+</script>
 </body>
 </html>
