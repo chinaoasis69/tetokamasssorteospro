@@ -121283,6 +121283,7 @@ async function mostrarPreviaComplementosBJ123() {
                 catalogoEstado.textContent = "ℹ️ No hay paquetes habilitados para contratación actualmente.";
                 return;
             }
+            const fuenteDomicilio = massCrearFuenteDomicilioFiscalP06C(organizadorId, sesion.data.user.id);
             for (const paquete of data.paquetes) {
                 const tarjeta = document.createElement("div");
                 tarjeta.className = "card";
@@ -121434,7 +121435,7 @@ async function mostrarPreviaComplementosBJ123() {
                     moneda, botonOferta, estadoOferta, resultadoOferta);
                 catalogoLista.append(tarjeta);
                 massMontarCotizacionFiscalP06B({host:tarjeta, organizadorId, paquete, moneda,
-                    actorEsperado:sesion.data.user.id});
+                    actorEsperado:sesion.data.user.id,cargarDomicilio:fuenteDomicilio});
             }
             catalogoEstado.textContent = "✅ Catálogo consultado. Esta vista no inicia pagos.";
         } catch (_error) {
@@ -123062,8 +123063,38 @@ async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
 
 <!-- PM-06-BJ-124-P-06-B: cotizacion fiscal autenticada -->
 <script>
-// PM-06-BJ-124-P-06-B: cotización autenticada, sin contratación ni pagos.
-function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, actorEsperado, soloVista = false}) {
+// P-06-C: una lectura autorizada por catálogo; conservar solo el domicilio en memoria.
+function massCrearFuenteDomicilioFiscalP06C(organizadorId, actorEsperado) {
+    let pendiente = null;
+    return () => {
+        if (pendiente) return pendiente;
+        pendiente = (async () => {
+            const verificar = async () => {
+                const s = await supabaseClient.auth.getUser();
+                const org = localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
+                if (s.error || !s.data?.user?.id || s.data.user.id !== actorEsperado || org !== organizadorId) throw new Error("CONTEXTO_CAMBIO");
+            };
+            await verificar();
+            const {data,error} = await supabaseClient.rpc("obtener_mi_perfil_legal_organizador_seguro",{p_organizador_id:organizadorId});
+            await verificar();
+            if (error || data?.ok !== true || data?.organizador_id !== organizadorId || typeof data.existe !== "boolean") throw new Error("PERFIL_NO_DISPONIBLE");
+            if (!data.existe) return {existe:false,domicilio:null};
+            const p = data.perfil;
+            if (!p || typeof p !== "object" || Array.isArray(p)) throw new Error("PERFIL_NO_DISPONIBLE");
+            const texto = key => typeof p[key] === "string" ? p[key].trim() : "";
+            return {existe:true,domicilio:{
+                pais_iso2:texto("pais_codigo_iso2").toUpperCase(),estado_region:texto("estado_region"),
+                ciudad:texto("ciudad_localidad"),codigo_postal:texto("codigo_postal"),
+                // La RPC de cotización admite una línea: conservar también interior/piso.
+                direccion_linea1:[texto("direccion_linea1"),texto("direccion_linea2")].filter(Boolean).join(", ")
+            }};
+        })().catch(error => {pendiente = null; throw error;});
+        return pendiente;
+    };
+}
+
+// PM-06-BJ-124-P-06-C: reutiliza Mi Perfil Legal y confirma el domicilio de esta cotización.
+function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, actorEsperado, soloVista = false, cargarDomicilio}) {
     const client = supabaseClient;
     const uuid = value => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
     const orgActual = () => localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
@@ -123072,6 +123103,8 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
     const lectura = soloVista || !valido;
     let actor = actorEsperado || null, revision = 0, ocupado = false, cerrado = false;
     let intento = null, huellaIntento = null, cotizacion = null, reloj = null, subscription = null;
+    let domicilioPerfil = null, perfilCargado = false, cargandoPerfil = false, cargaPerfil = 0;
+    let fuenteDomicilio = cargarDomicilio || null;
     const panel = document.createElement("details");
     panel.dataset.massFiscal = "p06b";
     panel.style.cssText = "border:1px solid #759d6b;border-radius:12px;padding:0 12px;margin:12px 0;text-align:left;overflow-wrap:anywhere";
@@ -123080,10 +123113,28 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
     encabezado.style.cssText = "padding:14px 0;cursor:pointer;font-weight:700";
     const nota = document.createElement("p");
     nota.textContent = lectura
-        ? "Vista del formulario de facturación. La emisión estará disponible desde el catálogo cuando el paquete esté habilitado."
-        : "Confirma tu domicilio de facturación para obtener el subtotal, los impuestos y el total en la moneda seleccionada.";
+        ? "En el checkout del organizador se usará el domicilio de Mi Perfil Legal. Solo tendrá que confirmarlo o elegir otro. Esta vista de prueba no consulta perfiles personales."
+        : "Usaremos el domicilio guardado en Mi Perfil Legal. Confírmalo para esta cotización o elige otro domicilio de facturación.";
     const form = document.createElement("form");
     form.style.cssText = "display:grid;gap:12px;margin:14px 0";
+    const estadoDomicilio = document.createElement("p"); estadoDomicilio.setAttribute("role","status");
+    estadoDomicilio.dataset.domicilioEstado = "true";
+    estadoDomicilio.textContent = lectura ? "Domicilio de Mi Perfil Legal → confirmación del organizador." : "Al abrir este apartado se consultará tu domicilio guardado.";
+    const resumenDireccion = document.createElement("div");
+    resumenDireccion.style.cssText = "padding:12px;border:1px solid #759d6b;border-radius:8px;line-height:1.6;overflow-wrap:anywhere";
+    resumenDireccion.hidden = true;
+    const reintentarPerfil = document.createElement("button"); reintentarPerfil.type = "button";
+    reintentarPerfil.textContent = "Reintentar carga del domicilio"; reintentarPerfil.hidden = true;
+    const usarPerfil = document.createElement("button"); usarPerfil.type = "button";
+    usarPerfil.textContent = "Usar domicilio de Mi Perfil Legal"; usarPerfil.hidden = true;
+    const editor = document.createElement("details");
+    const tituloEditor = document.createElement("summary");
+    tituloEditor.textContent = lectura ? "Ver campos para otro domicilio" : "Usar otro domicilio o completar datos";
+    tituloEditor.style.cssText = "cursor:pointer;padding:12px 0;font-weight:600";
+    const notaEditor = document.createElement("p");
+    notaEditor.textContent = "Los cambios aquí se usarán solo para esta cotización. Tu Perfil Legal conserva sus datos.";
+    const camposEditor = document.createElement("div"); camposEditor.style.cssText = "display:grid;gap:12px";
+    editor.append(tituloEditor,notaEditor,camposEditor);
     const campos = {};
     const crearCampo = (nombre, clave, min, max, autocomplete, select = false) => {
         const label = document.createElement("label");
@@ -123095,7 +123146,7 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
         input.required = true;
         if (!select) {input.type = "text"; input.minLength = min; input.maxLength = max;}
         input.style.cssText = "display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:0;padding:12px;border:1px solid #759d6b;border-radius:8px;background:#151b17;color:#f4f4f4;font:inherit";
-        label.append(texto, input); form.append(label); campos[clave] = input;
+        label.append(texto, input); camposEditor.append(label); campos[clave] = input;
         return input;
     };
     const pais = crearCampo("País de facturación", "pais_iso2", 2, 2, "billing country", true);
@@ -123116,14 +123167,18 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
     const boton = document.createElement("button"); boton.type = "submit";
     boton.textContent = lectura ? "Cotización pendiente de habilitación" : "Obtener cotización fiscal";
     boton.style.cssText = "width:100%;box-sizing:border-box;white-space:normal;margin:0;padding:12px";
-    boton.disabled = lectura;
+    boton.disabled = true;
     const estado = document.createElement("p"); estado.setAttribute("role","status"); estado.setAttribute("aria-live","polite");
     estado.style.cssText = "line-height:1.5;overflow-wrap:anywhere";
     const resultado = document.createElement("div"); resultado.style.cssText = "margin:12px 0";
     const aviso = document.createElement("p");
     aviso.textContent = "La cotización tiene una vigencia de 15 minutos. La contratación y los pagos todavía no están habilitados.";
     aviso.style.cssText = "font-size:13px;line-height:1.5;color:#e7d6a1";
-    form.append(confirmacion, boton); panel.append(encabezado, nota, form, estado, resultado, aviso); host.append(panel);
+    form.append(estadoDomicilio,resumenDireccion,reintentarPerfil,usarPerfil,editor,confirmacion,boton);
+    panel.append(encabezado, nota, form, estado, resultado, aviso); host.append(panel);
+    const estadoCotizacion = estado; estadoCotizacion.dataset.cotizacionEstado = "true";
+    Object.values(campos).forEach(c=>c.disabled = !lectura);
+    confirma.disabled = true;
 
     const contextoVigente = () => !cerrado && host.isConnected && panel.isConnected && host.contains(panel) && orgActual() === organizadorId;
     const limpiarReloj = () => {if (reloj !== null) {clearInterval(reloj); reloj = null;}};
@@ -123134,7 +123189,8 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
     };
     function dispose() {
         if (cerrado) return;
-        cerrado = true; revision++; intento = null; huellaIntento = null; cotizacion = null; limpiarReloj();
+        cerrado = true; revision++; cargaPerfil++; domicilioPerfil = null; fuenteDomicilio = null;
+        intento = null; huellaIntento = null; cotizacion = null; limpiarReloj();
         subscription?.unsubscribe(); observer.disconnect();
         moneda.removeEventListener("change", invalidar);
         for (const input of Object.values(campos)) input.value = "";
@@ -123156,8 +123212,74 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
         }).catch(dispose);
     }
     moneda.addEventListener("change", invalidar);
-    form.addEventListener("input", invalidar);
-    form.addEventListener("change", invalidar);
+    const valores = () => Object.fromEntries(Object.entries(campos).map(([key,input])=>[key,input.value.trim()]));
+    const completo = d => ["MX","US"].includes(d.pais_iso2) &&
+        d.estado_region.length >= 2 && d.estado_region.length <= 120 &&
+        d.ciudad.length >= 2 && d.ciudad.length <= 120 &&
+        d.codigo_postal.length >= 2 && d.codigo_postal.length <= 20 &&
+        d.direccion_linea1.length >= 3 && d.direccion_linea1.length <= 250;
+    function resumir() {
+        const d = valores(); resumenDireccion.replaceChildren();
+        resumenDireccion.hidden = !Object.values(d).some(Boolean);
+        const igual = domicilioPerfil && Object.keys(d).every(k=>d[k]===domicilioPerfil[k]);
+        usarPerfil.hidden = !domicilioPerfil || igual;
+        if (resumenDireccion.hidden) return;
+        const titulo = document.createElement("strong");
+        titulo.textContent = igual ? "Domicilio guardado en Mi Perfil Legal" : "Domicilio para esta cotización";
+        const texto = document.createElement("p"); texto.style.margin = "6px 0 0";
+        texto.textContent = [d.direccion_linea1,d.ciudad,d.estado_region,d.codigo_postal,({MX:"México",US:"Estados Unidos"})[d.pais_iso2]||d.pais_iso2].filter(Boolean).join(" · ");
+        resumenDireccion.append(titulo,texto);
+    }
+    function aplicarPerfil() {
+        invalidar(); confirma.checked = false;
+        for (const [key,input] of Object.entries(campos)) input.value = domicilioPerfil?.[key] || "";
+        const listo = completo(valores()); editor.open = !listo; resumir();
+        estadoDomicilio.textContent = listo ? "Domicilio cargado. Confirma que es el que usarás para facturación." :
+            "Completa los datos que faltan o revisa la dirección para esta cotización. Se conservaron los datos disponibles del perfil.";
+        if (domicilioPerfil?.direccion_linea1?.length > 250) estadoDomicilio.textContent =
+            "La dirección completa supera los 250 caracteres admitidos por la cotización. Revísala sin omitir información necesaria.";
+        if (domicilioPerfil?.pais_iso2 && !["MX","US"].includes(domicilioPerfil.pais_iso2)) estadoDomicilio.textContent =
+            "La cotización está disponible para domicilios de México y Estados Unidos. El país de tu perfil no está admitido actualmente.";
+        estado.textContent = "";
+    }
+    async function cargarPerfil() {
+        if (lectura || cargandoPerfil || perfilCargado || !contextoVigente()) return;
+        cargandoPerfil = true; const carga = ++cargaPerfil;
+        boton.disabled = true; reintentarPerfil.hidden = true;
+        estadoDomicilio.textContent = "Cargando domicilio de Mi Perfil Legal...";
+        try {
+            const sesion = await client.auth.getUser();
+            if (!contextoVigente() || carga !== cargaPerfil) return;
+            if (sesion.error || !sesion.data?.user?.id || (actor && actor !== sesion.data.user.id)) {dispose(); return;}
+            actor = sesion.data.user.id;
+            if (!fuenteDomicilio) fuenteDomicilio = massCrearFuenteDomicilioFiscalP06C(organizadorId,actor);
+            const d = await fuenteDomicilio();
+            if (!contextoVigente() || carga !== cargaPerfil) return;
+            const actual = await client.auth.getUser();
+            if (!contextoVigente() || carga !== cargaPerfil) return;
+            if (actual.error || actual.data?.user?.id !== actor) {dispose(); return;}
+            domicilioPerfil = d.domicilio; perfilCargado = true;
+            usarPerfil.hidden = !domicilioPerfil;
+            Object.values(campos).forEach(c=>c.disabled = false); confirma.disabled = false;
+            aplicarPerfil();
+            if (!d.existe) estadoDomicilio.textContent = "Todavía no hay un domicilio en Mi Perfil Legal. Puedes indicar el que usarás para esta cotización.";
+            boton.disabled = false;
+        } catch (_error) {
+            if (contextoVigente() && carga === cargaPerfil) {
+                estadoDomicilio.textContent = "No se pudo cargar tu domicilio guardado. Reintenta la consulta.";
+                reintentarPerfil.hidden = false;
+            }
+        } finally {cargandoPerfil = false;}
+    }
+    panel.addEventListener("toggle",()=>{if(panel.open) cargarPerfil();});
+    reintentarPerfil.addEventListener("click",cargarPerfil);
+    usarPerfil.addEventListener("click",()=>{if(!ocupado && domicilioPerfil) aplicarPerfil();});
+    const cambio = event => {
+        invalidar();
+        if (Object.values(campos).includes(event.target)) {confirma.checked = false; resumir(); estadoDomicilio.textContent = "Confirma el domicilio mostrado para esta cotización.";}
+    };
+    form.addEventListener("input",cambio);
+    form.addEventListener("change",cambio);
     const errores = {
         SESION_REQUERIDA:"Inicia sesión de nuevo para solicitar la cotización.",
         NO_AUTORIZADO:"Tu cuenta no tiene autorización para cotizar para este organizador.",
@@ -123247,10 +123369,11 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
     }
     form.addEventListener("submit", async event => {
         event.preventDefault();
-        if (lectura || ocupado || !contextoVigente() || !form.reportValidity()) return;
+        if (lectura || ocupado || cargandoPerfil || !perfilCargado || !contextoVigente()) return;
+        if (!completo(valores())) editor.open = true;
+        if (!form.reportValidity()) return;
         const location = Object.fromEntries(Object.entries(campos).map(([key,input])=>[key,input.value.trim()]));
-        if (!["MX","US"].includes(location.pais_iso2) || location.estado_region.length < 2 || location.ciudad.length < 2 ||
-            location.codigo_postal.length < 2 || location.direccion_linea1.length < 3 || !confirma.checked) {
+        if (!completo(location) || !confirma.checked) {
             estado.textContent = errores.UBICACION_FISCAL_INCOMPLETA; return;
         }
         const currency = moneda.value;
@@ -123262,7 +123385,7 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, a
         const solicitud = intento, turno = revision;
         ocupado = true; boton.disabled = true; limpiarReloj(); cotizacion = null; resultado.replaceChildren();
         estado.textContent = "Consultando cotización fiscal...";
-        const controles = [...Object.values(campos),confirma]; controles.forEach(c=>c.disabled = true);
+        const controles = [...Object.values(campos),confirma,usarPerfil]; controles.forEach(c=>c.disabled = true);
         try {
             const sesion = await client.auth.getUser();
             if (!contextoVigente() || turno !== revision) return;
