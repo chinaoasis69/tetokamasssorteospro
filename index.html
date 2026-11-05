@@ -120996,9 +120996,9 @@ async function mostrarPreviaComplementosBJ123() {
     vista.className = "card";
     vista.style.cssText = "max-width:860px;margin:12px auto;padding:18px;text-align:left";
     const titulo = document.createElement("h3");
-    titulo.textContent = "📄 Complementos MASS · Condiciones antes del pago";
+    titulo.textContent = "📄 Complementos MASS · Cotización y condiciones";
     const aviso = document.createElement("p");
-    aviso.textContent = "Consulta informativa de una solicitud propia existente. Esta pantalla NO crea adquisiciones, NO solicita pagos, NO registra aceptación y NO activa derechos. El checkout comercial sigue deshabilitado.";
+    aviso.textContent = "Consulta las condiciones y el total con impuestos de los paquetes habilitados. La contratación y los pagos todavía no están disponibles.";
     const etiqueta = document.createElement("label");
     etiqueta.textContent = "Identificador de adquisición (UUID)";
     etiqueta.style.cssText = "display:block;margin:12px 0 6px;font-weight:bold";
@@ -121034,46 +121034,17 @@ async function mostrarPreviaComplementosBJ123() {
     catalogoBoton.type = "button";
     catalogoBoton.textContent = "🔄 Consultar catálogo oficial";
     const avisoCatalogo = document.createElement("p");
-    avisoCatalogo.textContent = "Consulta informativa. Los paquetes no se pueden contratar ni pagar desde esta pantalla.";
+    avisoCatalogo.textContent = "Selecciona la moneda y abre «Cotización e impuestos» para confirmar tu domicilio de facturación.";
 
-    // BJ-124-P-01: diseño visible de desglose fiscal en checkout.
-    // No se calculan tasas ni se infiere exención sin cotización fiscal verificable.
-    const resumenFiscal = document.createElement("section");
-    resumenFiscal.style.cssText =
-        "border:1px solid #777;border-radius:12px;padding:14px;margin:12px 0;text-align:left";
-    const tituloFiscal = document.createElement("h4");
-    tituloFiscal.textContent = "🧾 Vista previa del checkout — Impuestos";
+    // P-06-B: explicación compacta; los importes se muestran en la cotización del paquete.
+    const resumenFiscal = document.createElement("details");
+    resumenFiscal.style.cssText = "border:1px solid #777;border-radius:12px;padding:12px;margin:12px 0";
+    const tituloFiscal = document.createElement("summary");
+    tituloFiscal.textContent = "Cómo se determina el total";
+    tituloFiscal.style.cursor = "pointer";
     const notaFiscal = document.createElement("p");
-    notaFiscal.textContent =
-        "Vista conectada al subtotal oficial de Supabase cuando existan paquetes habilitados. " +
-        "Diseño informativo; no es una cotización. " +
-        "El importe definitivo se conocerá al calcular los impuestos aplicables " +
-        "por ubicación, tipo de complemento y situación fiscal. " +
-        "Si no corresponde impuesto deberá acreditarse esa condición. " +
-        "Si no puede determinarse, la compra permanecerá bloqueada.";
-    notaFiscal.style.cssText = "color:#ffd966;font-size:13px;line-height:1.6";
-    const filasFiscales = [
-        ["Subtotal del complemento", "Según paquete y moneda"],
-        ["IVA / Sales tax aplicable", "Pendiente de determinación"],
-        ["Total final a pagar", "No disponible todavía"]
-    ];
-    filasFiscales.forEach(([concepto, importe]) => {
-        const fila = document.createElement("div");
-        fila.style.cssText = "display:flex;gap:12px;justify-content:space-between;" +
-            "flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #555";
-        const nombre = document.createElement("span");
-        nombre.textContent = concepto;
-        const cantidad = document.createElement("strong");
-        cantidad.textContent = importe;
-        fila.append(nombre, cantidad);
-        resumenFiscal.appendChild(fila);
-    });
-    const cierreFiscal = document.createElement("p");
-    cierreFiscal.textContent =
-        "🔒 Checkout bloqueado hasta contar con precio, impuesto y total final " +
-        "calculados y guardados con trazabilidad. No se realizará ningún cobro.";
-    resumenFiscal.prepend(tituloFiscal, notaFiscal);
-    resumenFiscal.appendChild(cierreFiscal);
+    notaFiscal.textContent = "El total incluye el precio del complemento y los impuestos aplicables a tu domicilio de facturación. Si falta una configuración fiscal aprobada, la cotización permanecerá pendiente. Un impuesto de cero solo se mostrará cuando corresponda al tratamiento fiscal registrado.";
+    resumenFiscal.append(tituloFiscal, notaFiscal);
     // BJ-124-G: contacto de soporte verificado, sin publicar políticas jurídicas.
     const avisoSoporte = document.createElement("p");
     avisoSoporte.textContent = "¿Necesitas ayuda con Complementos MASS? Contacta al soporte oficial: ";
@@ -121219,6 +121190,16 @@ async function mostrarPreviaComplementosBJ123() {
                 info.append(datos, capacidad, precioUSD, precioMXN, estadoPaquete, fiscal);
                 detallePaquete.append(resumenPaquete, info);
                 grupo.listaPaquetes.appendChild(detallePaquete);
+                const monedaQA = document.createElement("select");
+                monedaQA.setAttribute("aria-label", "Moneda del formulario de prueba");
+                for (const currency of ["USD", "MXN"]) {
+                    const option = document.createElement("option");
+                    option.value = currency; option.textContent = currency; monedaQA.append(option);
+                }
+                info.append(monedaQA);
+                massMontarCotizacionFiscalP06B({host:info, paquete, moneda:monedaQA,
+                    organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
+                    soloVista:true});
             }
             qaEstado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes leídos desde Supabase. Solo QA; sin operaciones comerciales.";
@@ -121376,8 +121357,7 @@ async function mostrarPreviaComplementosBJ123() {
                         agregar("Paquete", vistaCheckout.paquete_nombre);
                         agregar("Capacidad", vistaCheckout.capacidad);
                         agregar("Subtotal verificado (sin impuestos)", subtotal.toFixed(2) + " " + monedaSolicitada);
-                        agregar("IVA / Sales tax", "Pendiente de determinación fiscal");
-                        agregar("Total final a pagar", "No disponible; checkout bloqueado");
+                        agregar("Impuestos y total", "Consulta el acordeón «Cotización e impuestos» de este paquete.");
                         estadoOferta.textContent = "✅ Subtotal consultado. Validando contrato oficial...";
                         const {data: oferta, error: errorOferta} = await supabaseClient.rpc(
                             "previsualizar_oferta_complemento_bj123_segura",
@@ -121438,6 +121418,8 @@ async function mostrarPreviaComplementosBJ123() {
                 tarjeta.append(nombre, descripcion, capacidad, precio, pendiente,
                     moneda, botonOferta, estadoOferta, resultadoOferta);
                 catalogoLista.append(tarjeta);
+                massMontarCotizacionFiscalP06B({host:tarjeta, organizadorId, paquete, moneda,
+                    actorEsperado:sesion.data.user.id});
             }
             catalogoEstado.textContent = "✅ Catálogo consultado. Esta vista no inicia pagos.";
         } catch (_error) {
@@ -123049,3 +123031,248 @@ async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
 </script>
 </body>
 </html>
+
+<!-- PM-06-BJ-124-P-06-B: cotizacion fiscal autenticada -->
+<script>
+// PM-06-BJ-124-P-06-B: cotización autenticada, sin contratación ni pagos.
+function massMontarCotizacionFiscalP06B({host, organizadorId, paquete, moneda, actorEsperado, soloVista = false}) {
+    const client = supabaseClient;
+    const uuid = value => typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+    const orgActual = () => localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
+    const version = Number(paquete.paquete_version);
+    const valido = uuid(organizadorId) && uuid(paquete.paquete_id) && Number.isInteger(version) && version > 0;
+    const lectura = soloVista || !valido;
+    let actor = actorEsperado || null, revision = 0, ocupado = false, cerrado = false;
+    let intento = null, huellaIntento = null, cotizacion = null, reloj = null, subscription = null;
+    const panel = document.createElement("details");
+    panel.dataset.massFiscal = "p06b";
+    panel.style.cssText = "border:1px solid #759d6b;border-radius:12px;padding:0 12px;margin:12px 0;text-align:left;overflow-wrap:anywhere";
+    const encabezado = document.createElement("summary");
+    encabezado.textContent = "🧾 Cotización e impuestos";
+    encabezado.style.cssText = "padding:14px 0;cursor:pointer;font-weight:700";
+    const nota = document.createElement("p");
+    nota.textContent = lectura
+        ? "Vista del formulario de facturación. La emisión estará disponible desde el catálogo cuando el paquete esté habilitado."
+        : "Confirma tu domicilio de facturación para obtener el subtotal, los impuestos y el total en la moneda seleccionada.";
+    const form = document.createElement("form");
+    form.style.cssText = "display:grid;gap:12px;margin:14px 0";
+    const campos = {};
+    const crearCampo = (nombre, clave, min, max, autocomplete, select = false) => {
+        const label = document.createElement("label");
+        label.style.cssText = "display:grid;gap:6px;font-weight:600";
+        const texto = document.createElement("span"); texto.textContent = nombre;
+        const input = document.createElement(select ? "select" : "input");
+        input.setAttribute("aria-label", nombre);
+        input.autocomplete = autocomplete;
+        input.required = true;
+        if (!select) {input.type = "text"; input.minLength = min; input.maxLength = max;}
+        input.style.cssText = "display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;margin:0;padding:12px;border:1px solid #759d6b;border-radius:8px;background:#151b17;color:#f4f4f4;font:inherit";
+        label.append(texto, input); form.append(label); campos[clave] = input;
+        return input;
+    };
+    const pais = crearCampo("País de facturación", "pais_iso2", 2, 2, "billing country", true);
+    for (const [value,text] of [["","Selecciona el país"],["MX","🇲🇽 México"],["US","🇺🇸 Estados Unidos"]]) {
+        const option = document.createElement("option"); option.value = value; option.textContent = text; pais.append(option);
+    }
+    crearCampo("Estado o región", "estado_region", 2, 120, "billing address-level1");
+    crearCampo("Ciudad", "ciudad", 2, 120, "billing address-level2");
+    crearCampo("Código postal", "codigo_postal", 2, 20, "billing postal-code");
+    crearCampo("Calle, número y dirección", "direccion_linea1", 3, 250, "billing address-line1");
+    const confirmacion = document.createElement("label");
+    confirmacion.style.cssText = "display:flex;align-items:flex-start;gap:10px;line-height:1.5";
+    const confirma = document.createElement("input"); confirma.type = "checkbox"; confirma.required = true;
+    confirma.style.cssText = "width:20px;height:20px;flex:0 0 20px;margin:2px 0";
+    const textoConfirma = document.createElement("span");
+    textoConfirma.textContent = "Confirmo que este domicilio de facturación es correcto.";
+    confirmacion.append(confirma, textoConfirma);
+    const boton = document.createElement("button"); boton.type = "submit";
+    boton.textContent = lectura ? "Cotización pendiente de habilitación" : "Obtener cotización fiscal";
+    boton.style.cssText = "width:100%;box-sizing:border-box;white-space:normal;margin:0;padding:12px";
+    boton.disabled = lectura;
+    const estado = document.createElement("p"); estado.setAttribute("role","status"); estado.setAttribute("aria-live","polite");
+    estado.style.cssText = "line-height:1.5;overflow-wrap:anywhere";
+    const resultado = document.createElement("div"); resultado.style.cssText = "margin:12px 0";
+    const aviso = document.createElement("p");
+    aviso.textContent = "La cotización tiene una vigencia de 15 minutos. La contratación y los pagos todavía no están habilitados.";
+    aviso.style.cssText = "font-size:13px;line-height:1.5;color:#e7d6a1";
+    form.append(confirmacion, boton); panel.append(encabezado, nota, form, estado, resultado, aviso); host.append(panel);
+
+    const contextoVigente = () => !cerrado && host.isConnected && panel.isConnected && host.contains(panel) && orgActual() === organizadorId;
+    const limpiarReloj = () => {if (reloj !== null) {clearInterval(reloj); reloj = null;}};
+    const invalidar = () => {
+        revision++; intento = null; huellaIntento = null; cotizacion = null; limpiarReloj(); resultado.replaceChildren();
+        estado.textContent = lectura ? "" : "Datos actualizados. Solicita una cotización con estos datos.";
+        if (!lectura) boton.textContent = "Obtener cotización fiscal";
+    };
+    function dispose() {
+        if (cerrado) return;
+        cerrado = true; revision++; intento = null; huellaIntento = null; cotizacion = null; limpiarReloj();
+        subscription?.unsubscribe(); observer.disconnect();
+        moneda.removeEventListener("change", invalidar);
+        for (const input of Object.values(campos)) input.value = "";
+        confirma.checked = false; resultado.replaceChildren(); form.remove();
+        estado.textContent = "Vuelve a abrir Complementos MASS con tu sesión y organizador actuales.";
+    }
+    const observer = new MutationObserver(() => {if (!contextoVigente()) dispose();});
+    observer.observe(document.body, {childList:true,subtree:true});
+    if (client.auth.onAuthStateChange) {
+        subscription = client.auth.onAuthStateChange((event, session) => {
+            if (event === "SIGNED_OUT" || (actor && session?.user?.id !== actor)) dispose();
+        })?.data?.subscription;
+    }
+    if (!actor) {
+        Promise.resolve(client.auth.getUser()).then(sesion => {
+            if (cerrado) return;
+            if (sesion.error || !sesion.data?.user?.id) {dispose(); return;}
+            actor = sesion.data.user.id;
+        }).catch(dispose);
+    }
+    moneda.addEventListener("change", invalidar);
+    form.addEventListener("input", invalidar);
+    form.addEventListener("change", invalidar);
+    const errores = {
+        SESION_REQUERIDA:"Inicia sesión de nuevo para solicitar la cotización.",
+        NO_AUTORIZADO:"Tu cuenta no tiene autorización para cotizar para este organizador.",
+        ORGANIZADOR_NO_DISPONIBLE:"Este organizador no está disponible para cotizar.",
+        REGLA_FISCAL_NO_APROBADA:"Aún no hay una configuración fiscal aprobada para este complemento y domicilio. La cotización no está disponible.",
+        REGLAS_FISCALES_AMBIGUAS:"La configuración fiscal requiere revisión antes de emitir una cotización.",
+        VENDEDOR_FISCAL_AMBIGUO:"La configuración fiscal requiere revisión antes de emitir una cotización.",
+        CALCULO_FISCAL_NO_VALIDADO:"No se pudo validar el cálculo fiscal. La cotización no está disponible.",
+        COMPLEMENTO_NO_HABILITADO:"Este paquete todavía no está habilitado para cotizar.",
+        VERSION_PAQUETE_NO_COINCIDE:"El paquete cambió. Actualiza el catálogo antes de continuar.",
+        PRECIO_COMERCIAL_CAMBIO:"El precio cambió. Actualiza el catálogo antes de continuar.",
+        UBICACION_FISCAL_NO_CONFIRMADA:"Confirma el domicilio de facturación.",
+        UBICACION_FISCAL_INCOMPLETA:"Completa el país, estado, ciudad, código postal y dirección.",
+        ADICIONAL_PENDIENTE_ELEGIBILIDAD:"La cotización de paquetes adicionales todavía no está habilitada.",
+        FX_NO_ELEGIBLE:"La conversión a MXN no está disponible. Intenta más tarde.",
+        FX_CAMBIO_DURANTE_COTIZACION:"La conversión cambió durante la consulta. Vuelve a solicitar la cotización.",
+        COTIZACION_VENCIDA:"La cotización venció. Solicita una nueva para obtener importes vigentes.",
+        SOLICITUD_NO_REUTILIZABLE:"Esta solicitud ya no se puede reutilizar. Solicita una nueva cotización.",
+        SOLICITUD_NO_DISPONIBLE:"Esta solicitud no está disponible. Solicita una nueva cotización."
+    };
+    const centavos = n => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 999999999999.99 && Math.abs(n * 100 - Math.round(n * 100)) < 0.001 ? Math.round(n * 100) : null;
+    function respuestaValida(d, solicitud, currency) {
+        if (!d || d.ok !== true || !["COTIZACION_REGISTRADA","COTIZACION_EXISTENTE"].includes(d.codigo) ||
+            d.cotizacion_emitida !== true || d.estado_fiscal !== "determinado" ||
+            d.checkout_habilitado !== false || d.pago_habilitado !== false ||
+            d.adquisicion_generada !== false || d.pago_generado !== false ||
+            !uuid(d.cotizacion_id) || d.solicitud_id !== solicitud || d.organizador_id !== organizadorId ||
+            d.paquete_id !== paquete.paquete_id || d.paquete_version !== version ||
+            d.producto_codigo !== paquete.producto_codigo || d.moneda !== currency ||
+            !Number.isFinite(Date.parse(d.expira_en))) return false;
+        const sub = centavos(d.subtotal), tax = centavos(d.impuesto), total = centavos(d.total_pagar), base = centavos(d.base_gravable);
+        if (sub === null || sub <= 0 || tax === null || total === null || total !== sub + tax ||
+            centavos(d.total) !== total || base === null || base > sub || typeof d.tasa_aplicable !== "number" ||
+            !Number.isFinite(d.tasa_aplicable) || d.tasa_aplicable < 0 || d.tasa_aplicable > 1 ||
+            !["gravado","tasa_cero","exento","no_sujeto"].includes(d.tratamiento) ||
+            !Array.isArray(d.componentes_impuesto) || d.componentes_impuesto.length > 32) return false;
+        let suma = 0, tasas = 0; const codigos = new Set();
+        for (const c of d.componentes_impuesto) {
+            if (!c || typeof c.codigo !== "string" || c.codigo.length < 3 || c.codigo.length > 120 || codigos.has(c.codigo) ||
+                centavos(c.base_gravable) !== base || centavos(c.impuesto) === null ||
+                typeof c.tasa !== "number" || !Number.isFinite(c.tasa) || c.tasa < 0 || c.tasa > 1) return false;
+            codigos.add(c.codigo); suma += centavos(c.impuesto); tasas += c.tasa;
+        }
+        if (suma !== tax || Math.abs(tasas - d.tasa_aplicable) > 0.00000001) return false;
+        if (d.tratamiento === "gravado") return base > 0 && d.tasa_aplicable > 0;
+        if (tax !== 0 || d.tasa_aplicable !== 0) return false;
+        return d.tratamiento === "tasa_cero" ? base > 0 : base === 0 && d.componentes_impuesto.length === 0;
+    }
+    const importe = (n, currency) => n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2}) + " " + currency;
+    function presentar(d) {
+        cotizacion = d; resultado.replaceChildren();
+        const agregar = (label, value, total = false) => {
+            const fila = document.createElement("div");
+            fila.style.cssText = "display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid #576450" + (total ? ";font-size:19px;color:#b5ff9d" : "");
+            const nombre = document.createElement("span"); nombre.textContent = label;
+            const valor = document.createElement("strong"); valor.textContent = value;
+            fila.append(nombre, valor); resultado.append(fila);
+        };
+        agregar("Subtotal", importe(d.subtotal,d.moneda));
+        agregar("Impuestos", importe(d.impuesto,d.moneda));
+        agregar("Total cotizado", importe(d.total_pagar,d.moneda),true);
+        const tratamiento = {gravado:"Gravado",tasa_cero:"Tasa cero",exento:"Exento",no_sujeto:"No sujeto"};
+        const detalle = document.createElement("details");
+        const titulo = document.createElement("summary"); titulo.textContent = "Ver desglose fiscal"; titulo.style.cssText = "cursor:pointer;padding:12px 0";
+        const texto = document.createElement("p"); texto.textContent = "Tratamiento: " + tratamiento[d.tratamiento];
+        detalle.append(titulo,texto);
+        for (const c of d.componentes_impuesto) {
+            const p = document.createElement("p");
+            p.textContent = c.codigo + " · " + (c.tasa * 100).toLocaleString("es-MX",{maximumFractionDigits:6}) + "% · " + importe(c.impuesto,d.moneda);
+            detalle.append(p);
+        }
+        resultado.append(detalle);
+        const vigencia = document.createElement("p"); resultado.append(vigencia);
+        const tick = () => {
+            if (!contextoVigente()) {dispose(); return;}
+            const seconds = Math.ceil((Date.parse(d.expira_en) - Date.now()) / 1000);
+            if (seconds <= 0) {
+                cotizacion = null; intento = null; limpiarReloj(); resultado.replaceChildren();
+                estado.textContent = errores.COTIZACION_VENCIDA; boton.textContent = "Emitir nueva cotización";
+                return;
+            }
+            vigencia.textContent = "Vigente durante " + Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2,"0") + " min.";
+        };
+        estado.textContent = d.codigo === "COTIZACION_EXISTENTE" ? "Cotización recuperada. Se conserva la misma referencia." : "Cotización fiscal emitida.";
+        boton.textContent = "Consultar esta cotización";
+        tick(); if (cotizacion) reloj = setInterval(tick,1000);
+    }
+    form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (lectura || ocupado || !contextoVigente() || !form.reportValidity()) return;
+        const location = Object.fromEntries(Object.entries(campos).map(([key,input])=>[key,input.value.trim()]));
+        if (!["MX","US"].includes(location.pais_iso2) || location.estado_region.length < 2 || location.ciudad.length < 2 ||
+            location.codigo_postal.length < 2 || location.direccion_linea1.length < 3 || !confirma.checked) {
+            estado.textContent = errores.UBICACION_FISCAL_INCOMPLETA; return;
+        }
+        const currency = moneda.value;
+        if (!["USD","MXN"].includes(currency)) {estado.textContent = "Selecciona USD o MXN."; return;}
+        if (!globalThis.crypto?.randomUUID) {estado.textContent = "Abre la página mediante una conexión segura para cotizar."; return;}
+        const huella = JSON.stringify([organizadorId,paquete.paquete_id,version,currency,location]);
+        if (huellaIntento !== huella) {intento = null; huellaIntento = huella;}
+        if (!intento) intento = crypto.randomUUID();
+        const solicitud = intento, turno = revision;
+        ocupado = true; boton.disabled = true; limpiarReloj(); cotizacion = null; resultado.replaceChildren();
+        estado.textContent = "Consultando cotización fiscal...";
+        const controles = [...Object.values(campos),confirma]; controles.forEach(c=>c.disabled = true);
+        try {
+            const sesion = await client.auth.getUser();
+            if (!contextoVigente() || turno !== revision) return;
+            if (sesion.error || !sesion.data?.user?.id || (actor && actor !== sesion.data.user.id)) {dispose(); return;}
+            actor = sesion.data.user.id;
+            const {data,error} = await client.rpc("emitir_cotizacion_complemento_mass_bj124_segura",{
+                p_solicitud_id:solicitud, p_organizador_id:organizadorId, p_paquete_id:paquete.paquete_id,
+                p_paquete_version_esperada:version, p_moneda:currency, p_ubicacion_facturacion:location,
+                p_confirmacion_ubicacion:true
+            });
+            if (!contextoVigente() || turno !== revision) return;
+            const actual = await client.auth.getUser();
+            if (!contextoVigente() || turno !== revision) return;
+            if (actual.error || actual.data?.user?.id !== actor) {dispose(); return;}
+            if (error) {
+                estado.textContent = "No se pudo confirmar la respuesta. Reintenta con los mismos datos para recuperar la cotización.";
+                boton.textContent = "Reintentar cotización"; return;
+            }
+            if (data?.ok !== true) {
+                estado.textContent = errores[data?.codigo] || "No se pudo emitir una cotización fiscal válida. Intenta más tarde.";
+                if (["COTIZACION_VENCIDA","SOLICITUD_NO_REUTILIZABLE","SOLICITUD_NO_DISPONIBLE"].includes(data?.codigo)) intento = null;
+                boton.textContent = "Solicitar nueva cotización"; return;
+            }
+            if (!respuestaValida(data,solicitud,currency)) {
+                estado.textContent = "La respuesta fiscal no coincide con la solicitud. No hay un total válido para mostrar."; return;
+            }
+            presentar(data);
+        } catch (_error) {
+            if (contextoVigente() && turno === revision) {
+                estado.textContent = "La consulta se interrumpió. Reintenta con los mismos datos para recuperar la cotización.";
+                boton.textContent = "Reintentar cotización";
+            }
+        } finally {
+            ocupado = false;
+            if (!cerrado) {boton.disabled = lectura; controles.forEach(c=>c.disabled = false);}
+        }
+    });
+    return dispose;
+}
+
+</script>
