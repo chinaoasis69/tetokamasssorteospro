@@ -121082,7 +121082,11 @@ async function mostrarPreviaComplementosBJ123() {
     const qaLista = document.createElement("div");
     qaLista.style.cssText = "display:grid;gap:12px;margin-top:12px";
     qaPanel.append(qaTitulo, qaAviso, qaBoton, qaEstado, qaLista);
-    bloqueCatalogo.appendChild(qaPanel);
+    const qaAccesoEstado = document.createElement("p");
+    qaAccesoEstado.setAttribute("role", "status");
+    qaAccesoEstado.style.cssText = "font-size:13px;line-height:1.5";
+    qaAccesoEstado.textContent = "Comprobando acceso al catálogo de prueba...";
+    bloqueCatalogo.append(qaAccesoEstado, qaPanel);
 
     let qaOcupado = false;
     qaBoton.addEventListener("click", async () => {
@@ -121223,14 +121227,25 @@ async function mostrarPreviaComplementosBJ123() {
     (async () => {
         try {
             const sesionQA = await supabaseClient.auth.getUser();
-            if (sesionQA.error || !sesionQA.data?.user) return;
+            if (!vista.isConnected) return;
+            if (sesionQA.error || !sesionQA.data?.user) {
+                qaAccesoEstado.textContent = "No se pudo comprobar tu sesión para la vista de prueba. Inicia sesión de nuevo.";
+                return;
+            }
             const {data: esSuperAdmin, error: errorSuperAdmin} =
                 await supabaseClient.rpc("is_super_admin");
-            if (vista.isConnected && !errorSuperAdmin && esSuperAdmin === true) {
+            if (!vista.isConnected) return;
+            if (errorSuperAdmin || typeof esSuperAdmin !== "boolean") {
+                qaAccesoEstado.textContent = "No se pudo comprobar el acceso al catálogo de prueba. Vuelve a abrir esta pantalla.";
+            } else if (esSuperAdmin === true) {
                 qaPanel.hidden = false;
+                qaAccesoEstado.textContent = "";
+            } else {
+                qaAccesoEstado.textContent = "Esta sesión no tiene acceso de Súper Admin. Para revisar los paquetes ocultos, entra con tu cuenta Súper Admin a Centro Jurídico MASS → QA Súper Admin · Ver precios de Complementos MASS.";
             }
         } catch (_error) {
-            // Vista QA permanece oculta si falla la verificación.
+            if (vista.isConnected) qaAccesoEstado.textContent =
+                "No se pudo comprobar el acceso al catálogo de prueba. Vuelve a abrir esta pantalla.";
         }
     })();
 
@@ -122039,12 +122054,13 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
     vista.style.cssText =
         "max-width:860px;margin:12px auto;padding:20px;text-align:left;overflow-wrap:anywhere";
     const titulo = document.createElement("h3");
-    titulo.textContent = "🔬 QA Súper Admin · Precios de Complementos MASS";
+    titulo.textContent = "🔬 QA Súper Admin · Precios y formulario fiscal";
     const explicacion = document.createElement("p");
     explicacion.textContent =
         "Catálogo auténtico de Supabase, incluidos paquetes deshabilitados. " +
         "Precios comerciales sin impuestos. No constituye cotización, " +
-        "no habilita compras ni crea adquisiciones o pagos.";
+        "no habilita compras ni crea adquisiciones o pagos. " +
+        "Abre un paquete y después «Cotización e impuestos» para revisar el formulario de facturación.";
     const actualizar = document.createElement("button");
     actualizar.type = "button";
     actualizar.textContent = "🔄 Consultar catálogo de prueba";
@@ -122177,6 +122193,18 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                     subtotalUSD, subtotalMXN, disponibilidad, fiscal);
                 acordeonPaquete.append(resumenPaquete, detallePaquete);
                 grupo.listaPaquetes.appendChild(acordeonPaquete);
+                // P-06-B-FIX: mismo formulario en la ruta propia del Centro Jurídico.
+                // Solo presentación: no requiere elegir organizador ni emite cotizaciones.
+                const monedaQA = document.createElement("select");
+                monedaQA.setAttribute("aria-label", "Moneda del formulario de prueba");
+                for (const currency of ["USD", "MXN"]) {
+                    const option = document.createElement("option");
+                    option.value = currency; option.textContent = currency; monedaQA.append(option);
+                }
+                detallePaquete.append(monedaQA);
+                massMontarCotizacionFiscalP06B({host:detallePaquete, paquete, moneda:monedaQA,
+                    organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
+                    soloVista:true});
             }
             estado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes consultados desde Supabase. Solo lectura, sin pagos.";
