@@ -121223,7 +121223,11 @@ async function mostrarPreviaComplementosBJ123() {
     const resumenTecnico = document.createElement("summary");
     resumenTecnico.textContent = "Consulta técnica de una adquisición existente (QA)";
     bloqueTecnico.append(resumenTecnico, etiqueta, id, consultar);
-    vista.append(titulo, aviso, bloqueCatalogo, bloqueTecnico, volver, estado, detalle);
+    const misContrataciones = document.createElement("button");
+    misContrataciones.type = "button";
+    misContrataciones.textContent = "Mis contrataciones · Ver pagos y activación";
+    misContrataciones.addEventListener("click", () => mostrarSeguimientoComplementosC04D());
+    vista.append(titulo, aviso, misContrataciones, bloqueCatalogo, bloqueTecnico, volver, estado, detalle);
     raiz.replaceChildren(vista);
 
     // Verificación visual de acceso; la RPC valida Súper Admin de nuevo.
@@ -122071,9 +122075,13 @@ async function mostrarCentroJuridicoMassPM06() {
     qaLeyenda.textContent = "Consulta de paquetes reales, incluso deshabilitados. " +
         "Sin contrataciones, impuestos calculados ni cobros.";
 
+    const seguimientoPagos = document.createElement("button");
+    seguimientoPagos.type = "button";
+    seguimientoPagos.textContent = "Seguimiento de pagos · Complementos MASS";
+    seguimientoPagos.addEventListener("click", () => mostrarSeguimientoComplementosC04D({revision:true}));
     vista.append(
         titulo, intro, modulo, nota, lista, politica,
-        qaPrecios, qaLeyenda, pendiente, detalles, volver
+        qaPrecios, qaLeyenda, seguimientoPagos, pendiente, detalles, volver
     );
     raiz.replaceChildren(vista);
 }
@@ -123096,6 +123104,158 @@ async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
     };
 })();
 </script>
+<script>
+// C04-D: consulta autenticada. Esta pantalla no llama a motores de escritura.
+async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
+    if (revision && !(await verificarAccesoSuperAdmin())) return;
+    const root = document.getElementById(revision ? "superAdminContenido" : "adminContenido");
+    const panel = document.getElementById(revision ? "panelSuperAdmin" : "panelAdmin");
+    if (!root || !panel || panel.style.display === "none") return;
+    const org = () => localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
+    const orgId = revision ? null : org();
+    const uuid = x => typeof x === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x);
+    const states = {pendiente_pago:"Pendiente de pago",pago_en_revision:"Pago en revisión",pagado:"Pago aprobado · activación pendiente",
+        pendiente_terminos:"Preparado para activación",activado:"Activación registrada",rechazado:"Rechazado",cancelado:"Cancelado",vencido:"Vencido"};
+    const payStates = {preparando_comprobante:"Comprobante pendiente",reportado:"Comprobante recibido · en revisión",aprobado:"Pago aprobado",rechazado:"Pago rechazado",cancelado:"Pago cancelado"};
+    const rightStates = {pendiente_activacion:"Pendiente de activación",vigente:"Vigente",suspendido:"Suspendido",vencido:"Vencido",cancelado:"Cancelado"};
+    const el = (tag,text,css) => {const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(css)n.style.cssText=css;return n;};
+    const button = text => {const b=el("button",text,"white-space:normal;max-width:100%;margin:4px 0;padding:10px 14px");b.type="button";return b;};
+    const view=el("section",undefined,"max-width:860px;margin:12px auto;padding:18px;text-align:left;overflow-wrap:anywhere;box-sizing:border-box");
+    view.className="card";view.dataset.massSeguimiento="C04D";
+    const title=el("h3",revision?"Seguimiento de pagos · Complementos MASS":"Mis contrataciones · Complementos MASS");
+    const intro=el("p",revision?"Consulta las contrataciones y los comprobantes recibidos. Cada decisión corresponde a una revisión independiente.":"Consulta tus contrataciones, el total confirmado y el estado de tus complementos.");
+    const notice=el("p","Consulta disponible. Los pagos, la revisión de comprobantes y las activaciones comerciales siguen deshabilitados.","border:1px solid #b69a51;border-radius:10px;padding:12px;color:#ffe19a;line-height:1.5");
+    const reload=button("Actualizar contrataciones"),back=button(revision?"← Volver al Centro Jurídico MASS":"← Volver a Complementos MASS");
+    const nav=el("div",undefined,"display:flex;flex-wrap:wrap;gap:10px");nav.append(reload,back);
+    const status=el("p");status.setAttribute("role","status");status.setAttribute("aria-live","polite");
+    const list=el("div",undefined,"display:grid;gap:12px;margin:12px 0");
+    const more=button("Ver más contrataciones");more.hidden=true;
+    view.append(title,intro,notice,nav,status,list,more);root.replaceChildren(view);
+    let actor=null,closed=false,busy=false,generation=0,cursor=null,subscription=null,observer=null;
+    const seen=new Set(),blobs=new Set(),dialogs=new Set();
+    const context=() => !closed && view.isConnected && panel.style.display!=="none" && (revision || org()===orgId);
+    function revoke(){for(const u of blobs)URL.revokeObjectURL(u);blobs.clear();for(const d of dialogs)d.remove();dialogs.clear();}
+    function dispose(clear=false){if(closed)return;closed=true;generation++;revoke();subscription?.unsubscribe?.();observer?.disconnect();if(clear){list.replaceChildren();more.hidden=true;reload.disabled=true;status.textContent="La sesión o el organizador cambiaron. Vuelve a abrir esta pantalla.";}}
+    observer=new MutationObserver(()=>{if(!context())dispose(view.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style"]});
+    back.addEventListener("click",()=>{dispose();if(revision)mostrarCentroJuridicoMassPM06();else mostrarPreviaComplementosBJ123();});
+    const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("TIMEOUT")),15000);})]);}finally{clearTimeout(timer);}};
+    async function identity(){const r=await limit(supabaseClient.auth.getUser());if(!context())return false;if(r.error || !uuid(r.data?.user?.id) || (actor && r.data.user.id!==actor)){dispose(true);return false;}actor=r.data.user.id;return true;}
+    const envelope=(d,code)=>d?.ok===true && d.codigo===code && d.version_pantalla==="C04D-1" && d.actor_auth_id===actor &&
+        d.vista===(revision?"revision":"organizador") && d.solo_lectura===true && d.pagos_habilitados===false && d.activacion_comercial_habilitada===false;
+    const cents=n=>typeof n==="number"&&Number.isFinite(n)&&n>=0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
+    const fiscalOK=x=>x.resumen_consistente===true && ["USD","MXN"].includes(x.moneda) && cents(x.subtotal_confirmado)>0 &&
+        cents(x.impuesto_confirmado)!==null && cents(x.total_confirmado)>0 && cents(x.subtotal_confirmado)+cents(x.impuesto_confirmado)===cents(x.total_confirmado);
+    const validItem=x=>x&&[x.adquisicion_id,x.confirmacion_id,x.organizador_id].every(uuid) && (revision||x.organizador_id===orgId) &&
+        Object.hasOwn(states,x.estado) && typeof x.resumen_consistente==="boolean" && x.renovacion_automatica===false && x.aceptacion_repetida_requerida===false &&
+        Number.isInteger(x.capacidad)&&x.capacidad>0&&x.duracion_meses===1&&typeof x.paquete_codigo==="string"&&typeof x.producto_codigo==="string";
+    const money=(n,c)=>n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+c;
+    const date=s=>typeof s==="string"&&Number.isFinite(Date.parse(s))?new Date(s).toLocaleString("es-MX",{dateStyle:"medium",timeStyle:"short"}):"No registrada";
+    const product=x=>({mi_equipo_mass:"MI EQUIPO MASS",puntos_mass_pro:"PUNTOS MASS PRO"}[x.producto_codigo]||"Complemento MASS");
+    function row(host,k,v){const r=el("div",undefined,"display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441");r.append(el("span",k),el("strong",v));host.append(r);}
+    function failure(error){return error?.code==="PGRST202"?"El seguimiento todavía no está disponible. Inténtalo después de la actualización.":"No se pudo consultar el seguimiento. Comprueba tu sesión y vuelve a intentar.";}
+    async function showProof(p,x,host,epoch,b){
+        if(b.disabled||!context()||epoch!==generation)return;b.disabled=true;
+        const msg=el("p","Abriendo comprobante privado…");host.append(msg);
+        let url=null;
+        try{
+            if(!(await identity())||epoch!==generation||!host.isConnected)return;
+            const expected=x.organizador_id+"/"+x.adquisicion_id+"/"+p.pago_id+"/comprobante.";
+            if(p.comprobante_bucket!=="complementos-comprobantes"||typeof p.comprobante_path!=="string"||!p.comprobante_path.startsWith(expected)||
+               !/^(jpg|jpeg|png|webp|heic|heif|pdf)$/.test(p.comprobante_path.slice(expected.length)))throw new Error("PATH");
+            const r=await limit(supabaseClient.storage.from(p.comprobante_bucket).download(p.comprobante_path));
+            if(!(await identity())||epoch!==generation||!host.isConnected)return;
+            const types=["image/jpeg","image/png","image/webp","image/heic","image/heif","application/pdf"];
+            if(r.error||!(r.data instanceof Blob)||r.data.size<1||r.data.size>10485760||!types.includes(r.data.type))throw new Error("FILE");
+            url=URL.createObjectURL(r.data);blobs.add(url);
+            const dialog=el("dialog",undefined,"width:min(780px,90vw);max-height:88vh;background:#101c16;color:#fff;border:2px solid #39ff14;border-radius:12px;padding:16px;box-sizing:border-box");
+            dialog.setAttribute("aria-label","Comprobante privado");dialogs.add(dialog);
+            const close=button("Cerrar comprobante");dialog.append(el("h3","Comprobante privado"),el("p","Abrir el archivo no acredita el pago ni registra una decisión."),close);
+            if(r.data.type.startsWith("image/")){const img=el("img");img.src=url;img.alt="Comprobante recibido para revisión";img.style.cssText="display:block;max-width:100%;max-height:65vh;object-fit:contain;margin:auto";dialog.append(img);}
+            else {const frame=el("iframe");frame.src=url;frame.title="Comprobante PDF";frame.setAttribute("sandbox","");frame.style.cssText="width:100%;height:60vh;border:0";dialog.append(frame);}
+            const save=el("a","Descargar comprobante");save.href=url;save.download="comprobante."+p.comprobante_path.split('.').pop();save.style.cssText="display:block;margin-top:12px;color:#39ff14";dialog.append(save);
+            const clean=()=>{URL.revokeObjectURL(url);blobs.delete(url);dialogs.delete(dialog);dialog.remove();if(b.isConnected)b.focus();};
+            close.addEventListener("click",()=>dialog.close());dialog.addEventListener("close",clean,{once:true});view.append(dialog);dialog.showModal();msg.textContent="Comprobante abierto. Consulta sin decisión registrada.";
+        }catch(_e){if(url){URL.revokeObjectURL(url);blobs.delete(url);}if(context()&&epoch===generation&&host.isConnected)msg.textContent="No fue posible abrir el comprobante. Puede haber cambiado o no estar disponible para esta sesión.";}
+        finally{if(context()&&epoch===generation&&b.isConnected)b.disabled=false;}
+    }
+    function detailRender(host,d,epoch){
+        const x=d.contratacion;host.replaceChildren();
+        const data=el("div");row(data,"Referencia de contratación",x.adquisicion_id);row(data,"Confirmada",date(x.confirmada_en));
+        row(data,"Capacidad",String(x.capacidad));row(data,"Vigencia contratada","1 mes · Sin renovación automática");
+        if(fiscalOK(x)){row(data,"Subtotal confirmado",money(x.subtotal_confirmado,x.moneda));row(data,"Impuestos confirmados",money(x.impuesto_confirmado,x.moneda));row(data,"Total confirmado",money(x.total_confirmado,x.moneda));}
+        else data.append(el("p","El resumen fiscal requiere revisión. No se muestra un total definitivo.","color:#ffe19a"));
+        row(data,"Contrato aceptado","Versión "+String(x.documento_version||"—"));
+        data.append(el("p","Tu aceptación quedó registrada al contratar. No se solicita una segunda aceptación."));host.append(data);
+        host.append(el("h4","Pagos y comprobantes"));
+        if(!d.pagos.length)host.append(el("p","No hay intentos de pago registrados para esta contratación."));
+        if(d.pagos_total>d.pagos.length)host.append(el("p","Se muestran los últimos "+d.pagos.length+" de "+d.pagos_total+" intentos registrados."));
+        for(const p of d.pagos){
+            const card=el("section",undefined,"border:1px solid #60775c;border-radius:10px;padding:12px;margin:10px 0");
+            card.append(el("h4",payStates[p.estado]||"Estado por revisar"));row(card,"Referencia de pago",p.pago_id);
+            row(card,"Medio registrado",String(p.metodo_nombre||"No disponible"));
+            const matches=fiscalOK(x)&&p.coincide_total_confirmado===true&&p.moneda===x.moneda&&cents(p.monto)===cents(x.total_confirmado);
+            row(card,"Importe registrado",matches?money(p.monto,p.moneda):"Requiere revisión del importe y la moneda");
+            row(card,"Comprobante reportado",date(p.reportado_en));row(card,"Revisión registrada",date(p.revisado_en));
+            if(p.estado==="aprobado")card.append(el("p",p.acreditacion_explicita_registrada===true?"Acreditación explícita registrada en la revisión.":"La acreditación requiere revisión del expediente.","color:#ffe19a"));
+            if(p.comprobante_disponible&&p.comprobante_bucket&&p.comprobante_path){const open=button("Abrir comprobante privado");open.addEventListener("click",()=>showProof(p,x,card,epoch,open));card.append(open);}
+            host.append(card);
+        }
+        host.append(el("h4","Activación del complemento"));
+        if(!d.derechos.length)host.append(el("p","No hay un derecho de uso registrado para esta contratación."));
+        for(const right of d.derechos){row(host,"Estado del derecho",rightStates[right.estado]||"Por revisar");row(host,"Inicio registrado",date(right.vigente_desde));row(host,"Fin registrado",date(right.vigente_hasta));}
+        const actions=el("div",undefined,"display:flex;gap:10px;flex-wrap:wrap;margin-top:12px");
+        for(const label of revision?["Revisar pago · no habilitado"]:["Reportar comprobante · no habilitado","Activar complemento · no habilitado"]){const b=button(label);b.disabled=true;actions.append(b);}
+        if(d.revision_propia===true)host.append(el("p","Este expediente pertenece a tu cuenta. La revisión del pago debe realizarla otro Súper Admin autorizado."));
+        host.append(actions);
+    }
+    function card(x,epoch){
+        const item=el("details",undefined,"border:1px solid #39ff14;border-radius:12px;padding:10px 14px");item.dataset.adquisicion=x.adquisicion_id;
+        const summary=el("summary",product(x)+" · "+x.paquete_codigo+" · "+states[x.estado],"cursor:pointer;font-weight:700;line-height:1.5");
+        const small=el("p",(revision?x.organizador_nombre+" · ":"")+date(x.confirmada_en)+" · "+(fiscalOK(x)?money(x.total_confirmado,x.moneda):"Total por revisar"));
+        const content=el("div"),retry=button("Actualizar detalle");let reading=false,loaded=false;
+        const read=async()=>{
+            if(reading||!context()||epoch!==generation||!item.isConnected)return;reading=true;retry.disabled=true;content.replaceChildren(el("p","Consultando contratación…"));
+            try{
+                if(!(await identity())||epoch!==generation||!item.isConnected)return;
+                const r=await limit(supabaseClient.rpc("consultar_contratacion_complemento_c04d_seguro",{p_adquisicion_id:x.adquisicion_id,p_revision:revision}));
+                if(!(await identity())||epoch!==generation||!item.isConnected)return;
+                const d=r.data;
+                if(r.error||!envelope(d,"CONTRATACION_C04D_CONSULTADA")||!validItem(d.contratacion)||d.contratacion.adquisicion_id!==x.adquisicion_id||
+                   !Array.isArray(d.pagos)||d.pagos.length>20||!Number.isSafeInteger(d.pagos_total)||d.pagos_total<d.pagos.length||
+                   !d.pagos.every(p=>uuid(p.pago_id)&&Object.hasOwn(payStates,p.estado)&&typeof p.comprobante_disponible==="boolean"&&typeof p.acreditacion_explicita_registrada==="boolean")||
+                   !Array.isArray(d.derechos)||d.derechos.length>1||!d.derechos.every(p=>uuid(p.derecho_id)&&Object.hasOwn(rightStates,p.estado)))throw {code:r.error?.code};
+                summary.textContent=product(d.contratacion)+" · "+d.contratacion.paquete_codigo+" · "+states[d.contratacion.estado];
+                detailRender(content,d,epoch);loaded=true;
+            }catch(e){if(context()&&epoch===generation&&item.isConnected)content.replaceChildren(el("p",failure(e)));}
+            finally{reading=false;if(context()&&retry.isConnected)retry.disabled=false;}
+        };
+        retry.addEventListener("click",read);item.addEventListener("toggle",()=>{if(item.open&&!loaded)read();});item.append(summary,small,retry,content);list.append(item);
+    }
+    async function load(append=false){
+        if(busy||!context())return;busy=true;reload.disabled=true;more.disabled=true;
+        if(!append){generation++;cursor=null;seen.clear();revoke();list.replaceChildren();more.hidden=true;}
+        const epoch=generation;status.textContent="Consultando contrataciones…";
+        try{
+            if(!(await identity())||epoch!==generation)return;
+            if(!revision&&!uuid(orgId))throw new Error("ORG");
+            const r=await limit(supabaseClient.rpc("listar_contrataciones_complementos_c04d_seguro",{p_organizador_id:orgId,p_revision:revision,p_antes_de:append?cursor?.antes_de:null,p_antes_id:append?cursor?.antes_id:null}));
+            if(!(await identity())||epoch!==generation)return;
+            const d=r.data;
+            if(r.error||!envelope(d,"CONTRATACIONES_C04D_CONSULTADAS")||d.organizador_id!==orgId||!Array.isArray(d.contrataciones)||d.contrataciones.length>20||!d.contrataciones.every(validItem)||
+                typeof d.hay_mas!=="boolean"||(d.hay_mas&&(!d.contrataciones.length||!uuid(d.siguiente?.antes_id)||!Number.isFinite(Date.parse(d.siguiente?.antes_de)))))throw {code:r.error?.code};
+            if(d.hay_mas&&append&&d.siguiente.antes_id===cursor?.antes_id&&d.siguiente.antes_de===cursor?.antes_de)throw new Error("CURSOR");
+            for(const x of d.contrataciones)if(!seen.has(x.adquisicion_id)){seen.add(x.adquisicion_id);card(x,epoch);}
+            cursor=d.hay_mas?d.siguiente:null;more.hidden=!d.hay_mas;
+            status.textContent=seen.size?seen.size+" contrataciones consultadas. Abre una para ver su seguimiento.":"Todavía no hay contrataciones confirmadas en este flujo. Aparecerán aquí cuando se registren.";
+        }catch(e){if(context()&&epoch===generation)status.textContent=failure(e);}
+        finally{busy=false;if(context()){reload.disabled=false;more.disabled=false;}}
+    }
+    reload.addEventListener("click",()=>load(false));more.addEventListener("click",()=>load(true));
+    try{const r=supabaseClient.auth.onAuthStateChange((_event,session)=>{if(actor&&session?.user?.id!==actor)dispose(true);});subscription=r?.data?.subscription;}catch(_e){}
+    await load();
+}
+
+</script>
 </body>
 </html>
 
@@ -123655,7 +123815,10 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
     const avisoInicial = "Marcar la casilla no envía la contratación. Para registrarla debes pulsar «Confirmar contratación» y confirmar el resumen. Los pagos siguen deshabilitados.";
     mensaje.textContent = avisoInicial;
     mensaje.style.cssText = "font-size:13px;line-height:1.5;color:#e7d6a1";
-    panel.append(titulo,nota,datos,pendientes,verContrato,label,continuar,mensaje); host.append(panel);
+    const seguimiento = document.createElement("button"); seguimiento.type = "button"; seguimiento.hidden = true;
+    seguimiento.textContent = "Ver mis contrataciones y pagos";
+    seguimiento.addEventListener("click", () => mostrarSeguimientoComplementosC04D());
+    panel.append(titulo,nota,datos,pendientes,verContrato,label,continuar,mensaje,seguimiento); host.append(panel);
     let cerrado = false, cotizacion = null, domicilio = null, oferta = null, lector = null, abrio = false, subscription = null;
     let ocupado = false, comprobandoSesion = false, intento = null, confirmado = null, estadoOperacion = "", revision = 0;
     const storageKey = "mass:confirmacion:c03:" + actorEsperado + ":" + organizadorId + ":" + paquete.paquete_id;
@@ -123709,6 +123872,7 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
     }
     function dibujar() {
         if (!contexto()) {dispose(); return;}
+        seguimiento.hidden = !confirmado || soloVista;
         datos.replaceChildren();
         fila("Producto",String(paquete.producto_nombre || "Complemento MASS"));
         fila("Paquete",String(paquete.paquete_nombre || "Paquete MASS"));
