@@ -120998,7 +120998,7 @@ async function mostrarPreviaComplementosBJ123() {
     const titulo = document.createElement("h3");
     titulo.textContent = "📄 Complementos MASS · Cotización y condiciones";
     const aviso = document.createElement("p");
-    aviso.textContent = "Consulta las condiciones y el total con impuestos de los paquetes habilitados. La contratación y los pagos todavía no están disponibles.";
+    aviso.textContent = "Consulta las condiciones y el total con impuestos de los paquetes habilitados. La confirmación requiere una cotización vigente y el contrato oficial. Los pagos siguen deshabilitados.";
     const etiqueta = document.createElement("label");
     etiqueta.textContent = "Identificador de adquisición (UUID)";
     etiqueta.style.cssText = "display:block;margin:12px 0 6px;font-weight:bold";
@@ -121308,7 +121308,7 @@ async function mostrarPreviaComplementosBJ123() {
                 precio.textContent = "Precio de referencia: " +
                     String(paquete.precio_usd ?? "—") + " USD";
                 const pendiente = document.createElement("p");
-                pendiente.textContent = "🔒 Contratación deshabilitada hasta completar el contrato oficial y el checkout.";
+                pendiente.textContent = "La contratación requiere contrato oficial, cotización fiscal vigente y tu confirmación expresa. Los pagos siguen deshabilitados.";
                 // BJ-123-E: oferta y contrato antes de crear una adquisición.
                 const moneda = document.createElement("select");
                 moneda.setAttribute("aria-label", "Moneda de previsualización");
@@ -123213,7 +123213,7 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete = {}, mone
     estado.style.cssText = "line-height:1.5;overflow-wrap:anywhere";
     const resultado = document.createElement("div"); resultado.style.cssText = "margin:12px 0";
     const aviso = document.createElement("p");
-    aviso.textContent = soloDomicilio ? "Esta consulta no modifica tu perfil ni crea cotizaciones." : "La cotización tiene una vigencia de 15 minutos. La contratación y los pagos todavía no están habilitados.";
+    aviso.textContent = soloDomicilio ? "Esta consulta no modifica tu perfil ni crea cotizaciones." : "La cotización tiene una vigencia de 15 minutos. Para contratar necesitas el contrato oficial y confirmar el resumen. Los pagos siguen deshabilitados.";
     aviso.style.cssText = "font-size:13px;line-height:1.5;color:#e7d6a1";
     if (soloDomicilio) form.append(estadoDomicilio,resumenDireccion,reintentarPerfil);
     else form.append(estadoDomicilio,resumenDireccion,reintentarPerfil,usarPerfil,editor,confirmacion,boton);
@@ -123628,7 +123628,8 @@ async function mostrarLecturaBorradorComplementosC01() {
     actualizar.click();
 }
 
-// C-02: resumen previo compartido. La revisión local no registra consentimiento.
+// C-03-B: confirmacion expresa mediante RPC instalada. Sin pagos ni activacion.
+// Mantiene el nombre del componente compartido C-02 para las rutas existentes.
 function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId, actorEsperado, soloVista = false}) {
     const panel = document.createElement("details"); panel.dataset.massResumen = "c02";
     panel.style.cssText = "border:1px solid #759d6b;border-radius:12px;padding:0 12px;margin:12px 0;text-align:left;overflow-wrap:anywhere;max-width:100%;box-sizing:border-box";
@@ -123645,23 +123646,47 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
     const label = document.createElement("label"); label.style.cssText = "display:flex;gap:10px;align-items:flex-start;line-height:1.5;margin:16px 0";
     const revisado = document.createElement("input"); revisado.type = "checkbox"; revisado.disabled = true;
     revisado.style.cssText = "width:20px;height:20px;flex:0 0 20px;margin:3px 0";
-    const texto = document.createElement("span"); texto.textContent = "He leído el contrato y revisado el domicilio y el total de esta cotización.";
+    const texto = document.createElement("span"); texto.textContent = "Acepto el contrato indicado y confirmo el paquete, el domicilio de facturación, la moneda, los impuestos y el total de esta cotización. La vigencia es de un mes, sin renovación automática.";
     label.append(revisado,texto);
     const continuar = document.createElement("button"); continuar.type = "button"; continuar.disabled = true;
-    continuar.textContent = "Contratación pendiente de habilitación";
+    continuar.textContent = "Confirmar contratación";
     continuar.style.cssText = "width:100%;box-sizing:border-box;white-space:normal;margin:0;padding:12px";
     const mensaje = document.createElement("p"); mensaje.setAttribute("role","status");
-    mensaje.textContent = "Esta revisión previa no registra aceptación ni contratación. La confirmación definitiva y los pagos todavía no están disponibles.";
+    const avisoInicial = "Marcar la casilla no envía la contratación. Para registrarla debes pulsar «Confirmar contratación» y confirmar el resumen. Los pagos siguen deshabilitados.";
+    mensaje.textContent = avisoInicial;
     mensaje.style.cssText = "font-size:13px;line-height:1.5;color:#e7d6a1";
     panel.append(titulo,nota,datos,pendientes,verContrato,label,continuar,mensaje); host.append(panel);
     let cerrado = false, cotizacion = null, domicilio = null, oferta = null, lector = null, abrio = false, subscription = null;
+    let ocupado = false, comprobandoSesion = false, intento = null, confirmado = null, estadoOperacion = "", revision = 0;
+    const storageKey = "mass:confirmacion:c03:" + actorEsperado + ":" + organizadorId + ":" + paquete.paquete_id;
     const orgActual = () => localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
     const contexto = () => !cerrado && host.isConnected && panel.isConnected && host.contains(panel) &&
         (soloVista || (actorEsperado && orgActual() === organizadorId));
-    const cents = n => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 9999999999.99 &&
+    const cents = n => typeof n === "number" && Number.isFinite(n) && n >= 0 && n <= 19999999999.98 &&
         Math.abs(n * 100 - Math.round(n * 100)) < 0.001 ? Math.round(n * 100) : null;
-    const importe = n => n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2}) + " " + moneda.value;
+    const importe = (n, divisa = intento?.p_moneda || moneda.value) => n.toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2}) + " " + divisa;
     const uuid = n => typeof n === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(n);
+    const keysPeticion = ["p_solicitud_id","p_organizador_id","p_cotizacion_id","p_documento_legal_id",
+        "p_documento_version","p_documento_hash","p_moneda","p_total_esperado","p_confirmacion_explicita"];
+    const peticionValida = p => p && Object.keys(p).length === keysPeticion.length && keysPeticion.every(k=>Object.hasOwn(p,k)) &&
+        [p.p_solicitud_id,p.p_organizador_id,p.p_cotizacion_id,p.p_documento_legal_id].every(uuid) &&
+        p.p_organizador_id === organizadorId && ["USD","MXN"].includes(p.p_moneda) && cents(p.p_total_esperado)>0 &&
+        typeof p.p_documento_version === "string" && /^[0-9]+(\.[0-9]+)*$/.test(p.p_documento_version) && p.p_documento_version.length<=20 &&
+        /^[a-f0-9]{64}$/.test(p.p_documento_hash || "") && p.p_confirmacion_explicita === true;
+    // Solo identificadores y condiciones minimas de reintento, en esta pestaña y por actor/organizador/paquete.
+    // No se persisten domicilio, contenido contractual, credenciales ni una supuesta respuesta exitosa.
+    if (!soloVista) try {
+        const guardado = JSON.parse(sessionStorage.getItem(storageKey) || "null");
+        if (guardado?.version === 1 && guardado.actor === actorEsperado && guardado.paquete === paquete.paquete_id && peticionValida(guardado.peticion)) {
+            intento = Object.freeze({...guardado.peticion});
+            estadoOperacion = "Hay una solicitud anterior por comprobar. Consulta su resultado para evitar una contratación duplicada.";
+            panel.open = true;
+        }
+    } catch (_error) {estadoOperacion = "No fue posible recuperar la solicitud de esta pestaña.";}
+    function guardarIntento(p) {
+        sessionStorage.setItem(storageKey,JSON.stringify({version:1,actor:actorEsperado,paquete:paquete.paquete_id,peticion:p}));
+    }
+    function quitarIntento() {try {sessionStorage.removeItem(storageKey);} catch (_error) {} intento = null;}
     function fila(nombre, valor, total = false) {
         const row = document.createElement("div");
         row.style.cssText = "display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid #576450" + (total ? ";font-size:19px;color:#b5ff9d" : "");
@@ -123678,7 +123703,7 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         cents(d.subtotal) > 0 && cents(d.impuesto) !== null && cents(d.total_pagar) === cents(d.subtotal) + cents(d.impuesto) &&
         cents(d.total) === cents(d.total_pagar) && ["gravado","tasa_cero","exento","no_sujeto"].includes(d.tratamiento);
     function listo() {
-        return !soloVista && contexto() && quoteOK(cotizacion) && oferta && lector?.isConnected &&
+        return !soloVista && !intento && !confirmado && contexto() && quoteOK(cotizacion) && oferta && lector?.isConnected &&
             lector.querySelector("[data-lectura-contrato]") && oferta.moneda === cotizacion.moneda &&
             cents(oferta.monto) === cents(cotizacion.subtotal) && abrio;
     }
@@ -123689,8 +123714,16 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         fila("Paquete",String(paquete.paquete_nombre || "Paquete MASS"));
         fila("Capacidad",String(paquete.capacidad ?? "Pendiente"));
         fila("Vigencia",String(paquete.duracion_meses ?? "—") + " mes · Sin renovación automática");
-        fila("Moneda",["USD","MXN"].includes(moneda.value) ? moneda.value : "Selecciona una moneda válida");
-        if (quoteOK(cotizacion)) {
+        fila("Moneda",intento?.p_moneda || (["USD","MXN"].includes(moneda.value) ? moneda.value : "Selecciona una moneda válida"));
+        if (intento) {
+            if (domicilio) fila("Domicilio confirmado",[domicilio.direccion_linea1,domicilio.ciudad,domicilio.estado_region,domicilio.codigo_postal,domicilio.pais_iso2].join(" · "));
+            else fila("Domicilio", "Conservado en la cotización de esta solicitud");
+            if (confirmado) {
+                fila("Subtotal",importe(confirmado.subtotal)); fila("Impuestos",importe(confirmado.impuesto));
+                fila("Total confirmado",importe(confirmado.total_pagar),true);
+                fila("Referencia de contratación",confirmado.adquisicion_id);
+            } else fila("Total de la solicitud",importe(intento.p_total_esperado),true);
+        } else if (quoteOK(cotizacion)) {
             fila("Domicilio de facturación",[domicilio.direccion_linea1,domicilio.ciudad,domicilio.estado_region,domicilio.codigo_postal,domicilio.pais_iso2].join(" · "));
             fila("Subtotal",importe(cotizacion.subtotal)); fila("Impuestos",importe(cotizacion.impuesto));
             fila("Total cotizado",importe(cotizacion.total_pagar),true);
@@ -123699,18 +123732,26 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
             fila("Domicilio de facturación",soloVista ? "Se cargará del perfil del organizador" : "Confirma tu domicilio en Cotización e impuestos");
             fila("Impuestos", "Pendientes de cotización fiscal"); fila("Total cotizado", "Pendiente", true);
         }
-        fila("Contrato",oferta ? oferta.documento_titulo + " · Versión " + oferta.documento_version : "Pendiente de consulta del contrato oficial");
+        fila("Contrato",intento ? "Versión " + intento.p_documento_version + " · vinculada a esta solicitud" : oferta ? oferta.documento_titulo + " · Versión " + oferta.documento_version : "Pendiente de consulta del contrato oficial");
         const faltan = [];
         if (!quoteOK(cotizacion)) faltan.push("obtener una cotización vigente con domicilio confirmado");
         if (!oferta) faltan.push("consultar el contrato oficial");
         else if (quoteOK(cotizacion) && cents(oferta.monto) !== cents(cotizacion.subtotal)) faltan.push("actualizar la oferta: el subtotal difiere de la cotización");
         else if (!abrio) faltan.push("abrir el contrato para leerlo");
-        pendientes.textContent = soloVista ? "Vista de prueba: la revisión y la contratación permanecen deshabilitadas." :
+        pendientes.textContent = soloVista ? "Vista de prueba: la confirmación permanece deshabilitada. El organizador la realizará desde su propia sesión, con contrato oficial y cotización vigentes." :
+            confirmado ? "Confirmación registrada. El complemento aún no está activado y no se ha iniciado ningún pago." :
+            intento ? "Comprueba esta solicitud antes de iniciar otra. Se conservarán su contrato y su total originales." :
             faltan.length ? "Para revisar este resumen falta " + faltan.join(" y ") + "." :
-            "Contrato y cotización coinciden. Puedes marcar la revisión previa de este resumen.";
+            "Contrato y cotización coinciden. Lee la declaración de aceptación antes de confirmar.";
         verContrato.hidden = !oferta || !lector?.isConnected;
-        revisado.disabled = !listo(); if (revisado.disabled) revisado.checked = false;
-        if (!revisado.checked) mensaje.textContent = "Esta revisión previa no registra aceptación ni contratación. La confirmación definitiva y los pagos todavía no están disponibles.";
+        revisado.disabled = ocupado || comprobandoSesion || !listo();
+        if (!listo() && !intento) revisado.checked = false;
+        label.hidden = !!intento;
+        label.style.display = intento ? "none" : "flex";
+        continuar.disabled = soloVista || ocupado || comprobandoSesion || !!confirmado || (!intento && !(listo() && revisado.checked));
+        continuar.textContent = confirmado ? "Contratación confirmada · pagos deshabilitados" : ocupado ? "Comprobando confirmación…" : intento ? "Comprobar confirmación" : "Confirmar contratación";
+        continuar.setAttribute("aria-busy",String(ocupado));
+        mensaje.textContent = estadoOperacion || avisoInicial;
     }
     function soltarOferta() {
         lector?.querySelector("[data-lectura-contrato]")?.removeEventListener("toggle",alLeer);
@@ -123721,20 +123762,25 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         if (lector?.querySelector("[data-lectura-contrato]")?.open) {abrio = true;dibujar();}
     }
     function actualizarOferta(d, hostLector) {
+        if (intento || confirmado) return;
+        revision++;estadoOperacion = "";
         soltarOferta();
         if (!soloVista && contexto() && d?.ok === true && d.codigo === "OFERTA_PREVIA_DISPONIBLE" &&
             d.oferta_informativa === true && d.adquisicion_creada === false && d.pago_iniciado === false &&
             d.aceptacion_registrada === false && d.derechos_activados === false &&
-            d.moneda === moneda.value && d.producto_codigo === paquete.producto_codigo && d.paquete_codigo === paquete.paquete_codigo &&
+            d.organizador_id === organizadorId && d.paquete_id === paquete.paquete_id && d.paquete_version === Number(paquete.paquete_version) &&
+            uuid(d.documento_legal_id) && d.moneda === moneda.value && d.producto_codigo === paquete.producto_codigo && d.paquete_codigo === paquete.paquete_codigo &&
             cents(d.monto) > 0 && typeof d.documento_titulo === "string" && typeof d.documento_version === "string" &&
             /^[a-f0-9]{64}$/.test(d.documento_hash || "") && hostLector?.querySelector("[data-lectura-contrato]")?.isConnected) {
-            oferta = {monto:d.monto,moneda:d.moneda,documento_titulo:d.documento_titulo,documento_version:d.documento_version,documento_hash:d.documento_hash};
+            oferta = {monto:d.monto,moneda:d.moneda,documento_legal_id:d.documento_legal_id,documento_titulo:d.documento_titulo,documento_version:d.documento_version,documento_hash:d.documento_hash};
             lector = hostLector; abrio = !!lector.querySelector("[data-lectura-contrato]").open;
             lector.querySelector("[data-lectura-contrato]").addEventListener("toggle",alLeer);
         }
         dibujar();
     }
     function actualizarCotizacion(snapshot) {
+        if (intento || confirmado) return;
+        revision++;estadoOperacion = "";
         cotizacion = null; domicilio = null; revisado.checked = false;
         const loc = snapshot?.ubicacion;
         if (!soloVista && contexto() && snapshot?.actor === actorEsperado && quoteOK(snapshot.data) && loc &&
@@ -123743,7 +123789,10 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         }
         dibujar();
     }
-    function cambioMoneda() {cotizacion = null; domicilio = null; soltarOferta(); dibujar();}
+    function cambioMoneda() {
+        if (!intento && !confirmado) {revision++;estadoOperacion = "";cotizacion = null; domicilio = null; soltarOferta();}
+        dibujar();
+    }
     async function sesionActual() {
         try {const s = await supabaseClient.auth.getUser();
             if (!contexto() || s.error || s.data?.user?.id !== actorEsperado) {dispose();return false;}
@@ -123751,12 +123800,70 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         } catch (_error) {dispose();return false;}
     }
     revisado.addEventListener("change",async()=>{
-        revisado.disabled = true;
+        if (ocupado || comprobandoSesion || intento || confirmado || soloVista) return;
+        comprobandoSesion = true;dibujar();
         if (!await sesionActual()) return;
-        if (!listo()) {revisado.checked = false;dibujar();return;}
-        revisado.disabled = false;
-        mensaje.textContent = revisado.checked ? "Revisión marcada solo en esta pantalla. Todavía no se ha enviado una aceptación ni creado una contratación." :
-            "Esta revisión previa no registra aceptación ni contratación. La confirmación definitiva y los pagos todavía no están disponibles.";
+        comprobandoSesion = false;
+        if (!listo()) revisado.checked = false;
+        estadoOperacion = revisado.checked ? "Aceptación seleccionada. Pulsa «Confirmar contratación» para revisar y enviar la solicitud. No se realizará ningún cobro." : "";
+        dibujar();
+    });
+    const respuestaValida = (r,p) => r?.ok === true && r.codigo === "CONTRATACION_CONFIRMADA_PAGO_NO_HABILITADO" &&
+        typeof r.reutilizada === "boolean" && uuid(r.confirmacion_id) && uuid(r.adquisicion_id) &&
+        r.solicitud_id === p.p_solicitud_id && r.organizador_id === p.p_organizador_id && r.cotizacion_id === p.p_cotizacion_id &&
+        r.documento_legal_id === p.p_documento_legal_id && r.documento_version === p.p_documento_version && r.documento_hash === p.p_documento_hash &&
+        r.moneda === p.p_moneda && cents(r.total_pagar) === cents(p.p_total_esperado) && cents(r.subtotal)>0 && cents(r.impuesto)!==null &&
+        cents(r.subtotal)+cents(r.impuesto) === cents(r.total_pagar) && r.estado_al_confirmar === "pendiente_pago" &&
+        r.confirmacion_registrada === true && r.pago_iniciado === false && r.pago_habilitado === false && r.derechos_activados === false;
+    const motivos = {
+        COTIZACION_YA_UTILIZADA:"Esta cotización ya se utilizó en otra solicitud. Revisa la contratación anterior antes de continuar.",
+        SOLICITUD_NO_REUTILIZABLE:"La solicitud no coincide con sus datos originales. Consulta a soporte con su referencia.",
+        ORGANIZADOR_NO_AUTORIZADO:"Tu sesión ya no está autorizada para contratar por este organizador.",
+        SESION_REQUERIDA:"Vuelve a iniciar sesión para continuar.",
+        CONTRATO_NO_VIGENTE:"El contrato oficial aún no está disponible para contratar.",
+        REGLA_FISCAL_NO_APROBADA:"La configuración fiscal todavía está pendiente de aprobación."
+    };
+    continuar.addEventListener("click",async()=>{
+        if (soloVista || ocupado || comprobandoSesion || confirmado || !contexto() || (!intento && !(listo() && revisado.checked))) return;
+        ocupado = true;const turno = revision;dibujar();
+        try {
+            if (!await sesionActual()) return;
+            if (!intento) {
+                if (turno !== revision || !listo() || !revisado.checked) return;
+                const resumen = "¿Confirmas la contratación de " + String(paquete.paquete_nombre || "este paquete") +
+                    "?\nTotal con impuestos: " + importe(cotizacion.total_pagar,cotizacion.moneda) +
+                    "\nContrato: versión " + oferta.documento_version + "\nVigencia: 1 mes, sin renovación automática." +
+                    "\nSe registrará tu aceptación y una adquisición pendiente de pago. Los pagos no están habilitados.";
+                if (!window.confirm(resumen)) return;
+                if (!contexto() || turno !== revision || !listo() || !revisado.checked) return;
+                const p = {p_solicitud_id:crypto.randomUUID(),p_organizador_id:organizadorId,p_cotizacion_id:cotizacion.cotizacion_id,
+                    p_documento_legal_id:oferta.documento_legal_id,p_documento_version:oferta.documento_version,p_documento_hash:oferta.documento_hash,
+                    p_moneda:cotizacion.moneda,p_total_esperado:cotizacion.total_pagar,p_confirmacion_explicita:true};
+                try {guardarIntento(p);} catch (_error) {
+                    estadoOperacion = "No se pudo conservar la referencia para reintentar. No se envió la solicitud. Revisa el almacenamiento de esta pestaña y vuelve a intentarlo.";return;
+                }
+                intento = Object.freeze(p);dibujar();
+            }
+            const peticion = intento;
+            let limite;
+            const {data,error} = await Promise.race([
+                supabaseClient.rpc("confirmar_contratacion_complemento_mass_c03_segura",{...peticion}),
+                new Promise((_,reject)=>{limite=setTimeout(()=>reject(new Error("CONFIRMACION_SIN_RESPUESTA")),20000);})
+            ]).finally(()=>clearTimeout(limite));
+            if (!await sesionActual()) return;
+            if (!error && respuestaValida(data,peticion)) {
+                confirmado = {...data};
+                estadoOperacion = "Tu aceptación y la contratación quedaron registradas. Conserva la referencia. No se ha iniciado ningún pago ni activado el complemento.";
+            } else if (!error && data?.ok === false && data.confirmacion_registrada === false && data.adquisicion_creada === false &&
+                       data.pago_habilitado === false && data.derechos_activados === false) {
+                quitarIntento();cotizacion = null;domicilio = null;soltarOferta();revision++;
+                estadoOperacion = motivos[data.codigo] || "La contratación no se registró. Actualiza el contrato y solicita una cotización vigente antes de volver a confirmar.";
+            } else {
+                estadoOperacion = "No pudimos comprobar el resultado. Pulsa «Comprobar confirmación» para consultar la misma solicitud, sin crear otra.";
+            }
+        } catch (_error) {
+            if (contexto()) estadoOperacion = intento ? "Se interrumpió la respuesta. Pulsa «Comprobar confirmación»; se utilizará la misma solicitud." : "No se pudo enviar la confirmación. Vuelve a intentarlo.";
+        } finally {ocupado = false;if (contexto()) dibujar();}
     });
     verContrato.addEventListener("click",async()=>{
         if (!await sesionActual()) return;
@@ -123764,17 +123871,19 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
         if (lectura) {lectura.open = true;lectura.scrollIntoView({block:"center"});lectura.querySelector("summary")?.focus();}
     });
     function dispose() {
-        if (cerrado) return;cerrado = true;cotizacion = null;domicilio = null;soltarOferta();
+        if (cerrado) return;cerrado = true;cotizacion = null;domicilio = null;confirmado = null;intento = null;soltarOferta();
         clearInterval(reloj);subscription?.unsubscribe();observer.disconnect();moneda.removeEventListener("change",cambioMoneda);
         panel.replaceChildren(titulo);const p = document.createElement("p");p.textContent = "Vuelve a abrir el resumen con tu sesión actual.";panel.append(p);
     }
     const observer = new MutationObserver(()=>{
         if (!contexto()) dispose();
-        else if (lector && (!lector.isConnected || !lector.querySelector("[data-lectura-contrato]"))) {soltarOferta();dibujar();}
+        else if (lector && (!lector.isConnected || !lector.querySelector("[data-lectura-contrato]"))) {
+            soltarOferta();if (!intento) revision++;dibujar();
+        }
     }); observer.observe(document.body,{childList:true,subtree:true});
     const reloj = setInterval(()=>{
         if (!contexto()) {dispose();return;}
-        if (cotizacion && !quoteOK(cotizacion)) {cotizacion = null;domicilio = null;revisado.checked = false;dibujar();}
+        if (!intento && cotizacion && !quoteOK(cotizacion)) {revision++;cotizacion = null;domicilio = null;revisado.checked = false;dibujar();}
     },1000);
     if (!soloVista && supabaseClient.auth.onAuthStateChange) subscription = supabaseClient.auth.onAuthStateChange((event,session)=>{
         if (event === "SIGNED_OUT" || session?.user?.id !== actorEsperado) dispose();
