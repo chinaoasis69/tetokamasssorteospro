@@ -121416,21 +121416,21 @@ async function mostrarPreviaComplementosBJ123() {
                         agregar("Vigencia", "1 mes calendario, sin renovación automática");
                         agregar("Contrato", String(oferta.documento_titulo) + " · " + String(oferta.documento_version));
                         agregar("SHA-256", oferta.documento_hash);
-                        const contratoTitulo = document.createElement("h4");
-                        contratoTitulo.textContent = "Contrato completo (solo lectura)";
-                        const contratoTexto = document.createElement("textarea");
-                        contratoTexto.readOnly = true;
-                        contratoTexto.rows = 14;
-                        contratoTexto.style.cssText = "display:block;width:100%;box-sizing:border-box;min-height:240px";
-                        contratoTexto.value = String(oferta.documento_contenido || "");
+                        const contratoHost = document.createElement("div");
                         const avisoFinal = document.createElement("p");
                         avisoFinal.textContent =
                             "🔒 Subtotal de referencia, NO precio final. Para contratar será " +
                             "necesaria una cotización fiscal válida y un total definitivo " +
                             "en la moneda seleccionada antes de confirmar. " +
                             "Esta pantalla no permite pagos.";
-                        resultadoOferta.append(contratoTitulo, contratoTexto, avisoFinal);
-                        estadoOferta.textContent = "✅ Oferta y contrato presentados. Sin operaciones comerciales.";
+                        resultadoOferta.append(contratoHost, avisoFinal);
+                        const contratoListo = await massMontarDocumentoComplementosC01({host:contratoHost,
+                            documento:{titulo:oferta.documento_titulo,version:oferta.documento_version,
+                                contenido:oferta.documento_contenido,sha256:oferta.documento_hash},
+                            actorEsperado:sesionActual.data.user.id,organizadorId});
+                        if (tarjeta.isConnected) estadoOferta.textContent = contratoListo
+                            ? "✅ Oferta y contrato disponibles para lectura y descarga. Sin operaciones comerciales."
+                            : "No se pudo verificar el contrato para lectura y descarga.";
                     } catch (_error) {
                         if (tarjeta.isConnected) estadoOferta.textContent = "🔒 No fue posible presentar la oferta.";
                     } finally {
@@ -121471,6 +121471,7 @@ async function mostrarPreviaComplementosBJ123() {
                 estado.textContent = "❌ Debes iniciar sesión.";
                 return;
             }
+            const organizadorConsulta = localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id");
             const {data, error} = await supabaseClient.rpc(
                 "presentar_condiciones_complemento_pre_pago_bj123",
                 {p_adquisicion_id: uuid, p_idioma_codigo: "es"}
@@ -121506,17 +121507,17 @@ async function mostrarPreviaComplementosBJ123() {
             const comercial = document.createElement("pre");
             comercial.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere";
             comercial.textContent = JSON.stringify(data.condiciones_comerciales || {}, null, 2);
-            const subtituloLegal = document.createElement("h4");
-            subtituloLegal.textContent = "Contrato oficial vigente (solo lectura)";
-            const contrato = document.createElement("textarea");
-            contrato.readOnly = true;
-            contrato.rows = 17;
-            contrato.style.cssText = "display:block;width:100%;box-sizing:border-box;min-height:300px";
-            contrato.value = String(data.documento_contenido || "");
+            const contratoHost = document.createElement("div");
             const cierre = document.createElement("p");
             cierre.textContent = "🔒 Consulta informativa completada. Pagos, aceptación y activación continúan deshabilitados en esta pantalla.";
-            detalle.append(subtitulo, comercial, subtituloLegal, contrato, cierre);
-            estado.textContent = "✅ Condiciones oficiales recuperadas. No se registró ninguna operación comercial.";
+            detalle.append(subtitulo, comercial, contratoHost, cierre);
+            const contratoListo = await massMontarDocumentoComplementosC01({host:contratoHost,
+                documento:{titulo:data.documento_titulo,version:data.documento_version,
+                    contenido:data.documento_contenido,sha256:data.documento_hash},
+                actorEsperado:sesion.data.user.id,organizadorId:organizadorConsulta});
+            if (vista.isConnected) estado.textContent = contratoListo
+                ? "✅ Condiciones disponibles para lectura y descarga. No se registró ninguna operación comercial."
+                : "No se pudo verificar el contrato para lectura y descarga.";
         } catch (_e) {
             if (vista.isConnected) estado.textContent = "❌ Consulta no disponible. No realices pagos.";
         } finally {
@@ -121958,6 +121959,12 @@ async function mostrarCentroJuridicoMassPM06() {
         detalle.textContent = fila.detalle;
         detalle.style.cssText = "margin:4px 0;font-size:13px;color:#bbb";
         item.append(nombre, estado, detalle);
+        if (i === 1) {
+            const leer = document.createElement("button"); leer.type = "button";
+            leer.textContent = "📄 Leer y descargar borrador 1.1";
+            leer.addEventListener("click",()=>mostrarLecturaBorradorComplementosC01());
+            item.append(leer);
+        }
         if (i !== filas.length - 1) {
             item.style.cssText =
                 "padding-bottom:12px;border-bottom:1px solid #555";
@@ -123441,6 +123448,153 @@ function massMontarCotizacionFiscalP06B({host, organizadorId, paquete = {}, mone
         }
     });
     return dispose;
+}
+
+// C-01: lector y descarga del mismo texto verificado; no registra aceptación.
+async function massMontarDocumentoComplementosC01({host, documento, actorEsperado, organizadorId = null, borrador = false}) {
+    const client = supabaseClient;
+    const panel = document.createElement("section");
+    panel.dataset.massContrato = "c01";
+    panel.style.cssText = "border:1px solid #759d6b;border-radius:12px;padding:14px;margin:14px 0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;text-align:left";
+    const estado = document.createElement("p"); estado.setAttribute("role","status"); estado.setAttribute("aria-live","polite");
+    estado.textContent = "Comprobando el contrato para lectura y descarga...";
+    panel.append(estado); host.append(panel);
+    let cerrado = false, subscription = null, texto = documento?.contenido, exportacion = null;
+    const urls = new Map();
+    const contexto = () => !cerrado && host.isConnected && panel.isConnected && host.contains(panel) &&
+        (!organizadorId || (localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id")) === organizadorId) &&
+        (!borrador || localStorage.getItem("admin_rol") === "super_admin");
+    function dispose() {
+        if (cerrado) return;
+        cerrado = true; texto = null; exportacion = null;
+        for (const [url,timer] of urls) {clearTimeout(timer); URL.revokeObjectURL(url);}
+        urls.clear(); subscription?.unsubscribe(); observer.disconnect();
+        panel.replaceChildren(); estado.textContent = "Vuelve a consultar el documento con tu sesión actual."; panel.append(estado);
+    }
+    const observer = new MutationObserver(() => {if (!contexto()) dispose();});
+    observer.observe(document.body,{childList:true,subtree:true});
+    if (client.auth.onAuthStateChange) subscription = client.auth.onAuthStateChange((event,session) => {
+        if (event === "SIGNED_OUT" || session?.user?.id !== actorEsperado) dispose();
+    })?.data?.subscription;
+    async function mismaSesion() {
+        const s = await client.auth.getUser();
+        if (!contexto()) {dispose(); return false;}
+        if (s.error || !actorEsperado || s.data?.user?.id !== actorEsperado) {dispose(); return false;}
+        return true;
+    }
+    try {
+        if (!await mismaSesion()) return false;
+        if (typeof texto !== "string" || !texto.trim() || texto.length > 100000 ||
+            typeof documento.titulo !== "string" || !documento.titulo.trim() || documento.titulo.length > 200 ||
+            typeof documento.version !== "string" || !/^[a-zA-Z0-9._-]{1,40}$/.test(documento.version) ||
+            typeof documento.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(documento.sha256)) {
+            estado.textContent = "No se recibió un contrato completo y verificable. Vuelve a consultar."; return false;
+        }
+        const bytes = new TextEncoder().encode(texto);
+        const digest = await crypto.subtle.digest("SHA-256",bytes);
+        if (!await mismaSesion()) return false;
+        const hash = Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,"0")).join("");
+        if (hash !== documento.sha256) {
+            estado.textContent = "El contenido no coincide con la versión recibida. La lectura y la descarga están bloqueadas; vuelve a consultar.";
+            texto = null; return false;
+        }
+        const titulo = document.createElement("h4"); titulo.textContent = documento.titulo + " · Versión " + documento.version;
+        const aviso = document.createElement("p"); aviso.style.cssText = "line-height:1.5;color:#ffd966";
+        aviso.textContent = borrador
+            ? "BORRADOR NO VIGENTE · Solo revisión interna. Esta copia no constituye contrato publicado ni aceptación."
+            : "Puedes leer y conservar este contrato. Abrirlo o descargarlo no registra tu aceptación ni inicia un pago.";
+        // El contrato fuente conserva su hash. La copia de borrador incluye una portada inequívoca.
+        exportacion = borrador ? "BORRADOR NO VIGENTE — SOLO REVISIÓN INTERNA\n" +
+            documento.titulo + " · Versión " + documento.version + "\n" +
+            "No publicado. No constituye aceptación ni habilita cobros.\n" +
+            "SHA-256 del contenido contractual original: " + hash + "\n\n" + texto : texto;
+        const lectura = document.createElement("details"); lectura.dataset.lecturaContrato = "true";
+        const resumen = document.createElement("summary"); resumen.textContent = borrador ? "Leer borrador completo" : "Leer contrato completo";
+        resumen.style.cssText = "padding:12px 0;cursor:pointer;font-weight:700";
+        const contenido = document.createElement("pre"); contenido.tabIndex = 0;
+        contenido.setAttribute("aria-label",borrador ? "Texto completo del borrador" : "Texto completo del contrato");
+        contenido.style.cssText = "white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;max-height:65vh;overflow:auto;max-width:100%;box-sizing:border-box;font:inherit;line-height:1.65;padding:14px;background:#101510;border:1px solid #64745d;border-radius:8px;color:#f4f4f4";
+        contenido.textContent = exportacion;
+        const cerrar = document.createElement("button"); cerrar.type = "button"; cerrar.textContent = "Cerrar lectura";
+        cerrar.addEventListener("click",()=>{lectura.open=false;resumen.focus();});
+        lectura.append(resumen,contenido,cerrar);
+        const descargar = document.createElement("button"); descargar.type = "button";
+        descargar.textContent = borrador ? "⬇ Descargar borrador (.txt)" : "⬇ Descargar contrato (.txt)";
+        descargar.style.cssText = "max-width:100%;white-space:normal;margin:12px 0;padding:12px";
+        const identificacion = document.createElement("details");
+        const idResumen = document.createElement("summary"); idResumen.textContent = "Identificación del documento";
+        idResumen.style.cssText = "cursor:pointer;padding:10px 0";
+        const huella = document.createElement("p"); huella.style.cssText = "font-size:12px;overflow-wrap:anywhere";
+        huella.textContent = "SHA-256 del contenido contractual: " + hash;
+        identificacion.append(idResumen,huella);
+        panel.replaceChildren(titulo,aviso,lectura,descargar,identificacion,estado);
+        estado.textContent = "Contenido verificado. Lectura y descarga disponibles.";
+        descargar.addEventListener("click",async()=>{
+            if (descargar.disabled || !contexto() || !exportacion) return;
+            descargar.disabled = true;
+            try {
+                if (!await mismaSesion() || !exportacion) return;
+                const url = URL.createObjectURL(new Blob([exportacion],{type:"text/plain;charset=utf-8"}));
+                const enlace = document.createElement("a"); enlace.href = url;
+                enlace.download = (borrador ? "BORRADOR_NO_VIGENTE_" : "") + "Contrato_Complementos_MASS_v" +
+                    documento.version.replace(/\./g,"_") + "_" + hash.slice(0,12) + ".txt";
+                enlace.hidden = true; panel.append(enlace); enlace.click(); enlace.remove();
+                urls.set(url,setTimeout(()=>{URL.revokeObjectURL(url);urls.delete(url);},30000));
+                estado.textContent = "Descarga solicitada. Revisa las descargas de tu navegador.";
+            } catch (_error) {
+                if (contexto()) estado.textContent = "No fue posible iniciar la descarga. Puedes reintentar o consultar el texto completo.";
+            } finally {if (!cerrado) descargar.disabled = false;}
+        });
+        return true;
+    } catch (_error) {
+        if (contexto()) estado.textContent = "No fue posible verificar el documento. Vuelve a consultar desde una conexión segura.";
+        return false;
+    }
+}
+
+// Consulta del borrador registrado. El servidor exige Súper Admin y nunca lo publica.
+async function mostrarLecturaBorradorComplementosC01() {
+    if (!(await verificarAccesoSuperAdmin()) || localStorage.getItem("admin_rol") !== "super_admin") return;
+    const raiz = document.getElementById("superAdminContenido"), panel = document.getElementById("panelSuperAdmin");
+    if (!raiz || !panel || panel.style.display === "none") return;
+    const vista = document.createElement("section"); vista.className = "card";
+    vista.style.cssText = "max-width:860px;margin:12px auto;padding:18px;text-align:left;overflow-wrap:anywhere";
+    const titulo = document.createElement("h3"); titulo.textContent = "📄 Consulta del borrador · Complementos MASS 1.1";
+    const aviso = document.createElement("p"); aviso.textContent = "Borrador no publicado. Puedes leerlo y descargar una copia para revisión, sin registrar otra decisión.";
+    const actualizar = document.createElement("button"); actualizar.type = "button"; actualizar.textContent = "Actualizar documento";
+    const volver = document.createElement("button"); volver.type = "button"; volver.textContent = "← Volver al Centro Jurídico MASS";
+    volver.addEventListener("click",()=>mostrarCentroJuridicoMassPM06());
+    const estado = document.createElement("p"); estado.setAttribute("role","status");
+    const host = document.createElement("div");
+    vista.append(titulo,aviso,actualizar,volver,estado,host); raiz.replaceChildren(vista);
+    let ocupado = false;
+    actualizar.addEventListener("click",async()=>{
+        if (ocupado || !vista.isConnected) return;
+        ocupado = true; actualizar.disabled = true; host.replaceChildren(); estado.textContent = "Consultando el borrador registrado...";
+        try {
+            const s = await supabaseClient.auth.getUser();
+            if (!vista.isConnected) return;
+            if (s.error || !s.data?.user?.id) {estado.textContent="Inicia sesión de nuevo como Súper Admin.";return;}
+            const {data,error} = await supabaseClient.rpc("consultar_borrador_complementos_mass_super_admin_c01");
+            if (!vista.isConnected) return;
+            const actual = await supabaseClient.auth.getUser();
+            if (!vista.isConnected) return;
+            if (actual.error || actual.data?.user?.id !== s.data.user.id) {estado.textContent="La sesión cambió. Vuelve a consultar el documento.";return;}
+            if (error || data?.ok !== true || data.codigo !== "BORRADOR_COMPLEMENTOS_CONSULTADO" || data.solo_lectura !== true ||
+                data.documento_publicado !== false || data.contrato_vigente !== false ||
+                data.documento?.id !== "045cd82b-536b-44c4-975d-ef681643edc6" || data.documento.version !== "1.1" ||
+                data.documento.estado !== "borrador" || data.documento.sha256 !== "c0723f7fae901e8b3c86794de08126ec620e6019d12ac01acebc92c21a47c611") {
+                estado.textContent = error?.code === "PGRST202" || error?.code === "42883"
+                    ? "La consulta privada del borrador está pendiente de instalación (C-01)."
+                    : "No se pudo obtener el borrador exacto con esta sesión. No se modificó ningún documento.";
+                return;
+            }
+            const ok = await massMontarDocumentoComplementosC01({host,documento:data.documento,actorEsperado:s.data.user.id,borrador:true});
+            if (vista.isConnected) estado.textContent = ok ? "Borrador consultado. Su estado continúa sin publicar." : "La verificación del documento no se completó.";
+        } catch (_error) {if(vista.isConnected)estado.textContent="No fue posible consultar el borrador. Puedes reintentar.";}
+        finally {ocupado=false;if(actualizar.isConnected)actualizar.disabled=false;}
+    });
+    actualizar.click();
 }
 
 </script>
