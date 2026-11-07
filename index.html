@@ -121206,6 +121206,7 @@ async function mostrarPreviaComplementosBJ123() {
                 if(massEsPaqueteExtraC04H(paquete)) {
                     capacidad.textContent = "Capacidad adicional: " + String(paquete.capacidad ?? "—") + " · Vence junto con la base · Sin renovación automática";
                     massMontarExtraC04H({host:info,paquete,moneda:monedaQA,soloVista:true});
+                    massMontarCheckoutExtraC04I({host:info,paquete,moneda:monedaQA,soloVista:true});
                 } else {
                 massMontarCotizacionFiscalP06B({host:info, paquete, moneda:monedaQA,
                     organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
@@ -121337,6 +121338,7 @@ async function mostrarPreviaComplementosBJ123() {
                     tarjeta.append(nombre,descripcion,capacidad,precio,pendiente,moneda);
                     catalogoLista.append(tarjeta);
                     massMontarExtraC04H({host:tarjeta,paquete,moneda,organizadorId,actorEsperado:sesion.data.user.id});
+                    massMontarCheckoutExtraC04I({host:tarjeta,paquete,moneda,organizadorId,actorEsperado:sesion.data.user.id,cargarDomicilio:fuenteDomicilio});
                     continue;
                 }
                 const botonOferta = document.createElement("button");
@@ -122268,6 +122270,7 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                 if(massEsPaqueteExtraC04H(paquete)) {
                     capacidad.textContent = "Capacidad adicional: " + String(paquete.capacidad ?? "—") + " · Vence junto con la base · Sin renovación automática";
                     massMontarExtraC04H({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
+                    massMontarCheckoutExtraC04I({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
                 } else {
                 massMontarCotizacionFiscalP06B({host:detallePaquete, paquete, moneda:monedaQA,
                     organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
@@ -123206,7 +123209,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
     function detailRender(host,d,epoch){
         const x=d.contratacion;host.replaceChildren();
         const data=el("div");row(data,"Referencia de contratación",x.adquisicion_id);row(data,"Confirmada",date(x.confirmada_en));
-        row(data,"Capacidad",String(x.capacidad));row(data,"Vigencia contratada","1 mes · Sin renovación automática");
+        row(data,"Capacidad",String(x.capacidad));row(data,"Vigencia contratada",x.tipo_paquete==="adicional" ? (x.extra_c04i ? "Hasta "+date(x.extra_c04i.extra_hasta)+" · Vence junto con la base · Sin renovación automática" : "Vigencia del EXTRA por consultar") : "1 mes · Sin renovación automática");
         if(fiscalOK(x)){row(data,"Subtotal confirmado",money(x.subtotal_confirmado,x.moneda));row(data,"Impuestos confirmados",money(x.impuesto_confirmado,x.moneda));row(data,"Total confirmado",money(x.total_confirmado,x.moneda));}
         else data.append(el("p","El resumen fiscal requiere revisión. No se muestra un total definitivo.","color:#ffe19a"));
         row(data,"Contrato aceptado","Versión "+String(x.documento_version||"—"));
@@ -123239,7 +123242,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
         if(!d.derechos.length)host.append(el("p","No hay un derecho de uso registrado para esta contratación."));
         for(const right of d.derechos){row(host,"Estado del derecho",rightStates[right.estado]||"Por revisar");row(host,"Inicio registrado",date(right.vigente_desde));row(host,"Fin registrado",date(right.vigente_hasta));}
         const actions=el("div",undefined,"display:flex;gap:10px;flex-wrap:wrap;margin-top:12px");
-        if(!revision && fiscalOK(x) && ["pagado","pendiente_terminos","activado"].includes(x.estado)) {
+        if(!revision && x.tipo_paquete!=="adicional" && fiscalOK(x) && ["pagado","pendiente_terminos","activado"].includes(x.estado)) {
             const activation=button("Consultar activación");
             activation.addEventListener("click",()=>{
                 if(!context()||epoch!==generation||!host.isConnected)return;
@@ -123251,7 +123254,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
         } else if(revision) {
             actions.append(el("p","La activación del paquete base corresponde al propietario desde Mis contrataciones."));
         }
-        if(!revision && fiscalOK(x) && ["pendiente_pago","pago_en_revision"].includes(x.estado)) {
+        if(!revision && x.tipo_paquete!=="adicional" && fiscalOK(x) && ["pendiente_pago","pago_en_revision"].includes(x.estado)) {
             const payment=button("Preparar pago o enviar comprobante");
             payment.addEventListener("click",()=>{
                 if(!context()||epoch!==generation||!host.isConnected)return;
@@ -123262,6 +123265,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
             actions.prepend(payment);
         }
         if(d.revision_propia===true)host.append(el("p","Este expediente pertenece a tu cuenta. La revisión del pago debe realizarla otro Súper Admin autorizado."));
+        if(x.tipo_paquete==="adicional") actions.append(el("p","El pago y la activación del EXTRA están pendientes de habilitación."));
         host.append(actions);
     }
     function card(x,epoch){
@@ -123707,6 +123711,88 @@ function massMontarExtraC04H({host,paquete,moneda,organizadorId,actorEsperado,so
         finally{clearTimeout(timer);if(turn===epoch){busy=false;if(alive())refresh.disabled=false;}}
     });
     return {dispose:()=>{stop('');panel.remove();}};
+}
+
+</script>
+<script>
+// C04I. Ruta exclusiva del EXTRA. El servidor mantiene cerrada la habilitación comercial.
+function massMontarCheckoutExtraC04I({host,paquete={},moneda,organizadorId,actorEsperado,soloVista=false,cargarDomicilio}) {
+ const el=(t,text)=>{const n=document.createElement(t);if(text!==undefined)n.textContent=text;return n;};
+ const button=text=>{const b=el('button',text);b.type='button';b.style.cssText='padding:12px;max-width:100%;white-space:normal;margin:6px 0';return b;};
+ const panel=el('details');panel.dataset.massCheckoutExtra='C04I';panel.style.cssText='border:1px solid #759d6b;border-radius:12px;padding:12px;margin:12px 0;text-align:left;overflow-wrap:anywhere';
+ panel.append(el('summary','EXTRA · Cotización y confirmación'));
+ const intro=el('p',soloVista?'Vista de prueba: el domicilio, la base y la cotización se consultarán en la sesión del organizador.':'Usaremos el domicilio de Mi Perfil Legal. El EXTRA conservará la fecha y hora de vencimiento de tu base.');
+ const notice=el('p','La cotización y contratación del EXTRA están pendientes de habilitación. Los pagos y la activación siguen deshabilitados.');notice.style.color='#ffe19a';
+ const status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ const addressSummary=el('p',soloVista?'Domicilio: se cargará de Mi Perfil Legal.':'Domicilio: pendiente de consulta.');
+ const editor=el('details');editor.append(el('summary','Usar otro domicilio o completar datos'),el('p','Estos datos se usarán solo para la cotización. Mi Perfil Legal conserva su información.'));
+ const fields={},names={pais_iso2:'País de facturación',estado_region:'Estado o región',ciudad:'Ciudad',codigo_postal:'Código postal',direccion_linea1:'Calle, número y dirección'};
+ const max={pais_iso2:2,estado_region:120,ciudad:120,codigo_postal:20,direccion_linea1:250};
+ for(const [key,label]of Object.entries(names)){const l=el('label',label);l.style.cssText='display:grid;gap:6px;margin:12px 0';const i=el(key==='pais_iso2'?'select':'input');i.setAttribute('aria-label',label);i.style.cssText='width:100%;min-width:0;box-sizing:border-box;padding:12px;background:#151b17;color:#fff;border:1px solid #759d6b;border-radius:8px;font:inherit';i.disabled=true;
+ if(key==='pais_iso2')for(const[v,t]of [['','Selecciona el país'],['MX','México'],['US','Estados Unidos']]){const op=el('option',t);op.value=v;i.append(op);}else{i.type='text';i.maxLength=max[key];}l.append(i);editor.append(l);fields[key]=i;}
+ const checkbox=text=>{const l=el('label');l.style.cssText='display:flex;gap:10px;align-items:flex-start;line-height:1.5;margin:12px 0';const i=el('input');i.type='checkbox';i.style.cssText='width:20px;height:20px;flex:0 0 20px';i.disabled=true;l.append(i,el('span',text));return[l,i];};
+ const [dl,dc]=checkbox('Confirmo que este domicilio de facturación es correcto.');
+ const quoteButton=button('Obtener cotización del EXTRA'),recoverButton=button('Actualizar o recuperar cotización');
+ const summary=el('div'),contract=el('div');
+ const [al,accept]=checkbox('Acepto el contrato indicado y confirmo el precio proporcional, el domicilio, la moneda, los impuestos, el total y el vencimiento del EXTRA junto con la base. El uso comienza al activarse; un retraso no extiende el vencimiento. Sin renovación automática.');
+ const confirmButton=button('Confirmar contratación del EXTRA'),close=button('Cerrar cotización del EXTRA');
+ const note=el('p','Marcar la casilla no registra la contratación. La confirmación requiere revisar el resumen y pulsar el botón. No realiza un cobro.');note.style.color='#ffe19a';
+ panel.append(intro,notice,status,addressSummary,editor,dl,quoteButton,recoverButton,summary,contract,al,confirmButton,note,close);host.append(panel);
+ const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x);
+ const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
+ const currency=()=>moneda?.value||'USD',money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
+ const date=x=>new Date(x).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+ const cents=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=9999999999.99&&Math.abs(x*100-Math.round(x*100))<.001?Math.round(x*100):null;
+ const row=(k,v)=>{const r=el('div');r.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:6px;padding:12px 0;border-bottom:1px solid #435441';r.append(el('span',k),el('strong',v));summary.append(r);};
+ let closed=false,busy=false,epoch=0,loaded=false,enabled=false,context=null,quote=null,attempt=null,opened=false,contractOK=false,subscription=null,timer=null;
+ const key=()=>['mass-c04i',actorEsperado,organizadorId,paquete.paquete_id,currency()].join(':');
+ const remember=()=>{try{if(attempt)sessionStorage.setItem(key(),JSON.stringify({quoteRequest:attempt.quoteRequest,confirmationRequest:attempt.confirmationRequest}));}catch(_){}};
+ const saved=()=>{try{const s=JSON.parse(sessionStorage.getItem(key())||'null');return uuid(s?.quoteRequest)&&uuid(s?.confirmationRequest)?s:null;}catch(_){return null;}};
+ const validContext=()=>!closed&&panel.isConnected&&(soloVista||org()===organizadorId);
+ const addr=()=>Object.fromEntries(Object.entries(fields).map(([k,v])=>[k,v.value.trim()]));
+ const complete=d=>['US','MX'].includes(d.pais_iso2)&&Object.keys(fields).every(k=>d[k]?.length>=(k==='direccion_linea1'?3:2)&&d[k].length<=max[k]);
+ const current=()=>quote&&quote.vigente&&Date.parse(quote.expira_en)>Date.now()&&!quote.confirmacion;
+ function sync(){quoteButton.disabled=soloVista||closed||busy||!enabled||!context?.extra||!dc.checked||!complete(addr())||!!attempt?.unknown;
+ recoverButton.disabled=soloVista||closed||busy||!(attempt||saved());
+ confirmButton.disabled=soloVista||closed||busy||!enabled||!current()||!contractOK||!opened||!accept.checked||!!attempt?.unknown;
+ accept.disabled=soloVista||closed||busy||!enabled||!current()||!contractOK||!opened||!!attempt?.unknown;
+ dc.disabled=soloVista||closed||busy||!enabled||!!attempt?.unknown;
+ for(const i of Object.values(fields))i.disabled=dc.disabled;}
+ function clearQuote(){epoch++;quote=null;accept.checked=false;opened=false;contractOK=false;summary.replaceChildren();contract.replaceChildren();sync();}
+ function stop(remove=false){if(closed)return;closed=true;epoch++;clearInterval(timer);subscription?.unsubscribe?.();observer.disconnect();quote=null;context=null;attempt=null;contract.replaceChildren();summary.replaceChildren();for(const i of Object.values(fields))i.value='';addressSummary.textContent='';status.textContent='La sesión o el organizador cambiaron. Vuelve a abrir esta pantalla.';sync();if(remove)panel.remove();}
+ const observer=new MutationObserver(()=>{if(!validContext())stop();});observer.observe(document.body,{childList:true,subtree:true});
+ async function identity(){const r=await supabaseClient.auth.getUser();if(!validContext()||r.error||r.data?.user?.id!==actorEsperado){stop();throw Error('CONTEXTO_CAMBIO');}}
+ async function rpc(name,args,token){await identity();let t;try{const r=await Promise.race([supabaseClient.rpc(name,args),new Promise((_,reject)=>{t=setTimeout(()=>reject(Error('RESPUESTA_INCIERTA')),15000);})]);await identity();if(token!==epoch)throw Error('CONTEXTO_CAMBIO');if(r.error)throw Error(r.error.code==='PGRST202'?'PENDIENTE_INSTALACION':'RESPUESTA_INCIERTA');if(r.data?.ok!==true)throw Error(r.data?.codigo||'RESPUESTA_INVALIDA');return r.data;}finally{clearTimeout(t);}}
+ function message(e){const m={PENDIENTE_INSTALACION:'Esta actualización todavía no está instalada. Vuelve después de instalar el bloque SQL.',CHECKOUT_EXTRA_NO_HABILITADO:'La cotización y contratación del EXTRA aún no están habilitadas.',EXTRA_REQUIERE_BASE_VIGENTE:'Necesitas un paquete base vigente para cotizar un EXTRA.',BASE_PROXIMA_A_VENCER:'La base está próxima a vencer. Renueva la base antes de cotizar el EXTRA.',COTIZACION_EXTRA_NO_ENCONTRADA:'No hay una cotización registrada con esta solicitud. Puedes volver a solicitarla.',RESPUESTA_INCIERTA:'No se pudo confirmar el resultado. Usa «Actualizar o recuperar cotización» antes de volver a enviar.',CONTRATO_CAMBIO:'El contrato cambió. Solicita una nueva cotización y revísala.',CONDICIONES_EXTRA_CAMBIARON:'Cambió la base o el precio de referencia. Solicita una nueva cotización.'};return m[e.message]||'No fue posible validar la operación. Actualiza las condiciones antes de continuar.';}
+ async function work(fn){if(busy||soloVista||!validContext())return;busy=true;sync();const t=epoch;try{await fn(t);}catch(e){if(validContext()&&t===epoch){accept.checked=false;if(e.message==='CHECKOUT_EXTRA_NO_HABILITADO')enabled=false;if(['BASE_EXTRA_CAMBIO','CONDICIONES_EXTRA_CAMBIARON','CONTRATO_CAMBIO','PAQUETE_CAMBIO'].includes(e.message)){loaded=false;enabled=false;context=null;quote=null;contract.replaceChildren();placeholder();status.textContent='Las condiciones cambiaron. Cierra y vuelve a abrir este apartado para consultarlas de nuevo.';}else status.textContent=message(e);}}finally{busy=false;sync();}}
+ function placeholder(){summary.replaceChildren();row('Subtotal del EXTRA','Precio proporcional por confirmar');row('Vencimiento del EXTRA','Misma fecha y hora que la base');row('Impuestos y total','Pendientes de cotización fiscal');row('Contrato','Pendiente del contrato oficial vigente');}
+ function validQuote(z){const e=z?.extra,d=z?.documento;return z?.ok===true&&z.codigo==='COTIZACION_EXTRA_C04I'&&z.actor_auth_id===actorEsperado&&z.organizador_id===organizadorId&&z.paquete_id===paquete.paquete_id&&z.paquete_version===Number(paquete.paquete_version)&&z.moneda===currency()&&uuid(z.cotizacion_id)&&z.solicitud_id===attempt?.quoteRequest&&z.producto_codigo===paquete.producto_codigo&&z.pago_habilitado===false&&z.activacion_habilitada===false&&typeof z.checkout_habilitado==='boolean'&&typeof z.vigente==='boolean'&&cents(z.subtotal)>0&&cents(z.impuesto)!==null&&cents(z.total_pagar)===cents(z.subtotal)+cents(z.impuesto)&&/^[a-f0-9]{64}$/.test(z.condiciones_hash)&&uuid(e?.derecho_base_id)&&e.politica_version==='EXTRA-COTERMINO-1'&&e.moneda===z.moneda&&e.producto_codigo===z.producto_codigo&&e.extra_hasta===e.base_hasta&&Date.parse(e.base_hasta)>Date.parse(z.expira_en)&&Date.parse(z.expira_en)-Date.parse(z.emitida_en)===900000&&Date.parse(e.calculado_en)===Date.parse(z.emitida_en)&&Date.parse(e.base_desde)<=Date.parse(e.calculado_en)&&cents(e.subtotal_proporcional_previo)===cents(z.subtotal)&&cents(e.precio_mensual_referencia)>=cents(z.subtotal)&&Number.isFinite(e.proporcion_restante)&&e.proporcion_restante>0&&e.proporcion_restante<=1&&Math.abs(cents(e.precio_mensual_referencia)*e.proporcion_restante-cents(z.subtotal))<=.501&&uuid(d?.id)&&typeof d.contenido==='string'&&/^[a-f0-9]{64}$/.test(d.hash)&&complete(z.ubicacion||{});}
+ function validReceipt(r,z){return r?.ok===true&&r.confirmacion_registrada===true&&r.pago_iniciado===false&&r.pago_habilitado===false&&r.derechos_activados===false&&uuid(r.confirmacion_id)&&uuid(r.adquisicion_id)&&r.organizador_id===organizadorId&&r.cotizacion_id===z.cotizacion_id&&r.moneda===z.moneda&&cents(r.total_pagar)===cents(z.total_pagar)&&r.condiciones_hash===z.condiciones_hash&&r.extra_c04i?.extra_hasta===z.extra.extra_hasta;}
+ async function renderQuote(z,t){if(!validQuote(z))throw Error('RESPUESTA_INVALIDA');if(z.confirmacion&&!validReceipt(z.confirmacion,z))throw Error('RESPUESTA_INVALIDA');quote=z;enabled=z.checkout_habilitado;attempt.unknown=false;remember();for(const[k,i]of Object.entries(fields))i.value=z.ubicacion[k]||'';addressSummary.textContent='Domicilio de la cotización: '+Object.values(addr()).join(' · ');dc.checked=false;accept.checked=false;opened=false;contractOK=false;summary.replaceChildren();contract.replaceChildren();
+ row('Precio mensual de referencia',money(z.extra.precio_mensual_referencia,z.moneda));row('Subtotal proporcional',money(z.subtotal,z.moneda));row('Impuestos',money(z.impuesto,z.moneda));row('Total cotizado',money(z.total_pagar,z.moneda));row('Fin del EXTRA junto con la base',date(z.extra.extra_hasta));row('Cotización válida hasta',date(z.expira_en));row('Domicilio de facturación',Object.keys(names).map(k=>z.ubicacion[k]).join(' · '));
+ if(z.confirmacion){row('Referencia de contratación',z.confirmacion.adquisicion_id);status.textContent='Contratación registrada. El precio y vencimiento quedaron conservados. Pagos y activación pendientes de habilitación.';return;}
+ contractOK=await massMontarDocumentoComplementosC01({host:contract,documento:{titulo:z.documento.titulo,version:z.documento.version,contenido:z.documento.contenido,sha256:z.documento.hash},actorEsperado,organizadorId});
+ if(t!==epoch||!validContext())return;const reading=contract.querySelector('[data-lectura-contrato]');reading?.addEventListener('toggle',()=>{if(reading.open){opened=true;sync();}});
+ status.textContent=current()?'Cotización lista. Lee el contrato y revisa el domicilio, el total y el vencimiento.':'La cotización venció. Solicita una nueva antes de confirmar.';sync();}
+ async function load(t){context=await rpc('consultar_checkout_extra_c04i_seguro',{p_organizador_id:organizadorId,p_paquete_id:paquete.paquete_id,p_paquete_version_esperada:Number(paquete.paquete_version),p_moneda:currency()},t);
+ if(context.codigo!=='CHECKOUT_EXTRA_C04I'||context.actor_auth_id!==actorEsperado||context.organizador_id!==organizadorId||context.paquete_id!==paquete.paquete_id||typeof context.checkout_habilitado!=='boolean'||context.pago_habilitado!==false||context.activacion_habilitada!==false)throw Error('RESPUESTA_INVALIDA');
+ enabled=context.checkout_habilitado;loaded=true;attempt=saved();notice.textContent=enabled?'El precio proporcional se fija al cotizar. El uso comienza al activarse y vence junto con la base. Los pagos y la activación siguen deshabilitados.':'La cotización y contratación del EXTRA aún no están habilitadas. Los pagos y la activación siguen deshabilitados.';
+ if(attempt){await recover(t);return;}if(!enabled){status.textContent='Condiciones consultadas. Habilitación comercial pendiente.';return;}
+ const profile=await (cargarDomicilio||massCrearFuenteDomicilioFiscalP06C(organizadorId,actorEsperado))();await identity();if(t!==epoch)return;
+ for(const[k,i]of Object.entries(fields))i.value=profile.domicilio?.[k]||'';addressSummary.textContent='Domicilio de Mi Perfil Legal: '+Object.values(addr()).filter(Boolean).join(' · ');editor.open=!complete(addr());dc.checked=false;status.textContent='Revisa y confirma el domicilio para obtener la cotización.';}
+ async function recover(t){if(!attempt)attempt=saved();if(!attempt)return;try{const z=await rpc('consultar_cotizacion_extra_c04i_segura',{p_organizador_id:organizadorId,p_solicitud_id:attempt.quoteRequest},t);await renderQuote(z,t);}catch(e){if(e.message==='COTIZACION_EXTRA_NO_ENCONTRADA'){attempt=null;try{sessionStorage.removeItem(key());}catch(_){}loaded=false;}throw e;}}
+ panel.addEventListener('toggle',()=>{if(panel.open&&!loaded)void work(load);});recoverButton.addEventListener('click',()=>void work(recover));
+ quoteButton.addEventListener('click',()=>{if(quoteButton.disabled)return;void work(async t=>{const d=addr();if(!dc.checked||!complete(d))return;const e=context.extra;if(!uuid(e?.derecho_base_id)||!Number.isFinite(Date.parse(e.base_hasta)))throw Error('RESPUESTA_INVALIDA');
+ attempt={quoteRequest:crypto.randomUUID(),confirmationRequest:crypto.randomUUID(),unknown:true};remember();accept.checked=false;quote=null;contract.replaceChildren();summary.replaceChildren();
+ try{const z=await rpc('emitir_cotizacion_extra_c04i_segura',{p_solicitud_id:attempt.quoteRequest,p_organizador_id:organizadorId,p_paquete_id:paquete.paquete_id,p_paquete_version_esperada:Number(paquete.paquete_version),p_moneda:currency(),p_ubicacion_facturacion:d,p_confirmacion_ubicacion:true,p_base_esperada:e.derecho_base_id,p_base_hasta_esperada:e.base_hasta},t);await renderQuote(z,t);}catch(err){if(!['RESPUESTA_INCIERTA','CONTEXTO_CAMBIO'].includes(err.message))attempt.unknown=false;throw err;}});});
+ confirmButton.addEventListener('click',()=>{if(confirmButton.disabled)return;void work(async t=>{const z=quote;if(!current()||!accept.checked||!opened||!contractOK)return;
+ if(!window.confirm('¿Confirmas contratar este EXTRA por '+money(z.total_pagar,z.moneda)+' (impuestos: '+money(z.impuesto,z.moneda)+')? Vence junto con la base el '+date(z.extra.extra_hasta)+'. No se realizará un cargo.'))return;
+ attempt.unknown=true;remember();try{const r=await rpc('confirmar_contratacion_extra_c04i_segura',{p_solicitud_id:attempt.confirmationRequest,p_organizador_id:organizadorId,p_cotizacion_id:z.cotizacion_id,p_documento_legal_id:z.documento.id,p_documento_version:z.documento.version,p_documento_hash:z.documento.hash,p_moneda:z.moneda,p_total_esperado:z.total_pagar,p_confirmacion_explicita:true,p_condiciones_hash:z.condiciones_hash},t);if(!validReceipt(r,z))throw Error('RESPUESTA_INCIERTA');await renderQuote({...z,confirmacion:r},t);}catch(err){if(!['RESPUESTA_INCIERTA','CONTEXTO_CAMBIO'].includes(err.message))attempt.unknown=false;throw err;}});});
+ for(const i of Object.values(fields))i.addEventListener('input',()=>{if(busy||attempt?.unknown)return;clearQuote();dc.checked=false;addressSummary.textContent='Domicilio para esta cotización: '+Object.values(addr()).join(' · ');});
+ dc.addEventListener('change',sync);accept.addEventListener('change',sync);close.addEventListener('click',()=>panel.open=false);
+ moneda?.addEventListener('change',()=>{if(!validContext())return;clearQuote();loaded=false;enabled=false;context=null;attempt=null;dc.checked=false;placeholder();status.textContent='Moneda actualizada. Abre de nuevo este apartado para consultar condiciones.';panel.open=false;sync();});
+ placeholder();sync();if(!soloVista){subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)stop();})?.data?.subscription;timer=setInterval(()=>{if(!validContext()){stop();return;}if(quote&&!current()&&!quote.confirmacion){accept.checked=false;status.textContent='La cotización venció. Solicita una nueva antes de confirmar.';sync();}},1000);}
+ return {dispose:()=>stop(true)};
 }
 
 </script>
