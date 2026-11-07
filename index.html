@@ -121209,6 +121209,7 @@ async function mostrarPreviaComplementosBJ123() {
                 massMontarResumenContratacionC02({host:info,paquete,moneda:monedaQA,soloVista:true});
                 massMontarPagoOrganizadorC04E({host:info,moneda:monedaQA,soloVista:true});
                 massMontarRevisionPagoC04F({host:info,moneda:monedaQA,soloVista:true});
+                massMontarActivacionC04G({host:info,moneda:monedaQA,soloVista:true});
             }
             qaEstado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes leídos desde Supabase. Solo QA; sin operaciones comerciales.";
@@ -122256,6 +122257,7 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                 massMontarResumenContratacionC02({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
                 massMontarPagoOrganizadorC04E({host:detallePaquete,moneda:monedaQA,soloVista:true});
                 massMontarRevisionPagoC04F({host:detallePaquete,moneda:monedaQA,soloVista:true});
+                massMontarActivacionC04G({host:detallePaquete,moneda:monedaQA,soloVista:true});
             }
             estado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes consultados desde Supabase. Solo lectura, sin pagos.";
@@ -123109,7 +123111,7 @@ async function mostrarPoliticaReembolsosComplementosMassBJ124O() {
 })();
 </script>
 <script>
-// C04-D: seguimiento de lectura. C04E y C04F montan sus formularios autenticados con bloqueo propio.
+// C04-D: seguimiento de lectura. C04E/F/G montan formularios autenticados con bloqueo propio.
 async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
     if (revision && !(await verificarAccesoSuperAdmin())) return;
     const root = document.getElementById(revision ? "superAdminContenido" : "adminContenido");
@@ -123218,7 +123220,18 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
         if(!d.derechos.length)host.append(el("p","No hay un derecho de uso registrado para esta contratación."));
         for(const right of d.derechos){row(host,"Estado del derecho",rightStates[right.estado]||"Por revisar");row(host,"Inicio registrado",date(right.vigente_desde));row(host,"Fin registrado",date(right.vigente_hasta));}
         const actions=el("div",undefined,"display:flex;gap:10px;flex-wrap:wrap;margin-top:12px");
-        for(const label of ["Activar complemento · no habilitado"]){const b=button(label);b.disabled=true;actions.append(b);}
+        if(!revision && fiscalOK(x) && ["pagado","pendiente_terminos","activado"].includes(x.estado)) {
+            const activation=button("Consultar activación");
+            activation.addEventListener("click",()=>{
+                if(!context()||epoch!==generation||!host.isConnected)return;
+                const previous=host.querySelector('[data-mass-activacion="C04G"]');
+                if(previous){previous.open=true;previous.scrollIntoView({block:"nearest"});return;}
+                massMontarActivacionC04G({host,adquisicionId:x.adquisicion_id,organizadorId:x.organizador_id,actorEsperado:actor});
+            });
+            actions.append(activation);
+        } else if(revision) {
+            actions.append(el("p","La activación del paquete base corresponde al propietario desde Mis contrataciones."));
+        }
         if(!revision && fiscalOK(x) && ["pendiente_pago","pago_en_revision"].includes(x.estado)) {
             const payment=button("Preparar pago o enviar comprobante");
             payment.addEventListener("click",()=>{
@@ -123528,6 +123541,74 @@ function massMontarRevisionPagoC04F({host,adquisicionId,pagoId,organizadorId,act
     });
     if(soloVista){notice.textContent='Vista de prueba: consulta del comprobante y registro de decisiones deshabilitados. No se consultan expedientes personales.';row('Total con impuestos','Se tomará de la contratación confirmada');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='La aprobación exigirá comprobar la recepción del dinero. Registrar una decisión no activará el complemento.';controls();return;}
     if(![adquisicionId,pagoId,organizadorId,actorEsperado].every(uuid)){dispose(true);return;}
+    observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
+    try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
+    refresh.click();
+}
+
+</script>
+<script>
+// C04G: alta base / renovacion manual del propietario. Reutiliza C03, sin otra aceptacion.
+function massMontarActivacionC04G({host,adquisicionId,organizadorId,actorEsperado,soloVista=false,moneda='USD'}) {
+    if(!host)return;
+    const el=(t,s,css)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;if(css)n.style.cssText=css;return n;};
+    const button=s=>{const n=el('button',s,'max-width:100%;white-space:normal;padding:10px 14px;margin:6px 0');n.type='button';return n;};
+    const panel=el('details',undefined,'border:1px solid #39ff14;border-radius:12px;padding:14px;margin:14px 0;overflow-wrap:anywhere');panel.dataset.massActivacion='C04G';panel.open=!soloVista;
+    panel.append(el('summary','Activación del complemento','font-weight:700;cursor:pointer'));
+    const notice=el('p',undefined,'color:#ffe19a;line-height:1.5'),data=el('div'),status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const save=button('Activar complemento'),refresh=button('Actualizar activación'),close=button('Cerrar activación');
+    panel.append(el('p',soloVista?'Vista de prueba. La contratación, el pago acreditado y la vigencia se consultarán en la sesión del organizador.':'Consulta la capacidad contratada y activa tu paquete base cuando esté disponible.'),notice,data,
+        el('p','Se conserva la aceptación del contrato registrada al contratar. No tienes que aceptarlo otra vez. Esta activación no realiza un cargo.'),save,status,refresh,close);host.append(panel);
+    let current=null,busy=false,closed=false,subscription=null,observer=null;
+    const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+    const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
+    const alive=()=>!closed&&panel.isConnected&&(soloVista||org()===organizadorId)&&document.getElementById('panelAdmin')?.style.display!=='none';
+    const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
+    const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
+    const key=d=>JSON.stringify([d.confirmacion_id,d.total_pagar,d.moneda,d.ruta,d.derecho_anterior_id,d.capacidad,d.paquete_codigo,d.version_adquisicion]);
+    const date=s=>new Date(s).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+    function row(k,v){const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));data.append(r);}
+    function controls(){save.disabled=soloVista||closed||busy||current?.activacion_permitida!==true;refresh.disabled=soloVista||closed||busy;}
+    function dispose(clear=false){if(closed)return;closed=true;current=null;subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();notice.textContent='';status.textContent='La sesión o el organizador cambió. Vuelve a abrir la activación.';}controls();}
+    close.addEventListener('click',()=>{dispose();panel.remove();});
+    const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT')),20000);})]);}finally{clearTimeout(timer);}};
+    async function identity(){if(!alive()){dispose(panel.isConnected);return false;}const r=await limit(supabaseClient.auth.getUser());if(!alive()){dispose(panel.isConnected);return false;}if(r.error||r.data?.user?.id!==actorEsperado){dispose(true);return false;}return true;}
+    function validate(d,codes){
+        if(!d||d.ok!==true||!codes.includes(d.codigo)||d.version_pantalla!=='C04G-1'||d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.adquisicion_id!==adquisicionId||!uuid(d.confirmacion_id)||!uuid(d.pago_id)||
+          !['USD','MXN'].includes(d.moneda)||cents(d.subtotal)===null||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)===null||cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||
+          !Number.isSafeInteger(d.version_adquisicion)||d.version_adquisicion<1||!Number.isSafeInteger(d.capacidad)||d.capacidad<1||d.duracion_meses!==1||d.renovacion_automatica!==false||d.aceptacion_repetida_requerida!==false||d.contrato_aceptado!==true||d.pago_acreditado!==true||
+          typeof d.paquete_codigo!=='string'||!d.paquete_codigo||typeof d.producto_codigo!=='string'||!d.producto_codigo||!['pagado','pendiente_terminos','activado'].includes(d.estado_adquisicion)||!['alta','renovacion_manual'].includes(d.ruta))throw Error('RESPUESTA');
+        for(const k of ['activacion_comercial_habilitada','activacion_permitida','activacion_registrada'])if(typeof d[k]!=='boolean')throw Error('RESPUESTA');
+        if((d.ruta==='alta'&&d.derecho_anterior_id!==null)||(d.ruta==='renovacion_manual'&&!uuid(d.derecho_anterior_id)))throw Error('RUTA');
+        if(d.activacion_registrada!==(d.estado_adquisicion==='activado')||(d.activacion_permitida&&(!d.activacion_comercial_habilitada||d.activacion_registrada)))throw Error('ESTADO');
+        if(d.activacion_registrada){const r=d.derecho;if(!r||!uuid(r.derecho_id)||r.capacidad!==d.capacidad||typeof r.estado!=='string'||!Number.isFinite(Date.parse(r.vigente_desde))||!Number.isFinite(Date.parse(r.vigente_hasta))||Date.parse(r.vigente_hasta)<=Date.parse(r.vigente_desde))throw Error('VIGENCIA');}
+        else if(d.derecho!==null||(d.ruta==='renovacion_manual'&&!Number.isFinite(Date.parse(d.derecho_anterior_hasta))))throw Error('VIGENCIA');
+        return d;
+    }
+    function render(d){current=d;data.replaceChildren();row('Paquete',d.paquete_codigo);row('Capacidad contratada',d.capacidad);row('Vigencia','1 mes · Sin renovación automática');row('Total confirmado con impuestos',money(d.total_pagar,d.moneda));row('Pago','Acreditación registrada');row('Modalidad',d.ruta==='alta'?'Primera activación':'Renovación manual');
+        if(d.activacion_registrada){row('Referencia de activación',d.derecho.derecho_id);row('Inicio registrado',date(d.derecho.vigente_desde));row('Fin registrado',date(d.derecho.vigente_hasta));row('Estado registrado',d.derecho.estado);notice.textContent='La activación ya está registrada. Consulta sus fechas y estado; no es necesario repetirla.';}
+        else {if(d.ruta==='renovacion_manual')row('Fin del periodo anterior',date(d.derecho_anterior_hasta));row('Inicio del nuevo periodo',d.ruta==='alta'?'Al activar el complemento':'Al terminar el periodo anterior o al activar, si ya venció');notice.textContent=d.activacion_comercial_habilitada?'Las fechas definitivas quedarán registradas al activar.':'La activación comercial sigue deshabilitada.';}
+        save.textContent=d.ruta==='renovacion_manual'?'Activar renovación manual':'Activar complemento';controls();
+    }
+    const messages={SOLICITANTE_NO_AUTORIZADO:'Solo el propietario original puede activar esta contratación.',ACTIVACION_COMERCIAL_NO_HABILITADA:'La activación comercial todavía no está habilitada.',RESUMEN_ACTIVACION_CAMBIO:'La contratación o el periodo anterior cambió. Actualiza la activación antes de continuar.',ADQUISICION_NO_ACTIVABLE_C04C:'Esta contratación no está disponible para activar un paquete base.',CATALOGO_NO_HABILITADO:'El paquete todavía no está habilitado para activarse.',PAGO_APROBADO_NO_UNICO:'La contratación todavía no tiene un pago acreditado válido.'};
+    function fail(e){return messages[e.message]||(e.message==='PGRST202'?'La activación todavía no está disponible. Inténtalo después de la actualización.':'No se pudo confirmar el resultado. Pulsa «Actualizar activación» antes de volver a intentar.');}
+    async function read(){const r=await limit(supabaseClient.rpc('consultar_activacion_complemento_c04g_segura',{p_adquisicion_id:adquisicionId}));if(!(await identity()))return null;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');return validate(r.data,['CONTEXTO_ACTIVACION_C04G']);}
+    async function action(fn){if(soloVista||busy||!alive())return;busy=true;controls();try{if(!(await identity()))return;await fn();}catch(e){if(alive()){current=null;data.replaceChildren();status.textContent=fail(e);}}finally{busy=false;if(alive())controls();}}
+    refresh.addEventListener('click',()=>action(async()=>{status.textContent='Consultando activación…';const d=await read();if(d){render(d);status.textContent=d.activacion_registrada?'Activación registrada recuperada. No se ha enviado otra activación.':'Activación actualizada.';}}));
+    save.addEventListener('click',()=>{if(save.disabled)return;const d=current;action(async()=>{
+        const latest=await read();if(!latest)return;
+        if(latest.activacion_registrada){render(latest);status.textContent='Activación ya registrada. No se ha repetido.';return;}
+        if(!latest.activacion_permitida||key(latest)!==key(d))throw Error('RESUMEN_ACTIVACION_CAMBIO');
+        const mode=d.ruta==='alta'?'activar':'activar la renovación manual de';
+        if(!window.confirm('¿Confirmas '+mode+' '+d.paquete_codigo+' con capacidad '+d.capacidad+' por un mes? Total ya confirmado: '+money(d.total_pagar,d.moneda)+'. Sin renovación automática. Se conserva el contrato aceptado y no se realiza otro cargo.'))return;
+        if(!(await identity()))return;status.textContent='Registrando activación…';
+        const r=await limit(supabaseClient.rpc('activar_complemento_c04g_seguro',{p_adquisicion_id:adquisicionId,p_confirmacion_id:d.confirmacion_id,p_total_esperado:d.total_pagar,p_moneda_esperada:d.moneda,p_ruta_esperada:d.ruta,p_derecho_anterior_id:d.derecho_anterior_id}));
+        if(!(await identity()))return;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'ESCRITURA');const result=validate(r.data,['ACTIVACION_REGISTRADA_C04G']);
+        if(!result.activacion_registrada||result.confirmacion_id!==d.confirmacion_id||result.pago_id!==d.pago_id||result.total_pagar!==d.total_pagar||result.moneda!==d.moneda||result.capacidad!==d.capacidad||result.paquete_codigo!==d.paquete_codigo||result.ruta!==d.ruta||result.derecho_anterior_id!==d.derecho_anterior_id)throw Error('RESPUESTA');
+        render(result);status.textContent='Activación registrada. La capacidad y las fechas se muestran arriba.';
+    });});
+    if(soloVista){notice.textContent='Vista de prueba: consulta y activación deshabilitadas. No se consultan contrataciones personales.';row('Paquete y capacidad','Se tomarán de la contratación confirmada');row('Pago','Requiere acreditación registrada');row('Vigencia','1 mes · Sin renovación automática');row('Inicio y fin','Se mostrarán después de activar');row('Total con impuestos','Se conservará el total confirmado');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='Disponible para primera alta de paquete base o renovación manual. Los paquetes extra tienen una ruta distinta.';controls();return;}
+    if(![adquisicionId,organizadorId,actorEsperado].every(uuid)){dispose(true);return;}
     observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
     try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
     refresh.click();
