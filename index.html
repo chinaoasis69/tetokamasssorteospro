@@ -121178,9 +121178,9 @@ async function mostrarPreviaComplementosBJ123() {
                     " · Vigencia: " + String(paquete.duracion_meses ?? "—") +
                     " mes · Renovación automática: No";
                 const precioUSD = document.createElement("p");
-                precioUSD.textContent = "Subtotal comercial: " + precioUsdTexto;
+                precioUSD.textContent = (massEsPaqueteExtraC04H(paquete) ? "Precio mensual de referencia del EXTRA: " : "Subtotal comercial: ") + precioUsdTexto;
                 const precioMXN = document.createElement("p");
-                precioMXN.textContent = "Subtotal: " + precioMxnTexto;
+                precioMXN.textContent = (massEsPaqueteExtraC04H(paquete) ? "Referencia mensual informativa MXN: " : "Subtotal: ") + precioMxnTexto;
                 const estadoPaquete = document.createElement("p");
                 const activo = paquete.producto_activo === true &&
                     paquete.producto_visible === true &&
@@ -121203,6 +121203,10 @@ async function mostrarPreviaComplementosBJ123() {
                     option.value = currency; option.textContent = currency; monedaQA.append(option);
                 }
                 info.append(monedaQA);
+                if(massEsPaqueteExtraC04H(paquete)) {
+                    capacidad.textContent = "Capacidad adicional: " + String(paquete.capacidad ?? "—") + " · Vence junto con la base · Sin renovación automática";
+                    massMontarExtraC04H({host:info,paquete,moneda:monedaQA,soloVista:true});
+                } else {
                 massMontarCotizacionFiscalP06B({host:info, paquete, moneda:monedaQA,
                     organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
                     soloVista:true});
@@ -121210,6 +121214,7 @@ async function mostrarPreviaComplementosBJ123() {
                 massMontarPagoOrganizadorC04E({host:info,moneda:monedaQA,soloVista:true});
                 massMontarRevisionPagoC04F({host:info,moneda:monedaQA,soloVista:true});
                 massMontarActivacionC04G({host:info,moneda:monedaQA,soloVista:true});
+                }
             }
             qaEstado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes leídos desde Supabase. Solo QA; sin operaciones comerciales.";
@@ -121324,6 +121329,15 @@ async function mostrarPreviaComplementosBJ123() {
                     opcion.value = codigo;
                     opcion.textContent = codigo;
                     moneda.appendChild(opcion);
+                }
+                if(massEsPaqueteExtraC04H(paquete)) {
+                    capacidad.textContent = "Capacidad adicional: " + String(paquete.capacidad ?? "—") + " · Vence junto con la base · Sin renovación automática";
+                    precio.textContent = "Precio mensual de referencia del EXTRA: " + String(paquete.precio_usd ?? "—") + " USD";
+                    pendiente.textContent = "El importe se calcula según el tiempo que reste de tu base. La contratación del EXTRA todavía no está habilitada.";
+                    tarjeta.append(nombre,descripcion,capacidad,precio,pendiente,moneda);
+                    catalogoLista.append(tarjeta);
+                    massMontarExtraC04H({host:tarjeta,paquete,moneda,organizadorId,actorEsperado:sesion.data.user.id});
+                    continue;
                 }
                 const botonOferta = document.createElement("button");
                 botonOferta.type = "button";
@@ -122221,9 +122235,9 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                     " · Vigencia: " + String(paquete.duracion_meses ?? "—") +
                     " mes · Renovación automática: No";
                 const subtotalUSD = document.createElement("p");
-                subtotalUSD.textContent = "Subtotal comercial USD: " + importeUsd;
+                subtotalUSD.textContent = (massEsPaqueteExtraC04H(paquete) ? "Precio mensual de referencia del EXTRA: " : "Subtotal comercial USD: ") + importeUsd;
                 const subtotalMXN = document.createElement("p");
-                subtotalMXN.textContent = "Subtotal informativo MXN: " + importeMxn;
+                subtotalMXN.textContent = (massEsPaqueteExtraC04H(paquete) ? "Referencia mensual informativa MXN: " : "Subtotal informativo MXN: ") + importeMxn;
 
                 const habilitado =
                     paquete.producto_activo === true &&
@@ -122251,6 +122265,10 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                     option.value = currency; option.textContent = currency; monedaQA.append(option);
                 }
                 detallePaquete.append(monedaQA);
+                if(massEsPaqueteExtraC04H(paquete)) {
+                    capacidad.textContent = "Capacidad adicional: " + String(paquete.capacidad ?? "—") + " · Vence junto con la base · Sin renovación automática";
+                    massMontarExtraC04H({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
+                } else {
                 massMontarCotizacionFiscalP06B({host:detallePaquete, paquete, moneda:monedaQA,
                     organizadorId:localStorage.getItem("admin_organizador_id") || localStorage.getItem("organizador_id"),
                     soloVista:true});
@@ -122258,6 +122276,7 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                 massMontarPagoOrganizadorC04E({host:detallePaquete,moneda:monedaQA,soloVista:true});
                 massMontarRevisionPagoC04F({host:detallePaquete,moneda:monedaQA,soloVista:true});
                 massMontarActivacionC04G({host:detallePaquete,moneda:monedaQA,soloVista:true});
+                }
             }
             estado.textContent = "✅ " + String(data.paquetes.length) +
                 " paquetes consultados desde Supabase. Solo lectura, sin pagos.";
@@ -123612,6 +123631,82 @@ function massMontarActivacionC04G({host,adquisicionId,organizadorId,actorEsperad
     observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
     try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
     refresh.click();
+}
+
+</script>
+<script>
+// C04H: lectura previa. La cotizacion fiscal y la confirmacion del EXTRA siguen pendientes.
+function massEsPaqueteExtraC04H(paquete) {
+    if(typeof paquete?.tipo_paquete==='string')return paquete.tipo_paquete==='adicional';
+    // Compatibilidad con catalogos anteriores que presentan codigo/nombre sin tipo.
+    // Solo decide la presentacion: la RPC comprueba tipo, producto, base y titular.
+    return /(?:^|_)extra(?:_|$)/i.test(String(paquete?.paquete_codigo||'')) || /(?:^|\s)EXTRA(?:\s|$)/i.test(String(paquete?.paquete_nombre||''));
+}
+function massMontarExtraC04H({host,paquete,moneda,organizadorId,actorEsperado,soloVista=false}) {
+    if(!host)return;
+    const el=(t,s,css)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;if(css)n.style.cssText=css;return n;};
+    const panel=el('details',undefined,'margin:16px 0;padding:14px;border:1px solid #84bd36;border-radius:12px;text-align:left;min-width:0');
+    panel.dataset.massExtra='C04H';panel.open=!soloVista;
+    panel.append(el('summary','EXTRA · Vigencia y precio proporcional','font-weight:700;cursor:pointer'));
+    const note=el('p','El EXTRA vence junto con tu paquete base. Su precio se calcula por el tiempo restante del periodo base; no se renueva automáticamente.');
+    const status=el('p',soloVista?'Vista de prueba: no consulta cuentas ni calcula importes personales.':'Consulta tu base vigente y el importe proporcional previo.');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const data=el('div');const row=(label,value)=>{const r=el('div',undefined,'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:12px 0;border-bottom:1px solid #557137;overflow-wrap:anywhere');r.append(el('span',label),el('strong',String(value)));data.append(r);};
+    const refresh=el('button','Consultar importe proporcional','max-width:100%;white-space:normal;margin:12px 0;padding:12px');refresh.type='button';refresh.disabled=soloVista;
+    const notice=el('p','Consulta informativa antes de impuestos. El precio y las fechas se confirmarán en la cotización fiscal antes de contratar. La contratación del EXTRA aún no está habilitada.','color:#e7d6a1;font-size:14px;line-height:1.5');
+    const close=el('button','Cerrar condiciones del EXTRA','max-width:100%;white-space:normal;padding:10px');close.type='button';
+    panel.append(note,status,data,refresh,notice,close);host.append(panel);
+    let disposed=false,busy=false,epoch=0,subscription=null,observer=null;
+    const currency=()=>typeof moneda==='string'?moneda:(moneda?.value||'USD');
+    const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
+    const alive=()=>!disposed&&host.isConnected&&panel.isConnected&&(soloVista||org()===organizadorId);
+    const money=(x,c)=>Number(x).toFixed(2)+' '+c;
+    const date=s=>new Date(s).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short',timeZoneName:undefined});
+    function empty(){data.replaceChildren();row('Vencimiento del EXTRA','La misma fecha y hora que la base');row('Cálculo','Precio mensual del EXTRA × proporción restante del periodo base');row('Impuestos y total definitivo','Pendientes de cotización fiscal');}
+    function stop(message){if(disposed)return;disposed=true;epoch++;busy=false;data.replaceChildren();status.textContent=message;refresh.disabled=true;subscription?.unsubscribe();observer?.disconnect();moneda?.removeEventListener?.('change',changed);window.removeEventListener('storage',storageChanged);}
+    function changed(){if(!alive()){stop('La sesión o el organizador cambió. Vuelve a abrir Complementos MASS.');return;}epoch++;busy=false;empty();status.textContent=soloVista?'Vista de prueba: sin consulta de datos personales.':'Moneda actualizada. Vuelve a consultar el importe proporcional.';refresh.disabled=soloVista;}
+    function storageChanged(){if(!alive())stop('La sesión o el organizador cambió. Vuelve a abrir Complementos MASS.');}
+    const messages={EXTRA_REQUIERE_BASE_VIGENTE:'Necesitas un paquete base vigente del mismo producto para agregar un EXTRA.',BASE_VIGENTE_NO_UNICA:'Hay más de una base vigente. Se necesita revisar sus periodos antes de continuar.',BASE_REQUIERE_REVISION:'No se pudo validar la contratación y activación de tu base.',BASE_CAMBIO_ACTUALIZAR:'La base cambió o venció. Vuelve a consultar.',ORGANIZADOR_NO_AUTORIZADO:'Solo el propietario puede consultar las condiciones de su EXTRA.',CATALOGO_NO_HABILITADO:'Este paquete todavía no está habilitado en el catálogo.',PAQUETE_CAMBIO:'El paquete cambió. Vuelve a abrir el catálogo.',PAQUETE_EXTRA_NO_ELEGIBLE:'Este paquete no está disponible como EXTRA.',TIEMPO_RESTANTE_INSUFICIENTE:'Queda muy poco tiempo en la base para calcular un importe cobrable.',FX_NO_DISPONIBLE:'La conversión a MXN no está disponible. Vuelve a consultar más tarde.',PGRST202:'La consulta del EXTRA aún no está instalada. Vuelve a intentar después de la actualización.'};
+    function validate(d,c){
+        const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+        const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001;
+        if(!d||d.codigo!=='EXTRA_PREVIO_C04H'||d.version_pantalla!=='C04H-1'||d.politica_version!=='EXTRA-COTERMINO-1'
+            ||d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.paquete_id!==paquete.paquete_id
+            ||d.paquete_version!==Number(paquete.paquete_version)||d.moneda!==c||!uuid(d.derecho_base_id)||!uuid(d.adquisicion_base_id)
+            ||!Number.isInteger(d.base_version)||d.base_version<1||!Number.isInteger(d.capacidad_extra)||d.capacidad_extra<1
+            ||!['mi_equipo_mass','puntos_mass_pro'].includes(d.producto_codigo)||d.producto_codigo!==paquete.producto_codigo
+            ||!cents(d.precio_mensual_referencia)||!cents(d.subtotal_proporcional_previo)||d.subtotal_proporcional_previo>d.precio_mensual_referencia
+            ||d.solo_lectura!==true||d.es_cotizacion_fiscal!==false||d.impuesto!==null||d.total_pagar!==null
+            ||d.cotizacion_extra_habilitada!==false||d.contratacion_extra_habilitada!==false||d.pago_iniciado!==false
+            ||d.derechos_activados!==false||d.renovacion_automatica!==false)throw Error('RESPUESTA_NO_VERIFICADA');
+        const start=Date.parse(d.base_desde),end=Date.parse(d.base_hasta),at=Date.parse(d.calculado_en),extraEnd=Date.parse(d.extra_hasta);
+        if(![start,end,at,extraEnd].every(Number.isFinite)||start>at||at>=end||end!==extraEnd
+            ||typeof d.segundos_periodo_base!=='number'||typeof d.segundos_restantes!=='number'||typeof d.proporcion_restante!=='number'
+            ||!Number.isFinite(d.proporcion_restante)||d.proporcion_restante<=0||d.proporcion_restante>1
+            ||Math.abs(d.segundos_periodo_base-(end-start)/1000)>.003||Math.abs(d.segundos_restantes-(end-at)/1000)>.003
+            ||Math.abs(d.proporcion_restante-d.segundos_restantes/d.segundos_periodo_base)>1e-9
+            ||Math.abs(d.subtotal_proporcional_previo-d.precio_mensual_referencia*d.proporcion_restante)>.00500001)throw Error('PERIODO_NO_VERIFICADO');
+        return d;
+    }
+    empty();close.addEventListener('click',()=>{panel.open=false;});
+    if(soloVista)return {dispose:()=>{stop('');panel.remove();}};
+    observer=new MutationObserver(storageChanged);observer.observe(document.body,{childList:true,subtree:true});
+    window.addEventListener('storage',storageChanged);moneda?.addEventListener?.('change',changed);
+    subscription=supabaseClient.auth.onAuthStateChange((event,s)=>{if(event==='SIGNED_OUT'||s?.user?.id!==actorEsperado)stop('La sesión cambió. Vuelve a abrir Complementos MASS.');})?.data?.subscription;
+    refresh.addEventListener('click',async()=>{
+        if(refresh.disabled||busy||!alive())return;const turn=++epoch,c=currency();busy=true;refresh.disabled=true;data.replaceChildren();status.textContent='Consultando base e importe proporcional…';
+        const current=()=>alive()&&turn===epoch&&c===currency();
+        const identity=async()=>{const s=await supabaseClient.auth.getUser();if(!current())return false;if(s.error||s.data?.user?.id!==actorEsperado){stop('La sesión cambió. Vuelve a abrir Complementos MASS.');return false;}return true;};
+        let timer;
+        try{
+            if(!(await identity()))return;
+            const r=await Promise.race([supabaseClient.rpc('consultar_extra_proporcional_c04h_seguro',{p_organizador_id:organizadorId,p_paquete_id:paquete.paquete_id,p_paquete_version_esperada:Number(paquete.paquete_version),p_moneda:c}),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIEMPO_AGOTADO')),15000);})]);
+            if(!current()||!(await identity()))return;
+            if(r.error||r.data?.ok!==true)throw Error(r.error?.code||r.data?.codigo||'LECTURA');
+            const d=validate(r.data,c);row('Precio mensual de referencia del EXTRA',money(d.precio_mensual_referencia,c));row('Periodo base',date(d.base_desde)+' — '+date(d.base_hasta));row('Fin del EXTRA',date(d.extra_hasta));row('Capacidad adicional',d.capacidad_extra);row('Proporción restante',(d.proporcion_restante*100).toFixed(2)+' %');row('Importe proporcional previo, sin impuestos',money(d.subtotal_proporcional_previo,c));row('Calculado el',date(d.calculado_en));row('Impuestos y total definitivo','Pendientes de cotización fiscal');status.textContent='Consulta actualizada. El importe puede cambiar al emitir la cotización fiscal.';
+        }catch(e){if(current()){data.replaceChildren();status.textContent=messages[e.message]||'No se pudo verificar el cálculo. Vuelve a consultar.';}}
+        finally{clearTimeout(timer);if(turn===epoch){busy=false;if(alive())refresh.disabled=false;}}
+    });
+    return {dispose:()=>{stop('');panel.remove();}};
 }
 
 </script>
