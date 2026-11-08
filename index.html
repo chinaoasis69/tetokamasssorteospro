@@ -121208,7 +121208,7 @@ async function mostrarPreviaComplementosBJ123() {
                     massMontarExtraC04H({host:info,paquete,moneda:monedaQA,soloVista:true});
                     massMontarCheckoutExtraC04I({host:info,paquete,moneda:monedaQA,soloVista:true});
                     massMontarPagoOrganizadorC04J({host:info,moneda:monedaQA,soloVista:true});
-                    massMontarRevisionPagoC04F({host:info,moneda:monedaQA,soloVista:true});
+                    massMontarRevisionPagoC04F({host:info,moneda:monedaQA,soloVista:true,tipoPaquete:'adicional'});
                     massMontarActivacionC04J({host:info,moneda:monedaQA,soloVista:true});
                 } else {
                 massMontarCotizacionFiscalP06B({host:info, paquete, moneda:monedaQA,
@@ -122275,7 +122275,7 @@ async function mostrarPreciosComplementosSuperAdminBJ124() {
                     massMontarExtraC04H({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
                     massMontarCheckoutExtraC04I({host:detallePaquete,paquete,moneda:monedaQA,soloVista:true});
                     massMontarPagoOrganizadorC04J({host:detallePaquete,moneda:monedaQA,soloVista:true});
-                    massMontarRevisionPagoC04F({host:detallePaquete,moneda:monedaQA,soloVista:true});
+                    massMontarRevisionPagoC04F({host:detallePaquete,moneda:monedaQA,soloVista:true,tipoPaquete:'adicional'});
                     massMontarActivacionC04J({host:detallePaquete,moneda:monedaQA,soloVista:true});
                 } else {
                 massMontarCotizacionFiscalP06B({host:detallePaquete, paquete, moneda:monedaQA,
@@ -123238,18 +123238,18 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
                     if(!context()||epoch!==generation||!card.isConnected)return;
                     const previous=card.querySelector('[data-mass-revision="C04F"]');
                     if(previous){previous.open=true;previous.scrollIntoView({block:"nearest"});return;}
-                    massMontarRevisionPagoC04F({host:card,adquisicionId:x.adquisicion_id,pagoId:p.pago_id,organizadorId:x.organizador_id,actorEsperado:actor});
+                    massMontarRevisionPagoC04F({host:card,adquisicionId:x.adquisicion_id,pagoId:p.pago_id,organizadorId:x.organizador_id,actorEsperado:actor,tipoPaquete:x.tipo_paquete});
                 });
                 card.append(review);
             }
             host.append(card);
         }
-        host.append(el("h4","Activación del complemento"));
+        host.append(el("h4","Recibo y estado del complemento"));
         if(!d.derechos.length)host.append(el("p","No hay un derecho de uso registrado para esta contratación."));
         for(const right of d.derechos){row(host,"Estado del derecho",rightStates[right.estado]||"Por revisar");row(host,"Inicio registrado",date(right.vigente_desde));row(host,"Fin registrado",date(right.vigente_hasta));}
         const actions=el("div",undefined,"display:flex;gap:10px;flex-wrap:wrap;margin-top:12px");
         if(!revision && x.tipo_paquete!=="adicional" && fiscalOK(x) && ["pagado","pendiente_terminos","activado"].includes(x.estado)) {
-            const activation=button("Consultar activación");
+            const activation=button("Consultar recibo de activación");
             activation.addEventListener("click",()=>{
                 if(!context()||epoch!==generation||!host.isConnected)return;
                 const previous=host.querySelector('[data-mass-activacion="C04G"]');
@@ -123258,7 +123258,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
             });
             actions.append(activation);
         } else if(revision) {
-            actions.append(el("p","La activación del complemento corresponde al propietario desde Mis contrataciones."));
+            actions.append(el("p","La aprobación del pago por Súper Admin activa el complemento elegible. El propietario consulta su recibo desde Mis contrataciones."));
         }
         if(!revision && x.tipo_paquete!=="adicional" && fiscalOK(x) && ["pendiente_pago","pago_en_revision"].includes(x.estado)) {
             const payment=button("Preparar pago o enviar comprobante");
@@ -123273,7 +123273,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
         if(d.revision_propia===true)host.append(el("p","Este expediente pertenece a tu cuenta. La revisión del pago debe realizarla otro Súper Admin autorizado."));
         if(!revision && x.tipo_paquete==="adicional" && x.extra_c04i && fiscalOK(x)) {
             const paid=["pagado","pendiente_terminos","activado"].includes(x.estado),pending=["pendiente_pago","pago_en_revision"].includes(x.estado);
-            if(paid||pending){const openExtra=button(paid?"Consultar activación del EXTRA":"Pago y comprobante del EXTRA");
+            if(paid||pending){const openExtra=button(paid?"Consultar recibo del EXTRA":"Pago y comprobante del EXTRA");
                 openExtra.addEventListener("click",()=>{if(!context()||epoch!==generation||!host.isConnected)return;
                     const previous=host.querySelector(paid?'[data-mass-activacion="C04J"]':'[data-mass-pago="C04J"]');
                     if(previous){previous.open=true;previous.scrollIntoView({block:"nearest"});return;}
@@ -123479,77 +123479,113 @@ function massMontarPagoOrganizadorC04E({host,adquisicionId,organizadorId,actorEs
 </script>
 <script>
 // C04F: revision independiente; aprobar exige acreditacion expresa. No activa derechos.
-function massMontarRevisionPagoC04F({host,adquisicionId,pagoId,organizadorId,actorEsperado,soloVista=false,moneda='USD'}) {
+function massMontarRevisionPagoC04F({host,adquisicionId,pagoId,organizadorId,actorEsperado,soloVista=false,moneda='USD',tipoPaquete='base'}) {
     if(!host)return;
     const el=(t,s,css)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;if(css)n.style.cssText=css;return n;};
     const button=s=>{const n=el('button',s,'max-width:100%;white-space:normal;padding:10px 14px;margin:6px 0');n.type='button';return n;};
     const label=(s,n)=>{const l=el('label',undefined,'display:block;margin:14px 0;line-height:1.5');l.append(document.createTextNode(s),n);n.setAttribute('aria-label',s);return l;};
     const panel=el('details',undefined,'border:1px solid #39ff14;border-radius:12px;padding:14px;margin:14px 0;overflow-wrap:anywhere');panel.dataset.massRevision='C04F';panel.open=!soloVista;
-    panel.append(el('summary','Revisión del comprobante · Súper Admin','font-weight:700;cursor:pointer'));
+    panel.append(el('summary','Aprobación y activación · Súper Admin','font-weight:700;cursor:pointer'));
     const notice=el('p',undefined,'color:#ffe19a;line-height:1.5'),data=el('div'),form=el('div'),status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
-    const open=button('Abrir comprobante para revisar'),save=button('Registrar decisión'),refresh=button('Actualizar revisión'),close=button('Cerrar revisión del comprobante');
+    const open=button('Abrir comprobante para revisar'),save=button('Registrar decisión'),refresh=button('Actualizar revisión y recibo'),retry=button('Reintentar aprobación y activación'),close=button('Cerrar revisión del comprobante');
     const reviewed=el('input');reviewed.type='checkbox';reviewed.style.margin='0 8px';
     const decision=el('select');decision.style.cssText='display:block;width:100%;padding:10px;box-sizing:border-box';
-    for(const [v,s] of [['','Selecciona la decisión'],['aprobar','Aprobar pago acreditado'],['rechazar','Rechazar comprobante']]){const o=el('option',s);o.value=v;decision.append(o);}
+    for(const [v,s] of [['','Selecciona la decisión'],['aprobar','Aprobar pago y activar'],['rechazar','Rechazar comprobante']]){const o=el('option',s);o.value=v;decision.append(o);}
     const reason=el('textarea');reason.rows=3;reason.maxLength=1000;reason.style.cssText='display:block;width:100%;box-sizing:border-box';
     const accredited=el('input');accredited.type='checkbox';accredited.style.margin='0 8px';
     const reference=el('input');reference.type='text';reference.maxLength=200;reference.autocomplete='off';reference.style.cssText='display:block;width:100%;box-sizing:border-box';
     const funding=el('div');funding.append(label('Confirmo que verifiqué la recepción del dinero por el total y la moneda indicados.',accredited),label('Referencia interna de acreditación (6–200 caracteres)',reference),el('p','Usa una referencia interna verificable. Evita números bancarios completos o información sensible innecesaria.'));
     const reviewedLabel=label('Revisé el comprobante y lo cotejé con esta contratación y su importe.',reviewed);
-    form.append(open,reviewedLabel,label('Decisión',decision),label('Motivo de la decisión (10–1000 caracteres)',reason),funding,save);
+    form.append(open,reviewedLabel,label('Decisión',decision),label('Motivo de la decisión (10–1000 caracteres)',reason),funding,save,retry);
     panel.append(el('p',soloVista?'Vista de prueba de la revisión administrativa. El expediente y su comprobante se consultarán desde Seguimiento de pagos.':'Abre el comprobante y comprueba el importe antes de registrar tu decisión.'),notice,data,form,status,refresh,close);host.append(panel);
-    let current=null,viewed=null,busy=false,closed=false,subscription=null,observer=null;
+    let current=null,viewed=null,busy=false,closed=false,subscription=null,observer=null,attempt=null,uncertain=false;
     const urls=new Set(),dialogs=new Set();
     const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
     const types={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif',pdf:'application/pdf'};
     const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
     const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
     const alive=()=>!closed&&panel.isConnected&&(soloVista||document.getElementById('panelSuperAdmin')?.style.display!=='none');
-    const key=d=>d?.archivo?d.pago_id+'|'+d.version_pago+'|'+d.archivo.id+'|'+d.archivo.etag+'|'+d.confirmacion_id+'|'+d.moneda+'|'+d.total_pagar:null;
+    const terms=d=>d?.archivo?JSON.stringify([d.pago_id,d.archivo.id,d.archivo.etag,d.confirmacion_id,d.moneda,d.total_pagar,d.tipo_paquete,d.paquete_codigo,d.capacidad,d.condiciones_hash,d.extra_c04i?.derecho_base_id,d.extra_c04i?.extra_hasta]):null;
+    const key=d=>terms(d)?terms(d)+'|'+d.version_pago:null;
+    const receiptData=el('div');panel.insertBefore(receiptData,status);
     const pathOK=a=>a?.bucket==='complementos-comprobantes'&&Object.hasOwn(types,a.extension)&&a.path===organizadorId+'/'+adquisicionId+'/'+pagoId+'/comprobante.'+a.extension;
     function revoke(){for(const d of dialogs)d.remove();dialogs.clear();for(const u of urls)URL.revokeObjectURL(u);urls.clear();}
     function clearInputs(){reviewed.checked=false;decision.value='';reason.value='';accredited.checked=false;reference.value='';}
-    function dispose(clear=false){if(closed)return;closed=true;revoke();current=null;viewed=null;clearInputs();subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();form.hidden=true;refresh.disabled=true;status.textContent='La sesión cambió o la pantalla se cerró. Vuelve a abrir la revisión.';}}
+    function dispose(clear=false){if(closed)return;closed=true;revoke();current=null;viewed=null;attempt=null;uncertain=false;receiptData.replaceChildren();clearInputs();subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();form.hidden=true;refresh.disabled=true;status.textContent='La sesión cambió o la pantalla se cerró. Vuelve a abrir la revisión.';}}
     close.addEventListener('click',()=>{dispose();panel.remove();});
     const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT')),20000);})]);}finally{clearTimeout(timer);}};
     async function identity(){if(!alive()){dispose(panel.isConnected);return false;}const r=await limit(supabaseClient.auth.getUser());if(!alive())return false;if(r.error||r.data?.user?.id!==actorEsperado){dispose(true);return false;}return true;}
+    function retryAllowed(d=current){
+        return !!attempt&&!!d&&terms(d)===attempt.terms&&d.aprobacion_activacion_habilitada===true&&
+          ((d.revision_permitida===true&&d.version_pago===attempt.args.p_version_pago)||
+           (d.recuperacion_permitida===true&&d.version_pago===attempt.args.p_version_pago+1&&d.estado_adquisicion!=='activado'));
+    }
     function controls(){
-        const allowed=!soloVista&&!closed&&!busy&&current?.revision_permitida===true;
+        const allowed=!soloVista&&!closed&&!busy&&!uncertain&&current?.revision_permitida===true;
         open.disabled=soloVista||closed||busy||!current?.archivo_disponible;
         reviewed.disabled=!allowed||viewed!==key(current);
         decision.disabled=reason.disabled=reviewed.disabled||!reviewed.checked;
         funding.hidden=!soloVista&&decision.value!=='aprobar';
         accredited.disabled=reference.disabled=decision.disabled||decision.value!=='aprobar';
+        save.textContent=decision.value==='aprobar'?'Aprobar pago y activar':decision.value==='rechazar'?'Registrar rechazo':'Registrar decisión';
         save.disabled=decision.disabled||!['aprobar','rechazar'].includes(decision.value)||reason.value.trim().length<10||reason.value.trim().length>1000||
-            (decision.value==='aprobar'&&(!accredited.checked||reference.value.trim().length<6||reference.value.trim().length>200));
-        refresh.disabled=soloVista||closed||busy;
+          (decision.value==='aprobar'&&(!current?.operacion_permitida||!accredited.checked||reference.value.trim().length<6||reference.value.trim().length>200));
+        retry.hidden=!attempt;retry.disabled=soloVista||closed||busy||!retryAllowed();refresh.disabled=soloVista||closed||busy;
     }
-    function validate(d,codes){
-        if(!d||d.ok!==true||!codes.includes(d.codigo)||d.version_pantalla!=='C04F-1'||d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.adquisicion_id!==adquisicionId||d.pago_id!==pagoId||!uuid(d.confirmacion_id)||
-         !['USD','MXN'].includes(d.moneda)||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)<=0||cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||
-         !Number.isSafeInteger(d.version_pago)||d.version_pago<1||!['preparando_comprobante','reportado','aprobado','rechazado','cancelado'].includes(d.estado_pago)||d.activacion_comercial_habilitada!==false)throw Error('RESPUESTA');
-        for(const k of ['revision_habilitada','revision_permitida','archivo_disponible','decision_registrada','decidido_por_esta_cuenta','acreditacion_explicita_registrada'])if(typeof d[k]!=='boolean')throw Error('RESPUESTA');
+    function validate(d){
+        if(!d||d.ok!==true||d.codigo!=='CONTEXTO_REVISION_CONJUNTA_C04N'||d.version_pantalla!=='C04N-1'||
+           d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.adquisicion_id!==adquisicionId||d.pago_id!==pagoId||!uuid(d.confirmacion_id)||
+           !['USD','MXN'].includes(d.moneda)||cents(d.subtotal)===null||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)===null||
+           cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||!Number.isSafeInteger(d.version_pago)||d.version_pago<1||
+           !['preparando_comprobante','reportado','aprobado','rechazado','cancelado'].includes(d.estado_pago)||
+           !['base','adicional'].includes(d.tipo_paquete)||d.tipo_paquete!==tipoPaquete||
+           typeof d.paquete_codigo!=='string'||!d.paquete_codigo||!Number.isSafeInteger(d.capacidad)||d.capacidad<1)throw Error('RESPUESTA');
+        for(const k of ['revision_habilitada','revision_permitida','archivo_disponible','decision_registrada','decidido_por_esta_cuenta','acreditacion_explicita_registrada','aprobacion_activacion_habilitada','operacion_permitida','recuperacion_permitida'])if(typeof d[k]!=='boolean')throw Error('RESPUESTA');
         if(d.archivo_disponible&&(!pathOK(d.archivo)||!uuid(d.archivo.id)||typeof d.archivo.etag!=='string'||!d.archivo.etag.trim()||!Number.isSafeInteger(d.archivo.tamano)||d.archivo.tamano<1||d.archivo.tamano>10485760||d.archivo.mime!==types[d.archivo.extension]))throw Error('ARCHIVO');
         if(d.revision_permitida&&(!d.revision_habilitada||!d.archivo_disponible||d.estado_pago!=='reportado'||d.estado_adquisicion!=='pago_en_revision'||d.decision_registrada))throw Error('PERMISOS');
+        if(d.operacion_permitida&&(!d.revision_permitida||!d.aprobacion_activacion_habilitada))throw Error('PERMISOS');
         if(d.decision_registrada&&(!['aprobar','rechazar'].includes(d.decision)||d.estado_pago!==(d.decision==='aprobar'?'aprobado':'rechazado')||!Number.isFinite(Date.parse(d.revisado_en))||d.acreditacion_explicita_registrada!==(d.decision==='aprobar')))throw Error('DECISION');
         if(!d.decision_registrada&&(d.acreditacion_explicita_registrada||d.decidido_por_esta_cuenta))throw Error('DECISION');
+        if(d.recuperacion_permitida&&(!d.aprobacion_activacion_habilitada||!d.archivo_disponible||!d.decision_registrada||!d.decidido_por_esta_cuenta||d.decision!=='aprobar'||!['pagado','pendiente_terminos'].includes(d.estado_adquisicion)))throw Error('PERMISOS');
+        if(d.tipo_paquete==='adicional'){
+            const e=d.extra_c04i;
+            if(!e||!uuid(e.derecho_base_id)||typeof d.condiciones_hash!=='string'||!/^[0-9a-f]{64}$/.test(d.condiciones_hash)||
+               !Number.isFinite(Date.parse(e.extra_hasta))||e.extra_hasta!==e.base_hasta||e.capacidad_extra!==d.capacidad||e.producto_codigo!==d.producto_codigo||e.moneda!==d.moneda||cents(e.subtotal_proporcional_previo)!==cents(d.subtotal))throw Error('CONDICIONES_EXTRA');
+        }
         return d;
     }
-    function row(k,v){const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));data.append(r);}
+    function row(k,v,target=data){const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));target.append(r);}
     function render(d){
-        current=d;viewed=null;clearInputs();revoke();data.replaceChildren();
-        row('Referencia de pago',pagoId);row('Subtotal confirmado',money(d.subtotal,d.moneda));row('Impuestos confirmados',money(d.impuesto,d.moneda));row('Total confirmado',money(d.total_pagar,d.moneda));
-        row('Medio registrado',d.metodo_nombre||'No disponible');row('Estado',({preparando_comprobante:'Comprobante pendiente',reportado:'Reportado · pendiente de revisión',aprobado:'Pago aprobado',rechazado:'Pago rechazado',cancelado:'Pago cancelado'})[d.estado_pago]);
-        notice.textContent=d.revision_habilitada?'Aprobar exige verificar que el dinero fue recibido. La activación del complemento es un paso posterior.':'La revisión administrativa y la activación comercial siguen deshabilitadas.';
-        if(d.decision_registrada){row('Decisión registrada',d.decision==='aprobar'?'Aprobación con acreditación explícita':'Rechazo sin acreditación');row('Registrada por',d.decidido_por_esta_cuenta?'Esta cuenta':'Otro Súper Admin');row('Fecha',new Date(d.revisado_en).toLocaleString('es-MX'));}
+        current=d;viewed=null;clearInputs();revoke();data.replaceChildren();receiptData.replaceChildren();
+        row('Referencia de pago',pagoId);row('Paquete',d.paquete_codigo);row('Capacidad',d.capacidad);row('Subtotal confirmado',money(d.subtotal,d.moneda));row('Impuestos confirmados',money(d.impuesto,d.moneda));row('Total confirmado',money(d.total_pagar,d.moneda));
+        row('Medio registrado',d.metodo_nombre||'No disponible');row('Estado',({preparando_comprobante:'Comprobante pendiente',reportado:'Reportado · pendiente de revisión',aprobado:'Pago acreditado',rechazado:'Comprobante rechazado',cancelado:'Pago cancelado'})[d.estado_pago]);
+        if(d.tipo_paquete==='adicional'){row('Base del EXTRA',d.extra_c04i.derecho_base_id);row('Vencimiento aceptado',new Date(d.extra_c04i.extra_hasta).toLocaleString('es-MX'));}
+        notice.textContent=d.aprobacion_activacion_habilitada?'Aprobar confirma la recepción del dinero y activa el complemento elegible. Si la activación falla, la acreditación se conserva y se muestra el pendiente.':'La aprobación con activación comercial sigue deshabilitada. Las consultas no realizan operaciones.';
+        if(d.decision_registrada){row('Decisión registrada',d.decision==='aprobar'?'Acreditación explícita':'Rechazo sin acreditación');row('Registrada por',d.decidido_por_esta_cuenta?'Esta cuenta':'Otro Súper Admin');row('Fecha',new Date(d.revisado_en).toLocaleString('es-MX'));}
         else if(!d.archivo_disponible)data.append(el('p','El comprobante original no está disponible o requiere revisión.'));
         controls();
     }
-    const messages={SUPER_ADMIN_REQUERIDO:'La revisión requiere una sesión de Súper Admin activo.',REVISION_PROPIA_PROHIBIDA:'El pago pertenece a tu cuenta. Debe revisarlo otro Súper Admin autorizado.',REVISION_COMERCIAL_NO_HABILITADA:'La revisión administrativa todavía no está habilitada.',COMPROBANTE_CAMBIO_REVISAR:'El comprobante o su expediente cambió. Actualiza la revisión y vuelve a abrirlo.',RESUMEN_REVISION_CAMBIO:'El resumen cambió. Actualiza la revisión antes de continuar.',REVISION_ESTADO_CAMBIO:'El estado del pago cambió. Actualiza la revisión.',REVISION_PREVIA_NO_COINCIDE:'Ya existe una decisión diferente. Actualiza la revisión para consultarla.',ACREDITACION_REAL_NO_CONFIRMADA:'Para aprobar, confirma la recepción del dinero y su referencia verificable.'};
-    function fail(e){return messages[e.message]||(e.message==='PGRST202'?'La revisión todavía no está disponible. Inténtalo después de la actualización.':'No se pudo confirmar el resultado. Pulsa «Actualizar revisión» antes de volver a intentar.');}
-    async function read(){const r=await limit(supabaseClient.rpc('consultar_revision_pago_c04f_segura',{p_adquisicion_id:adquisicionId,p_pago_id:pagoId}));if(!(await identity()))return null;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');return validate(r.data,['CONTEXTO_REVISION_C04F']);}
-    async function action(fn){if(soloVista||busy||!alive())return;busy=true;controls();try{if(!(await identity()))return;await fn();}catch(e){if(alive()){current=null;viewed=null;clearInputs();revoke();status.textContent=fail(e);}}finally{busy=false;if(alive())controls();}}
-    refresh.addEventListener('click',()=>action(async()=>{status.textContent='Consultando revisión…';const d=await read();if(d){render(d);status.textContent=d.decision_registrada?'Decisión registrada recuperada. No se ha enviado otra decisión.':'Revisión actualizada.';}}));
+    const messages={SUPER_ADMIN_REQUERIDO:'La revisión requiere una sesión de Súper Admin activo.',REVISION_PROPIA_PROHIBIDA:'Este pago debe revisarlo otro Súper Admin autorizado.',REVISION_COMERCIAL_NO_HABILITADA:'La revisión comercial todavía no está habilitada.',APROBACION_ACTIVACION_NO_HABILITADA:'La aprobación y activación comercial todavía no están habilitadas.',APROBACION_EXTRA_NO_HABILITADA:'La aprobación y activación del EXTRA todavía no están habilitadas.',COMPROBANTE_CAMBIO_REVISAR:'El archivo o expediente cambió. Actualiza y vuelve a revisarlo.',CONDICIONES_EXTRA_CAMBIARON:'Las condiciones del EXTRA cambiaron. Actualiza antes de continuar.'};
+    function fail(e){return messages[e.message]||(e.message==='PGRST202'?'La consulta administrativa nueva aún no está disponible. Completa su instalación.':'No se pudo verificar el resultado. Pulsa «Actualizar revisión y recibo». No vuelvas a solicitar el pago ni envíes otra decisión sin comprobarlo.');}
+    async function read(){const r=await limit(supabaseClient.rpc('consultar_revision_conjunta_c04n_segura',{p_adquisicion_id:adquisicionId,p_pago_id:pagoId}));if(!(await identity()))return null;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');return validate(r.data);}
+    async function verifyReceipt(d){
+        const r=await limit(supabaseClient.rpc('consultar_recibo_complemento_c04m_seguro',{p_adquisicion_id:adquisicionId}));if(!(await identity()))return false;
+        if(r.error||!r.data?.ok)throw Error('RECIBO_NO_VERIFICADO');
+        const x=massValidarReciboC04N(r.data,{actor_auth_id:actorEsperado,organizador_id:organizadorId,adquisicion_id:adquisicionId,pago_id:pagoId,confirmacion_id:d.confirmacion_id,moneda:d.moneda,total_pagar:d.total_pagar,capacidad:d.capacidad,paquete_codigo:d.paquete_codigo,tipo_paquete:d.tipo_paquete});
+        if(d.tipo_paquete==='adicional'&&(x.condiciones_hash!==d.condiciones_hash||x.derecho.derecho_base_id!==d.extra_c04i.derecho_base_id||Date.parse(x.derecho.vigente_hasta)!==Date.parse(d.extra_c04i.extra_hasta)))throw Error('RECIBO_CAMBIO');
+        receiptData.replaceChildren(el('h4','Recibo de activación verificado'));row('Referencia',x.derecho.derecho_id,receiptData);row('Capacidad registrada',x.derecho.capacidad,receiptData);row('Inicio registrado',new Date(x.derecho.vigente_desde).toLocaleString('es-MX'),receiptData);row('Fin registrado',new Date(x.derecho.vigente_hasta).toLocaleString('es-MX'),receiptData);row('Estado del derecho',x.derecho.estado,receiptData);
+        attempt=null;uncertain=false;status.textContent='Pago acreditado y activación registrada. El recibo fue verificado por lectura; no se realizó otra operación.';controls();return true;
+    }
+    async function refreshResult(d){
+        if(d.decision_registrada&&(d.decision!=='aprobar'||!d.decidido_por_esta_cuenta)){attempt=null;uncertain=false;}
+        render(d);
+        if(d.decision_registrada&&d.decision==='aprobar'){
+            if(d.estado_adquisicion==='activado')await verifyReceipt(d);
+            else status.textContent='Pago acreditado; la activación continúa pendiente. '+(attempt?'Puedes comprobar el resultado y reintentar expresamente la misma operación si el servidor lo permite.':'Solicita seguimiento en soportesorteospro@tetokamass.com. No vuelvas a solicitar el pago.');
+        }else status.textContent=d.decision_registrada?'Decisión registrada recuperada. No se envió otra decisión.':attempt?'Resultado comprobado. Puedes reintentar expresamente la misma operación; no se reenviará automáticamente.':'Revisión actualizada.';
+    }
+    async function action(fn){if(soloVista||busy||!alive())return;busy=true;controls();try{if(!(await identity()))return;await fn();}catch(e){if(alive()){current=null;viewed=null;clearInputs();revoke();receiptData.replaceChildren();status.textContent=fail(e);}}finally{busy=false;if(alive())controls();}}
+    refresh.addEventListener('click',()=>action(async()=>{status.textContent='Consultando revisión y recibo…';const d=await read();if(d)await refreshResult(d);}));
     reviewed.addEventListener('change',controls);reason.addEventListener('input',controls);reference.addEventListener('input',controls);accredited.addEventListener('change',controls);
     decision.addEventListener('change',()=>{accredited.checked=false;reference.value='';controls();});
     open.addEventListener('click',()=>{if(open.disabled)return;action(async()=>{
@@ -123566,18 +123602,55 @@ function massMontarRevisionPagoC04F({host,adquisicionId,pagoId,organizadorId,act
         const download=el('a','Descargar comprobante');download.href=url;download.download='comprobante.'+a.extension;download.style.cssText='display:block;color:#39ff14;margin:10px 0';dialog.append(download);
         const clean=()=>{URL.revokeObjectURL(url);urls.delete(url);dialogs.delete(dialog);dialog.remove();if(open.isConnected)open.focus();};done.addEventListener('click',()=>dialog.close());dialog.addEventListener('close',clean,{once:true});panel.append(dialog);dialog.showModal();viewed=key(d);status.textContent='Comprobante abierto. Coteja los datos antes de declarar tu revisión.';
     });});
+    async function submitApproval(a){
+        uncertain=true;status.textContent='Registrando acreditación y activación…';
+        const r=await limit(supabaseClient.rpc(a.rpc,a.args));if(!(await identity()))return;
+        const result=r.data;
+        if(r.error)throw Error(r.error.code||'RESPUESTA_INCIERTA');
+        const pending=['PAGO_ACREDITADO_ACTIVACION_PENDIENTE','PAGO_ACREDITADO_EXTRA_PENDIENTE'].includes(result?.codigo);
+        if(pending){if(result.ok!==false||result.pago_aprobado!==true||result.derechos_activados!==false||result.requiere_atencion!==true||result.adquisicion_id!==adquisicionId||result.pago_id!==pagoId)throw Error('RESPUESTA');}
+        else if(!result?.ok)throw Error(result?.codigo||'RESPUESTA_INCIERTA');
+        else {
+            const code=a.tipo==='adicional'?'PAGO_APROBADO_EXTRA_ACTIVADO_C04L':'PAGO_APROBADO_BASE_ACTIVADA_C04K';
+            if(result.codigo!==code||result.actor_auth_id!==actorEsperado||result.adquisicion_id!==adquisicionId||result.pago_id!==pagoId||result.pago_aprobado!==true||result.derechos_activados!==true||!uuid(result.derecho_id))throw Error('RESPUESTA');
+        }
+        const fresh=await read();if(!fresh)return;
+        if(!fresh.decision_registrada||fresh.decision!=='aprobar'||!fresh.decidido_por_esta_cuenta||terms(fresh)!==a.terms||fresh.version_pago!==a.args.p_version_pago+1)throw Error('RESPUESTA');
+        await refreshResult(fresh);
+        if(!pending&&fresh.estado_adquisicion!=='activado')throw Error('RECIBO_NO_VERIFICADO');
+    }
     save.addEventListener('click',()=>{if(save.disabled)return;const d=current,seen=viewed,choice=decision.value,why=reason.value.trim(),funded=accredited.checked,ref=reference.value.trim();
-        action(async()=>{const latest=await read();if(!latest)return;if(!latest.revision_permitida||key(latest)!==seen||latest.confirmacion_id!==d.confirmacion_id||latest.moneda!==d.moneda||latest.total_pagar!==d.total_pagar)throw Error('COMPROBANTE_CAMBIO_REVISAR');
-            const message=choice==='aprobar'?'¿Registrar que recibiste '+money(d.total_pagar,d.moneda)+' y aprobar este pago?':'¿Rechazar este comprobante por '+money(d.total_pagar,d.moneda)+'?';
-            if(!window.confirm(message+' La decisión quedará registrada. Esto no activa el complemento.'))return;
-            if(!(await identity()))return;status.textContent='Registrando decisión…';
-            const r=await limit(supabaseClient.rpc('revisar_pago_complemento_c04f_seguro',{p_adquisicion_id:adquisicionId,p_pago_id:pagoId,p_confirmacion_id:d.confirmacion_id,p_version_pago:d.version_pago,p_total_esperado:d.total_pagar,p_moneda_esperada:d.moneda,p_storage_object_id:d.archivo.id,p_etag_esperado:d.archivo.etag,p_documento_revisado:true,p_decision:choice,p_motivo:why,p_acreditacion_confirmada:choice==='aprobar'&&funded,p_referencia_acreditacion:choice==='aprobar'?ref:null}));
-            if(!(await identity()))return;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'ESCRITURA');const result=validate(r.data,['REVISION_REGISTRADA_C04F']);
-            if(!result.decision_registrada||!result.decidido_por_esta_cuenta||result.decision!==choice||result.derechos_activados!==false||result.confirmacion_id!==d.confirmacion_id||result.total_pagar!==d.total_pagar||result.moneda!==d.moneda||result.version_pago!==d.version_pago+1)throw Error('RESPUESTA');
-            render(result);status.textContent=choice==='aprobar'?'Pago aprobado con acreditación explícita registrada. El complemento no se ha activado.':'Comprobante rechazado. La contratación queda pendiente de pago.';
+        action(async()=>{
+            const latest=await read();if(!latest)return;
+            if(!latest.revision_permitida||key(latest)!==seen||key(latest)!==key(d))throw Error('COMPROBANTE_CAMBIO_REVISAR');
+            if(choice==='aprobar'&&!latest.operacion_permitida)throw Error('APROBACION_ACTIVACION_NO_HABILITADA');
+            const rule=d.tipo_paquete==='adicional'?' El EXTRA inicia al aprobar y activar y vence el '+new Date(d.extra_c04i.extra_hasta).toLocaleString('es-MX')+', junto con su base; el retraso no extiende el periodo.':' La primera base comienza al aprobar y activar. Una renovación anticipada comienza al terminar el periodo anterior.';
+            const message=choice==='aprobar'?'¿Confirmas que recibiste '+money(d.total_pagar,d.moneda)+' y deseas aprobar el pago y activar '+d.paquete_codigo+' con capacidad '+d.capacidad+'?'+rule+' Si falla la activación, la acreditación quedará registrada y requerirá atención.':'¿Rechazar este comprobante por '+money(d.total_pagar,d.moneda)+'? El rechazo no activa el complemento.';
+            if(!window.confirm(message))return;if(!(await identity()))return;
+            const args={p_adquisicion_id:adquisicionId,p_pago_id:pagoId,p_confirmacion_id:d.confirmacion_id,p_version_pago:d.version_pago,p_total_esperado:d.total_pagar,p_moneda_esperada:d.moneda,p_storage_object_id:d.archivo.id,p_etag_esperado:d.archivo.etag,p_documento_revisado:true,p_motivo:why,p_acreditacion_confirmada:choice==='aprobar'&&funded,p_referencia_acreditacion:choice==='aprobar'?ref:null};
+            if(choice==='aprobar'){
+                args.p_confirmar_aprobacion_activacion=true;
+                if(d.tipo_paquete==='adicional'){args.p_condiciones_hash=d.condiciones_hash;args.p_derecho_base_id=d.extra_c04i.derecho_base_id;args.p_vencimiento_esperado=d.extra_c04i.extra_hasta;}
+                attempt={rpc:d.tipo_paquete==='adicional'?'aprobar_pago_y_activar_extra_c04l_seguro':'aprobar_pago_y_activar_base_c04k_seguro',args,terms:terms(d),tipo:d.tipo_paquete};
+                await submitApproval(attempt);
+            }else{
+                args.p_decision='rechazar';status.textContent='Registrando rechazo…';
+                const r=await limit(supabaseClient.rpc('revisar_pago_complemento_c04f_seguro',args));if(!(await identity()))return;
+                if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'RESPUESTA_INCIERTA');
+                const x=r.data;if(x.codigo!=='REVISION_REGISTRADA_C04F'||x.actor_auth_id!==actorEsperado||x.adquisicion_id!==adquisicionId||x.pago_id!==pagoId||x.decision!=='rechazar'||!x.decision_registrada||!x.decidido_por_esta_cuenta||x.derechos_activados!==false||x.confirmacion_id!==d.confirmacion_id||x.total_pagar!==d.total_pagar||x.moneda!==d.moneda||x.version_pago!==d.version_pago+1)throw Error('RESPUESTA');
+                const fresh=await read();if(fresh)await refreshResult(fresh);
+            }
         });
     });
-    if(soloVista){notice.textContent='Vista de prueba: consulta del comprobante y registro de decisiones deshabilitados. No se consultan expedientes personales.';row('Total con impuestos','Se tomará de la contratación confirmada');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='La aprobación exigirá comprobar la recepción del dinero. Registrar una decisión no activará el complemento.';controls();return;}
+    retry.addEventListener('click',()=>{if(retry.disabled||!attempt)return;const a=attempt;
+        action(async()=>{const d=await read();if(!d)return;
+            if(d.estado_adquisicion==='activado'){await refreshResult(d);return;}
+            if(!retryAllowed(d)||a!==attempt)throw Error('COMPROBANTE_CAMBIO_REVISAR');
+            if(!window.confirm('¿Reintentar expresamente la misma aprobación y activación, con las condiciones y referencia originales? No se solicita otro pago ni se cambia la decisión.'))return;
+            if(!(await identity()))return;await submitApproval(a);
+        });
+    });
+    if(soloVista){notice.textContent='Vista de prueba: lectura de expedientes, comprobantes y decisiones deshabilitada. No se consultan datos personales.';row('Acción al aprobar','Acreditar el pago y activar el complemento elegible');row('Si la activación falla','Conservar el pago acreditado y mostrar el pendiente');row('Inicio',tipoPaquete==='adicional'?'Al aprobar y activar':'Primera base: al aprobar y activar · Renovación anticipada: al terminar el periodo anterior');if(tipoPaquete==='adicional')row('Vencimiento del EXTRA','La misma fecha y hora que su base');row('Total con impuestos','Se conserva el total confirmado');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='Requiere revisión del comprobante, acreditación expresa y confirmación final. Sin otra aceptación contractual del organizador.';controls();return;}
     if(![adquisicionId,pagoId,organizadorId,actorEsperado].every(uuid)){dispose(true);return;}
     observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
     try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
@@ -123587,70 +123660,83 @@ function massMontarRevisionPagoC04F({host,adquisicionId,pagoId,organizadorId,act
 </script>
 <script>
 // C04G: alta base / renovacion manual del propietario. Reutiliza C03, sin otra aceptacion.
-function massMontarActivacionC04G({host,adquisicionId,organizadorId,actorEsperado,soloVista=false,moneda='USD'}) {
+// C04N: recibos de solo lectura. Nunca llama a una ruta de activacion manual.
+function massValidarReciboC04N(d,expected={}) {
+    const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x);
+    const cents=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=9999999999.99&&Math.abs(x*100-Math.round(x*100))<.001?Math.round(x*100):null;
+    const validDate=x=>typeof x==='string'&&Number.isFinite(Date.parse(x));
+    if(!d||d.ok!==true||d.codigo!=='RECIBO_COMPLEMENTO_VALIDADO_C04M'||d.version_pantalla!=='C04M-1'||
+       ![d.actor_auth_id,d.organizador_id,d.adquisicion_id,d.confirmacion_id,d.pago_id].every(uuid)||
+       !['base','adicional'].includes(d.tipo_paquete)||!['USD','MXN'].includes(d.moneda)||
+       cents(d.subtotal)===null||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)===null||
+       cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||
+       d.estado_adquisicion!=='activado'||!Number.isSafeInteger(d.version_adquisicion)||d.version_adquisicion<1||
+       !Number.isSafeInteger(d.capacidad)||d.capacidad<1||d.duracion_meses!==1||d.renovacion_automatica!==false||
+       d.aceptacion_repetida_requerida!==false||d.contrato_aceptado!==true||d.pago_acreditado!==true||
+       d.activacion_registrada!==true||d.activacion_permitida!==false||d.solo_lectura!==true||
+       d.activacion_gestionada_por_aprobacion!==true||typeof d.paquete_codigo!=='string'||!d.paquete_codigo||
+       typeof d.producto_codigo!=='string'||!d.producto_codigo||!['legacy','c04k','c04l'].includes(d.origen_activacion))throw Error('RECIBO_INCONSISTENTE');
+    for(const [field,value] of Object.entries(expected))if(value!==undefined&&d[field]!==value)throw Error('RECIBO_CAMBIO');
+    const r=d.derecho;
+    if(!r||!uuid(r.derecho_id)||r.capacidad!==d.capacidad||!['vigente','vencido','suspendido','cancelado'].includes(r.estado)||
+       !validDate(r.vigente_desde)||!validDate(r.vigente_hasta)||Date.parse(r.vigente_hasta)<=Date.parse(r.vigente_desde))throw Error('VIGENCIA_INCONSISTENTE');
+    if(d.tipo_paquete==='base') {
+        if(r.derecho_base_id!==null||!['alta','renovacion_manual'].includes(d.ruta))throw Error('RECIBO_INCONSISTENTE');
+        if(d.ruta==='renovacion_manual'&&(!uuid(d.derecho_anterior_id)||!validDate(d.derecho_anterior_hasta)||Date.parse(d.derecho_anterior_hasta)>Date.parse(r.vigente_desde)))throw Error('RENOVACION_INCONSISTENTE');
+    } else {
+        const e=massValidarCondicionesExtraC04J(d);
+        if(!['extra_c04j','extra_c04l'].includes(d.ruta)||r.derecho_base_id!==e.derecho_base_id||
+           Date.parse(r.vigente_hasta)!==Date.parse(e.extra_hasta)||Date.parse(r.vigente_desde)<Date.parse(e.calculado_en))throw Error('EXTRA_INCONSISTENTE');
+    }
+    return d;
+}
+function massMontarReciboC04N({host,adquisicionId,organizadorId,actorEsperado,soloVista=false,moneda='USD',tipoPaquete='base'}) {
     if(!host)return;
+    const extra=tipoPaquete==='adicional';
     const el=(t,s,css)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;if(css)n.style.cssText=css;return n;};
     const button=s=>{const n=el('button',s,'max-width:100%;white-space:normal;padding:10px 14px;margin:6px 0');n.type='button';return n;};
-    const panel=el('details',undefined,'border:1px solid #39ff14;border-radius:12px;padding:14px;margin:14px 0;overflow-wrap:anywhere');panel.dataset.massActivacion='C04G';panel.open=!soloVista;
-    panel.append(el('summary','Activación del complemento','font-weight:700;cursor:pointer'));
-    const notice=el('p',undefined,'color:#ffe19a;line-height:1.5'),data=el('div'),status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
-    const save=button('Activar complemento'),refresh=button('Actualizar activación'),close=button('Cerrar activación');
-    panel.append(el('p',soloVista?'Vista de prueba. La contratación, el pago acreditado y la vigencia se consultarán en la sesión del organizador.':'Consulta la capacidad contratada y activa tu paquete base cuando esté disponible.'),notice,data,
-        el('p','Se conserva la aceptación del contrato registrada al contratar. No tienes que aceptarlo otra vez. Esta activación no realiza un cargo.'),save,status,refresh,close);host.append(panel);
-    let current=null,busy=false,closed=false,subscription=null,observer=null;
-    const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+    const panel=el('details',undefined,'border:1px solid #39ff14;border-radius:12px;padding:14px;margin:14px 0;overflow-wrap:anywhere');
+    panel.dataset.massActivacion=extra?'C04J':'C04G';panel.dataset.massRecibo='C04N';panel.open=!soloVista;
+    panel.append(el('summary',extra?'EXTRA · Recibo y vencimiento':'Recibo del complemento · Solo consulta','font-weight:700;cursor:pointer'));
+    const note=el('p','La aprobación del pago por Súper Admin activa el complemento elegible. Aquí solo consultas el resultado; no necesitas activarlo ni aceptar otra vez.'),data=el('div'),status=el('p');
+    status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const refresh=button('Actualizar recibo'),close=button('Cerrar recibo');panel.append(note,data,status,refresh,close);host.append(panel);
+    let closed=false,busy=false,subscription=null,observer=null;
+    const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x);
     const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
     const alive=()=>!closed&&panel.isConnected&&(soloVista||org()===organizadorId)&&document.getElementById('panelAdmin')?.style.display!=='none';
     const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
-    const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
-    const key=d=>JSON.stringify([d.confirmacion_id,d.total_pagar,d.moneda,d.ruta,d.derecho_anterior_id,d.capacidad,d.paquete_codigo,d.version_adquisicion]);
     const date=s=>new Date(s).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
-    function row(k,v){const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));data.append(r);}
-    function controls(){save.disabled=soloVista||closed||busy||current?.activacion_permitida!==true;refresh.disabled=soloVista||closed||busy;}
-    function dispose(clear=false){if(closed)return;closed=true;current=null;subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();notice.textContent='';status.textContent='La sesión o el organizador cambió. Vuelve a abrir la activación.';}controls();}
+    const row=(k,v)=>{const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));data.append(r);};
+    function controls(){refresh.disabled=soloVista||closed||busy;}
+    function dispose(clear=false){if(closed)return;closed=true;subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();status.textContent='La sesión o el organizador cambió. Vuelve a abrir el recibo.';}controls();}
     close.addEventListener('click',()=>{dispose();panel.remove();});
-    const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT')),20000);})]);}finally{clearTimeout(timer);}};
-    async function identity(){if(!alive()){dispose(panel.isConnected);return false;}const r=await limit(supabaseClient.auth.getUser());if(!alive()){dispose(panel.isConnected);return false;}if(r.error||r.data?.user?.id!==actorEsperado){dispose(true);return false;}return true;}
-    function validate(d,codes){
-        if(!d||d.ok!==true||!codes.includes(d.codigo)||d.version_pantalla!=='C04G-1'||d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.adquisicion_id!==adquisicionId||!uuid(d.confirmacion_id)||!uuid(d.pago_id)||
-          !['USD','MXN'].includes(d.moneda)||cents(d.subtotal)===null||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)===null||cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||
-          !Number.isSafeInteger(d.version_adquisicion)||d.version_adquisicion<1||!Number.isSafeInteger(d.capacidad)||d.capacidad<1||d.duracion_meses!==1||d.renovacion_automatica!==false||d.aceptacion_repetida_requerida!==false||d.contrato_aceptado!==true||d.pago_acreditado!==true||
-          typeof d.paquete_codigo!=='string'||!d.paquete_codigo||typeof d.producto_codigo!=='string'||!d.producto_codigo||!['pagado','pendiente_terminos','activado'].includes(d.estado_adquisicion)||!['alta','renovacion_manual'].includes(d.ruta))throw Error('RESPUESTA');
-        for(const k of ['activacion_comercial_habilitada','activacion_permitida','activacion_registrada'])if(typeof d[k]!=='boolean')throw Error('RESPUESTA');
-        if((d.ruta==='alta'&&d.derecho_anterior_id!==null)||(d.ruta==='renovacion_manual'&&!uuid(d.derecho_anterior_id)))throw Error('RUTA');
-        if(d.activacion_registrada!==(d.estado_adquisicion==='activado')||(d.activacion_permitida&&(!d.activacion_comercial_habilitada||d.activacion_registrada)))throw Error('ESTADO');
-        if(d.activacion_registrada){const r=d.derecho;if(!r||!uuid(r.derecho_id)||r.capacidad!==d.capacidad||typeof r.estado!=='string'||!Number.isFinite(Date.parse(r.vigente_desde))||!Number.isFinite(Date.parse(r.vigente_hasta))||Date.parse(r.vigente_hasta)<=Date.parse(r.vigente_desde))throw Error('VIGENCIA');}
-        else if(d.derecho!==null||(d.ruta==='renovacion_manual'&&!Number.isFinite(Date.parse(d.derecho_anterior_hasta))))throw Error('VIGENCIA');
-        return d;
-    }
-    function render(d){current=d;data.replaceChildren();row('Paquete',d.paquete_codigo);row('Capacidad contratada',d.capacidad);row('Vigencia','1 mes · Sin renovación automática');row('Total confirmado con impuestos',money(d.total_pagar,d.moneda));row('Pago','Acreditación registrada');row('Modalidad',d.ruta==='alta'?'Primera activación':'Renovación manual');
-        if(d.activacion_registrada){row('Referencia de activación',d.derecho.derecho_id);row('Inicio registrado',date(d.derecho.vigente_desde));row('Fin registrado',date(d.derecho.vigente_hasta));row('Estado registrado',d.derecho.estado);notice.textContent='La activación ya está registrada. Consulta sus fechas y estado; no es necesario repetirla.';}
-        else {if(d.ruta==='renovacion_manual')row('Fin del periodo anterior',date(d.derecho_anterior_hasta));row('Inicio del nuevo periodo',d.ruta==='alta'?'Al activar el complemento':'Al terminar el periodo anterior o al activar, si ya venció');notice.textContent=d.activacion_comercial_habilitada?'Las fechas definitivas quedarán registradas al activar.':'La activación comercial sigue deshabilitada.';}
-        save.textContent=d.ruta==='renovacion_manual'?'Activar renovación manual':'Activar complemento';controls();
-    }
-    const messages={SOLICITANTE_NO_AUTORIZADO:'Solo el propietario original puede activar esta contratación.',ACTIVACION_COMERCIAL_NO_HABILITADA:'La activación comercial todavía no está habilitada.',RESUMEN_ACTIVACION_CAMBIO:'La contratación o el periodo anterior cambió. Actualiza la activación antes de continuar.',ADQUISICION_NO_ACTIVABLE_C04C:'Esta contratación no está disponible para activar un paquete base.',CATALOGO_NO_HABILITADO:'El paquete todavía no está habilitado para activarse.',PAGO_APROBADO_NO_UNICO:'La contratación todavía no tiene un pago acreditado válido.'};
-    function fail(e){return messages[e.message]||(e.message==='PGRST202'?'La activación todavía no está disponible. Inténtalo después de la actualización.':'No se pudo confirmar el resultado. Pulsa «Actualizar activación» antes de volver a intentar.');}
-    async function read(){const r=await limit(supabaseClient.rpc('consultar_activacion_complemento_c04g_segura',{p_adquisicion_id:adquisicionId}));if(!(await identity()))return null;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');return validate(r.data,['CONTEXTO_ACTIVACION_C04G']);}
-    async function action(fn){if(soloVista||busy||!alive())return;busy=true;controls();try{if(!(await identity()))return;await fn();}catch(e){if(alive()){current=null;data.replaceChildren();status.textContent=fail(e);}}finally{busy=false;if(alive())controls();}}
-    refresh.addEventListener('click',()=>action(async()=>{status.textContent='Consultando activación…';const d=await read();if(d){render(d);status.textContent=d.activacion_registrada?'Activación registrada recuperada. No se ha enviado otra activación.':'Activación actualizada.';}}));
-    save.addEventListener('click',()=>{if(save.disabled)return;const d=current;action(async()=>{
-        const latest=await read();if(!latest)return;
-        if(latest.activacion_registrada){render(latest);status.textContent='Activación ya registrada. No se ha repetido.';return;}
-        if(!latest.activacion_permitida||key(latest)!==key(d))throw Error('RESUMEN_ACTIVACION_CAMBIO');
-        const mode=d.ruta==='alta'?'activar':'activar la renovación manual de';
-        if(!window.confirm('¿Confirmas '+mode+' '+d.paquete_codigo+' con capacidad '+d.capacidad+' por un mes? Total ya confirmado: '+money(d.total_pagar,d.moneda)+'. Sin renovación automática. Se conserva el contrato aceptado y no se realiza otro cargo.'))return;
-        if(!(await identity()))return;status.textContent='Registrando activación…';
-        const r=await limit(supabaseClient.rpc('activar_complemento_c04g_seguro',{p_adquisicion_id:adquisicionId,p_confirmacion_id:d.confirmacion_id,p_total_esperado:d.total_pagar,p_moneda_esperada:d.moneda,p_ruta_esperada:d.ruta,p_derecho_anterior_id:d.derecho_anterior_id}));
-        if(!(await identity()))return;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'ESCRITURA');const result=validate(r.data,['ACTIVACION_REGISTRADA_C04G']);
-        if(!result.activacion_registrada||result.confirmacion_id!==d.confirmacion_id||result.pago_id!==d.pago_id||result.total_pagar!==d.total_pagar||result.moneda!==d.moneda||result.capacidad!==d.capacidad||result.paquete_codigo!==d.paquete_codigo||result.ruta!==d.ruta||result.derecho_anterior_id!==d.derecho_anterior_id)throw Error('RESPUESTA');
-        render(result);status.textContent='Activación registrada. La capacidad y las fechas se muestran arriba.';
-    });});
-    if(soloVista){notice.textContent='Vista de prueba: consulta y activación deshabilitadas. No se consultan contrataciones personales.';row('Paquete y capacidad','Se tomarán de la contratación confirmada');row('Pago','Requiere acreditación registrada');row('Vigencia','1 mes · Sin renovación automática');row('Inicio y fin','Se mostrarán después de activar');row('Total con impuestos','Se conservará el total confirmado');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='Disponible para primera alta de paquete base o renovación manual. Los paquetes extra tienen una ruta distinta.';controls();return;}
+    const limit=async p=>{let timer;try{return await Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT')),20000);})]);}finally{clearTimeout(timer);}};
+    async function identity(){if(!alive()){dispose(panel.isConnected);return false;}const r=await limit(supabaseClient.auth.getUser());if(!alive())return false;if(r.error||r.data?.user?.id!==actorEsperado){dispose(true);return false;}return true;}
+    refresh.addEventListener('click',async()=>{
+        if(soloVista||busy||!alive())return;busy=true;controls();data.replaceChildren();status.textContent='Consultando recibo…';
+        try {
+            if(!(await identity()))return;
+            const r=await limit(supabaseClient.rpc('consultar_recibo_complemento_c04m_seguro',{p_adquisicion_id:adquisicionId}));
+            if(!(await identity()))return;
+            if(!r.error&&r.data?.ok===false&&r.data.codigo==='ACTIVACION_NO_REGISTRADA'){status.textContent='Todavía no hay un recibo de activación. La aprobación y activación las gestiona Súper Admin. Si tu pago ya fue acreditado, solicita seguimiento en soportesorteospro@tetokamass.com; no vuelvas a pagar.';return;}
+            if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');
+            const d=massValidarReciboC04N(r.data,{actor_auth_id:actorEsperado,organizador_id:organizadorId,adquisicion_id:adquisicionId,tipo_paquete:tipoPaquete});
+            row('Paquete',d.paquete_codigo);row('Capacidad',d.capacidad);row('Subtotal confirmado',money(d.subtotal,d.moneda));row('Impuestos confirmados',money(d.impuesto,d.moneda));row('Total confirmado',money(d.total_pagar,d.moneda));
+            row('Referencia de activación',d.derecho.derecho_id);row('Inicio registrado',date(d.derecho.vigente_desde));row('Fin registrado',date(d.derecho.vigente_hasta));row('Estado del derecho',d.derecho.estado);row('Renovación automática','No');
+            if(extra)row('Vencimiento del EXTRA','La misma fecha y hora que la base');
+            status.textContent='Recibo verificado. Esta consulta no crea derechos ni realiza cargos. Las fechas y el estado registrados determinan el periodo; consultar el recibo no extiende su vigencia.';
+        }catch(_e){if(alive()){data.replaceChildren();status.textContent='No fue posible verificar el recibo. Actualiza la consulta o solicita seguimiento; no se ha enviado ninguna activación.';}}
+        finally{busy=false;if(alive())controls();}
+    });
+    if(soloVista){note.textContent='Vista de prueba del recibo. Consulta deshabilitada; no se usan contrataciones ni datos personales.';row('Activación','Al aprobar el pago, si se cumplen los requisitos');row('Inicio',extra?'Al completar aprobación y activación':'Primera base: al aprobar y activar · Renovación anticipada: al terminar el periodo anterior');row('Vencimiento',extra?'La misma fecha y hora que la base':'Se mostrará el periodo efectivamente registrado');row('Total con impuestos','Se conserva el total confirmado');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='Solo consulta. No hay un paso de activación manual para el organizador.';controls();return;}
     if(![adquisicionId,organizadorId,actorEsperado].every(uuid)){dispose(true);return;}
     observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
     try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
     refresh.click();
 }
+function massMontarActivacionC04G(options){return massMontarReciboC04N({...options,tipoPaquete:'base'});}
+function massMontarActivacionC04J(options){return massMontarReciboC04N({...options,tipoPaquete:'adicional'});}
 
 </script>
 <script>
@@ -123970,69 +124056,7 @@ function massMontarPagoOrganizadorC04J({host,adquisicionId,organizadorId,actorEs
     refreshState();
 }
 // C04J: alta base / renovacion manual del propietario. Reutiliza C03, sin otra aceptacion.
-function massMontarActivacionC04J({host,adquisicionId,organizadorId,actorEsperado,soloVista=false,moneda='USD'}) {
-    if(!host)return;
-    const el=(t,s,css)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;if(css)n.style.cssText=css;return n;};
-    const button=s=>{const n=el('button',s,'max-width:100%;white-space:normal;padding:10px 14px;margin:6px 0');n.type='button';return n;};
-    const panel=el('details',undefined,'border:1px solid #39ff14;border-radius:12px;padding:14px;margin:14px 0;overflow-wrap:anywhere');panel.dataset.massActivacion='C04J';panel.open=!soloVista;
-    panel.append(el('summary','EXTRA · Activación junto con la base','font-weight:700;cursor:pointer'));
-    const notice=el('p',undefined,'color:#ffe19a;line-height:1.5'),data=el('div'),status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
-    const save=button('Activar EXTRA'),refresh=button('Actualizar activación'),close=button('Cerrar activación del EXTRA');
-    panel.append(el('p',soloVista?'Vista de prueba. La contratación, el pago acreditado y la vigencia se consultarán en la sesión del organizador.':'Activa la capacidad adicional con el pago acreditado. El EXTRA conserva el vencimiento de su base.'),notice,data,
-        el('p','Se conserva la aceptación del contrato registrada al contratar. No tienes que aceptarlo otra vez. Esta activación no realiza un cargo.'),save,status,refresh,close);host.append(panel);
-    let current=null,busy=false,closed=false,subscription=null,observer=null;
-    const uuid=s=>typeof s==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
-    const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
-    const alive=()=>!closed&&panel.isConnected&&(soloVista||org()===organizadorId)&&document.getElementById('panelAdmin')?.style.display!=='none';
-    const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
-    const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
-    const key=d=>JSON.stringify([d.confirmacion_id,d.total_pagar,d.moneda,d.ruta,d.derecho_anterior_id,d.capacidad,d.paquete_codigo,d.version_adquisicion,d.condiciones_hash,d.extra_c04i?.extra_hasta]);
-    const date=s=>new Date(s).toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
-    function row(k,v){const r=el('div',undefined,'display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:6px;padding:9px 0;border-bottom:1px solid #435441');r.append(el('span',k),el('strong',String(v)));data.append(r);}
-    function controls(){save.disabled=soloVista||closed||busy||current?.activacion_permitida!==true;refresh.disabled=soloVista||closed||busy;}
-    function dispose(clear=false){if(closed)return;closed=true;current=null;subscription?.unsubscribe?.();observer?.disconnect();if(clear){data.replaceChildren();notice.textContent='';status.textContent='La sesión o el organizador cambió. Vuelve a abrir la activación.';}controls();}
-    close.addEventListener('click',()=>{dispose();panel.remove();});
-    const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('TIMEOUT')),20000);})]);}finally{clearTimeout(timer);}};
-    async function identity(){if(!alive()){dispose(panel.isConnected);return false;}const r=await limit(supabaseClient.auth.getUser());if(!alive()){dispose(panel.isConnected);return false;}if(r.error||r.data?.user?.id!==actorEsperado){dispose(true);return false;}return true;}
-    function validate(d,codes){
-        if(!d||d.ok!==true||!codes.includes(d.codigo)||d.version_pantalla!=='C04J-1'||d.actor_auth_id!==actorEsperado||d.organizador_id!==organizadorId||d.adquisicion_id!==adquisicionId||!uuid(d.confirmacion_id)||!uuid(d.pago_id)||
-          !['USD','MXN'].includes(d.moneda)||cents(d.subtotal)===null||cents(d.subtotal)<=0||cents(d.impuesto)===null||cents(d.total_pagar)===null||cents(d.subtotal)+cents(d.impuesto)!==cents(d.total_pagar)||
-          !Number.isSafeInteger(d.version_adquisicion)||d.version_adquisicion<1||!Number.isSafeInteger(d.capacidad)||d.capacidad<1||d.duracion_meses!==1||d.renovacion_automatica!==false||d.aceptacion_repetida_requerida!==false||d.contrato_aceptado!==true||d.pago_acreditado!==true||
-          typeof d.paquete_codigo!=='string'||!d.paquete_codigo||typeof d.producto_codigo!=='string'||!d.producto_codigo||!['pagado','pendiente_terminos','activado'].includes(d.estado_adquisicion)||d.ruta!=='extra_c04j')throw Error('RESPUESTA');
-        for(const k of ['activacion_comercial_habilitada','activacion_permitida','activacion_registrada'])if(typeof d[k]!=='boolean')throw Error('RESPUESTA');
-        const extra=massValidarCondicionesExtraC04J(d);if(d.derecho_anterior_id!==extra.derecho_base_id||d.capacidad!==extra.capacidad_extra||(d.activacion_permitida&&!d.base_elegible))throw Error('CONDICIONES_EXTRA');
-        if(d.activacion_registrada!==(d.estado_adquisicion==='activado')||(d.activacion_permitida&&(!d.activacion_comercial_habilitada||d.activacion_registrada)))throw Error('ESTADO');
-        if(d.activacion_registrada){const r=d.derecho;if(!r||r.derecho_base_id!==extra.derecho_base_id||Date.parse(r.vigente_hasta)!==Date.parse(extra.extra_hasta)||Date.parse(r.vigente_desde)<Date.parse(extra.calculado_en)||!uuid(r.derecho_id)||r.capacidad!==d.capacidad||typeof r.estado!=='string'||!Number.isFinite(Date.parse(r.vigente_desde))||!Number.isFinite(Date.parse(r.vigente_hasta))||Date.parse(r.vigente_hasta)<=Date.parse(r.vigente_desde))throw Error('VIGENCIA');}
-        else if(d.derecho!==null||(d.ruta==='renovacion_manual'&&!Number.isFinite(Date.parse(d.derecho_anterior_hasta))))throw Error('VIGENCIA');
-        return d;
-    }
-    function render(d){current=d;data.replaceChildren();row('Paquete',d.paquete_codigo);row('Capacidad adicional',d.capacidad);row('Vencimiento del EXTRA',date(d.extra_c04i.extra_hasta));row('Renovación automática','No');row('Total confirmado con impuestos',money(d.total_pagar,d.moneda));row('Pago','Acreditación registrada');
-        if(d.activacion_registrada){row('Referencia de activación',d.derecho.derecho_id);row('Inicio registrado',date(d.derecho.vigente_desde));row('Fin registrado',date(d.derecho.vigente_hasta));row('Estado registrado',d.derecho.estado);notice.textContent='La activación ya está registrada. Se conserva el vencimiento junto con la base.';}
-        else {row('Inicio de uso','Al activar el EXTRA');notice.textContent=!d.base_elegible?'La base original ya no está disponible para esta activación. El vencimiento y el total aceptados se conservan; solicita revisión al soporte.':d.activacion_comercial_habilitada?'La capacidad empieza al activar y vence junto con la base. Un retraso no extiende el periodo.':'La activación comercial sigue deshabilitada.';}
-        save.textContent='Activar EXTRA';controls();
-    }
-    const messages={SOLICITANTE_NO_AUTORIZADO:'Solo el propietario original puede activar esta contratación.',ACTIVACION_COMERCIAL_NO_HABILITADA:'La activación comercial todavía no está habilitada.',RESUMEN_ACTIVACION_CAMBIO:'La contratación o el periodo anterior cambió. Actualiza la activación antes de continuar.',ADQUISICION_NO_ACTIVABLE_C04C:'Esta contratación no está disponible para activar un paquete base.',CATALOGO_NO_HABILITADO:'El paquete todavía no está habilitado para activarse.',PAGO_APROBADO_NO_UNICO:'La contratación todavía no tiene un pago acreditado válido.'};
-    function fail(e){return messages[e.message]||(e.message==='PGRST202'?'La activación todavía no está disponible. Inténtalo después de la actualización.':'No se pudo confirmar el resultado. Pulsa «Actualizar activación» antes de volver a intentar.');}
-    async function read(){const r=await limit(supabaseClient.rpc('consultar_activacion_extra_c04j_segura',{p_adquisicion_id:adquisicionId}));if(!(await identity()))return null;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'LECTURA');return validate(r.data,['CONTEXTO_ACTIVACION_C04J']);}
-    async function action(fn){if(soloVista||busy||!alive())return;busy=true;controls();try{if(!(await identity()))return;await fn();}catch(e){if(alive()){current=null;data.replaceChildren();status.textContent=fail(e);}}finally{busy=false;if(alive())controls();}}
-    refresh.addEventListener('click',()=>action(async()=>{status.textContent='Consultando activación…';const d=await read();if(d){render(d);status.textContent=d.activacion_registrada?'Activación registrada recuperada. No se ha enviado otra activación.':'Activación actualizada.';}}));
-    save.addEventListener('click',()=>{if(save.disabled)return;const d=current;action(async()=>{
-        const latest=await read();if(!latest)return;
-        if(latest.activacion_registrada){render(latest);status.textContent='Activación ya registrada. No se ha repetido.';return;}
-        if(!latest.activacion_permitida||key(latest)!==key(d))throw Error('RESUMEN_ACTIVACION_CAMBIO');
-        if(!window.confirm('¿Activar '+d.paquete_codigo+' con capacidad adicional '+d.capacidad+' hasta '+date(d.extra_c04i.extra_hasta)+'? Total ya confirmado: '+money(d.total_pagar,d.moneda)+'. Vence junto con la base, sin renovación automática. Se conserva el contrato aceptado y no se realiza otro cargo.'))return;
-        if(!(await identity()))return;status.textContent='Registrando activación…';
-        const r=await limit(supabaseClient.rpc('activar_extra_c04j_seguro',{p_adquisicion_id:adquisicionId,p_confirmacion_id:d.confirmacion_id,p_total_esperado:d.total_pagar,p_moneda_esperada:d.moneda,p_condiciones_hash:d.condiciones_hash,p_derecho_base_id:d.extra_c04i.derecho_base_id,p_vencimiento_esperado:d.extra_c04i.extra_hasta}));
-        if(!(await identity()))return;if(r.error||!r.data?.ok)throw Error(r.error?.code||r.data?.codigo||'ESCRITURA');const result=validate(r.data,['ACTIVACION_REGISTRADA_C04J']);
-        if(!result.activacion_registrada||result.confirmacion_id!==d.confirmacion_id||result.pago_id!==d.pago_id||result.total_pagar!==d.total_pagar||result.moneda!==d.moneda||result.capacidad!==d.capacidad||result.paquete_codigo!==d.paquete_codigo||result.ruta!==d.ruta||result.derecho_anterior_id!==d.derecho_anterior_id||result.condiciones_hash!==d.condiciones_hash||result.extra_c04i.extra_hasta!==d.extra_c04i.extra_hasta)throw Error('RESPUESTA');
-        render(result);status.textContent='Activación registrada. La capacidad y las fechas se muestran arriba.';
-    });});
-    if(soloVista){notice.textContent='Vista de prueba: consulta y activación deshabilitadas. No se consultan contrataciones personales.';row('Paquete y capacidad','Se tomarán de la contratación confirmada');row('Pago','Requiere acreditación registrada');row('Vencimiento','La misma fecha y hora que la base');row('Inicio de uso','Al activar el EXTRA');row('Renovación automática','No');row('Total con impuestos','Se conservará el total confirmado');row('Moneda',typeof moneda==='string'?moneda:moneda.value);if(moneda?.addEventListener)moneda.addEventListener('change',()=>{if(panel.isConnected)data.lastElementChild.querySelector('strong').textContent=moneda.value;});status.textContent='La base original debe seguir vigente. No se recalcula el total, no se pide otra aceptación y un retraso no extiende el vencimiento.';controls();return;}
-    if(![adquisicionId,organizadorId,actorEsperado].every(uuid)){dispose(true);return;}
-    observer=new MutationObserver(()=>{if(!alive())dispose(panel.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style']});
-    try{subscription=supabaseClient.auth.onAuthStateChange((_e,s)=>{if(s?.user?.id!==actorEsperado)dispose(true);})?.data?.subscription;}catch(_e){}
-    refresh.click();
-}
+// C04N: el recibo del EXTRA usa massMontarReciboC04N, definido en el bloque comun.
 
 </script>
 </body>
