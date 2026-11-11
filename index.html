@@ -121980,7 +121980,7 @@ async function mostrarBorradorContratoComplementosC05() {
     const contexto = () => !cerrado && vista.isConnected && raiz.contains(vista) &&
         admin.style.display !== "none" && !admin.hidden && localStorage.getItem("admin_rol") === "super_admin";
     function controles() {
-        consulta.disabled = cerrado || ocupado || registrado;
+        consulta.disabled = cerrado || ocupado;
         confirmar.disabled = cerrado || ocupado || registrado || !propuesta || !abierto;
         guardar.disabled = confirmar.disabled || !confirmar.checked;
         guardar.textContent = incierto ? "Comprobar o completar registro 1.2" : "Registrar borrador 1.2";
@@ -122021,8 +122021,10 @@ async function mostrarBorradorContratoComplementosC05() {
         PROPUESTA_PRESENTADA_CAMBIO:"La propuesta cambió. Actualízala y vuelve a revisar el documento."
     };
     async function cargar() {
-        if (ocupado || registrado || !contexto()) return;
-        ocupado = true; propuesta = null; abierto = false; confirmar.checked = false;
+        if (ocupado || !contexto()) return;
+        ocupado = true; registrado = false; propuesta = null; abierto = false; confirmar.checked = false;
+        titulo.textContent = "Contrato Complementos MASS · Consulta 1.2";
+        aviso.textContent = "Consulta del contenido y del registro guardado con tu sesión de Súper Admin.";
         documentoHost.replaceChildren(); controles(); estado.textContent = "Consultando y verificando la propuesta 1.2...";
         try {
             if (!await mismaSesion()) return;
@@ -122030,13 +122032,15 @@ async function mostrarBorradorContratoComplementosC05() {
                 if (event === "SIGNED_OUT" || session?.user?.id !== actor) retirar();
             })?.data?.subscription;
             if (!contexto()) return;
-            const {data:d,error} = await client.rpc("consultar_propuesta_contrato_v12_c05_segura");
+            const {data:d,error} = await client.rpc("consultar_registro_contrato_v12_c05c_segura");
             if (!await mismaSesion()) return;
             if (error || d?.ok !== true) {
                 estado.textContent = errores[d?.codigo] || "No fue posible consultar la propuesta. Puedes volver a actualizar.";
                 return;
             }
-            if (d.codigo !== "PROPUESTA_1_2_DISPONIBLE" || d.version !== "1.2" || d.version_orden !== 3 ||
+            if (d.registro_consultado !== true || typeof d.registrado !== "boolean" ||
+                (d.registrado ? (!uuid(d.version_id) || d.version_id === d.version_base_id || d.version_id === d.plantilla_id) : d.version_id !== null) ||
+                d.codigo !== "PROPUESTA_1_2_DISPONIBLE" || d.version !== "1.2" || d.version_orden !== 3 ||
                 d.estado !== "borrador" || d.version_base !== "1.1" || d.hash_base !== BASE_HASH ||
                 !uuid(d.plantilla_id) || !uuid(d.version_base_id) || d.plantilla_id === d.version_base_id ||
                 d.contenido_sha256 !== HASH || d.publicado !== false || d.aceptacion_registrada !== false ||
@@ -122056,6 +122060,16 @@ async function mostrarBorradorContratoComplementosC05() {
             lectura.addEventListener("toggle",()=>{
                 if (contexto() && lectura.open && propuesta) {abierto=true;controles();}
             });
+            registrado = d.registrado;
+            if (registrado) {
+                incierto = false;
+                titulo.textContent = "Contrato Complementos MASS · Borrador 1.2 registrado";
+                aviso.textContent = "Esta versión ya está guardada. Puedes leerla y descargarla; su referencia se conserva al volver a entrar.";
+                estado.textContent = "Borrador 1.2 registrado.\nReferencia: " + d.version_id +
+                    "\nEstado: borrador. Revisión jurídica y fiscal y publicación pendientes.";
+                return;
+            }
+            titulo.textContent = "Contrato Complementos MASS · Propuesta 1.2";
             estado.textContent = incierto
                 ? "Propuesta verificada. Revisa el texto para comprobar o completar el mismo registro; una versión idéntica se reutiliza."
                 : "Propuesta verificada. Abre «Leer borrador completo» y revisa el texto antes de confirmar.";
@@ -122141,8 +122155,7 @@ async function mostrarCentroJuridicoMassPM06() {
 
     const nota = document.createElement("p");
     nota.textContent =
-        "Historial de las versiones anteriores. Abre la propuesta 1.2 para consultar " +
-        "su contenido y registrar el borrador con tu sesión de Súper Admin. " +
+        "Historial de las versiones anteriores y consulta del registro 1.2. " +
         "El historial mostrado aquí no equivale a aprobación o publicación legal.";
     nota.style.cssText = "font-size:13px;color:#ffd966";
 
@@ -122168,6 +122181,7 @@ async function mostrarCentroJuridicoMassPM06() {
             detalle: "Revisión jurídica y fiscal y publicación pendientes. Conserva las versiones y revisiones anteriores."
         }
     ];
+    let estadoRegistro, nombreRegistro, botonRegistro;
     filas.forEach((fila, i) => {
         const item = document.createElement("div");
         const nombre = document.createElement("strong");
@@ -122191,6 +122205,9 @@ async function mostrarCentroJuridicoMassPM06() {
             revisar.style.cssText = "max-width:100%;white-space:normal;padding:12px";
             revisar.addEventListener("click",()=>mostrarBorradorContratoComplementosC05());
             item.append(revisar);
+            estadoRegistro = estado; nombreRegistro = nombre; botonRegistro = revisar;
+            estado.dataset.registroC05c = "true"; estado.setAttribute("role","status");
+            estado.textContent = "Consultando registro guardado...";
         }
         if (i !== filas.length - 1) {
             item.style.cssText =
@@ -122283,6 +122300,57 @@ async function mostrarCentroJuridicoMassPM06() {
         qaPrecios, qaLeyenda, seguimientoPagos, pendiente, detalles, volver
     );
     raiz.replaceChildren(vista);
+    // Consulta de lectura: nunca llama al registro para averiguar si existe.
+    const client = supabaseClient, panel = document.getElementById("panelSuperAdmin");
+    let actor = null, cerrado = false, subscription = null;
+    const vigente = () => !cerrado && vista.isConnected && raiz.contains(vista) &&
+        panel.style.display !== "none" && !panel.hidden && localStorage.getItem("admin_rol") === "super_admin";
+    const retirar = () => {
+        if (cerrado) return;
+        cerrado = true; subscription?.unsubscribe(); observer.disconnect();
+        window.removeEventListener("storage",cambio);
+        nombreRegistro.textContent = "1.2 · Registro";
+        estadoRegistro.textContent = "La sesión o la pantalla cambió. Vuelve a abrir el Centro Jurídico con tu sesión actual.";
+        botonRegistro.disabled = true;
+    };
+    const observer = new MutationObserver(()=>{if (!vigente()) retirar();});
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style","hidden"]});
+    const cambio = e => {if (e.key === "admin_rol" && !vigente()) retirar();};
+    window.addEventListener("storage",cambio);
+    try {
+        const inicial = await client.auth.getUser();
+        if (!vigente() || inicial.error || !inicial.data?.user?.id) {retirar();return;}
+        actor = inicial.data.user.id;
+        subscription = client.auth.onAuthStateChange?.((event,session)=>{
+            if (event === "SIGNED_OUT" || session?.user?.id !== actor) retirar();
+        })?.data?.subscription;
+        const {data:d,error} = await client.rpc("consultar_registro_contrato_v12_c05c_segura");
+        const actual = await client.auth.getUser();
+        if (!vigente() || actual.error || actual.data?.user?.id !== actor) {retirar();return;}
+        const uuid = v => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+        if (error || d?.ok !== true || d.registro_consultado !== true || typeof d.registrado !== "boolean" ||
+            d.codigo !== "PROPUESTA_1_2_DISPONIBLE" || d.version !== "1.2" || d.version_orden !== 3 ||
+            d.estado !== "borrador" || d.publicado !== false || d.aceptacion_registrada !== false || d.derechos_activados !== false ||
+            d.contenido_sha256 !== "d01d08a21e67c7dca6535505d841abe13ee2d329dc0df7ca48068834df94be27" ||
+            !uuid(d.plantilla_id) || !uuid(d.version_base_id) ||
+            (d.registrado ? (!uuid(d.version_id) || d.version_id === d.version_base_id || d.version_id === d.plantilla_id) : d.version_id !== null)) {
+            estadoRegistro.textContent = "No fue posible confirmar el registro guardado. Abre la consulta 1.2 para revisar su estado.";
+            botonRegistro.textContent = "Consultar borrador 1.2";
+            return;
+        }
+        if (d.registrado) {
+            nombreRegistro.textContent = "1.2 · Borrador registrado";
+            estadoRegistro.textContent = "Guardado. Referencia: " + d.version_id + ". Estado: borrador.";
+            botonRegistro.textContent = "Leer y descargar borrador 1.2";
+        } else {
+            estadoRegistro.textContent = "La propuesta 1.2 todavía no tiene un registro guardado.";
+        }
+    } catch (_error) {
+        if (vigente()) {
+            estadoRegistro.textContent = "No fue posible consultar el registro. Vuelve a abrir el Centro Jurídico para intentarlo de nuevo.";
+            botonRegistro.textContent = "Consultar borrador 1.2";
+        }
+    }
 }
 
 // BJ-124-P-04-E: la prueba de precios también es accesible desde Súper Admin.
