@@ -121945,6 +121945,171 @@ async function mostrarBorradorContratoComplementosV11BJ124M() {
 </script>
 
 
+<!-- C-05-B: propuesta 1.2 fija y registro autenticado de borrador. -->
+<script>
+async function mostrarBorradorContratoComplementosC05() {
+    if (!(await verificarAccesoSuperAdmin()) || localStorage.getItem("admin_rol") !== "super_admin") return;
+    const raiz = document.getElementById("superAdminContenido"), admin = document.getElementById("panelSuperAdmin");
+    if (!raiz || !admin || admin.style.display === "none") return;
+    const client = supabaseClient;
+    const HASH = "d01d08a21e67c7dca6535505d841abe13ee2d329dc0df7ca48068834df94be27";
+    const BASE_HASH = "c0723f7fae901e8b3c86794de08126ec620e6019d12ac01acebc92c21a47c611";
+    const uuid = valor => typeof valor === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(valor);
+    let actor = null, propuesta = null, ocupado = false, cerrado = false, registrado = false, abierto = false, incierto = false, subscription = null;
+    const vista = document.createElement("section"); vista.className = "card"; vista.dataset.massBorrador = "c05";
+    vista.style.cssText = "max-width:860px;margin:12px auto;padding:18px;box-sizing:border-box;text-align:left;overflow-wrap:anywhere";
+    const titulo = document.createElement("h3"); titulo.textContent = "Contrato Complementos MASS · Propuesta 1.2";
+    const aviso = document.createElement("p");
+    aviso.textContent = "Revisa el documento completo y registra la versión 1.2 como borrador. Las versiones 1.0 y 1.1 y sus revisiones se conservan.";
+    const alcance = document.createElement("p"); alcance.style.cssText = "color:#ffd966;line-height:1.6";
+    alcance.textContent = "Borrador para revisión interna. Su aprobación jurídica y fiscal, publicación y habilitación comercial siguen pendientes.";
+    const estado = document.createElement("p"); estado.setAttribute("role","status"); estado.setAttribute("aria-live","polite");
+    estado.dataset.estadoC05 = "true"; estado.style.cssText = "white-space:pre-wrap;line-height:1.6;overflow-wrap:anywhere";
+    const documentoHost = document.createElement("div");
+    const consulta = document.createElement("button"); consulta.type = "button"; consulta.textContent = "Actualizar propuesta";
+    const label = document.createElement("label"); label.style.cssText = "display:flex;gap:10px;align-items:flex-start;margin:16px 0;line-height:1.6";
+    const confirmar = document.createElement("input"); confirmar.type = "checkbox"; confirmar.disabled = true;
+    confirmar.style.cssText = "width:20px;height:20px;flex:0 0 20px;margin:3px 0";
+    label.append(confirmar, document.createTextNode("Revisé el texto completo y solicito registrar esta versión 1.2 únicamente como borrador para revisión."));
+    const guardar = document.createElement("button"); guardar.type = "button"; guardar.textContent = "Registrar borrador 1.2"; guardar.disabled = true;
+    const volver = document.createElement("button"); volver.type = "button"; volver.textContent = "← Volver al Centro Jurídico MASS";
+    const acciones = document.createElement("div"); acciones.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;margin:16px 0";
+    [consulta,guardar,volver].forEach(b=>{b.style.cssText="max-width:100%;white-space:normal;padding:12px";});
+    acciones.append(guardar,volver);
+    vista.append(titulo,aviso,alcance,consulta,documentoHost,estado,label,acciones); raiz.replaceChildren(vista);
+    const contexto = () => !cerrado && vista.isConnected && raiz.contains(vista) &&
+        admin.style.display !== "none" && !admin.hidden && localStorage.getItem("admin_rol") === "super_admin";
+    function controles() {
+        consulta.disabled = cerrado || ocupado || registrado;
+        confirmar.disabled = cerrado || ocupado || registrado || !propuesta || !abierto;
+        guardar.disabled = confirmar.disabled || !confirmar.checked;
+        guardar.textContent = incierto ? "Comprobar o completar registro 1.2" : "Registrar borrador 1.2";
+    }
+    function retirar() {
+        if (cerrado) return;
+        cerrado = true; propuesta = null; confirmar.checked = false;
+        documentoHost.replaceChildren(); subscription?.unsubscribe(); observer.disconnect();
+        window.removeEventListener("storage",cambioAlmacenamiento);
+        estado.textContent = "La sesión o la pantalla cambió. Vuelve al Centro Jurídico MASS con tu sesión actual.";
+        controles();
+    }
+    const observer = new MutationObserver(()=>{if (!contexto()) retirar();});
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style","hidden"]});
+    const cambioAlmacenamiento = event => {if (event.key === "admin_rol" && !contexto()) retirar();};
+    window.addEventListener("storage",cambioAlmacenamiento);
+    async function mismaSesion() {
+        if (!contexto()) {retirar();return false;}
+        const s = await client.auth.getUser();
+        if (!contexto() || s.error || !s.data?.user?.id || (actor && actor !== s.data.user.id)) {retirar();return false;}
+        actor = s.data.user.id;
+        return true;
+    }
+    const errores = {
+        SESION_REQUERIDA:"Inicia sesión de nuevo como Súper Admin.",
+        SUPER_ADMIN_REQUERIDO:"Se requiere una cuenta de Súper Admin activa.",
+        BASE_1_1_CAMBIO:"La versión 1.1 cambió. Es necesario revisar esa diferencia antes de registrar la propuesta.",
+        BASE_1_1_NO_UNIVOCA:"No se pudo identificar una única versión 1.1.",
+        BASE_1_1_NO_DISPONIBLE:"La versión 1.1 requerida no está disponible.",
+        BASE_NO_DISPONIBLE:"La versión de referencia no está disponible.",
+        BASE_PRESENTADA_CAMBIO:"La versión de referencia cambió. Actualiza la propuesta.",
+        PLANTILLA_NO_UNIVOCA:"No se pudo identificar una única plantilla de Complementos MASS.",
+        PLANTILLA_NO_DISPONIBLE:"La plantilla de Complementos MASS no está disponible.",
+        REVISION_1_1_NO_CONFIRMADA:"No se pudo confirmar la revisión histórica de la versión 1.1.",
+        VERSION_1_2_AMBIGUA:"Hay más de una referencia a la versión 1.2. Requiere revisión.",
+        VERSION_1_2_PREEXISTENTE_DISTINTA:"Ya existe una versión 1.2 con otro contenido o estado. Se conserva sin cambios.",
+        VERSION_POSTERIOR_EXISTENTE:"Ya existe una versión posterior. Revisa el historial antes de continuar.",
+        PROPUESTA_PRESENTADA_CAMBIO:"La propuesta cambió. Actualízala y vuelve a revisar el documento."
+    };
+    async function cargar() {
+        if (ocupado || registrado || !contexto()) return;
+        ocupado = true; propuesta = null; abierto = false; confirmar.checked = false;
+        documentoHost.replaceChildren(); controles(); estado.textContent = "Consultando y verificando la propuesta 1.2...";
+        try {
+            if (!await mismaSesion()) return;
+            if (!subscription && client.auth.onAuthStateChange) subscription = client.auth.onAuthStateChange((event,session)=>{
+                if (event === "SIGNED_OUT" || session?.user?.id !== actor) retirar();
+            })?.data?.subscription;
+            if (!contexto()) return;
+            const {data:d,error} = await client.rpc("consultar_propuesta_contrato_v12_c05_segura");
+            if (!await mismaSesion()) return;
+            if (error || d?.ok !== true) {
+                estado.textContent = errores[d?.codigo] || "No fue posible consultar la propuesta. Puedes volver a actualizar.";
+                return;
+            }
+            if (d.codigo !== "PROPUESTA_1_2_DISPONIBLE" || d.version !== "1.2" || d.version_orden !== 3 ||
+                d.estado !== "borrador" || d.version_base !== "1.1" || d.hash_base !== BASE_HASH ||
+                !uuid(d.plantilla_id) || !uuid(d.version_base_id) || d.plantilla_id === d.version_base_id ||
+                d.contenido_sha256 !== HASH || d.publicado !== false || d.aceptacion_registrada !== false ||
+                d.derechos_activados !== false || d.titulo !== "Contrato General de Complementos MASS") {
+                estado.textContent = "La respuesta no coincide con la propuesta 1.2 prevista. El registro permanece bloqueado.";
+                return;
+            }
+            const ok = await massMontarDocumentoComplementosC01({
+                host:documentoHost,documento:{titulo:d.titulo,version:d.version,contenido:d.contenido,sha256:d.contenido_sha256},
+                actorEsperado:actor,borrador:true
+            });
+            if (!await mismaSesion()) return;
+            if (!ok) {estado.textContent = "No se pudo verificar el contenido completo. Actualiza la propuesta.";return;}
+            const lectura = documentoHost.querySelector('details[data-lectura-contrato="true"]');
+            if (!lectura) {documentoHost.replaceChildren();estado.textContent="La lectura del documento no está disponible. Actualiza la propuesta.";return;}
+            propuesta = Object.freeze({plantillaId:d.plantilla_id,baseId:d.version_base_id,hash:HASH});
+            lectura.addEventListener("toggle",()=>{
+                if (contexto() && lectura.open && propuesta) {abierto=true;controles();}
+            });
+            estado.textContent = incierto
+                ? "Propuesta verificada. Revisa el texto para comprobar o completar el mismo registro; una versión idéntica se reutiliza."
+                : "Propuesta verificada. Abre «Leer borrador completo» y revisa el texto antes de confirmar.";
+        } catch (_error) {
+            if (contexto()) estado.textContent = "La consulta se interrumpió. Puedes volver a actualizar la propuesta.";
+        } finally {ocupado=false;controles();}
+    }
+    confirmar.addEventListener("change",controles);
+    consulta.addEventListener("click",cargar);
+    guardar.addEventListener("click",async()=>{
+        if (ocupado || registrado || !contexto() || !propuesta || !abierto || !confirmar.checked) return;
+        const copia=propuesta;
+        if (!window.confirm((incierto ? "¿Comprobar o completar" : "¿Registrar") +
+            " el borrador 1.2 revisado? Se conserva el historial y una versión idéntica se reutiliza. La publicación y habilitación comercial continúan pendientes.")) return;
+        ocupado=true;controles();estado.textContent="Confirmando sesión y registro del borrador...";
+        let enviado=false;
+        try {
+            if (!await mismaSesion() || propuesta !== copia || !confirmar.checked) return;
+            enviado=true;
+            const {data:d,error} = await client.rpc("registrar_borrador_contrato_v12_c05_seguro",{
+                p_version_base_id:copia.baseId,p_sha256_presentado:copia.hash,p_confirmacion_expresa:true
+            });
+            if (!await mismaSesion()) return;
+            const codigoValido=d?.codigo === "BORRADOR_1_2_REGISTRADO" || d?.codigo === "BORRADOR_1_2_YA_EXISTENTE";
+            if (!error && d?.ok === true && codigoValido && d.plantilla_id === copia.plantillaId &&
+                uuid(d.version_id) && d.version_id !== copia.baseId && d.version === "1.2" && d.version_orden === 3 &&
+                d.estado === "borrador" && d.contenido_sha256_propuesto === copia.hash && d.publicado === false &&
+                d.aceptacion_registrada === false && d.derechos_activados === false &&
+                d.reutilizado === (d.codigo === "BORRADOR_1_2_YA_EXISTENTE")) {
+                registrado=true;incierto=false;confirmar.checked=false;
+                estado.textContent = (d.reutilizado ? "Borrador 1.2 ya registrado; se reutilizó la misma versión." : "Borrador 1.2 registrado correctamente.") +
+                    "\nReferencia: " + d.version_id + "\nEstado: borrador. Revisión jurídica y fiscal y publicación pendientes.";
+                return;
+            }
+            if (!error && d?.ok === false && errores[d.codigo]) {
+                propuesta=null;confirmar.checked=false;estado.textContent=errores[d.codigo];return;
+            }
+            incierto=true;
+            estado.textContent="No se pudo confirmar el resultado. Puedes «Comprobar o completar registro 1.2»; el servidor reutiliza la misma versión si ya se guardó.";
+        } catch (_error) {
+            if (contexto()) {
+                incierto=enviado || incierto;
+                estado.textContent=enviado
+                    ? "La respuesta se interrumpió. Puedes comprobar o completar el mismo registro; no se creará otra versión idéntica."
+                    : "No se pudo confirmar la sesión. Puedes volver a intentarlo.";
+            }
+        } finally {ocupado=false;controles();}
+    });
+    volver.addEventListener("click",()=>{retirar();mostrarCentroJuridicoMassPM06();});
+    await cargar();
+}
+</script>
+
+
 <!-- BJ-124-N-UI: único acceso al historial jurídico de Complementos MASS.
      UI organizativa: no consulta, publica, acepta contratos ni crea pagos. -->
 <script>
@@ -121976,9 +122141,9 @@ async function mostrarCentroJuridicoMassPM06() {
 
     const nota = document.createElement("p");
     nota.textContent =
-        "Estado de referencia según las pruebas reales confirmadas hasta el " +
-        "1 de noviembre de 2026. Esta pantalla aún no consulta en tiempo real " +
-        "los estados de Supabase. No equivale a aprobación o publicación legal.";
+        "Historial de las versiones anteriores. Abre la propuesta 1.2 para consultar " +
+        "su contenido y registrar el borrador con tu sesión de Súper Admin. " +
+        "El historial mostrado aquí no equivale a aprobación o publicación legal.";
     nota.style.cssText = "font-size:13px;color:#ffd966";
 
     const lista = document.createElement("div");
@@ -121996,6 +122161,11 @@ async function mostrarCentroJuridicoMassPM06() {
             version: "1.1 · Borrador corregido",
             estado: "Revisión interna registrada: requiere corrección (ID 2).",
             detalle: "Pendiente de resolver requisitos jurídicos y fiscales. No publicado."
+        },
+        {
+            version: "1.2 · Propuesta y registro de borrador",
+            estado: "Contenido disponible para lectura, descarga y registro autenticado.",
+            detalle: "Revisión jurídica y fiscal y publicación pendientes. Conserva las versiones y revisiones anteriores."
         }
     ];
     filas.forEach((fila, i) => {
@@ -122014,6 +122184,13 @@ async function mostrarCentroJuridicoMassPM06() {
             leer.textContent = "📄 Leer y descargar borrador 1.1";
             leer.addEventListener("click",()=>mostrarLecturaBorradorComplementosC01());
             item.append(leer);
+        }
+        if (i === 2) {
+            const revisar = document.createElement("button"); revisar.type = "button";
+            revisar.textContent = "Revisar y registrar borrador 1.2";
+            revisar.style.cssText = "max-width:100%;white-space:normal;padding:12px";
+            revisar.addEventListener("click",()=>mostrarBorradorContratoComplementosC05());
+            item.append(revisar);
         }
         if (i !== filas.length - 1) {
             item.style.cssText =
