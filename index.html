@@ -2592,6 +2592,8 @@ Cargando historial...
 <!-- BJ-123-C: lectura contractual previa; sin checkout ni pagos -->
 <button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarCatalogoInformativoComplementosC06()">📦 Complementos MASS · Paquetes y precios</button>
 
+<button type="button" id="btnAmpliacionesPlanesR3" onclick="mostrarAmpliacionesPlanesR3()" style="display:none;">📅 Mis planes · Ampliar vigencia</button>
+
 <button
   id="btnMensajesClientesAdmin"
   type="button"
@@ -3684,6 +3686,7 @@ window.addEventListener("load", () => {
       
 ids: [
   "btnDashboardOrganizador",
+  "btnAmpliacionesPlanesR3",
   "btnMensajesClientesAdmin",
   "btnComunicacionesMasivasAdminMass"
 ]
@@ -48497,7 +48500,8 @@ function actualizarVisibilidadAccesosOrganizador() {
 
   const idsSoloPropietario = [
     "btnConfigAdmin",
-    "btnMiEquipoAdmin"
+    "btnMiEquipoAdmin",
+    "btnAmpliacionesPlanesR3"
   ];
 
   for (const id of idsSoloPropietario) {
@@ -125399,5 +125403,198 @@ async function mostrarCatalogoInformativoComplementosC06() {
     history.addEventListener('click',()=>{if(alive()){stop();mostrarSeguimientoComplementosC04D({revision:false});}});
     await load();
 }
+
+</script>
+
+<script>
+
+// PLANES-R3-AMPLIACION-03: previa privada; sin contratación, pagos ni escrituras.
+async function mostrarAmpliacionesPlanesR3() {
+    const root=document.getElementById('adminContenido'), panel=document.getElementById('panelAdmin');
+    if(!root||!panel||panel.hidden||panel.style.display==='none')return;
+    const client=supabaseClient;
+    const org=()=>{try{return (localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id')||'').trim().toLowerCase();}catch(_){return '';}};
+    const orgId=org(), pageSize=20;
+    const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+    const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
+    const button=text=>{const b=el('button',text);b.type='button';b.style.cssText='padding:12px;max-width:100%;white-space:normal';return b;};
+    const view=el('section');view.dataset.ampliacionesR3='true';view.className='card';
+    view.style.cssText='max-width:860px;margin:12px auto;padding:18px;text-align:left;overflow-wrap:anywhere;box-sizing:border-box;line-height:1.5';
+    const title=el('h3','Mis planes · Ampliar vigencia');
+    const intro=el('p','Consulta un mes adicional para continuar la misma dinámica. Se conservan su compra original y su capacidad.');
+    const notice=el('p','Contratación próximamente. Esta consulta no modifica tu vencimiento. El total con los impuestos aplicables se mostrará antes de contratar.');
+    notice.style.cssText='padding:12px;border:1px solid #b69a51;border-radius:10px;color:#ffe19a';
+    const reload=button('Actualizar planes'), back=button('← Volver al Dashboard'), close=button('Cerrar');
+    const nav=el('div');nav.style.cssText='display:flex;gap:10px;flex-wrap:wrap';nav.append(reload,back,close);
+    const status=el('p');status.dataset.estadoAmpliacionesR3='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const list=el('div');list.style.cssText='display:grid;gap:12px;margin:16px 0';
+    const pages=el('div');pages.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap';
+    const prev=button('Anterior'), next=button('Siguiente'), pageLabel=el('span');pages.append(prev,pageLabel,next);pages.hidden=true;
+    const help=el('p','¿Necesitas ayuda con tu plan? ');
+    const email=el('a','soportesorteospro@tetokamass.com');email.href='mailto:soportesorteospro@tetokamass.com';email.style.color='#39ff14';help.append(email);
+    view.append(title,intro,notice,nav,status,list,pages,help);root.replaceChildren(view);
+    let actor=null,closed=false,busy=false,offset=0,hasMore=false,subscription=null,epoch=0;
+    const controls=new Set();
+    const alive=()=>!closed&&view.isConnected&&root.contains(view)&&!panel.hidden&&panel.style.display!=='none'&&org()===orgId;
+    const limited=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('TIMEOUT')),15000);})]);}finally{clearTimeout(timer);}};
+    const controlsState=()=>{reload.disabled=closed||busy;prev.disabled=closed||busy||offset===0;next.disabled=closed||busy||!hasMore;for(const b of controls)b.disabled=closed||busy;};
+    function stop(message){
+        if(closed)return;closed=true;epoch++;subscription?.unsubscribe();observer.disconnect();clearInterval(watch);
+        window.removeEventListener('storage',storageChanged);list.replaceChildren();controls.clear();pages.hidden=true;controlsState();
+        if(message)status.textContent=message;
+    }
+    const changedMessage='La sesión o el organizador cambió. Vuelve a abrir Mis planes.';
+    const observer=new MutationObserver(()=>{if(!alive())stop(changedMessage);});
+    observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','hidden']});
+    const storageChanged=()=>{if(!alive())stop(changedMessage);};window.addEventListener('storage',storageChanged);
+    const watch=setInterval(storageChanged,1000);
+    async function identity(){
+        if(!alive()){stop(changedMessage);return false;}
+        const r=await limited(client.auth.getUser());
+        const current=r.data?.user?.id;
+        if(!alive()||r.error||!uuid(current)||(actor&&current!==actor)){stop(changedMessage);return false;}
+        actor=current;
+        if(!subscription)subscription=client.auth.onAuthStateChange?.((event,s)=>{if(event==='SIGNED_OUT'||s?.user?.id!==actor)stop(changedMessage);})?.data?.subscription;
+        return alive();
+    }
+    const money=v=>typeof v==='number'&&Number.isFinite(v)&&v>0&&v<=9999999999.99&&Math.abs(v*100-Math.round(v*100))<.001;
+    const text=v=>typeof v==='string'&&v.trim().length>0&&v.length<=500;
+    const readOnly=p=>p?.solo_lectura===true&&p.contratacion_habilitada===false&&p.pago_habilitado===false&&p.vigencia_modificada===false;
+    const stamp=v=>typeof v==='string'&&/(Z|[+-]\d{2}:\d{2})$/i.test(v)&&Number.isFinite(Date.parse(v));
+    function validPreview(p,adq){
+        if(!readOnly(p))return false;
+        if(p.ok===false)return typeof p.codigo==='string'&&p.codigo.length>0&&p.codigo.length<=100;
+        if(p.ok!==true||p.codigo!=='AMPLIACION_1M_PREVISUALIZADA'||p.organizador_id!==orgId||p.adquisicion_id!==adq||
+            !uuid(p.rifa_original_id)||!uuid(p.rifa_actual_id)||!text(p.plan_nombre)||!text(p.plan_codigo)||
+            !['programada','activa','minimo_no_alcanzado'].includes(p.estado_dinamica_actual)||p.misma_dinamica!==true||
+            !Number.isSafeInteger(p.limite_numeros_conservado)||p.limite_numeros_conservado<100||p.limite_numeros_conservado>1000000||p.limite_numeros_conservado%100!==0||
+            p.meses_adicionales!==1||![3,6,12].includes(p.meses_iniciales)||p.zona_calculo!=='UTC'||
+            !uuid(p.tarifa_id)||!Number.isSafeInteger(p.tarifa_version)||p.tarifa_version<1||!money(p.precio_base_usd)||p.moneda_maestra!=='USD'||
+            p.impuestos_calculados!==false||p.total_con_impuestos!==null||p.cotizacion_emitida!==false||p.renovacion_automatica!==false||
+            !stamp(p.inicio_original)||!stamp(p.vencimiento_actual)||!stamp(p.vencimiento_propuesto))return false;
+        const start=Date.parse(p.inicio_original),old=Date.parse(p.vencimiento_actual),end=Date.parse(p.vencimiento_propuesto);
+        return start<old&&end>old&&end-old<=32*86400000&&
+            (p.fx_disponible===true?(money(p.precio_mxn_estimado)&&p.precio_mxn_estimado%10===0):(p.fx_disponible===false&&p.precio_mxn_estimado===null));
+    }
+    const reasons={
+        SESION_REQUERIDA:'Inicia sesión nuevamente para consultar tus planes.',
+        NO_AUTORIZADO:'Esta consulta está disponible para el propietario del organizador y el Súper Admin.',
+        ORGANIZADOR_NO_ACTIVO:'El organizador todavía no está activo.',
+        ADQUISICION_NO_DISPONIBLE:'No se encontró esta compra para el organizador seleccionado.',
+        MODALIDAD_NO_APLICABLE:'La ampliación de un mes corresponde a los planes por dinámica.',
+        ADQUISICION_NO_ACTIVADA:'La compra todavía no está activada.',
+        DERECHO_NO_DISPONIBLE:'La compra no tiene una vigencia disponible para consultar.',
+        DERECHO_NO_VIGENTE:'La vigencia no permite esta ampliación. Puede haber vencido, estar suspendida o no haber comenzado.',
+        INICIO_DE_VIGENCIA_INCONSISTENTE:'No coinciden las fechas de inicio de esta compra. Contacta a soporte para revisarla.',
+        CONDICIONES_R3_NO_DISPONIBLES:'Esta compra no tiene registrada una duración inicial de 3, 6 o 12 meses. No podemos calcular la ampliación automáticamente.',
+        CONDICIONES_R3_INVALIDAS:'No se pudieron validar las condiciones de la compra. Contacta a soporte.',
+        VENCIMIENTO_NO_ALINEADO_CON_ORIGEN:'El vencimiento no coincide con el inicio original. Contacta a soporte para revisarlo.',
+        DINAMICA_ORIGINAL_NO_ASOCIADA:'Primero debe estar asociada la dinámica original a esta compra.',
+        ASOCIACION_ORIGINAL_INCONSISTENTE:'No se pudo identificar una única dinámica para esta compra. Contacta a soporte.',
+        CADENA_DINAMICA_INCONSISTENTE:'No se pudo verificar la continuidad de la dinámica. Contacta a soporte.',
+        DINAMICA_NO_CONTINUABLE:'El estado actual de la dinámica no permite presentar una ampliación.',
+        TARIFA_AMPLIACION_NO_DISPONIBLE:'La tarifa de ampliación todavía no está disponible para este plan.',
+        TARIFA_AMPLIACION_AMBIGUA:'No se pudo identificar una única tarifa de ampliación.',
+        TARIFA_AMPLIACION_INVALIDA:'No se pudo verificar el importe de la ampliación.'
+    };
+    const message=p=>reasons[p?.codigo]||'No fue posible presentar la ampliación. Actualiza la consulta o contacta a soporte.';
+    let zone='UTC';try{zone=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(_){}
+    const dateFormat=new Intl.DateTimeFormat('es-MX',{dateStyle:'long',timeStyle:'short',timeZone:zone});
+    const amount=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
+    function dateLine(label,value){
+        const p=el('p');p.append(el('strong',label+' '));const t=el('time',dateFormat.format(new Date(value)));t.dateTime=value;p.append(t);return p;
+    }
+    function detailContent(target,p){
+        target.replaceChildren();
+        if(!p.ok){target.append(el('p',message(p)));return;}
+        target.append(dateLine('Vencimiento actual:',p.vencimiento_actual),dateLine('Con un mes adicional:',p.vencimiento_propuesto));
+        target.append(el('p','Fechas mostradas en '+zone+'.'),el('p','Capacidad conservada: hasta '+p.limite_numeros_conservado.toLocaleString('es-MX')+' números.'));
+        target.append(el('p','Precio base del mes adicional, sin impuestos: '+amount(p.precio_base_usd,'USD')+'.'));
+        target.append(el('p',p.fx_disponible?'Referencia informativa: '+amount(p.precio_mxn_estimado,'MXN')+'. Puede variar.':'La referencia en MXN no está disponible por el momento. El precio base en USD sigue disponible.'));
+        target.append(el('p','Continúa la misma dinámica; no habilita una nueva. Sin renovación ni cargos automáticos.'));
+        const ids=el('details');const summary=el('summary','Referencias de esta consulta');summary.style.cursor='pointer';
+        ids.append(summary,el('p','Compra: '+p.adquisicion_id),el('p','Dinámica original: '+p.rifa_original_id));
+        if(p.rifa_actual_id!==p.rifa_original_id)ids.append(el('p','Continuación actual: '+p.rifa_actual_id));
+        target.append(ids);
+    }
+    async function titlesFor(items){
+        const ids=[...new Set(items.filter(x=>x.previsualizacion.ok).map(x=>x.previsualizacion.rifa_actual_id))];
+        const names=new Map();if(!ids.length)return names;
+        try{
+            const {data,error}=await limited(client.from('rifas').select('id,titulo').eq('organizador_id',orgId).in('id',ids));
+            if(!error&&Array.isArray(data))for(const r of data)if(ids.includes(r.id)&&text(r.titulo))names.set(r.id,r.titulo);
+        }catch(_){}
+        return names;
+    }
+    function render(items,names){
+        list.replaceChildren();controls.clear();
+        for(const item of items){
+            const box=el('details');box.dataset.adquisicionAmpliacionR3=item.adquisicion_id;
+            box.style.cssText='border:2px solid #39ff14;border-radius:12px;padding:4px 12px;min-width:0';
+            const heading=el('summary');heading.style.cssText='cursor:pointer;padding:12px 2px;font-weight:bold';
+            const p=item.previsualizacion;
+            heading.textContent=item.plan_nombre+' · '+(p.ok?'Consultar 1 mes adicional':'Consulta no disponible');
+            const body=el('div');body.style.cssText='padding:0 4px 12px';
+            if(p.ok)body.append(el('p',names.get(p.rifa_actual_id)||'Dinámica · referencia '+p.rifa_actual_id.slice(0,8)));
+            const detail=el('div');detail.dataset.detalleAmpliacionR3='true';detailContent(detail,p);
+            const refresh=button('Actualizar ampliación');controls.add(refresh);
+            const itemStatus=el('p');itemStatus.setAttribute('role','status');itemStatus.setAttribute('aria-live','polite');
+            refresh.addEventListener('click',async()=>{
+                if(busy||!alive())return;
+                busy=true;const turn=++epoch;controlsState();detail.replaceChildren();itemStatus.textContent='Consultando ampliación...';
+                try{
+                    if(!await identity())return;
+                    const {data,error}=await limited(client.rpc('previsualizar_ampliacion_plan_r3_segura',{p_organizador_id:orgId,p_adquisicion_id:item.adquisicion_id}));
+                    if(!await identity()||turn!==epoch)return;
+                    if(error||!validPreview(data,item.adquisicion_id)||(data.ok&&data.plan_nombre!==item.plan_nombre)||
+                        (data.ok&&p.ok&&(data.rifa_original_id!==p.rifa_original_id||data.limite_numeros_conservado!==p.limite_numeros_conservado))){
+                        itemStatus.textContent='No se pudo verificar la ampliación. Puedes volver a intentar.';return;
+                    }
+                    // Si la dinámica continuó con otra reprogramación, el listado
+                    // debe refrescar también su título antes de mostrar la nueva.
+                    if(data.ok&&p.ok&&data.rifa_actual_id!==p.rifa_actual_id){
+                        itemStatus.textContent='La dinámica tiene una continuación nueva. Pulsa «Actualizar planes» para consultarla.';return;
+                    }
+                    detailContent(detail,data);heading.textContent=item.plan_nombre+' · '+(data.ok?'Consultar 1 mes adicional':'Consulta no disponible');
+                    itemStatus.textContent=data.ok?'Consulta actualizada. La vigencia sigue sin cambios.':'';
+                }catch(_){if(alive())itemStatus.textContent='La consulta se interrumpió. Puedes volver a intentar.';}
+                finally{busy=false;controlsState();}
+            });
+            body.append(detail,refresh,itemStatus);box.append(heading,body);list.append(box);
+        }
+    }
+    async function load(requestedOffset=0){
+        if(busy||!alive())return;
+        busy=true;const turn=++epoch;controlsState();list.replaceChildren();controls.clear();pages.hidden=true;status.textContent='Consultando planes vigentes...';
+        try{
+            if(!uuid(orgId)){status.textContent='Selecciona tu organizador para consultar sus planes.';return;}
+            if(!await identity())return;
+            const {data:d,error}=await limited(client.rpc('listar_previsualizaciones_ampliacion_r3_seguro',{p_organizador_id:orgId,p_limite:pageSize,p_desplazamiento:requestedOffset}));
+            if(!await identity()||turn!==epoch)return;
+            if(error){status.textContent='No fue posible consultar tus planes. Puedes volver a intentar.';return;}
+            if(d?.ok===false&&readOnly(d)){status.textContent=message(d);return;}
+            if(d?.ok!==true||!readOnly(d)||d.codigo!=='PREVIAS_AMPLIACION_CONSULTADAS'||d.organizador_id!==orgId||
+                !Array.isArray(d.items)||d.items.length>pageSize||d.total_pagina!==d.items.length||
+                !d.items.every(x=>uuid(x.adquisicion_id)&&text(x.plan_nombre)&&validPreview(x.previsualizacion,x.adquisicion_id)&&(!x.previsualizacion.ok||x.plan_nombre===x.previsualizacion.plan_nombre))||
+                new Set(d.items.map(x=>x.adquisicion_id)).size!==d.items.length||
+                !(d.hay_mas===true?(d.items.length===pageSize&&d.siguiente_desplazamiento===requestedOffset+pageSize):(d.hay_mas===false&&d.siguiente_desplazamiento===null))){
+                status.textContent='No fue posible verificar los planes recibidos. Actualiza la consulta.';return;
+            }
+            const names=await titlesFor(d.items);
+            if(!await identity()||turn!==epoch)return;
+            offset=requestedOffset;hasMore=d.hay_mas;render(d.items,names);
+            status.textContent=d.items.length?'Abre tu plan para consultar el mes adicional y su vencimiento propuesto.':
+                (offset?'No hay más planes en esta página.':'No hay planes por dinámica activados y vigentes para consultar aquí. Las compras pendientes o vencidas no aparecen en esta lista.');
+            pageLabel.textContent='Página '+(Math.floor(offset/pageSize)+1);pages.hidden=offset===0&&!hasMore;
+        }catch(_){if(alive())status.textContent='La consulta se interrumpió. Puedes volver a intentar.';}
+        finally{busy=false;controlsState();}
+    }
+    reload.addEventListener('click',()=>load(offset));
+    prev.addEventListener('click',()=>load(Math.max(0,offset-pageSize)));
+    next.addEventListener('click',()=>load(offset+pageSize));
+    const leave=()=>{stop();mostrarDashboardOrganizador();};back.addEventListener('click',leave);close.addEventListener('click',leave);
+    await load(0);
+}
+
 
 </script>
