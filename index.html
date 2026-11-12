@@ -66145,25 +66145,25 @@ async function () {
 
 
                 return `
-                    <div
+                    <details
+                        class="mass-plan-publico-acordeon"
+                        name="mass-planes-publicos"
                         style="
-                            padding:20px;
                             border:2px solid #39ff14;
                             border-radius:18px;
                             background:#111;
                             text-align:left;
-                            display:flex;
-                            flex-direction:column;
-                            min-height:100%;
                         "
                     >
 
-                        <div
+                        <summary
                             style="
                                 color:#39ff14;
                                 font-size:22px;
                                 font-weight:900;
-                                text-align:center;
+                                padding:20px;
+                                cursor:pointer;
+                                overflow-wrap:anywhere;
                             "
                         >
                             ${
@@ -66172,8 +66172,9 @@ async function () {
                                     "Plan MASS"
                                 )
                             }
-                        </div>
+                        </summary>
 
+                        <div style="padding:0 20px 20px;display:flex;flex-direction:column;">
 
                         <div
                             style="
@@ -66368,7 +66369,8 @@ async function () {
 
                         ${mensual ? "" : massR3HtmlAvisoCompra()}
 
-                    </div>
+                        </div>
+                    </details>
                 `;
             }
         ).join("");
@@ -66487,13 +66489,11 @@ async function () {
             <div
                 style="
                     display:grid;
-                    grid-template-columns:
-                        repeat(
-                            auto-fit,
-                            minmax(min(270px,100%),1fr)
-                        );
-                    gap:16px;
-                    margin-top:22px;
+                    grid-template-columns:minmax(0,1fr);
+                    align-items:start;
+                    gap:12px;
+                    max-width:780px;
+                    margin:22px auto 0;
                 "
             >
                 ${
