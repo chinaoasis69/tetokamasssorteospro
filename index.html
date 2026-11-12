@@ -125162,7 +125162,9 @@ async function mostrarCatalogoInformativoComplementosC06() {
             summary.style.cssText='cursor:pointer;padding:12px 2px;font-weight:600';
             const detail=el('div');detail.style.cssText='padding:0 4px 12px';
             if(typeof p.paquete_descripcion==='string'&&p.paquete_descripcion.trim())detail.append(el('p',p.paquete_descripcion));
-            const unit=p.producto_codigo==='mi_equipo_mass'?'plazas de colaboradores':'relaciones Punto–organizador';
+            const unit=p.producto_codigo==='mi_equipo_mass'
+                ? (p.capacidad===1?'plaza de colaborador':'plazas de colaboradores')
+                : (p.capacidad===1?'relación Punto–organizador':'relaciones Punto–organizador');
             detail.append(el('p',(extra?'Capacidad adicional: ':'Incluye: ')+p.capacidad+' '+unit+'.'));
             detail.append(el('p',extra?'EXTRA: requiere una base vigente y vence junto con ella. El importe será proporcional al tiempo restante.':'Vigencia: un mes calendario. Renovación manual, sin cargos automáticos.'));
             if(extra)detail.append(el('p','Sin renovación automática.'));
