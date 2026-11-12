@@ -2590,7 +2590,7 @@ Cargando historial...
 </button>
 
 <!-- BJ-123-C: lectura contractual previa; sin checkout ni pagos -->
-<button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarPreviaComplementosBJ123()">📄 Complementos MASS · Consultar condiciones</button>
+<button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarCatalogoInformativoComplementosC06()">📦 Complementos MASS · Paquetes y precios</button>
 
 <button
   id="btnMensajesClientesAdmin"
@@ -123416,7 +123416,7 @@ async function mostrarSeguimientoComplementosC04D({revision = false} = {}) {
     function revoke(){for(const u of blobs)URL.revokeObjectURL(u);blobs.clear();for(const d of dialogs)d.remove();dialogs.clear();}
     function dispose(clear=false){if(closed)return;closed=true;generation++;revoke();subscription?.unsubscribe?.();observer?.disconnect();if(clear){list.replaceChildren();more.hidden=true;reload.disabled=true;status.textContent="La sesión o el organizador cambiaron. Vuelve a abrir esta pantalla.";}}
     observer=new MutationObserver(()=>{if(!context())dispose(view.isConnected);});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["style"]});
-    back.addEventListener("click",()=>{dispose();if(revision)mostrarCentroJuridicoMassPM06();else mostrarPreviaComplementosBJ123();});
+    back.addEventListener("click",()=>{dispose();if(revision)mostrarCentroJuridicoMassPM06();else mostrarCatalogoInformativoComplementosC06();});
     const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("TIMEOUT")),15000);})]);}finally{clearTimeout(timer);}};
     async function identity(){const r=await limit(supabaseClient.auth.getUser());if(!context())return false;if(r.error || !uuid(r.data?.user?.id) || (actor && r.data.user.id!==actor)){dispose(true);return false;}actor=r.data.user.id;return true;}
     const envelope=(d,code)=>d?.ok===true && d.codigo===code && d.version_pantalla==="C04D-1" && d.actor_auth_id===actor &&
@@ -125102,6 +125102,97 @@ function massMontarResumenContratacionC02({host, paquete, moneda, organizadorId,
     })?.data?.subscription;
     moneda.addEventListener("change",cambioMoneda);dibujar();
     return {actualizarCotizacion,actualizarOferta,dispose};
+}
+
+</script>
+
+<script>
+// C06: catálogo informativo del organizador; una sola RPC de lectura, sin checkout.
+async function mostrarCatalogoInformativoComplementosC06() {
+    const raiz=document.getElementById('adminContenido'), panel=document.getElementById('panelAdmin');
+    if(!raiz || !panel || panel.style.display==='none' || panel.hidden)return;
+    const org=()=>localStorage.getItem('admin_organizador_id')||localStorage.getItem('organizador_id');
+    const orgId=org(), client=supabaseClient;
+    const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+    const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
+    const button=text=>{const b=el('button',text);b.type='button';b.style.cssText='padding:12px;max-width:100%;white-space:normal';return b;};
+    const view=el('section');view.className='card';view.dataset.catalogoC06='true';
+    view.style.cssText='max-width:860px;margin:12px auto;padding:18px;text-align:left;box-sizing:border-box;overflow-wrap:anywhere;line-height:1.5';
+    const heading=el('h3','Complementos MASS · Paquetes y precios');
+    const intro=el('p','Conoce las opciones para ampliar tu equipo y tus relaciones con Puntos MASS. Abre cada complemento para comparar sus paquetes.');
+    const notice=el('p','Contratación próximamente. Precios base sin impuestos; el total con los impuestos aplicables se mostrará antes de contratar. Esta pantalla no solicita pagos.');
+    notice.style.cssText='padding:12px;border:1px solid #b69a51;border-radius:10px;color:#ffe19a';
+    const reload=button('Actualizar precios'),back=button('← Volver al Dashboard'),history=button('Mis contrataciones');
+    const nav=el('div');nav.style.cssText='display:flex;gap:10px;flex-wrap:wrap';nav.append(reload,history,back);
+    const status=el('p');status.dataset.estadoCatalogoC06='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const list=el('div');list.style.cssText='display:grid;gap:12px;margin:16px 0';
+    const support=el('a','soportesorteospro@tetokamass.com');support.href='mailto:soportesorteospro@tetokamass.com';support.style.cssText='color:#39ff14;overflow-wrap:anywhere';
+    const help=el('p','¿Necesitas ayuda? ');help.append(support);
+    view.append(heading,intro,notice,nav,status,list,help);raiz.replaceChildren(view);
+    let actor=null,closed=false,busy=false,subscription=null;
+    const alive=()=>!closed&&view.isConnected&&raiz.contains(view)&&!panel.hidden&&panel.style.display!=='none'&&org()===orgId;
+    function stop(){if(closed)return;closed=true;subscription?.unsubscribe();observer.disconnect();window.removeEventListener('storage',storage);list.replaceChildren();reload.disabled=true;history.disabled=true;status.textContent='La sesión o el organizador cambió. Vuelve a abrir el catálogo.';}
+    const observer=new MutationObserver(()=>{if(!alive())stop();});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','hidden']});
+    const storage=e=>{if(['admin_organizador_id','organizador_id'].includes(e.key)&&!alive())stop();};window.addEventListener('storage',storage);
+    const limit=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('TIMEOUT')),15000);})]);}finally{clearTimeout(timer);}};
+    async function identity(){if(!alive()){stop();return false;}const r=await limit(client.auth.getUser());if(!alive()||r.error||!uuid(r.data?.user?.id)||(actor&&actor!==r.data.user.id)){stop();return false;}actor=r.data.user.id;return true;}
+    const money=n=>typeof n==='number'&&Number.isFinite(n)&&n>0&&n<=9999999999.99&&Math.abs(n*100-Math.round(n*100))<.001;
+    const validPackage=p=>p&&['mi_equipo_mass','puntos_mass_pro'].includes(p.producto_codigo)&&
+        uuid(p.paquete_id)&&typeof p.paquete_codigo==='string'&&p.paquete_codigo.length>0&&
+        typeof p.producto_nombre==='string'&&p.producto_nombre.trim().length>0&&
+        typeof p.paquete_nombre==='string'&&p.paquete_nombre.trim().length>0&&
+        Number.isInteger(p.paquete_version)&&p.paquete_version>=1&&['base','adicional'].includes(p.tipo_paquete)&&
+        p.unidad_comercial===(p.producto_codigo==='mi_equipo_mass'?'plaza_colaborador':'relacion_punto_organizador')&&
+        Number.isSafeInteger(p.capacidad)&&p.capacidad>0&&p.duracion_meses===1&&money(p.precio_usd)&&
+        p.renovacion_automatica===false&&p.contratacion_habilitada===false&&
+        (p.fx_disponible===true?(money(p.precio_mxn)&&p.precio_mxn%10===0):(p.fx_disponible===false&&p.precio_mxn===null));
+    function render(packages){
+        const groups=new Map();
+        for(const p of packages){
+            let group=groups.get(p.producto_codigo);
+            if(!group){
+                const box=el('details');box.dataset.productoC06=p.producto_codigo;box.style.cssText='border:2px solid #39ff14;border-radius:12px;padding:4px 12px;min-width:0';
+                const summary=el('summary',p.producto_nombre);summary.style.cssText='cursor:pointer;padding:12px 2px;font-weight:700';
+                const benefit=el('p',p.producto_codigo==='mi_equipo_mass'?'Amplía las plazas de colaboradores de tu organizador. El propietario no consume plaza.':'Amplía la capacidad de relaciones entre Puntos MASS y tu organizador; la capacidad se cuenta por relación, no por operador.');
+                group=el('div');group.style.cssText='display:grid;gap:10px;padding-bottom:12px';box.append(summary,benefit,group);list.append(box);groups.set(p.producto_codigo,group);
+            }
+            const extra=p.tipo_paquete==='adicional';
+            const card=el('details');card.dataset.paqueteC06=p.paquete_id;card.style.cssText='border:1px solid #777;border-radius:9px;padding:0 10px;min-width:0';
+            const summary=el('summary',p.paquete_nombre+' · '+p.precio_usd.toFixed(2)+' USD'+(extra?' / mes de referencia':' / mes'));
+            summary.style.cssText='cursor:pointer;padding:12px 2px;font-weight:600';
+            const detail=el('div');detail.style.cssText='padding:0 4px 12px';
+            if(typeof p.paquete_descripcion==='string'&&p.paquete_descripcion.trim())detail.append(el('p',p.paquete_descripcion));
+            const unit=p.producto_codigo==='mi_equipo_mass'?'plazas de colaboradores':'relaciones Punto–organizador';
+            detail.append(el('p',(extra?'Capacidad adicional: ':'Incluye: ')+p.capacidad+' '+unit+'.'));
+            detail.append(el('p',extra?'EXTRA: requiere una base vigente y vence junto con ella. El importe será proporcional al tiempo restante.':'Vigencia: un mes calendario. Renovación manual, sin cargos automáticos.'));
+            if(extra)detail.append(el('p','Sin renovación automática.'));
+            detail.append(el('p',(extra?'Precio mensual de referencia, sin impuestos: ':'Precio base mensual, sin impuestos: ')+p.precio_usd.toFixed(2)+' USD.'));
+            detail.append(el('p',p.fx_disponible?'Referencia informativa: '+p.precio_mxn.toFixed(2)+' MXN'+(extra?' por mes.': ' por mes.'):'Referencia en MXN no disponible por el momento.'));
+            const disabled=button('Contratación próximamente');disabled.disabled=true;detail.append(disabled);card.append(summary,detail);group.append(card);
+        }
+    }
+    async function load(){
+        if(busy||!alive())return;busy=true;reload.disabled=true;list.replaceChildren();status.textContent='Consultando precios...';
+        try{
+            if(!uuid(orgId)){status.textContent='Selecciona tu organizador para consultar los complementos.';return;}
+            if(!await identity())return;
+            if(!subscription)subscription=client.auth.onAuthStateChange?.((event,s)=>{if(event==='SIGNED_OUT'||s?.user?.id!==actor)stop();})?.data?.subscription;
+            if(!alive())return;
+            const {data:d,error}=await limit(client.rpc('consultar_catalogo_informativo_complementos_c06_seguro',{p_organizador_id:orgId}));
+            if(!await identity())return;
+            if(error||d?.ok!==true){status.textContent=d?.codigo==='ORGANIZADOR_NO_AUTORIZADO'?'Tu cuenta no tiene autorización para consultar los complementos de este organizador.':'No fue posible consultar los precios. Puedes volver a intentar.';return;}
+            if(d.codigo!=='CATALOGO_INFORMATIVO_C06'||d.actor_auth_id!==actor||d.organizador_id!==orgId||d.solo_lectura!==true||
+                d.contratacion_habilitada!==false||d.pago_habilitado!==false||d.derechos_activados!==false||d.precios_sin_impuestos!==true||
+                !Array.isArray(d.paquetes)||d.total_paquetes!==d.paquetes.length||!d.paquetes.every(validPackage)||
+                new Set(d.paquetes.map(p=>p.paquete_id)).size!==d.paquetes.length){status.textContent='No fue posible verificar los precios recibidos. Actualiza el catálogo.';return;}
+            render(d.paquetes);status.textContent=d.paquetes.length?d.paquetes.length+' paquetes disponibles para consulta. Contratación próximamente.':'Todavía no hay paquetes disponibles para consulta.';
+        }catch(_error){if(alive())status.textContent='La consulta se interrumpió. Puedes volver a intentar.';}
+        finally{busy=false;reload.disabled=closed;}
+    }
+    reload.addEventListener('click',load);
+    back.addEventListener('click',()=>{stop();mostrarDashboardOrganizador();});
+    history.addEventListener('click',()=>{if(alive()){stop();mostrarSeguimientoComplementosC04D({revision:false});}});
+    await load();
 }
 
 </script>
