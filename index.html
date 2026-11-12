@@ -125126,8 +125126,38 @@ async function mostrarCatalogoInformativoComplementosC06() {
     const nav=el('div');nav.style.cssText='display:flex;gap:10px;flex-wrap:wrap';nav.append(reload,history,back);
     const status=el('p');status.dataset.estadoCatalogoC06='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     const list=el('div');list.style.cssText='display:grid;gap:12px;margin:16px 0';
-    const support=el('a','soportesorteospro@tetokamass.com');support.href='mailto:soportesorteospro@tetokamass.com';support.style.cssText='color:#39ff14;overflow-wrap:anywhere';
-    const help=el('p','¿Necesitas ayuda? ');help.append(support);
+    const supportEmail='soportesorteospro@tetokamass.com';
+    const help=el('div');help.dataset.ayudaCatalogoC06='true';
+    const helpTitle=el('p','¿Necesitas ayuda con los complementos MASS?');
+    const support=el('a',supportEmail);support.href='mailto:'+supportEmail;support.style.cssText='color:#39ff14;overflow-wrap:anywhere';
+    const helpActions=el('div');helpActions.style.cssText='display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px';
+    const sendEmail=el('a','✉️ Enviar correo');sendEmail.href=support.href;
+    sendEmail.style.cssText='display:inline-block;padding:12px;margin:6px;border-radius:10px;background:#efefef;color:#111;font-size:14px;font-weight:bold;text-decoration:none;box-sizing:border-box;max-width:100%;white-space:normal';
+    const copyEmail=button('📋 Copiar correo');
+    const helpStatus=el('p');helpStatus.setAttribute('role','status');helpStatus.setAttribute('aria-live','polite');
+    let manualEmail=null;
+    copyEmail.addEventListener('click',async()=>{
+        if(copyEmail.disabled)return;
+        copyEmail.disabled=true;helpStatus.textContent='';
+        try{
+            if(typeof navigator.clipboard?.writeText!=='function')throw new Error('CLIPBOARD_UNAVAILABLE');
+            await navigator.clipboard.writeText(supportEmail);
+            if(!view.isConnected)return;
+            manualEmail?.remove();manualEmail=null;
+            helpStatus.textContent='Correo copiado.';
+        }catch(_error){
+            if(!view.isConnected)return;
+            if(!manualEmail){
+                manualEmail=el('input');manualEmail.type='text';manualEmail.readOnly=true;manualEmail.value=supportEmail;
+                manualEmail.setAttribute('aria-label','Correo de soporte para copiar manualmente');
+                manualEmail.style.cssText='display:block;width:100%;box-sizing:border-box;margin:8px 0;font-size:16px';
+                help.insertBefore(manualEmail,helpStatus);
+            }
+            manualEmail.focus();manualEmail.select();
+            helpStatus.textContent='No se pudo copiar automáticamente. Puedes copiar el correo del campo seleccionado.';
+        }finally{copyEmail.disabled=false;}
+    });
+    helpActions.append(sendEmail,copyEmail);help.append(helpTitle,support,helpActions,helpStatus);
     view.append(heading,intro,notice,nav,status,list,help);raiz.replaceChildren(view);
     let actor=null,closed=false,busy=false,subscription=null;
     const alive=()=>!closed&&view.isConnected&&raiz.contains(view)&&!panel.hidden&&panel.style.display!=='none'&&org()===orgId;
