@@ -125429,7 +125429,7 @@ async function mostrarAmpliacionesPlanesR3() {
     const status=el('p');status.dataset.estadoAmpliacionesR3='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     const list=el('div');list.style.cssText='display:grid;gap:12px;margin:16px 0';
     const pages=el('div');pages.style.cssText='display:flex;gap:10px;align-items:center;flex-wrap:wrap';
-    const prev=button('Anterior'), next=button('Siguiente'), pageLabel=el('span');pages.append(prev,pageLabel,next);pages.hidden=true;
+    const prev=button('Anterior'), next=button('Siguiente'), pageLabel=el('span');pages.append(prev,pageLabel,next);pages.hidden=true;pages.style.display='none';
     const help=el('p','¿Necesitas ayuda con tu plan? ');
     const email=el('a','soportesorteospro@tetokamass.com');email.href='mailto:soportesorteospro@tetokamass.com';email.style.color='#39ff14';help.append(email);
     view.append(title,intro,notice,nav,status,list,pages,help);root.replaceChildren(view);
@@ -125440,7 +125440,7 @@ async function mostrarAmpliacionesPlanesR3() {
     const controlsState=()=>{reload.disabled=closed||busy;prev.disabled=closed||busy||offset===0;next.disabled=closed||busy||!hasMore;for(const b of controls)b.disabled=closed||busy;};
     function stop(message){
         if(closed)return;closed=true;epoch++;subscription?.unsubscribe();observer.disconnect();clearInterval(watch);
-        window.removeEventListener('storage',storageChanged);list.replaceChildren();controls.clear();pages.hidden=true;controlsState();
+        window.removeEventListener('storage',storageChanged);list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';controlsState();
         if(message)status.textContent=message;
     }
     const changedMessage='La sesión o el organizador cambió. Vuelve a abrir Mis planes.';
@@ -125565,7 +125565,7 @@ async function mostrarAmpliacionesPlanesR3() {
     }
     async function load(requestedOffset=0){
         if(busy||!alive())return;
-        busy=true;const turn=++epoch;controlsState();list.replaceChildren();controls.clear();pages.hidden=true;status.textContent='Consultando planes vigentes...';
+        busy=true;const turn=++epoch;controlsState();list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';status.textContent='Consultando planes vigentes...';
         try{
             if(!uuid(orgId)){status.textContent='Selecciona tu organizador para consultar sus planes.';return;}
             if(!await identity())return;
@@ -125585,7 +125585,7 @@ async function mostrarAmpliacionesPlanesR3() {
             offset=requestedOffset;hasMore=d.hay_mas;render(d.items,names);
             status.textContent=d.items.length?'Abre tu plan para consultar el mes adicional y su vencimiento propuesto.':
                 (offset?'No hay más planes en esta página.':'No hay planes por dinámica activados y vigentes para consultar aquí. Las compras pendientes o vencidas no aparecen en esta lista.');
-            pageLabel.textContent='Página '+(Math.floor(offset/pageSize)+1);pages.hidden=offset===0&&!hasMore;
+            pageLabel.textContent='Página '+(Math.floor(offset/pageSize)+1);pages.hidden=offset===0&&!hasMore;pages.style.display=pages.hidden?'none':'flex';
         }catch(_){if(alive())status.textContent='La consulta se interrumpió. Puedes volver a intentar.';}
         finally{busy=false;controlsState();}
     }
