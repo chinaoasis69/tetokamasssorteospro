@@ -65878,10 +65878,10 @@ async function massR3EsperarConsultaPublica(promise) {
   finally {clearTimeout(timer);}
 }
 function massR3TextoPrecioPublico(tarifa) {
-  const referencia=tarifa.fx_disponible===true
-    ? `referencia informativa: ${Number(tarifa.precio_mxn_estimado).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
-    : 'referencia en MXN no disponible';
-  return `${Number(tarifa.precio_usd).toFixed(2)} USD · ${referencia}`;
+  const precioUsd=Number(tarifa.precio_usd).toFixed(2)+' USD';
+  return tarifa.fx_disponible===true
+    ? `${precioUsd} o ${Number(tarifa.precio_mxn_estimado).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
+    : `${precioUsd} · precio en MXN no disponible por el momento`;
 }
 function massR3SeleccionGuardada() {
   try { const v=JSON.parse(sessionStorage.getItem("mass_r3_vigencia_publica_qa")||"null");return v&&typeof v==="object"?v:null; }
@@ -65935,7 +65935,7 @@ function massR3CrearHtmlVigenciasPublicas(plan) {
   const seleccionDesactualizada=seleccionDeEstePlan&&!elegida&&disponibles.length>0;
   const opciones=[3,6,12].map(m=>{
     const t=disponibles.find(x=>Number(x.duracion_meses)===m);
-    return `<option value="${m}"${t?"":" disabled"}${t&&elegida&&t.tarifa_id===elegida.tarifa_id?" selected":""}>${m} meses${t?' · '+Number(t.precio_usd).toFixed(2)+' USD':' · precio no disponible'}</option>`;
+    return `<option value="${m}"${t?"":" disabled"}${t&&elegida&&t.tarifa_id===elegida.tarifa_id?" selected":""}>${m} meses${t?' · '+massEscaparHTML(massR3TextoPrecioPublico(t)):' · precio no disponible'}</option>`;
   }).join("");
   const detalle=elegida
     ? `${Number(elegida.duracion_meses)} meses · ${massR3TextoPrecioPublico(elegida)}`
@@ -65960,7 +65960,7 @@ function massR3CrearHtmlVigenciasPublicas(plan) {
   </select>
   <div id="massR3DetallePublico_${massEscaparHTML(planId)}" role="status" aria-live="polite"
     style="margin-top:9px;color:#ddd;font-size:13px;line-height:1.5;">${massEscaparHTML(detalle)}</div>
-  <div style="margin-top:8px;color:#aaa;font-size:12px;line-height:1.4;">Precio del periodo elegido en USD; la referencia en MXN puede variar. El total con los impuestos aplicables se mostrará antes de contratar.</div>
+  <div style="margin-top:8px;color:#aaa;font-size:12px;line-height:1.4;">Precios base actuales del periodo elegido, sin impuestos. Al contratar podrás elegir pagar en MXN o USD. El precio en MXN se actualiza con el tipo de cambio hasta confirmar la contratación. Antes de depositar verás el total con los impuestos aplicables y los datos de pago de la moneda elegida.</div>
   <p style="margin:12px 0 0;color:#ddd;font-size:13px;line-height:1.5;">${ampliacion?massEscaparHTML('Ampliación de 1 mes: '+massR3TextoPrecioPublico(ampliacion)+'.'):'Precio de ampliación: no disponible para consulta.'} La ampliación se contrata por separado para continuar la misma dinámica.</p>
 </div>`;
 }
@@ -125509,8 +125509,9 @@ async function mostrarAmpliacionesPlanesR3() {
         if(!p.ok){target.append(el('p',message(p)));return;}
         target.append(dateLine('Vencimiento actual:',p.vencimiento_actual),dateLine('Con un mes adicional:',p.vencimiento_propuesto));
         target.append(el('p','Fechas mostradas en '+zone+'.'),el('p','Capacidad conservada: hasta '+p.limite_numeros_conservado.toLocaleString('es-MX')+' números.'));
-        target.append(el('p','Precio base del mes adicional, sin impuestos: '+amount(p.precio_base_usd,'USD')+'.'));
-        target.append(el('p',p.fx_disponible?'Referencia informativa: '+amount(p.precio_mxn_estimado,'MXN')+'. Puede variar.':'La referencia en MXN no está disponible por el momento. El precio base en USD sigue disponible.'));
+        target.append(el('p','Precio base actual del mes adicional, sin impuestos: '+amount(p.precio_base_usd,'USD')+(p.fx_disponible?' o '+amount(p.precio_mxn_estimado,'MXN'):'')+'.'));
+        if(!p.fx_disponible)target.append(el('p','El precio en MXN no está disponible por el momento. El precio base en USD sigue disponible.'));
+        target.append(el('p','Al contratar podrás elegir pagar en MXN o USD. El precio en MXN se actualiza con el tipo de cambio hasta confirmar la contratación. Antes de depositar verás el total con los impuestos aplicables y los datos de pago de la moneda elegida.'));
         target.append(el('p','Continúa la misma dinámica; no habilita una nueva. Sin renovación ni cargos automáticos.'));
         const ids=el('details');const summary=el('summary','Referencias de esta consulta');summary.style.cursor='pointer';
         ids.append(summary,el('p','Compra: '+p.adquisicion_id),el('p','Dinámica original: '+p.rifa_original_id));
