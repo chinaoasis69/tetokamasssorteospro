@@ -125408,7 +125408,207 @@ async function mostrarCatalogoInformativoComplementosC06() {
 
 <script>
 
-// PLANES-R3-AMPLIACION-03: previa privada; sin contratación, pagos ni escrituras.
+// PLANES-R3-AMPLIACION-05: cotizacion y recuperacion; no compra, pago ni ampliacion.
+function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsperado,validPreview,contextoPadre,verificarSesion,cargarPerfil}) {
+    const client=supabaseClient;
+    const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+    const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
+    const button=text=>{const b=el('button',text);b.type='button';b.style.cssText='padding:12px;margin:0;max-width:100%;white-space:normal;font-size:16px';return b;};
+    const panel=el('details');panel.dataset.cotizacionAmpliacionR3='true';
+    panel.style.cssText='border:1px solid #759d6b;border-radius:10px;padding:0 12px;margin:14px 0;min-width:0;max-width:100%;box-sizing:border-box;text-align:left;overflow-wrap:anywhere';
+    const title=el('summary','Cotización e impuestos · USD / MXN');title.style.cssText='cursor:pointer;padding:14px 0;font-weight:bold';
+    const note=el('p','Elige la moneda y confirma el domicilio para consultar el total del mes adicional. Emitir una cotización no registra una compra ni cambia tu vencimiento.');
+    const form=el('form');form.style.cssText='display:grid;gap:12px;padding-bottom:12px';
+    const fields={};const prefix='ampl05_'+preview.adquisicion_id+'_';
+    const field=(key,label,max,options)=>{
+        const wrap=el('label',label);wrap.style.cssText='display:grid;gap:6px;min-width:0';
+        const input=el(options?'select':'input');input.id=prefix+key;input.name=key;input.required=true;input.dataset.campoAmpliacion=key;
+        input.style.cssText='width:100%;min-width:0;max-width:100%;margin:0;box-sizing:border-box;padding:12px;background:#171f17;color:#fff;border:1px solid #83977c;border-radius:7px;font:inherit';
+        if(options)for(const [value,name] of options){const o=el('option',name);o.value=value;input.append(o);}
+        else{input.type='text';input.maxLength=max;input.autocomplete='off';}
+        wrap.append(input);form.append(wrap);return input;
+    };
+    const currency=field('moneda','Moneda de la cotización',0,[['USD','USD · Dólares estadounidenses'],['MXN','MXN · Pesos mexicanos']]);
+    const profile=button('Usar domicilio de Mi Perfil Legal');form.append(profile);
+    fields.pais_iso2=field('pais_iso2','País de facturación',0,[['','Selecciona un país'],['MX','México'],['US','Estados Unidos']]);
+    for(const [k,label,max] of [['estado_region','Estado o región',120],['ciudad','Ciudad',120],['codigo_postal','Código postal',20],['direccion_linea1','Dirección, número e interior',250]])fields[k]=field(k,label,max);
+    form.append(el('small','Puedes usar otro domicilio para esta cotización. Esto no modifica Mi Perfil Legal.'));
+    const confirmLabel=el('label');confirmLabel.style.cssText='display:flex;align-items:flex-start;gap:10px;line-height:1.5';
+    const confirmed=el('input');confirmed.type='checkbox';confirmed.required=true;confirmed.dataset.confirmacionDomicilioAmpliacion='true';confirmed.style.cssText='width:20px;height:20px;flex:0 0 20px;margin:3px 0';
+    confirmLabel.append(confirmed,el('span','Confirmo que este es el domicilio de facturación para la cotización de mi ampliación.'));
+    const submit=button('Consultar total con impuestos');submit.type='submit';
+    const recover=button('Recuperar cotización'), fresh=button('Nueva cotización'), close=button('Cerrar cotización');
+    const actions=el('div');actions.style.cssText='display:flex;gap:10px;flex-wrap:wrap';actions.append(submit,recover,fresh,close);
+    const status=el('p');status.dataset.estadoCotizacionAmpliacion='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+    const output=el('div');output.dataset.resultadoCotizacionAmpliacion='true';output.style.cssText='min-width:0';
+    form.append(confirmLabel,actions);panel.append(title,note,form,status,output);host.append(panel);
+    let closed=false,busy=false,revision=0,request=null,quote=null,timer=null,profileTried=false;
+    const storageKey='mass:ampliacion:cotizacion:v1:'+actorEsperado+':'+organizadorId+':'+preview.adquisicion_id;
+    try{const s=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(s?.version===1&&uuid(s.solicitud_id))request=s.solicitud_id;}catch(_){}
+    const alive=()=>!closed&&panel.isConnected&&host.contains(panel)&&contextoPadre();
+    const limit=async promise=>{let t;try{return await Promise.race([promise,new Promise((_,reject)=>{t=setTimeout(()=>reject(new Error('RESPUESTA_INCIERTA')),15000);})]);}finally{clearTimeout(t);}};
+    const cents=n=>typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=19999999999.98&&Math.abs(n*100-Math.round(n*100))<.001?Math.round(n*100):null;
+    const stamp=v=>typeof v==='string'&&/(Z|[+-]\d{2}:\d{2})$/i.test(v)&&Number.isFinite(Date.parse(v));
+    const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
+    const keys=['pais_iso2','estado_region','ciudad','codigo_postal','direccion_linea1'];
+    const locationValid=u=>u&&typeof u==='object'&&!Array.isArray(u)&&keys.every(k=>typeof u[k]==='string'&&u[k]===u[k].trim())&&
+        ['US','MX'].includes(u.pais_iso2)&&[['estado_region',2,120],['ciudad',2,120],['codigo_postal',2,20],['direccion_linea1',3,250]].every(([k,a,b])=>u[k].length>=a&&u[k].length<=b);
+    const location=()=>Object.fromEntries(keys.map(k=>[k,fields[k].value.trim()]));
+    const sameLocation=(a,b)=>locationValid(a)&&locationValid(b)&&keys.every(k=>a[k]===b[k]);
+    const controls=()=>{
+        const disabled=closed||busy;for(const n of [currency,profile,confirmed,...Object.values(fields)])n.disabled=disabled;
+        submit.disabled=disabled||!!request;recover.disabled=disabled||!request;fresh.disabled=disabled||!request;
+        recover.hidden=!request;fresh.hidden=!request;recover.style.display=request?'':'none';fresh.style.display=request?'':'none';panel.setAttribute('aria-busy',String(busy));
+    };
+    function clearQuote(){quote=null;clearInterval(timer);timer=null;output.replaceChildren();}
+    function saveRequest(id){request=id;try{sessionStorage.setItem(storageKey,JSON.stringify({version:1,solicitud_id:id}));return true;}catch(_){return false;}}
+    function forgetRequest(){request=null;try{sessionStorage.removeItem(storageKey);}catch(_){}}
+    function dispose(){
+        if(closed)return;closed=true;revision++;clearQuote();observer.disconnect();
+        Object.values(fields).forEach(n=>n.value='');confirmed.checked=false;panel.replaceChildren();
+    }
+    const observer=new MutationObserver(()=>{if(!alive())dispose();});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['style','hidden']});
+    const errors={
+        SESION_REQUERIDA:'Inicia sesión de nuevo para consultar la cotización.',
+        NO_AUTORIZADO:'La cotización está disponible para el propietario del organizador y el Súper Admin.',
+        APLICABILIDAD_FISCAL_PLAN_PENDIENTE:'La cotización aún no está habilitada para este plan y domicilio. Falta la aprobación fiscal correspondiente. Puedes consultar los precios base y contactar a soporte.',
+        APLICABILIDAD_FISCAL_AMBIGUA:'La configuración fiscal requiere revisión antes de emitir el total. Contacta a soporte.',
+        REGLA_FISCAL_CAMBIO:'La configuración fiscal cambió. Solicita una nueva cotización.',
+        REGLA_FISCAL_NO_APROBADA_O_NO_VIGENTE:'La regla fiscal todavía no permite emitir esta cotización.',
+        TARIFA_NO_HABILITADA_O_CAMBIO:'La tarifa aún no está habilitada para cotizar o acaba de cambiar. Actualiza la ampliación.',
+        PLAN_NO_HABILITADO:'Este plan todavía no está habilitado para cotizar.',
+        METODO_PAGO_NO_DISPONIBLE:'Todavía no hay un método de pago habilitado para la moneda elegida.',
+        PRECIO_MXN_NO_DISPONIBLE:'No se pudo obtener el precio actual en MXN. Puedes intentar más tarde o elegir USD.',
+        UBICACION_FISCAL_NO_CONFIRMADA:'Confirma el domicilio de facturación que usarás.',
+        UBICACION_FISCAL_INCOMPLETA:'Completa todos los campos del domicilio de facturación.',
+        DERECHO_NO_VIGENTE:'La vigencia actual ya no permite cotizar esta ampliación. Actualiza tus planes.',
+        DINAMICA_NO_CONTINUABLE:'El estado de la dinámica ya no permite cotizar la ampliación.',
+        ADQUISICION_NO_DISPONIBLE:'Esta compra ya no está disponible para el organizador seleccionado.',
+        SOLICITUD_REUTILIZADA_CON_OTROS_DATOS:'Esta solicitud corresponde a otros datos. Recupérala o inicia una nueva cotización.',
+        COTIZACION_NO_DISPONIBLE:'No se encontró la cotización de esta solicitud. Puedes volver a recuperarla o iniciar una nueva.',
+        VIGENCIA_NO_DISPONIBLE:'El periodo disponible terminó. Actualiza tus planes.',
+        TOTAL_FISCAL_INCONSISTENTE:'No se pudo verificar el total fiscal. Contacta a soporte.'
+    };
+    function validQuote(d,sol,expected){
+        if(d?.ok!==true||d.codigo!=='COTIZACION_AMPLIACION_DISPONIBLE'||!uuid(d.cotizacion_id)||d.solicitud_id!==sol||
+            d.organizador_id!==organizadorId||d.adquisicion_id!==preview.adquisicion_id||!['USD','MXN'].includes(d.moneda)||
+            d.cotizacion_emitida!==true||d.contratacion_confirmada!==false||d.pago_habilitado!==false||d.vigencia_modificada!==false||
+            d.requiere_revalidacion_al_confirmar!==true||typeof d.vigente!=='boolean'||!stamp(d.emitida_en)||!stamp(d.expira_en))return false;
+        const c=d.condiciones,p=c?.previsualizacion,f=c?.calculo_fiscal,u=c?.ubicacion_facturacion;
+        if(!c||c.misma_dinamica!==true||c.meses_adicionales!==1||c.zona_calculo!=='UTC'||c.ubicacion_confirmada!==true||
+            c.requiere_revalidacion_al_confirmar!==true||!uuid(c.aplicacion_fiscal_id)||!/^[a-f0-9]{32}$/.test(c.regla_huella||'')||
+            !locationValid(u)||!validPreview(p,preview.adquisicion_id)||p.ok!==true||p.rifa_original_id!==preview.rifa_original_id||
+            p.plan_codigo!==preview.plan_codigo||p.limite_numeros_conservado!==preview.limite_numeros_conservado||
+            (expected&&(d.moneda!==expected.moneda||!sameLocation(u,expected.ubicacion))))return false;
+        const from=Date.parse(d.emitida_en),until=Date.parse(d.expira_en);
+        if(until<=from||until-from>900001||until>Date.parse(p.vencimiento_actual))return false;
+        const sub=cents(d.subtotal),tax=cents(d.impuesto),total=cents(d.total);
+        if(sub===null||sub<=0||sub>999999999999||tax===null||tax>999999999999||total===null||total!==sub+tax||
+            (d.moneda==='USD'?sub!==cents(p.precio_base_usd):p.fx_disponible!==true||sub!==cents(p.precio_mxn_estimado))||
+            !f||f.ok!==true||f.codigo!=='CALCULO_INTERNO_COMPLETADO'||cents(f.subtotal)!==sub||cents(f.impuesto)!==tax||cents(f.total)!==total||
+            !uuid(f.regla_id)||!Number.isSafeInteger(f.version_regla_fiscal)||f.version_regla_fiscal<1||
+            !['gravado','tasa_cero','exento','no_sujeto'].includes(f.tratamiento)||cents(f.base_gravable)===null||cents(f.base_gravable)>sub||
+            typeof f.tasa_aplicable!=='number'||!Number.isFinite(f.tasa_aplicable)||f.tasa_aplicable<0||f.tasa_aplicable>1||
+            !Array.isArray(f.componentes_impuesto_snapshot)||f.componentes_impuesto_snapshot.length>32)return false;
+        let sum=0,rates=0;const codes=new Set();
+        for(const x of f.componentes_impuesto_snapshot){
+            if(!x||typeof x.codigo!=='string'||x.codigo.length<3||x.codigo.length>120||codes.has(x.codigo)||
+                cents(x.base_gravable)!==cents(f.base_gravable)||cents(x.impuesto)===null||
+                typeof x.tasa!=='number'||!Number.isFinite(x.tasa)||x.tasa<0||x.tasa>1)return false;
+            codes.add(x.codigo);sum+=cents(x.impuesto);rates+=x.tasa;
+        }
+        if(sum!==tax||Math.abs(rates-f.tasa_aplicable)>1e-8)return false;
+        if(f.tratamiento==='gravado')return cents(f.base_gravable)>0&&rates>0;
+        if(tax!==0||rates!==0)return false;
+        return f.tratamiento==='tasa_cero'?cents(f.base_gravable)>0:cents(f.base_gravable)===0&&f.componentes_impuesto_snapshot.length===0;
+    }
+    function show(d){
+        clearQuote();quote=d;currency.value=d.moneda;for(const k of keys)fields[k].value=d.condiciones.ubicacion_facturacion[k];confirmed.checked=true;
+        const row=(name,value,highlight=false)=>{const r=el('div');r.style.cssText='display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid #576450'+(highlight?';font-size:19px;color:#b5ff9d':'');r.append(el('span',name),el('strong',value));output.append(r);};
+        row('Subtotal',money(d.subtotal,d.moneda));row('Impuestos',money(d.impuesto,d.moneda));row('Total cotizado',money(d.total,d.moneda),true);
+        const p=d.condiciones.previsualizacion;
+        row('Vencimiento actual',new Date(p.vencimiento_actual).toLocaleString('es-MX'));
+        row('Vencimiento propuesto',new Date(p.vencimiento_propuesto).toLocaleString('es-MX'));
+        const tax=el('details');const heading=el('summary','Ver desglose de impuestos');heading.style.cssText='cursor:pointer;padding:12px 0';tax.append(heading);
+        const f=d.condiciones.calculo_fiscal;const treatment={gravado:'Gravado',tasa_cero:'Tasa cero',exento:'Exento',no_sujeto:'No sujeto'};
+        tax.append(el('p','Tratamiento: '+treatment[f.tratamiento]));
+        for(const x of f.componentes_impuesto_snapshot)tax.append(el('p',x.codigo+' · '+(x.tasa*100).toLocaleString('es-MX',{maximumFractionDigits:6})+'% · '+money(x.impuesto,d.moneda)));
+        output.append(tax,el('p','La ampliación continúa la misma dinámica. La cotización deberá volver a validarse antes de confirmar la contratación. El pago todavía no está habilitado.'));
+        const expiry=el('p');expiry.dataset.vigenciaCotizacionAmpliacion='true';output.append(expiry);
+        const ref=el('details');ref.append(el('summary','Referencia de la cotización'),el('p',d.cotizacion_id));output.append(ref);
+        const tick=()=>{
+            if(!alive()){dispose();return;}
+            const valid=d.vigente&&Date.parse(d.expira_en)>Date.now();
+            expiry.textContent=valid?'Cotización válida hasta '+new Date(d.expira_en).toLocaleString('es-MX')+'.':'Esta cotización ya no está vigente. Solicita una nueva para obtener el total actual.';
+            if(!valid){clearInterval(timer);timer=null;}
+        };
+        tick();if(alive()&&d.vigente&&Date.parse(d.expira_en)>Date.now())timer=setInterval(tick,1000);
+    }
+    async function run(action){
+        if(busy||!alive())return;busy=true;const turn=++revision;controls();
+        const current=()=>alive()&&revision===turn;
+        try{
+            if(!await verificarSesion()||!current())return;
+            await action(turn,current);
+        }catch(_){if(current())status.textContent=request?'No se pudo confirmar la respuesta. Usa «Recuperar cotización» antes de iniciar otra.':'No se pudo completar la consulta. Puedes volver a intentar.';}
+        finally{if(current()){busy=false;controls();}}
+    }
+    const loadProfile=()=>run(async(_turn,current)=>{
+        profileTried=true;status.textContent='Consultando el domicilio de Mi Perfil Legal...';
+        try{
+            const result=await limit(cargarPerfil());if(!current()||!await verificarSesion()||!current())return;
+            clearQuote();confirmed.checked=false;
+            if(!result?.existe||!result.domicilio){status.textContent='Todavía no hay un domicilio guardado. Puedes completar los campos para esta cotización.';return;}
+            for(const k of keys)fields[k].value=typeof result.domicilio[k]==='string'?result.domicilio[k]:'';
+            status.textContent='Revisa el domicilio y marca la confirmación antes de consultar el total.';
+        }catch(_){if(current())status.textContent='No se pudo cargar Mi Perfil Legal. Puedes reintentar o completar el domicilio aquí.';}
+    });
+    panel.addEventListener('toggle',()=>{if(panel.open&&!profileTried&&!request)loadProfile();});
+    profile.addEventListener('click',loadProfile);
+    const changed=event=>{
+        if(![currency,confirmed,...Object.values(fields)].includes(event.target))return;
+        revision++;busy=false;clearQuote();if(event.target!==confirmed)confirmed.checked=false;
+        status.textContent=request?'Los datos cambiaron. Usa «Nueva cotización» para consultarlos o recupera la solicitud anterior.':'Confirma el domicilio y consulta el total en la moneda elegida.';controls();
+    };
+    form.addEventListener('input',changed);form.addEventListener('change',changed);
+    form.addEventListener('submit',event=>{
+        event.preventDefault();if(busy||request||!alive())return;
+        const u=location(),moneda=currency.value;
+        if(!locationValid(u)||!confirmed.checked||!['USD','MXN'].includes(moneda)){status.textContent='Completa y confirma el domicilio y elige USD o MXN.';return;}
+        if(!form.reportValidity())return;
+        if(!globalThis.crypto?.randomUUID){status.textContent='Abre la página mediante una conexión segura para cotizar.';return;}
+        run(async(_turn,current)=>{
+            const id=crypto.randomUUID(),stored=saveRequest(id);clearQuote();controls();status.textContent='Consultando el total con impuestos...';
+            const {data,error}=await limit(client.rpc('emitir_cotizacion_ampliacion_r3_segura',{
+                p_solicitud_id:id,p_organizador_id:organizadorId,p_adquisicion_id:preview.adquisicion_id,p_moneda:moneda,
+                p_ubicacion_facturacion:u,p_confirmacion_ubicacion:true
+            }));
+            if(!current()||!await verificarSesion()||!current())return;
+            if(error){status.textContent='La respuesta no se pudo confirmar. Pulsa «Recuperar cotización».';return;}
+            if(data?.ok===false){forgetRequest();status.textContent=errors[data.codigo]||'No fue posible emitir la cotización. Actualiza la ampliación o contacta a soporte.';return;}
+            if(!validQuote(data,id,{moneda,ubicacion:u})){status.textContent='No se pudo verificar el total recibido. Usa «Recuperar cotización».';return;}
+            show(data);status.textContent='Cotización emitida. Tu vencimiento sigue sin cambios.'+(stored?'':' Conserva esta pantalla abierta para poder recuperar la solicitud.');
+        });
+    });
+    recover.addEventListener('click',()=>{
+        if(!request)return;const id=request;
+        run(async(_turn,current)=>{
+            clearQuote();status.textContent='Recuperando la cotización de esta solicitud...';
+            const {data,error}=await limit(client.rpc('recuperar_cotizacion_ampliacion_r3_segura',{p_organizador_id:organizadorId,p_solicitud_id:id}));
+            if(!current()||!await verificarSesion()||!current())return;
+            if(error){status.textContent='No fue posible recuperar la cotización. Puedes volver a consultar.';return;}
+            if(data?.ok===false){status.textContent=errors[data.codigo]||'No fue posible recuperar la cotización de esta solicitud.';return;}
+            if(!validQuote(data,id)){status.textContent='La cotización recibida no coincide con esta compra. No se puede mostrar un total verificado.';return;}
+            show(data);status.textContent='Cotización recuperada. Se conserva la misma referencia; no se envió una solicitud nueva.';
+        });
+    });
+    fresh.addEventListener('click',()=>{if(busy)return;revision++;forgetRequest();clearQuote();confirmed.checked=false;status.textContent='Revisa y confirma los datos para solicitar una cotización nueva.';controls();});
+    close.addEventListener('click',()=>{revision++;busy=false;clearQuote();Object.values(fields).forEach(n=>n.value='');confirmed.checked=false;panel.open=false;profileTried=false;status.textContent=request?'Hay una solicitud guardada. Puedes recuperarla al volver a abrir.':'';controls();title.focus();});
+    status.textContent=request?'Hay una solicitud anterior. Usa «Recuperar cotización» para consultar su resultado.':'Abre este apartado para consultar el domicilio y elegir la moneda.';
+    controls();return dispose;
+}
+
+// PLANES-R3-AMPLIACION-05: previa y cotizacion; pagos y cambios de vigencia pendientes.
 async function mostrarAmpliacionesPlanesR3() {
     const root=document.getElementById('adminContenido'), panel=document.getElementById('panelAdmin');
     if(!root||!panel||panel.hidden||panel.style.display==='none')return;
@@ -125422,7 +125622,7 @@ async function mostrarAmpliacionesPlanesR3() {
     view.style.cssText='max-width:860px;margin:12px auto;padding:18px;text-align:left;overflow-wrap:anywhere;box-sizing:border-box;line-height:1.5';
     const title=el('h3','Mis planes · Ampliar vigencia');
     const intro=el('p','Consulta un mes adicional para continuar la misma dinámica. Se conservan su compra original y su capacidad.');
-    const notice=el('p','Contratación próximamente. Esta consulta no modifica tu vencimiento. El total con los impuestos aplicables se mostrará antes de contratar.');
+    const notice=el('p','Consulta el total con impuestos dentro de cada plan disponible. La cotización requiere una tarifa y una configuración fiscal habilitadas. La contratación y el pago siguen pendientes; tu vencimiento no cambia.');
     notice.style.cssText='padding:12px;border:1px solid #b69a51;border-radius:10px;color:#ffe19a';
     const reload=button('Actualizar planes'), back=button('← Volver al Dashboard'), close=button('Cerrar');
     const nav=el('div');nav.style.cssText='display:flex;gap:10px;flex-wrap:wrap';nav.append(reload,back,close);
@@ -125434,13 +125634,16 @@ async function mostrarAmpliacionesPlanesR3() {
     const email=el('a','soportesorteospro@tetokamass.com');email.href='mailto:soportesorteospro@tetokamass.com';email.style.color='#39ff14';help.append(email);
     view.append(title,intro,notice,nav,status,list,pages,help);root.replaceChildren(view);
     let actor=null,closed=false,busy=false,offset=0,hasMore=false,subscription=null,epoch=0;
-    const controls=new Set();
+    const controls=new Set(), quoteDisposers=new Map();
+    let profileSource=null;
+    const clearQuotes=()=>{for(const dispose of quoteDisposers.values())dispose();quoteDisposers.clear();};
+    const loadProfile=()=>{if(!profileSource)profileSource=massCrearFuenteDomicilioFiscalP06C(orgId,actor);return profileSource();};
     const alive=()=>!closed&&view.isConnected&&root.contains(view)&&!panel.hidden&&panel.style.display!=='none'&&org()===orgId;
     const limited=async promise=>{let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('TIMEOUT')),15000);})]);}finally{clearTimeout(timer);}};
     const controlsState=()=>{reload.disabled=closed||busy;prev.disabled=closed||busy||offset===0;next.disabled=closed||busy||!hasMore;for(const b of controls)b.disabled=closed||busy;};
     function stop(message){
         if(closed)return;closed=true;epoch++;subscription?.unsubscribe();observer.disconnect();clearInterval(watch);
-        window.removeEventListener('storage',storageChanged);list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';controlsState();
+        window.removeEventListener('storage',storageChanged);clearQuotes();profileSource=null;list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';controlsState();
         if(message)status.textContent=message;
     }
     const changedMessage='La sesión o el organizador cambió. Vuelve a abrir Mis planes.';
@@ -125505,7 +125708,7 @@ async function mostrarAmpliacionesPlanesR3() {
         const p=el('p');p.append(el('strong',label+' '));const t=el('time',dateFormat.format(new Date(value)));t.dateTime=value;p.append(t);return p;
     }
     function detailContent(target,p){
-        target.replaceChildren();
+        quoteDisposers.get(target)?.();quoteDisposers.delete(target);target.replaceChildren();
         if(!p.ok){target.append(el('p',message(p)));return;}
         target.append(dateLine('Vencimiento actual:',p.vencimiento_actual),dateLine('Con un mes adicional:',p.vencimiento_propuesto));
         target.append(el('p','Fechas mostradas en '+zone+'.'),el('p','Capacidad conservada: hasta '+p.limite_numeros_conservado.toLocaleString('es-MX')+' números.'));
@@ -125517,6 +125720,7 @@ async function mostrarAmpliacionesPlanesR3() {
         ids.append(summary,el('p','Compra: '+p.adquisicion_id),el('p','Dinámica original: '+p.rifa_original_id));
         if(p.rifa_actual_id!==p.rifa_original_id)ids.append(el('p','Continuación actual: '+p.rifa_actual_id));
         target.append(ids);
+        quoteDisposers.set(target,massMontarCotizacionAmpliacionR3({host:target,preview:p,organizadorId:orgId,actorEsperado:actor,validPreview,contextoPadre:alive,verificarSesion:identity,cargarPerfil:loadProfile}));
     }
     async function titlesFor(items){
         const ids=[...new Set(items.filter(x=>x.previsualizacion.ok).map(x=>x.previsualizacion.rifa_actual_id))];
@@ -125528,7 +125732,7 @@ async function mostrarAmpliacionesPlanesR3() {
         return names;
     }
     function render(items,names){
-        list.replaceChildren();controls.clear();
+        clearQuotes();list.replaceChildren();controls.clear();
         for(const item of items){
             const box=el('details');box.dataset.adquisicionAmpliacionR3=item.adquisicion_id;
             box.style.cssText='border:2px solid #39ff14;border-radius:12px;padding:4px 12px;min-width:0';
@@ -125542,7 +125746,7 @@ async function mostrarAmpliacionesPlanesR3() {
             const itemStatus=el('p');itemStatus.setAttribute('role','status');itemStatus.setAttribute('aria-live','polite');
             refresh.addEventListener('click',async()=>{
                 if(busy||!alive())return;
-                busy=true;const turn=++epoch;controlsState();detail.replaceChildren();itemStatus.textContent='Consultando ampliación...';
+                busy=true;const turn=++epoch;controlsState();quoteDisposers.get(detail)?.();quoteDisposers.delete(detail);detail.replaceChildren();itemStatus.textContent='Consultando ampliación...';
                 try{
                     if(!await identity())return;
                     const {data,error}=await limited(client.rpc('previsualizar_ampliacion_plan_r3_segura',{p_organizador_id:orgId,p_adquisicion_id:item.adquisicion_id}));
@@ -125566,7 +125770,7 @@ async function mostrarAmpliacionesPlanesR3() {
     }
     async function load(requestedOffset=0){
         if(busy||!alive())return;
-        busy=true;const turn=++epoch;controlsState();list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';status.textContent='Consultando planes vigentes...';
+        busy=true;const turn=++epoch;controlsState();clearQuotes();list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';status.textContent='Consultando planes vigentes...';
         try{
             if(!uuid(orgId)){status.textContent='Selecciona tu organizador para consultar sus planes.';return;}
             if(!await identity())return;
