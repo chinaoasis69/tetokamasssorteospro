@@ -65874,7 +65874,10 @@ async function massR3EsperarConsultaPublica(promise) {
   finally {clearTimeout(timer);}
 }
 function massR3TextoPrecioPublico(tarifa) {
-  return `${Number(tarifa.precio_usd).toFixed(2)} USD · referencia informativa: ${Number(tarifa.precio_mxn_estimado).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`;
+  const referencia=tarifa.fx_disponible===true
+    ? `referencia informativa: ${Number(tarifa.precio_mxn_estimado).toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})} MXN`
+    : 'referencia en MXN no disponible';
+  return `${Number(tarifa.precio_usd).toFixed(2)} USD · ${referencia}`;
 }
 function massR3SeleccionGuardada() {
   try { const v=JSON.parse(sessionStorage.getItem("mass_r3_vigencia_publica_qa")||"null");return v&&typeof v==="object"?v:null; }
@@ -65884,9 +65887,11 @@ async function massR3CargarTarifasPublicasParaSelector(secuencia) {
   MASS_R3_PUBLICOS_TARIFAS=[];
   MASS_R3_TARIFAS_ESTADO='error';
   try {
-    const {data,error}=await massR3EsperarConsultaPublica(supabaseClient.rpc("listar_tarifas_vigencia_r3_publicas_segura"));
+    const {data,error}=await massR3EsperarConsultaPublica(supabaseClient.rpc("listar_tarifas_vigencia_r3_informativas_segura"));
     if(secuencia!==MASS_R3_CATALOGO_SECUENCIA)return false;
     if(error||!data||data.ok!==true||data.moneda_maestra!=="USD"||
+      data.solo_lectura!==true||data.solo_informativo!==true||
+      data.contratacion_habilitada!==false||data.pagos_habilitados!==false||data.derechos_activados!==false||
       !Array.isArray(data.tarifas)||data.total!==data.tarifas.length||data.total>16) {
       console.warn("MASS R3: tarifas públicas no disponibles; selector bloqueado.");return false;
     }
@@ -65895,12 +65900,15 @@ async function massR3CargarTarifasPublicasParaSelector(secuencia) {
     for(const t of data.tarifas) {
       const meses=Number(t.duracion_meses),version=Number(t.version),usd=Number(t.precio_usd),mxn=Number(t.precio_mxn_estimado);
       const tipo=String(t.tipo_tarifa||""),clave=String(t.plan_id)+":"+tipo+":"+meses;
+      const fxValido=t.fx_disponible===false&&t.precio_mxn_estimado===null ||
+        t.fx_disponible===true&&Number.isFinite(mxn)&&mxn>0&&mxn<=9999999999.99&&
+        Math.abs(mxn*100-Math.round(mxn*100))<=0.00001&&mxn%10===0;
       if(!uuid.test(String(t.tarifa_id||""))||!uuid.test(String(t.plan_id||""))||
         !String(t.plan_codigo||"").trim()||t.tipo_cobro!=="por_dinamica"||
         !((tipo==="inicial"&&[3,6,12].includes(meses))||(tipo==="ampliacion"&&meses===1))||
         !Number.isInteger(version)||version<1||!Number.isFinite(usd)||usd<=0||usd>9999999999.99||
-        !Number.isFinite(mxn)||mxn<=0||mxn>9999999999.99||Math.abs(usd*100-Math.round(usd*100))>0.00001||
-        Math.abs(mxn*100-Math.round(mxn*100))>0.00001||duplicados.has(clave)||ids.has(t.tarifa_id)) {console.warn("MASS R3: respuesta tarifaria inválida; selector bloqueado.");return false;}
+        !fxValido||Math.abs(usd*100-Math.round(usd*100))>0.00001||
+        duplicados.has(clave)||ids.has(t.tarifa_id)) {console.warn("MASS R3: respuesta tarifaria inválida; selector bloqueado.");return false;}
       duplicados.add(clave);ids.add(t.tarifa_id);
     }
     MASS_R3_PUBLICOS_TARIFAS=data.tarifas;
