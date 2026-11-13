@@ -125434,8 +125434,128 @@ async function mostrarCatalogoInformativoComplementosC06() {
 
 <script>
 
-// PLANES-R3-AMPLIACION-05: cotizacion y recuperacion; no compra, pago ni ampliacion.
-function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsperado,validPreview,contextoPadre,verificarSesion,cargarPerfil}) {
+// PLANES-R3-AMPLIACION-05: cotizacion y recuperacion; integrada con AMPLIACION-07.
+// PLANES-R3-AMPLIACION-07: seguimiento y pago sobre AMPLIACION-06 instalado.
+function massMontarSeguimientoAmpliacionesR3({host,organizadorId,actorEsperado,contextoPadre,verificarSesion}) {
+ const client=supabaseClient,uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(x);
+ const el=(t,s)=>{const n=document.createElement(t);if(s!==undefined)n.textContent=s;return n;};
+ const btn=s=>{const b=el('button',s);b.type='button';b.style.cssText='padding:12px;margin:4px;white-space:normal;max-width:100%';return b;};
+ const input=(label,type='text')=>{const l=el('label',label),n=el('input');n.type=type;n.style.cssText=type==='checkbox'?'width:20px;margin:6px':'display:block;max-width:100%;width:100%;box-sizing:border-box;padding:10px;margin:6px 0';l.append(n);return{l,n};};
+ const money=(n,c)=>n.toLocaleString('es-MX',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+c;
+ const cents=x=>typeof x==='number'&&Number.isFinite(x)&&x>=0&&x<=19999999999.98&&Math.abs(x*100-Math.round(x*100))<.001?Math.round(x*100):null;
+ const stamp=x=>typeof x==='string'&&/(Z|[+-]\d{2}:\d{2})$/.test(x)&&Number.isFinite(Date.parse(x));
+ const text=x=>typeof x==='string'&&x.trim().length>0&&x.length<=4000;
+ const section=el('details');section.dataset.seguimientoAmpliacionesR3='true';section.style.cssText='border:1px solid #39ff14;border-radius:12px;padding:14px;margin:18px 0;overflow-wrap:anywhere';
+ section.append(el('summary','Pagos y seguimiento de ampliaciones'),el('p','Consulta aquí las ampliaciones confirmadas, sus comprobantes y decisiones. La vigencia cambia únicamente cuando el Súper Admin aprueba el pago.'));
+ const reload=btn('Actualizar seguimiento'),close=btn('Cerrar seguimiento'),prev=btn('Página anterior'),next=btn('Página siguiente');
+ const nav=el('div');nav.append(prev,next);const pageLabel=el('span');nav.append(pageLabel);
+ const status=el('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');status.dataset.estadoSeguimientoAmpliacion='true';
+ const list=el('div');section.append(reload,close,status,list,nav);host.append(section);
+ let dead=false,busy=false,seq=0,loaded=false,admin=false,offset=0,total=0;
+ const linkTimers=new Set();
+ const alive=()=>!dead&&section.isConnected&&contextoPadre();
+ const limit=async p=>{let t;try{return await Promise.race([p,new Promise((_,reject)=>t=setTimeout(()=>reject(Error('RESPUESTA_INCIERTA')),20000))]);}finally{clearTimeout(t);}};
+ const messages={NO_AUTORIZADO:'Tu sesión no permite realizar esta operación.',CONTRATACION_NO_DISPONIBLE:'Esta ampliación ya no está disponible.',PAGO_NO_DISPONIBLE:'No se encontró ese pago.',COMPROBANTE_NO_EXISTE:'Todavía no se encontró el comprobante. Súbelo antes de reportar el pago.',COMPROBANTE_INVALIDO:'Revisa el formato y tamaño del comprobante.',COMPROBANTE_CAMBIO:'El comprobante cambió después de reportarse. Contacta a soporte.',VIGENCIA_O_CONDICIONES_CAMBIARON_REVISION_REQUERIDA:'La vigencia o las condiciones cambiaron. Se requiere revisión antes de aplicar la ampliación.',DINAMICA_NO_CONTINUABLE:'La dinámica ya no permite aplicar esta ampliación.',PAGO_EN_CURSO_RECUPERAR:'Ya existe una preparación de pago. Actualiza el seguimiento para recuperarla.',METODO_NO_DISPONIBLE_EN_MONEDA:'El método elegido ya no está disponible en esa moneda.',AMPLIACION_YA_APROBADA:'Esta ampliación ya está aprobada. Actualiza el seguimiento.',PAGO_NO_REPORTADO:'El comprobante debe reportarse antes de aprobar.',DECISION_PREVIA_DIFERENTE:'Este pago ya tiene una decisión diferente. Actualiza el seguimiento.',ACREDITACION_NO_CONFIRMADA_O_REQUIERE_REVISION:'Confirma la acreditación y su referencia. Si hay diferencias en fondos recibidos, requiere revisión.',DECISION_O_TOTAL_INVALIDOS:'El total o los datos de revisión no coinciden. Actualiza el seguimiento.'};
+ function controls(){for(const b of section.querySelectorAll('button,input,select,textarea'))b.disabled=busy||dead||b.dataset.blocked==='true';prev.disabled=busy||dead||offset===0;next.disabled=busy||dead||offset+20>=total;nav.hidden=total<=20;nav.style.display=nav.hidden?'none':'flex';}
+ const clear=()=>{for(const t of linkTimers)clearTimeout(t);linkTimers.clear();list.replaceChildren();};
+ function dispose(){if(dead)return;dead=true;seq++;observer.disconnect();clear();section.replaceChildren();}
+ const observer=new MutationObserver(()=>{if(!alive())dispose();});observer.observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','style']});
+ async function run(fn){if(!alive()){dispose();return;}if(busy)return;busy=true;const turn=++seq;controls();const current=()=>alive()&&turn===seq;
+ try{if(!await verificarSesion()||!current())return;await fn(current);}catch(_){if(current())status.textContent='No se pudo confirmar la respuesta. Pulsa «Actualizar seguimiento» para consultar el estado antes de repetir la operación.';}finally{if(current()){busy=false;controls();}}}
+ async function rpc(name,args,current){const r=await limit(client.rpc(name,args));if(!current()||!await verificarSesion()||!current())throw Error('CONTEXTO_CAMBIO');if(r.error)throw r.error;if(r.data?.ok===false){status.textContent=messages[r.data.codigo]||'No se pudo completar la operación. Actualiza el seguimiento o contacta a soporte.';return null;}return r.data;}
+ function validMethod(m,currency){return m&&uuid(m.id)&&m.moneda===currency&&text(m.nombre_publico)&&text(m.destino_etiqueta)&&text(m.destino_valor);}
+ function pathOK(p,c){return p.comprobante_bucket==='planes-ampliaciones-comprobantes'&&typeof p.comprobante_path==='string'&&new RegExp('^'+organizadorId+'/'+c.id+'/'+p.pago_id+'/comprobante\\.(jpg|jpeg|png|webp|heic|heif|pdf)$').test(p.comprobante_path);}
+ function valid(d,expected){
+ const c=d?.contratacion,p=d?.condiciones?.previsualizacion,f=d?.condiciones?.calculo_fiscal;
+ if(d?.ok!==true||!c||!uuid(c.id)||c.organizador_id!==organizadorId||!uuid(c.adquisicion_id)||!uuid(c.rifa_original_id)||c.cotizacion_id!==d.cotizacion_id||!uuid(d.cotizacion_id)||!stamp(c.inicio_original)||!stamp(c.fin_anterior)||!stamp(c.fin_nuevo)||!stamp(c.confirmado_en)||!uuid(c.confirmado_por)||typeof d.ampliacion_aplicada!=='boolean'||d.vigencia_modificada!==false)return false;
+ if(expected&&(c.id!==expected.id||(expected.quote&&(d.cotizacion_id!==expected.quote.cotizacion_id||c.adquisicion_id!==expected.quote.adquisicion_id||d.moneda!==expected.quote.moneda||d.total!==expected.quote.total))))return false;
+ const sub=cents(d.subtotal),tax=cents(d.impuesto),total=cents(d.total);
+ if(!['USD','MXN'].includes(d.moneda)||sub===null||sub<=0||tax===null||total!==sub+tax||!p||p.adquisicion_id!==c.adquisicion_id||p.organizador_id!==organizadorId||p.rifa_original_id!==c.rifa_original_id||p.misma_dinamica!==true||p.meses_adicionales!==1||!text(p.plan_nombre)||!text(p.plan_codigo)||!stamp(p.inicio_original)||!stamp(p.vencimiento_actual)||!stamp(p.vencimiento_propuesto)||Date.parse(p.inicio_original)!==Date.parse(c.inicio_original)||Date.parse(p.vencimiento_actual)!==Date.parse(c.fin_anterior)||Date.parse(p.vencimiento_propuesto)!==Date.parse(c.fin_nuevo)||Date.parse(c.fin_nuevo)<=Date.parse(c.fin_anterior)||Date.parse(c.fin_nuevo)-Date.parse(c.fin_anterior)>32*86400000||Date.parse(c.fin_anterior)<=Date.parse(c.inicio_original))return false;
+ if(!f||f.ok!==true||f.codigo!=='CALCULO_INTERNO_COMPLETADO'||f.subtotal!==d.subtotal||f.impuesto!==d.impuesto||f.total!==d.total||!uuid(f.regla_id)||!Number.isSafeInteger(f.version_regla_fiscal)||f.version_regla_fiscal<1||!['gravado','tasa_cero','exento','no_sujeto'].includes(f.tratamiento)||!Array.isArray(f.componentes_impuesto_snapshot)||f.componentes_impuesto_snapshot.length>32||f.componentes_impuesto_snapshot.some(x=>!x||!text(x.codigo)||cents(x.impuesto)===null)||f.componentes_impuesto_snapshot.reduce((a,x)=>a+cents(x.impuesto),0)!==tax)return false;
+ if(!Array.isArray(d.pagos)||d.pagos.length>20||!Array.isArray(d.metodos)||!d.metodos.every(m=>validMethod(m,d.moneda))||new Set(d.metodos.map(m=>m.id)).size!==d.metodos.length)return false;
+ if(!d.pagos.every(x=>uuid(x.pago_id)&&x.moneda===d.moneda&&x.monto===d.total&&['preparando_comprobante','en_revision','aprobado','rechazado'].includes(x.estado)&&validMethod(x.metodo,d.moneda)&&pathOK(x,c)&&stamp(x.creado_en)))return false;
+ if(new Set(d.pagos.map(x=>x.pago_id)).size!==d.pagos.length||d.pagos.filter(x=>['preparando_comprobante','en_revision','aprobado'].includes(x.estado)).length>1)return false;
+ return d.ampliacion_aplicada===d.pagos.some(x=>x.estado==='aprobado');
+ }
+ function bank(host,m){host.replaceChildren();host.append(el('strong',m.nombre_publico),el('p',m.destino_etiqueta+': '+m.destino_valor));if(m.titular)host.append(el('p','Titular: '+m.titular));if(m.institucion_financiera)host.append(el('p',m.institucion_financiera));if(m.instrucciones)host.append(el('p',m.instrucciones));}
+ async function fetchOne(id,current,quote){const d=await rpc('consultar_ampliacion_contratada_r3_segura',{p_contratacion_id:id},current);if(!d)return false;if(!valid(d,{id,quote}))throw Error('RESPUESTA_NO_VERIFICADA');clear();render(d,true);return true;}
+ function render(d,open=false){
+ const c=d.contratacion,active=d.pagos.find(p=>['preparando_comprobante','en_revision','aprobado'].includes(p.estado));
+ const card=el('details');card.open=open;card.dataset.contratacionAmpliacion=c.id;card.style.cssText='border:1px solid #759d6b;border-radius:10px;padding:12px;margin:12px 0';
+ const state=d.ampliacion_aplicada?'Aprobada':active?.estado==='en_revision'?'En revisión':active?'Comprobante pendiente':'Pago pendiente';
+ card.append(el('summary',d.condiciones.previsualizacion.plan_nombre+' · '+state),el('p','Subtotal: '+money(d.subtotal,d.moneda)),el('p','Impuestos: '+money(d.impuesto,d.moneda)),el('strong','Total confirmado: '+money(d.total,d.moneda)),el('p','Vencimiento anterior: '+new Date(c.fin_anterior).toLocaleString('es-MX')),el('p',(d.ampliacion_aplicada?'Vencimiento aplicado: ':'Vencimiento al aprobar: ')+new Date(c.fin_nuevo).toLocaleString('es-MX')));
+ if(!d.ampliacion_aplicada)card.append(el('p','La ampliación está pendiente de aprobación. Este total confirmado conserva su moneda e importe.'));
+ const reference=el('details');reference.append(el('summary','Referencias'),el('p','Ampliación: '+c.id),el('p','Compra: '+c.adquisicion_id),el('p','Dinámica original: '+c.rifa_original_id));card.append(reference);
+ if(!active||active.estado==='preparando_comprobante'){
+ const select=el('select');select.style.cssText='max-width:100%;width:100%;padding:12px';const dest=el('div');dest.style.cssText='padding:12px;border:1px solid #777;border-radius:8px;margin:12px 0';
+ if(active){const o=el('option',active.metodo.nombre_publico);o.value=active.metodo.id;select.append(o);select.dataset.blocked='true';bank(dest,active.metodo);}else{
+ const first=el('option','Elige el método de pago');first.value='';select.append(first);for(const m of d.metodos){const o=el('option',m.nombre_publico);o.value=m.id;select.append(o);}select.addEventListener('change',()=>{const m=d.metodos.find(m=>m.id===select.value);if(m)bank(dest,m);else dest.replaceChildren();});}
+ const methodLabel=el('label','Método de pago');methodLabel.append(select);
+ card.append(el('p','Deposita el total confirmado en la moneda indicada y conserva tu comprobante.'),methodLabel,dest);
+ if(!active&&!d.metodos.length)card.append(el('p','No hay métodos disponibles en esta moneda. Contacta a soporte antes de depositar.'));
+ const file=input('Comprobante de pago','file');file.n.accept='.jpg,.jpeg,.png,.webp,.heic,.heif,.pdf';const upload=btn('Subir comprobante'),report=btn('Reportar pago');
+ report.dataset.blocked=String(!active);const mimeByExt={jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',webp:'image/webp',heic:'image/heic',heif:'image/heif',pdf:'application/pdf'};
+ card.append(file.l,el('small','JPG, PNG, WEBP, HEIC, HEIF o PDF · máximo 10 MB.'),upload,report);
+ upload.addEventListener('click',()=>{
+ const f=file.n.files?.[0],ext=f?.name.split('.').pop().toLowerCase(),mime=mimeByExt[ext],method=active?.metodo.id||select.value;
+ if(!f||!mime||f.size<=0||f.size>10485760||(f.type&&f.type!=='application/octet-stream'&&f.type!==mime)){status.textContent='Elige un comprobante válido de hasta 10 MB.';return;}
+ if(!method){status.textContent='Selecciona el método al que realizaste el depósito.';return;}
+ if(active&&!active.comprobante_path.endsWith('.'+ext)){status.textContent='Esta preparación requiere el mismo formato de archivo. Si elegiste otro método o formato por error, solicita su revisión.';return;}
+ run(async current=>{
+ status.textContent='Preparando el comprobante...';
+ let p=active;
+ if(!p){p=await rpc('preparar_pago_ampliacion_r3_seguro',{p_contratacion_id:c.id,p_metodo_id:method,p_extension:ext},current);if(!p)return;
+ if(p.codigo!=='PAGO_AMPLIACION_PREPARADO'||p.contratacion_id!==c.id||!uuid(p.pago_id)||p.moneda!==d.moneda||p.monto!==d.total||p.metodo?.id!==method||!validMethod(p.metodo,d.moneda)||!pathOK(p,c)||p.mime!==mime||p.vigencia_modificada!==false)throw Error('PREPARACION_NO_VERIFICADA');}
+ const r=await limit(client.storage.from(p.comprobante_bucket).upload(p.comprobante_path,f,{upsert:false,contentType:mime}));
+ if(!current()||!await verificarSesion()||!current())return;
+ file.n.value='';if(r.error){status.textContent='No se confirmó la carga. Actualiza el seguimiento; si el archivo ya llegó, pulsa «Reportar pago». No se reemplazan comprobantes.';await fetchOne(c.id,current);return;}
+ if(await fetchOne(c.id,current))status.textContent='Comprobante cargado. Pulsa «Reportar pago» para enviarlo a revisión.';
+ });});
+ report.addEventListener('click',()=>run(async current=>{if(!active)return;const r=await rpc('reportar_pago_ampliacion_r3_seguro',{p_pago_id:active.pago_id},current);if(!r)return;if(r.codigo!=='PAGO_REPORTADO'||r.pago_id!==active.pago_id||r.vigencia_modificada!==false)throw Error('REPORTE_NO_VERIFICADO');if(await fetchOne(c.id,current))status.textContent='Pago reportado. La vigencia cambiará cuando el Súper Admin lo apruebe.';}));
+ }
+ for(const p of d.pagos){
+ const pay=el('details');pay.append(el('summary','Comprobante · '+({preparando_comprobante:'Pendiente',en_revision:'En revisión',aprobado:'Aprobado',rechazado:'Rechazado'}[p.estado])+' · '+new Date(p.creado_en).toLocaleString('es-MX')));if(p.motivo)pay.append(el('p','Motivo: '+p.motivo));
+ const download=btn('Ver comprobante'),linkBox=el('div');pay.append(download,linkBox);
+ download.addEventListener('click',()=>run(async current=>{linkBox.replaceChildren();const r=await limit(client.storage.from(p.comprobante_bucket).createSignedUrl(p.comprobante_path,60));if(!current()||!await verificarSesion()||!current())return;if(r.error||!r.data?.signedUrl){status.textContent='No se pudo abrir el comprobante. Puede que aún no esté cargado.';return;}
+ const url=new URL(r.data.signedUrl),origin=new URL(client.supabaseUrl).origin;
+ if(url.protocol!=='https:'||url.origin!==origin||!decodeURIComponent(url.pathname).endsWith('/'+p.comprobante_bucket+'/'+p.comprobante_path)||!url.pathname.startsWith('/storage/v1/object/sign/'))throw Error('ENLACE_NO_VERIFICADO');
+ const a=el('a','Abrir comprobante (enlace disponible durante 1 minuto)');a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';linkBox.append(a);const timeout=setTimeout(()=>{linkBox.replaceChildren();linkTimers.delete(timeout);},60000);linkTimers.add(timeout);status.textContent='Comprobante disponible para consulta.';
+ }));
+ if(admin&&!d.ampliacion_aplicada&&['preparando_comprobante','en_revision'].includes(p.estado)){
+ const review=el('fieldset');review.append(el('legend','Revisión del Súper Admin'),el('p','Total por acreditar: '+money(d.total,d.moneda)));
+ const ref=input('Referencia de acreditación'),reason=input('Motivo de la decisión');ref.n.maxLength=300;reason.n.maxLength=2000;
+ const credited=input('Verifiqué que recibí el total indicado en la moneda confirmada.','checkbox'),uncredited=input('Confirmo que este pago no está acreditado.','checkbox');
+ const approve=btn('Aprobar pago y ampliar vigencia'),reject=btn('Rechazar comprobante');approve.dataset.blocked='true';reject.dataset.blocked='true';
+ credited.n.addEventListener('change',()=>{if(credited.n.checked)uncredited.n.checked=false;sync();});uncredited.n.addEventListener('change',()=>{if(uncredited.n.checked)credited.n.checked=false;sync();});
+ function sync(){approve.dataset.blocked=String(!credited.n.checked||p.estado!=='en_revision');reject.dataset.blocked=String(!uncredited.n.checked);controls();}
+ review.append(ref.l,reason.l,credited.l,uncredited.l,el('p','Si recibiste fondos con una diferencia, requiere revisión antes de aprobar o rechazar.'),approve,reject);pay.append(review);
+ const decide=decision=>{
+ const yes=decision==='aprobado';if(yes?(!credited.n.checked||p.estado!=='en_revision'):!uncredited.n.checked)return;
+ const motivo=reason.n.value.trim(),reference=ref.n.value.trim();if(motivo.length<10||(yes&&reference.length<6)){status.textContent='Escribe un motivo de al menos 10 caracteres y, para aprobar, una referencia de al menos 6.';return;}
+ run(async current=>{
+ const r=await rpc('revisar_pago_ampliacion_r3_seguro',{p_pago_id:p.pago_id,p_decision:decision,p_moneda:d.moneda,p_monto:d.total,p_acreditado:yes,p_referencia:reference||null,p_motivo:motivo},current);
+ if(!r)return;if(!['PAGO_REVISADO','PAGO_YA_REVISADO'].includes(r.codigo)||r.pago_id!==p.pago_id||r.decision!==decision||typeof r.ya_existente!=='boolean'||r.ampliacion_aplicada!==yes||r.vigencia_modificada!==(yes&&!r.ya_existente))throw Error('REVISION_NO_VERIFICADA');
+ if(await fetchOne(c.id,current))status.textContent=yes?'Pago aprobado y ampliación aplicada. Actualiza los planes para consultar la nueva vigencia.':'Comprobante rechazado. El propietario puede preparar otro comprobante; la vigencia no cambia.';
+ });};approve.addEventListener('click',()=>decide('aprobado'));reject.addEventListener('click',()=>decide('rechazado'));
+ }
+ card.append(pay);
+ }
+ list.append(card);
+ }
+ async function loadPage(page=0){return run(async current=>{
+ status.textContent='Consultando ampliaciones confirmadas...';clear();
+ const role=await limit(client.rpc('is_super_admin'));if(!current()||!await verificarSesion()||!current())return;admin=!role.error&&role.data===true;
+ const d=await rpc('listar_ampliaciones_contratadas_r3_seguro',{p_organizador_id:organizadorId,p_limite:20,p_offset:page},current);if(!d)return;
+ if(!Number.isSafeInteger(d.total)||d.total<0||d.limite!==20||d.offset!==page||d.solo_lectura!==true||!Array.isArray(d.ampliaciones)||d.ampliaciones.length!==Math.min(20,Math.max(0,d.total-page))||!d.ampliaciones.every(x=>valid(x))||new Set(d.ampliaciones.map(x=>x.contratacion.id)).size!==d.ampliaciones.length)throw Error('LISTADO_NO_VERIFICADO');
+ offset=page;total=d.total;for(const x of d.ampliaciones)render(x);pageLabel.textContent='Página '+(Math.floor(offset/20)+1);loaded=true;status.textContent=d.ampliaciones.length?'Abre una ampliación para consultar o continuar su pago.':'Todavía no hay ampliaciones confirmadas para este organizador.';
+ });}
+ function collapse(){seq++;busy=false;clear();loaded=false;admin=false;status.textContent='';controls();}
+ section.addEventListener('toggle',()=>{if(section.open&&!loaded)loadPage(0);else if(!section.open)collapse();});reload.addEventListener('click',()=>loadPage(offset));prev.addEventListener('click',()=>loadPage(Math.max(0,offset-20)));next.addEventListener('click',()=>loadPage(offset+20));
+ close.addEventListener('click',()=>{collapse();section.open=false;});
+ controls();return{dispose,refresh:()=>loadPage(offset),openContract:async(id,quote)=>{if(!uuid(id)||!alive())return;loaded=true;section.open=true;await run(async current=>{admin=false;const r=await limit(client.rpc('is_super_admin'));if(!current()||!await verificarSesion()||!current())return;admin=!r.error&&r.data===true;if(await fetchOne(id,current,quote))status.textContent='Ampliación confirmada. Revisa los datos de pago y conserva tu comprobante.';});}};
+}
+
+function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsperado,validPreview,contextoPadre,verificarSesion,cargarPerfil,onContratacion}) {
     const client=supabaseClient;
     const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
     const el=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
@@ -125468,7 +125588,7 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     const status=el('p');status.dataset.estadoCotizacionAmpliacion='true';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
     const output=el('div');output.dataset.resultadoCotizacionAmpliacion='true';output.style.cssText='min-width:0';
     form.append(confirmLabel,actions);panel.append(title,note,form,status,output);host.append(panel);
-    let closed=false,busy=false,revision=0,request=null,quote=null,timer=null,profileTried=false;
+    let closed=false,busy=false,revision=0,request=null,quote=null,timer=null,profileTried=false,acceptTotal=null,confirmPurchase=null,contractConfirmed=false,confirmUncertain=false;
     const storageKey='mass:ampliacion:cotizacion:v1:'+actorEsperado+':'+organizadorId+':'+preview.adquisicion_id;
     try{const s=JSON.parse(sessionStorage.getItem(storageKey)||'null');if(s?.version===1&&uuid(s.solicitud_id))request=s.solicitud_id;}catch(_){}
     const alive=()=>!closed&&panel.isConnected&&host.contains(panel)&&contextoPadre();
@@ -125484,9 +125604,11 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     const controls=()=>{
         const disabled=closed||busy;for(const n of [currency,profile,confirmed,...Object.values(fields)])n.disabled=disabled;
         submit.disabled=disabled||!!request;recover.disabled=disabled||!request;fresh.disabled=disabled||!request;
+        if(acceptTotal)acceptTotal.disabled=disabled||contractConfirmed;
+        if(confirmPurchase)confirmPurchase.disabled=disabled||contractConfirmed||confirmUncertain||!acceptTotal?.checked||!quote?.vigente||Date.parse(quote.expira_en)<=Date.now()||typeof onContratacion!=='function';
         recover.hidden=!request;fresh.hidden=!request;recover.style.display=request?'':'none';fresh.style.display=request?'':'none';panel.setAttribute('aria-busy',String(busy));
     };
-    function clearQuote(){quote=null;clearInterval(timer);timer=null;output.replaceChildren();}
+    function clearQuote(){quote=null;acceptTotal=null;confirmPurchase=null;contractConfirmed=false;confirmUncertain=false;clearInterval(timer);timer=null;output.replaceChildren();}
     function saveRequest(id){request=id;try{sessionStorage.setItem(storageKey,JSON.stringify({version:1,solicitud_id:id}));return true;}catch(_){return false;}}
     function forgetRequest(){request=null;try{sessionStorage.removeItem(storageKey);}catch(_){}}
     function dispose(){
@@ -125513,7 +125635,10 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
         SOLICITUD_REUTILIZADA_CON_OTROS_DATOS:'Esta solicitud corresponde a otros datos. Recupérala o inicia una nueva cotización.',
         COTIZACION_NO_DISPONIBLE:'No se encontró la cotización de esta solicitud. Puedes volver a recuperarla o iniciar una nueva.',
         VIGENCIA_NO_DISPONIBLE:'El periodo disponible terminó. Actualiza tus planes.',
-        TOTAL_FISCAL_INCONSISTENTE:'No se pudo verificar el total fiscal. Contacta a soporte.'
+        TOTAL_FISCAL_INCONSISTENTE:'No se pudo verificar el total fiscal. Contacta a soporte.',
+        COTIZACION_VENCIDA_O_FISCAL_CAMBIO:'La cotización venció o su configuración fiscal cambió. Solicita una nueva.',
+        OTRA_COTIZACION_YA_CONFIRMADA:'Ya confirmaste otra cotización para este vencimiento. Recupérala en «Pagos y seguimiento».',
+        TOTAL_O_MONEDA_NO_CONFIRMADOS:'Confirma el total y la moneda antes de continuar.'
     };
     function validQuote(d,sol,expected){
         if(d?.ok!==true||d.codigo!=='COTIZACION_AMPLIACION_DISPONIBLE'||!uuid(d.cotizacion_id)||d.solicitud_id!==sol||
@@ -125559,14 +125684,34 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
         const f=d.condiciones.calculo_fiscal;const treatment={gravado:'Gravado',tasa_cero:'Tasa cero',exento:'Exento',no_sujeto:'No sujeto'};
         tax.append(el('p','Tratamiento: '+treatment[f.tratamiento]));
         for(const x of f.componentes_impuesto_snapshot)tax.append(el('p',x.codigo+' · '+(x.tasa*100).toLocaleString('es-MX',{maximumFractionDigits:6})+'% · '+money(x.impuesto,d.moneda)));
-        output.append(tax,el('p','La ampliación continúa la misma dinámica. La cotización deberá volver a validarse antes de confirmar la contratación. El pago todavía no está habilitado.'));
+        output.append(tax,el('p','La ampliación continúa la misma dinámica. Al confirmar se fija el total en la moneda elegida y podrás consultar los datos para depositar. La vigencia cambia cuando el Súper Admin aprueba el pago.'));
+        const acceptance=el('label');acceptance.style.cssText='display:flex;align-items:flex-start;gap:10px;margin:16px 0';
+        acceptTotal=el('input');acceptTotal.type='checkbox';acceptTotal.dataset.aceptarTotalAmpliacion='true';acceptTotal.style.cssText='width:20px;flex:0 0 20px;margin:4px 0';
+        acceptance.append(acceptTotal,el('span','Confirmo el total de '+money(d.total,d.moneda)+' para ampliar esta misma dinámica hasta '+new Date(p.vencimiento_propuesto).toLocaleString('es-MX')+'.'));
+        confirmPurchase=button('Confirmar ampliación y continuar');confirmPurchase.dataset.confirmarAmpliacion='true';
+        output.append(acceptance,confirmPurchase);acceptTotal.addEventListener('change',controls);
+        confirmPurchase.addEventListener('click',()=>{
+            if(!acceptTotal?.checked||contractConfirmed||confirmUncertain||quote!==d||!d.vigente||Date.parse(d.expira_en)<=Date.now())return;
+            run(async(_turn,current)=>{
+                status.textContent='Confirmando el total de la ampliación...';
+                try{
+                    const {data:r,error}=await limit(client.rpc('confirmar_ampliacion_r3_segura',{p_cotizacion_id:d.cotizacion_id,p_moneda:d.moneda,p_total:d.total,p_confirmacion:true}));
+                    if(!current()||!await verificarSesion()||!current())return;
+                    if(error)throw error;
+                    if(r?.ok===false){status.textContent=errors[r.codigo]||'No se pudo confirmar. Consulta «Pagos y seguimiento» o actualiza la cotización antes de continuar.';return;}
+                    if(r?.ok!==true||r.codigo!=='AMPLIACION_CONFIRMADA'||!uuid(r.contratacion_id)||typeof r.ya_existente!=='boolean'||r.vigencia_modificada!==false)throw Error('CONFIRMACION_NO_VERIFICADA');
+                    contractConfirmed=true;controls();status.textContent='Ampliación confirmada. Continúa en «Pagos y seguimiento». La vigencia sigue sin cambios.';
+                    await onContratacion(r.contratacion_id,d);
+                }catch(_){if(current()){confirmUncertain=true;status.textContent='No se pudo confirmar la respuesta. Abre «Pagos y seguimiento» y pulsa «Actualizar seguimiento» antes de volver a confirmar.';}}
+            });
+        });
         const expiry=el('p');expiry.dataset.vigenciaCotizacionAmpliacion='true';output.append(expiry);
         const ref=el('details');ref.append(el('summary','Referencia de la cotización'),el('p',d.cotizacion_id));output.append(ref);
         const tick=()=>{
             if(!alive()){dispose();return;}
             const valid=d.vigente&&Date.parse(d.expira_en)>Date.now();
             expiry.textContent=valid?'Cotización válida hasta '+new Date(d.expira_en).toLocaleString('es-MX')+'.':'Esta cotización ya no está vigente. Solicita una nueva para obtener el total actual.';
-            if(!valid){clearInterval(timer);timer=null;}
+            controls();if(!valid){clearInterval(timer);timer=null;}
         };
         tick();if(alive()&&d.vigente&&Date.parse(d.expira_en)>Date.now())timer=setInterval(tick,1000);
     }
@@ -125634,7 +125779,7 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     controls();return dispose;
 }
 
-// PLANES-R3-AMPLIACION-05: previa y cotizacion; pagos y cambios de vigencia pendientes.
+// PLANES-R3-AMPLIACION-07: previa, cotizacion y seguimiento de pagos instalados en AMPL06.
 async function mostrarAmpliacionesPlanesR3() {
     const root=document.getElementById('adminContenido'), panel=document.getElementById('panelAdmin');
     if(!root||!panel||panel.hidden||panel.style.display==='none')return;
@@ -125648,7 +125793,7 @@ async function mostrarAmpliacionesPlanesR3() {
     view.style.cssText='max-width:860px;margin:12px auto;padding:18px;text-align:left;overflow-wrap:anywhere;box-sizing:border-box;line-height:1.5';
     const title=el('h3','Mis planes · Ampliar vigencia');
     const intro=el('p','Consulta un mes adicional para continuar la misma dinámica. Se conservan su compra original y su capacidad.');
-    const notice=el('p','Consulta el total con impuestos dentro de cada plan disponible. La cotización requiere una tarifa y una configuración fiscal habilitadas. La contratación y el pago siguen pendientes; tu vencimiento no cambia.');
+    const notice=el('p','Consulta el total con impuestos dentro de cada plan disponible. La cotización requiere una tarifa y una configuración fiscal habilitadas. Confirma el total, carga y reporta tu comprobante. La vigencia cambia únicamente al aprobarse el pago.');
     notice.style.cssText='padding:12px;border:1px solid #b69a51;border-radius:10px;color:#ffe19a';
     const reload=button('Actualizar planes'), back=button('← Volver al Dashboard'), close=button('Cerrar');
     const nav=el('div');nav.style.cssText='display:flex;gap:10px;flex-wrap:wrap';nav.append(reload,back,close);
@@ -125658,10 +125803,11 @@ async function mostrarAmpliacionesPlanesR3() {
     const prev=button('Anterior'), next=button('Siguiente'), pageLabel=el('span');pages.append(prev,pageLabel,next);pages.hidden=true;pages.style.display='none';
     const help=el('p','¿Necesitas ayuda con tu plan? ');
     const email=el('a','soportesorteospro@tetokamass.com');email.href='mailto:soportesorteospro@tetokamass.com';email.style.color='#39ff14';help.append(email);
-    view.append(title,intro,notice,nav,status,list,pages,help);root.replaceChildren(view);
+    const historyHost=el('div');
+    view.append(title,intro,notice,nav,status,list,pages,historyHost,help);root.replaceChildren(view);
     let actor=null,closed=false,busy=false,offset=0,hasMore=false,subscription=null,epoch=0;
     const controls=new Set(), quoteDisposers=new Map();
-    let profileSource=null;
+    let profileSource=null,history=null;
     const clearQuotes=()=>{for(const dispose of quoteDisposers.values())dispose();quoteDisposers.clear();};
     const loadProfile=()=>{if(!profileSource)profileSource=massCrearFuenteDomicilioFiscalP06C(orgId,actor);return profileSource();};
     const alive=()=>!closed&&view.isConnected&&root.contains(view)&&!panel.hidden&&panel.style.display!=='none'&&org()===orgId;
@@ -125669,7 +125815,7 @@ async function mostrarAmpliacionesPlanesR3() {
     const controlsState=()=>{reload.disabled=closed||busy;prev.disabled=closed||busy||offset===0;next.disabled=closed||busy||!hasMore;for(const b of controls)b.disabled=closed||busy;};
     function stop(message){
         if(closed)return;closed=true;epoch++;subscription?.unsubscribe();observer.disconnect();clearInterval(watch);
-        window.removeEventListener('storage',storageChanged);clearQuotes();profileSource=null;list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';controlsState();
+        window.removeEventListener('storage',storageChanged);clearQuotes();history?.dispose();history=null;profileSource=null;list.replaceChildren();controls.clear();pages.hidden=true;pages.style.display='none';controlsState();
         if(message)status.textContent=message;
     }
     const changedMessage='La sesión o el organizador cambió. Vuelve a abrir Mis planes.';
@@ -125683,6 +125829,7 @@ async function mostrarAmpliacionesPlanesR3() {
         const current=r.data?.user?.id;
         if(!alive()||r.error||!uuid(current)||(actor&&current!==actor)){stop(changedMessage);return false;}
         actor=current;
+        if(!history)history=massMontarSeguimientoAmpliacionesR3({host:historyHost,organizadorId:orgId,actorEsperado:actor,contextoPadre:alive,verificarSesion:identity});
         if(!subscription)subscription=client.auth.onAuthStateChange?.((event,s)=>{if(event==='SIGNED_OUT'||s?.user?.id!==actor)stop(changedMessage);})?.data?.subscription;
         return alive();
     }
@@ -125746,7 +125893,7 @@ async function mostrarAmpliacionesPlanesR3() {
         ids.append(summary,el('p','Compra: '+p.adquisicion_id),el('p','Dinámica original: '+p.rifa_original_id));
         if(p.rifa_actual_id!==p.rifa_original_id)ids.append(el('p','Continuación actual: '+p.rifa_actual_id));
         target.append(ids);
-        quoteDisposers.set(target,massMontarCotizacionAmpliacionR3({host:target,preview:p,organizadorId:orgId,actorEsperado:actor,validPreview,contextoPadre:alive,verificarSesion:identity,cargarPerfil:loadProfile}));
+        quoteDisposers.set(target,massMontarCotizacionAmpliacionR3({host:target,preview:p,organizadorId:orgId,actorEsperado:actor,validPreview,contextoPadre:alive,verificarSesion:identity,cargarPerfil:loadProfile,onContratacion:(id,q)=>history?.openContract(id,q)}));
     }
     async function titlesFor(items){
         const ids=[...new Set(items.filter(x=>x.previsualizacion.ok).map(x=>x.previsualizacion.rifa_actual_id))];
