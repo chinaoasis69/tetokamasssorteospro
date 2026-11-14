@@ -112086,7 +112086,159 @@ async function (
 
 };
 
-function montarBorradorFiscalPlanes(host, planes, cliente) {
+function montarLocalizadorFiscalTexas(host) {
+    if (!host) return;
+    host.innerHTML = `
+        <details class="card">
+            <summary style="cursor:pointer">Consultar tasa por domicilio en Texas</summary>
+            <form style="display:grid;gap:10px;text-align:left">
+                <label>Número y calle (incluye la unidad si corresponde)
+                    <input name="calle" required maxlength="140" autocomplete="off" style="width:100%"></label>
+                <label>Ciudad <input name="ciudad" required maxlength="80" style="width:100%"></label>
+                <label>Código postal de Texas
+                    <input name="zip" required maxlength="10" pattern="[0-9]{5}(-[0-9]{4})?" inputmode="text" style="width:100%"></label>
+                <p>Al consultar, se busca esta dirección en el registro público de establecimientos de Texas.</p>
+                <button type="submit">Consultar tasa</button>
+            </form>
+            <p data-mensaje role="status" aria-live="polite"></p>
+            <div data-desglose></div>
+            <a href="https://gis.cpa.texas.gov/search/" target="_blank" rel="noopener noreferrer">Abrir el localizador oficial de Texas ↗</a>
+        </details>`;
+    const ficha = host.querySelector('details');
+    const form = ficha.querySelector('form');
+    const mensaje = ficha.querySelector('[data-mensaje]');
+    const desglose = ficha.querySelector('[data-desglose]');
+    const boton = form.querySelector('button');
+    const campos = form.elements;
+    const autoridades = ['city_taid', 'county_taid', 'mass_transit_auth1_taid', 'mass_transit_auth2_taid',
+        'special_purp_dist1_taid', 'special_purp_dist2_taid', 'special_purp_dist3_taid', 'special_purp_dist4_taid', 'unique_taid'];
+    let peticion;
+    function limpiar() {
+        peticion?.abort();
+        peticion = undefined;
+        boton.disabled = false;
+        mensaje.textContent = '';
+        desglose.replaceChildren();
+    }
+    form.addEventListener('input', limpiar);
+    const normalizar = texto => texto.trim().toUpperCase().replace(/\s+/g, ' ');
+    const literal = texto => "'" + texto.replaceAll("'", "''") + "'";
+    const porcentaje = tasa => new Intl.NumberFormat('es-MX', {style:'percent', maximumFractionDigits:4}).format(tasa);
+    function trimestre(fecha) {
+        const partes = new Intl.DateTimeFormat('en-US', {timeZone:'America/Chicago', year:'numeric', month:'numeric'}).formatToParts(fecha);
+        return partes.find(p => p.type === 'year').value + Math.ceil(Number(partes.find(p => p.type === 'month').value) / 3);
+    }
+    form.addEventListener('submit', async evento => {
+        evento.preventDefault();
+        if (boton.disabled || !form.reportValidity()) return;
+        limpiar();
+        const calle = normalizar(campos.calle.value), ciudad = normalizar(campos.ciudad.value), zip = campos.zip.value.trim();
+        const numeroYCalle = /^(\d+[A-Z]?(?:-\d+[A-Z]?)?)\s+(.+)$/.exec(calle);
+        if (!numeroYCalle || !ciudad) {
+            mensaje.textContent = 'Escribe primero el número y después la calle, e indica la ciudad.';
+            return;
+        }
+        const busqueda = new AbortController();
+        peticion = busqueda;
+        boton.disabled = true;
+        mensaje.textContent = 'Consultando los datos del Texas Comptroller…';
+        const tiempo = setTimeout(() => busqueda.abort(), 20000);
+        try {
+            const url = new URL('https://data.texas.gov/resource/3kx8-uryv.json');
+            const filtros = ["out_of_business_date IS NULL", "loc_state='TX'", 'loc_zip=' + literal(zip.slice(0,5)),
+                'loc_city=' + literal(ciudad), 'address_number=' + literal(numeroYCalle[1]), 'address_text=' + literal(numeroYCalle[2])];
+            if (zip.length === 10) filtros.push('loc_zip4=' + literal(zip.slice(6)));
+            url.searchParams.set('$where', filtros.join(' AND '));
+            url.searchParams.set('$select', 'distinct loc_juris,' + autoridades.join(','));
+            url.searchParams.set('$limit', '2');
+            const opciones = {signal:busqueda.signal, credentials:'omit', referrerPolicy:'no-referrer'};
+            const respuesta = await fetch(url, opciones);
+            if (!respuesta.ok) throw new Error();
+            const filas = await respuesta.json();
+            if (peticion !== busqueda) return;
+            if (!Array.isArray(filas)) throw new Error();
+            if (filas.length !== 1) {
+                mensaje.textContent = filas.length ? 'La dirección tiene más de una combinación de jurisdicciones. Verifica el domicilio en el localizador oficial.'
+                    : 'El registro de establecimientos activos no contiene esta dirección exacta. Puedes consultarla en el localizador oficial.';
+                return;
+            }
+            const fila = filas[0];
+            if (autoridades.some(campo => typeof fila[campo] !== 'string')) {
+                mensaje.textContent = 'El registro tiene datos incompletos. Verifica la dirección en el localizador oficial.';
+                return;
+            }
+            const codigos = autoridades.map(campo => fila[campo].trim()).filter(Boolean);
+            if (!['Y','N'].includes(fila.loc_juris) || (fila.loc_juris === 'Y' && !fila.city_taid)
+                || codigos.some(c => !/^\d{7}$/.test(c)) || fila.unique_taid) {
+                mensaje.textContent = 'Esta ubicación requiere verificación en el localizador oficial.';
+                return;
+            }
+            const [metadatos, catalogo] = await Promise.all([
+                fetch('https://data.texas.gov/api/views/3kx8-uryv.json', opciones),
+                fetch('/datos-fiscales/texas/tarifas.txt', opciones)
+            ]);
+            if (!catalogo.ok || !metadatos.ok) throw new Error();
+            const [registro, raw] = await Promise.all([metadatos.json(), catalogo.text()]);
+            if (peticion !== busqueda) return;
+            const ahora = new Date(), periodo = trimestre(ahora);
+            const actualizado = new Date(Number(registro.rowsUpdatedAt) * 1000);
+            const lineas = raw.trimEnd().split(/\r?\n/);
+            const cabecera = lineas[0].split('\t');
+            if (registro.id !== '3kx8-uryv' || !Number.isFinite(actualizado.getTime()) || trimestre(actualizado) !== periodo
+                || cabecera[1] !== periodo || Number(cabecera[6]) !== lineas.length) {
+                mensaje.textContent = 'No se pudo verificar la vigencia de ambas fuentes para este trimestre. Usa el localizador oficial.';
+                return;
+            }
+            const estatal = Number(cabecera[4]);
+            if (!Number.isFinite(estatal) || estatal <= 0 || estatal > 1) throw new Error();
+            const tasas = new Map();
+            const buscados = new Set(codigos);
+            for (const linea of lineas.slice(1)) {
+                const columnas = linea.split('\t');
+                for (let i = 0; i + 2 < columnas.length; i += 3) {
+                    const codigo = columnas[i + 1].trim();
+                    if (!buscados.has(codigo)) continue;
+                    const tasa = Number(columnas[i + 2]);
+                    if (!columnas[i + 2].trim() || !Number.isFinite(tasa) || tasa <= 0 || tasa > 1
+                        || (tasas.has(codigo) && tasas.get(codigo).tasa !== tasa)) throw new Error();
+                    tasas.set(codigo, {nombre:columnas[i].trim(), tasa});
+                }
+            }
+            const local = Array.from(tasas.values()).reduce((suma, item) => suma + item.tasa, 0);
+            if (tasas.size !== buscados.size || local > 0.020000001) {
+                mensaje.textContent = 'El desglose de jurisdicciones requiere revisión. Usa el localizador oficial.';
+                return;
+            }
+            const lista = document.createElement('ul');
+            const detalle = ['Texas (estatal) · ' + porcentaje(estatal),
+                ...Array.from(tasas, ([codigo, item]) => item.nombre + ' (' + codigo + ') · ' + porcentaje(item.tasa))];
+            if (!tasas.size) detalle.push('Impuesto local · ' + porcentaje(0));
+            for (const texto of detalle) {
+                const li = document.createElement('li');
+                li.textContent = texto;
+                lista.append(li);
+            }
+            desglose.replaceChildren(lista);
+            mensaje.textContent = 'Tasa del domicilio: ' + porcentaje(estatal + local) + ' · ' + calle + ', ' + ciudad + ', TX ' + zip
+                + ' · ' + periodo.slice(0,4) + ', trimestre ' + periodo.slice(4) + '.';
+        } catch {
+            if (peticion === busqueda) mensaje.textContent = 'No se pudo completar la consulta. Reintenta o abre el localizador oficial.';
+        } finally {
+            clearTimeout(tiempo);
+            if (peticion === busqueda) { boton.disabled = false; peticion = undefined; }
+        }
+    });
+    return codigoPostal => {
+        limpiar();
+        campos.calle.value = campos.ciudad.value = '';
+        campos.zip.value = codigoPostal;
+        ficha.open = true;
+        ficha.scrollIntoView({block:'nearest'});
+        campos.calle.focus();
+    };
+}
+
+function montarBorradorFiscalPlanes(host, planes, cliente, abrirTexas) {
     if (!host) return;
     const ficha = document.createElement('details');
     ficha.className = 'card';
@@ -112101,6 +112253,7 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
                 <label>País <select name="pais" required><option value="">Elige un país</option><option value="MX">México</option><option value="US">Estados Unidos</option></select></label>
                 <label>Estado o región <input name="region" required minlength="2" maxlength="120"></label>
                 <label>Código postal <input name="postal" required minlength="2" maxlength="20"></label>
+                <button type="button" data-ver-texas hidden>Consultar este domicilio en Texas</button>
                 <button type="submit">Consultar borrador</button>
             </fieldset>
             <fieldset data-edicion hidden>
@@ -112120,6 +112273,13 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
     const {plan, flujo, pais, region, postal, criterio, fuente} = form.elements;
     const ambito = form.querySelector('[data-ambito]');
     const edicion = form.querySelector('[data-edicion]');
+    const verTexas = form.querySelector('[data-ver-texas]');
+    const ajustarTexas = () => { verTexas.hidden = !abrirTexas || pais.value !== 'US' || !/^(TX|TEXAS)$/i.test(region.value.trim()); };
+    for (const control of [pais, region]) {
+        control.addEventListener('input', ajustarTexas);
+        control.addEventListener('change', ajustarTexas);
+    }
+    verTexas.onclick = () => abrirTexas(postal.value.trim());
     const guardar = form.querySelector('[data-guardar]');
     const estado = form.querySelector('[role=status]');
     const mostrarAprobacion = montarAprobacionFiscalPlanes(ficha.querySelector('[data-aprobacion]'), cliente, bloqueo => {
@@ -112424,6 +112584,7 @@ const pagosPendientesBilling = (suscripcionesBilling || [])
         <h2>💳 Billing / Cobros</h2>
 
 <div id="massBorradorFiscalPlanes"></div>
+<div id="massLocalizadorFiscalTexas"></div>
 
 <div class="card">
   <h3>💱 Monedas para planes</h3>
@@ -112784,7 +112945,8 @@ ${s.estado === "suspendido" || s.estado === "vencido"
 </div>	
 
     `;
-    montarBorradorFiscalPlanes(cont.querySelector("#massBorradorFiscalPlanes"), MASS_PLANES_ORGANIZADOR_SUPER_ADMIN, supabaseClient);
+    const abrirTexas = montarLocalizadorFiscalTexas(cont.querySelector("#massLocalizadorFiscalTexas"));
+    montarBorradorFiscalPlanes(cont.querySelector("#massBorradorFiscalPlanes"), MASS_PLANES_ORGANIZADOR_SUPER_ADMIN, supabaseClient, abrirTexas);
 }	
 
 function filtrarSuscripcionesBilling(){
