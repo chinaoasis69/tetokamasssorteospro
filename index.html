@@ -67691,7 +67691,10 @@ async function (
                         Number(
                             importeVisibleF06 ||
                             0
-                        ).toLocaleString()
+                        ).toLocaleString("es-MX", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })
                     }
                     ${
                         massEscaparHTML(
