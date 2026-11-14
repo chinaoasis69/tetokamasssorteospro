@@ -112108,13 +112108,13 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
                 <label style="display:block">Criterio fiscal en revisión
                     <textarea name="criterio" maxlength="4000" rows="4" style="width:100%"></textarea>
                 </label>
-                <label style="display:block">Fuente o referencia (opcional)
+                <label style="display:block">Fuente o referencia (necesaria para aprobar)
                     <input name="fuente" maxlength="1000" style="width:100%">
                 </label>
                 <button type="button" data-guardar>Guardar borrador</button>
             </fieldset>
             <p role="status" aria-live="polite"></p>
-        </form>`;
+        </form><div data-aprobacion hidden></div>`;
     host.replaceChildren(ficha);
     const form = ficha.querySelector('form');
     const {plan, flujo, pais, region, postal, criterio, fuente} = form.elements;
@@ -112122,11 +112122,15 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
     const edicion = form.querySelector('[data-edicion]');
     const guardar = form.querySelector('[data-guardar]');
     const estado = form.querySelector('[role=status]');
+    const mostrarAprobacion = montarAprobacionFiscalPlanes(ficha.querySelector('[data-aprobacion]'), cliente, bloqueo => {
+        ambito.disabled = edicion.disabled = bloqueo;
+    });
+    edicion.addEventListener('input', () => mostrarAprobacion(null));
     plan.add(new Option('Elige un plan', ''));
     const modalidades = new Map();
     for (const p of planes) {
         if (!['por_dinamica', 'mensual'].includes(p.tipo_cobro)) continue;
-        plan.add(new Option(p.nombre_publico || p.codigo, p.id));
+        plan.add(new Option(p.nombre || p.nombre_publico || p.codigo, p.id));
         modalidades.set(p.id, p.tipo_cobro);
     }
     if (!modalidades.size) {
@@ -112137,6 +112141,7 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
     let leyendo = false;
     let datosConsultados;
     function reiniciar() {
+        mostrarAprobacion(null);
         version = null;
         edicion.hidden = true;
         criterio.value = '';
@@ -112168,6 +112173,7 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
             return;
         }
         if (escritura) Object.assign(datos, {p_version: version, p_criterio: criterio.value.trim(), p_fuente: fuente.value.trim()});
+        mostrarAprobacion(null);
         leyendo = true;
         ambito.disabled = edicion.disabled = true;
         estado.textContent = escritura ? 'Guardando…' : 'Consultando…';
@@ -112184,6 +112190,11 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
                 fuente.value = data.fuente;
             }
             edicion.hidden = false;
+            if (version > 0) {
+                const scope = JSON.parse(datosConsultados);
+                mostrarAprobacion({datos:scope, version, fuente:(data.fuente || fuente.value || '').trim(),
+                    plan:plan.selectedOptions[0].text, flujo:flujo.selectedOptions[0].text});
+            }
             estado.textContent = version === 0 ? 'Puedes preparar el primer borrador para este domicilio.'
                 : (escritura ? 'Borrador guardado' : 'Borrador recuperado') + ' · versión ' + version + '.';
         } catch (err) {
@@ -112207,6 +112218,121 @@ function montarBorradorFiscalPlanes(host, planes, cliente) {
     form.addEventListener('submit', event => { event.preventDefault(); consultarOGuardar(false); });
     guardar.addEventListener('click', () => consultarOGuardar(true));
 }
+
+function montarAprobacionFiscalPlanes(host, cliente, bloquearFicha) {
+    const panel = document.createElement('div');
+    panel.innerHTML = `
+        <fieldset><legend>Aprobación fiscal para el checkout</legend>
+          <p data-regla role="status" aria-live="polite"></p>
+          <form hidden><div style="display:grid;gap:10px">
+            <p data-alcance></p>
+            <label>Tratamiento fiscal <select name="tratamiento" required>
+              <option value="">Selecciona el tratamiento</option>
+              <option value="gravado">Gravado</option><option value="tasa_cero">Tasa cero</option>
+              <option value="exento">Exento</option><option value="no_sujeto">No sujeto</option></select></label>
+            <label data-base hidden>Porcentaje del precio que integra la base gravable
+              <input name="base" type="number" min="0.000001" max="100" step="0.000001"></label>
+            <div data-impuestos hidden><p>Componentes del impuesto</p><div data-lista></div>
+              <button type="button" data-agregar>Agregar componente</button></div>
+            <label>Vigente hasta (opcional, hora local) <input type="datetime-local" name="hasta"></label>
+            <label><input type="checkbox" name="confirmacion" required> Confirmo la fuente, el tratamiento y los porcentajes para aplicarlos al checkout de este domicilio.</label>
+            <button type="submit">Aprobar y vincular al checkout</button>
+          </div></form>
+        </fieldset>`;
+    host.replaceChildren(panel);
+    const form = panel.querySelector('form'), estado = panel.querySelector('[data-regla]');
+    const controles = panel.querySelector('fieldset'), lista = form.querySelector('[data-lista]');
+    const tratamiento = form.elements.tratamiento, base = form.elements.base;
+    const agregar = form.querySelector('[data-agregar]');
+    let contexto, enviando = false;
+    function agregarComponente() {
+        const fila = document.createElement('div');
+        fila.innerHTML = `<label>Código <input data-codigo required minlength="3" maxlength="120"></label>
+          <label>Tasa (%) <input data-tasa type="number" required min="0.000001" max="100" step="0.000001"></label>
+          <button type="button">Quitar</button>`;
+        fila.querySelector('button').onclick = () => { fila.remove(); agregar.disabled = false; form.elements.confirmacion.checked = false; };
+        lista.append(fila);
+        agregar.disabled = lista.children.length >= 32;
+        form.elements.confirmacion.checked = false;
+    }
+    agregar.onclick = agregarComponente;
+    function cambiarTratamiento() {
+        form.elements.confirmacion.checked = false;
+        const conBase = ['gravado','tasa_cero'].includes(tratamiento.value);
+        form.querySelector('[data-base]').hidden = !conBase;
+        base.required = conBase;
+        base.disabled = !conBase;
+        if (!conBase) base.value = '';
+        form.querySelector('[data-impuestos]').hidden = tratamiento.value !== 'gravado';
+        if (tratamiento.value !== 'gravado') { lista.replaceChildren(); agregar.disabled = false; }
+        else if (!lista.children.length) agregarComponente();
+    }
+    tratamiento.onchange = cambiarTratamiento;
+    form.oninput = e => { if (e.target !== form.elements.confirmacion) form.elements.confirmacion.checked = false; };
+    function pintar(ultima) {
+        const vigente = ultima.estado !== 'sin_aprobacion';
+        const porcentaje = valor => new Intl.NumberFormat('es-MX',{maximumFractionDigits:6}).format(Number(valor)*100) + '%';
+        const rotulos = {gravado:'Gravado',tasa_cero:'Tasa cero',exento:'Exento',no_sujeto:'No sujeto'};
+        const resumen = vigente ? 'Regla ' + ultima.estado + ' · borrador versión ' + ultima.version + '. '
+            + rotulos[ultima.tratamiento] + ', base ' + porcentaje(ultima.fraccion_base)
+            + ultima.componentes.map(c => ', ' + c.codigo + ' ' + porcentaje(c.tasa)).join('')
+            + (ultima.vigente_hasta ? '. Vence el ' + new Date(ultima.vigente_hasta).toLocaleString('es-MX') : '') + '.' : 'Sin regla aprobada para este ámbito.';
+        estado.textContent = resumen;
+        form.hidden = !contexto.fuente || (vigente && ultima.version === contexto.version);
+        if (!contexto.fuente) estado.textContent += ' Guarda la fuente del criterio antes de aprobar.';
+        else if (vigente && ultima.version !== contexto.version) estado.textContent += ' Aprobar esta revisión reemplazará la regla anterior para este ámbito.';
+    }
+    form.onsubmit = async e => {
+        e.preventDefault();
+        if (!contexto || enviando || form.hidden || !form.reportValidity()) return;
+        const ctx = contexto;
+        const conBase = !base.disabled;
+        const fraccion = n => Number((Number(n) / 100).toFixed(8));
+        const componentes = Array.from(lista.children, fila => ({
+            codigo:fila.querySelector('[data-codigo]').value.trim(), tasa:fraccion(fila.querySelector('[data-tasa]').value)
+        }));
+        if (tratamiento.value === 'gravado' && !componentes.length) {
+            estado.textContent = 'Agrega al menos un componente para el tratamiento gravado.'; return;
+        }
+        const hasta = form.elements.hasta.value;
+        if (hasta && !(Date.parse(hasta) > Date.now())) { estado.textContent = 'El vencimiento debe estar en el futuro.'; return; }
+        const payload = {...ctx.datos,p_version:ctx.version,p_tratamiento:tratamiento.value,
+          p_fraccion_base:conBase ? fraccion(base.value) : 0,p_componentes:componentes,
+          p_vigente_hasta:hasta ? new Date(hasta).toISOString() : null,p_confirmacion:form.elements.confirmacion.checked};
+        enviando = true; controles.disabled = true; bloquearFicha(true);
+        estado.textContent = 'Registrando aprobación…';
+        try {
+            const {data,error} = await cliente.rpc('aprobar_regla_fiscal_plan_r3', payload);
+            if (error) throw error;
+            if (!data?.estado || data.version !== ctx.version) throw new Error();
+            if (contexto === ctx && host.isConnected) pintar(data);
+        } catch (err) {
+            if (contexto === ctx && host.isConnected) {
+                estado.textContent = ['22023','40001','42501'].includes(err?.code) ? err.message
+                    : 'No se confirmó la aprobación. Consulta el borrador para recuperar la decisión.';
+                form.elements.confirmacion.checked = false;
+            }
+        } finally { enviando = false; controles.disabled = false; bloquearFicha(false); }
+    };
+    return async function mostrar(ctx) {
+        contexto = ctx; host.hidden = !ctx;
+        form.hidden = true; form.reset(); lista.replaceChildren(); cambiarTratamiento();
+        if (!ctx) return;
+        const d = ctx.datos;
+        form.querySelector('[data-alcance]').textContent = ctx.plan + ' · ' + ctx.flujo + ' · ' + d.p_pais
+            + ' · ' + d.p_region + ' · ' + d.p_codigo_postal + ' · borrador versión ' + ctx.version;
+        estado.textContent = 'Consultando la aprobación…';
+        try {
+            const {data,error} = await cliente.rpc('consultar_aprobacion_fiscal_plan_r3', d);
+            if (contexto !== ctx || !host.isConnected) return;
+            if (error || !data || !['sin_aprobacion','vigente','revocada','vencida'].includes(data.estado)) throw new Error();
+            pintar(data);
+        } catch {
+            if (contexto === ctx && host.isConnected) estado.textContent = 'No se pudo consultar la aprobación. Verifica la instalación y vuelve a consultar el borrador.';
+        }
+    };
+}
+
 
 async function mostrarBillingSuperAdmin(){
 
