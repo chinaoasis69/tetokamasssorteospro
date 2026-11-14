@@ -112086,6 +112086,128 @@ async function (
 
 };
 
+function montarBorradorFiscalPlanes(host, planes, cliente) {
+    if (!host) return;
+    const ficha = document.createElement('details');
+    ficha.className = 'card';
+    ficha.innerHTML = `
+        <summary style="cursor:pointer">Borrador fiscal de planes</summary>
+        <p>Prepara el criterio fiscal por plan y domicilio. Guardar un borrador no aplica impuestos al checkout.</p>
+        <form style="display:grid;gap:10px">
+            <fieldset data-ambito style="display:grid;gap:10px">
+                <legend>Plan y domicilio de facturación</legend>
+                <label>Plan <select name="plan" required></select></label>
+                <label>Modalidad de compra <select name="flujo" required></select></label>
+                <label>País <select name="pais" required><option value="">Elige un país</option><option value="MX">México</option><option value="US">Estados Unidos</option></select></label>
+                <label>Estado o región <input name="region" required minlength="2" maxlength="120"></label>
+                <label>Código postal <input name="postal" required minlength="2" maxlength="20"></label>
+                <button type="submit">Consultar borrador</button>
+            </fieldset>
+            <fieldset data-edicion hidden>
+                <legend>Criterio pendiente de aprobación</legend>
+                <label style="display:block">Criterio fiscal en revisión
+                    <textarea name="criterio" maxlength="4000" rows="4" style="width:100%"></textarea>
+                </label>
+                <label style="display:block">Fuente o referencia (opcional)
+                    <input name="fuente" maxlength="1000" style="width:100%">
+                </label>
+                <button type="button" data-guardar>Guardar borrador</button>
+            </fieldset>
+            <p role="status" aria-live="polite"></p>
+        </form>`;
+    host.replaceChildren(ficha);
+    const form = ficha.querySelector('form');
+    const {plan, flujo, pais, region, postal, criterio, fuente} = form.elements;
+    const ambito = form.querySelector('[data-ambito]');
+    const edicion = form.querySelector('[data-edicion]');
+    const guardar = form.querySelector('[data-guardar]');
+    const estado = form.querySelector('[role=status]');
+    plan.add(new Option('Elige un plan', ''));
+    const modalidades = new Map();
+    for (const p of planes) {
+        if (!['por_dinamica', 'mensual'].includes(p.tipo_cobro)) continue;
+        plan.add(new Option(p.nombre_publico || p.codigo, p.id));
+        modalidades.set(p.id, p.tipo_cobro);
+    }
+    if (!modalidades.size) {
+        ambito.disabled = true;
+        estado.textContent = 'No hay planes disponibles. Vuelve a abrir Billing / Cobros para actualizar.';
+    }
+    let version = null;
+    let leyendo = false;
+    let datosConsultados;
+    function reiniciar() {
+        version = null;
+        edicion.hidden = true;
+        criterio.value = '';
+        fuente.value = '';
+        estado.textContent = '';
+    }
+    plan.addEventListener('change', () => {
+        flujo.replaceChildren();
+        if (modalidades.get(plan.value) === 'mensual') flujo.add(new Option('Mensual', 'mensual'));
+        if (modalidades.get(plan.value) === 'por_dinamica') {
+            flujo.add(new Option('Contratación inicial', 'inicial'));
+            flujo.add(new Option('Ampliación de un mes', 'ampliacion'));
+        }
+    });
+    ambito.addEventListener('input', reiniciar);
+    ambito.addEventListener('change', reiniciar);
+    async function consultarOGuardar(escritura) {
+        if (leyendo || (escritura && version === null)) return;
+        const datos = {
+            p_plan_id: plan.value, p_flujo: flujo.value, p_pais: pais.value,
+            p_region: region.value.trim(), p_codigo_postal: postal.value.trim()
+        };
+        if (!form.reportValidity() || datos.p_region.length < 2 || datos.p_codigo_postal.length < 2) {
+            estado.textContent = 'Completa el plan, la modalidad y el domicilio.';
+            return;
+        }
+        if (escritura && (!criterio.value.trim() || JSON.stringify(datos) !== datosConsultados)) {
+            estado.textContent = 'Consulta el domicilio seleccionado y escribe el criterio antes de guardar.';
+            return;
+        }
+        if (escritura) Object.assign(datos, {p_version: version, p_criterio: criterio.value.trim(), p_fuente: fuente.value.trim()});
+        leyendo = true;
+        ambito.disabled = edicion.disabled = true;
+        estado.textContent = escritura ? 'Guardando…' : 'Consultando…';
+        try {
+            const funcion = escritura ? 'guardar_borrador_fiscal_plan_r3' : 'consultar_borrador_fiscal_plan_r3';
+            const {data, error} = await cliente.rpc(funcion, datos);
+            if (error) throw error;
+            if (!Number.isInteger(data?.version) || data.version < (escritura ? 1 : 0)) throw new Error();
+            if (!host.isConnected) return;
+            version = data.version;
+            if (!escritura) {
+                datosConsultados = JSON.stringify(datos);
+                criterio.value = data.criterio;
+                fuente.value = data.fuente;
+            }
+            edicion.hidden = false;
+            estado.textContent = version === 0 ? 'Puedes preparar el primer borrador para este domicilio.'
+                : (escritura ? 'Borrador guardado' : 'Borrador recuperado') + ' · versión ' + version + '.';
+        } catch (err) {
+            if (!host.isConnected) return;
+            if (!escritura) { version = null; edicion.hidden = true; }
+            if (err?.code === '40001') {
+                version = null;
+                estado.textContent = 'Otro cambio se guardó primero. Copia tus notas y vuelve a consultar el borrador.';
+            } else if (err?.code === '42501') {
+                reiniciar();
+                estado.textContent = 'Se requiere la sesión del Súper Admin.';
+            } else {
+                estado.textContent = escritura ? 'No se confirmó el guardado. Puedes reintentar con los mismos datos.'
+                    : 'No se pudo consultar el borrador. Verifica que el bloque de borradores esté instalado y vuelve a intentar.';
+            }
+        } finally {
+            leyendo = false;
+            ambito.disabled = edicion.disabled = false;
+        }
+    }
+    form.addEventListener('submit', event => { event.preventDefault(); consultarOGuardar(false); });
+    guardar.addEventListener('click', () => consultarOGuardar(true));
+}
+
 async function mostrarBillingSuperAdmin(){
 
 	if(!(await verificarAccesoSuperAdmin())) return;
@@ -112174,6 +112296,8 @@ const pagosPendientesBilling = (suscripcionesBilling || [])
 
     cont.innerHTML = `
         <h2>💳 Billing / Cobros</h2>
+
+<div id="massBorradorFiscalPlanes"></div>
 
 <div class="card">
   <h3>💱 Monedas para planes</h3>
@@ -112534,6 +112658,7 @@ ${s.estado === "suspendido" || s.estado === "vencido"
 </div>	
 
     `;
+    montarBorradorFiscalPlanes(cont.querySelector("#massBorradorFiscalPlanes"), MASS_PLANES_ORGANIZADOR_SUPER_ADMIN, supabaseClient);
 }	
 
 function filtrarSuscripcionesBilling(){
