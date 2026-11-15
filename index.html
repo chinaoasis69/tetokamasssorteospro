@@ -1414,7 +1414,7 @@ Selecciona una rifa
   <div id="barraPorcentaje" style="width:0%; height:18px; background:#39ff14;"></div>
 </div>  
 	  
-  <button id="btnEligePorMiMass" class="btn-main" onclick="abrirSelectorSuerte()">🎟️ MASS Elige por Mí</button>
+  <button id="btnEligePorMiMass" class="btn-main" aria-expanded="false" aria-controls="selectorSuerte" onclick="abrirSelectorSuerte()">🎟️ MASS Elige por Mí</button>
   <button class="btn-dark" onclick="abrirRecargaWalletDesdeRifa();">💰 Recarga tu Wallet MASS</button>
   <button class="btn-dark" onclick="mostrarSoloDisponibles()">🟢 Solo disponibles</button>
   <button class="btn-dark" onclick="mostrarTodos()">👁️ Ver todos</button>
@@ -1490,15 +1490,27 @@ Selecciona una rifa
     </div>
 
     <div style="color:#ccc;font-size:14px;margin-bottom:14px;">
-        ¿Cuántos boletos quieres seleccionar al azar entre los disponibles?
+        ¿Cuántos boletos quieres agregar al azar a tu selección?
     </div>
 
     <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
-        <button onclick="numeroSuerte(1)">🎟️ 1 número</button>
-        <button onclick="numeroSuerte(3)">🎟️ 3 números</button>
-        <button onclick="numeroSuerte(5)">🎟️ 5 números</button>
-        <button onclick="numeroSuerte(10)">🎟️ 10 números</button>
+        <button type="button" data-cantidad-azar="1" onclick="numeroSuerte(1)">1 boleto</button>
+        <button type="button" data-cantidad-azar="3" onclick="numeroSuerte(3)">3 boletos</button>
+        <button type="button" data-cantidad-azar="5" onclick="numeroSuerte(5)">5 boletos</button>
+        <button type="button" data-cantidad-azar="10" onclick="numeroSuerte(10)">10 boletos</button>
+        <button type="button" data-cantidad-azar="25" onclick="numeroSuerte(25)">25 boletos</button>
+        <button type="button" data-cantidad-azar="50" onclick="numeroSuerte(50)">50 boletos</button>
+        <button type="button" data-cantidad-azar="100" onclick="numeroSuerte(100)">100 boletos</button>
+        <button type="button" data-cantidad-azar="200" onclick="numeroSuerte(200)">200 boletos</button>
     </div>
+    <form id="formCantidadAzarMass" style="display:grid;gap:8px;margin-top:16px;" onsubmit="event.preventDefault(); numeroSuerte(this.elements.cantidad.valueAsNumber);">
+      <label for="cantidadAzarMass">Otra cantidad de boletos</label>
+      <input id="cantidadAzarMass" name="cantidad" type="number" min="1" step="1" inputmode="numeric" required placeholder="Ej. 80" oninput="mostrarImporteAzarMass()">
+      <output id="importeAzarMass" for="cantidadAzarMass"></output>
+      <button type="submit">Agregar al azar</button>
+    </form>
+    <div id="estadoAzarMass" role="status" aria-live="polite"></div>
+    <button type="button" data-cancelar-azar hidden onclick="busquedaAzarMass?.abort()">Cancelar búsqueda</button>
 
 </div>
 	  
@@ -1909,14 +1921,14 @@ Selecciona una rifa
 
   <div class="card">
     <h2>🎟 Centro de Compra</h2>
-    <p id="seleccionTexto" style="
+    <div id="seleccionTexto" style="
 font-size:15px;
 color:#ddd;
 margin-top:-8px;
 margin-bottom:18px;
 ">
 Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
-</p>
+</div>
 
 	<div id="resumenCompra" class="resumen-compra">
   <div><strong>🎟 Boletos:</strong> <span id="cantidadBoletos">0</span></div>
@@ -1937,14 +1949,14 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 <button
   id="btnReservarBoletos"
   class="btn-dark"
-  onclick="apartarBoletosInterno()"
+  onclick="confirmarSeleccionBoletosMass(apartarBoletosInterno)"
 >
   🟡 Reservar boletos
 </button>	  	  
 
 <button
   id="btnComprarMass"
-  onclick="comprarConSaldo()"
+  onclick="confirmarSeleccionBoletosMass(comprarConSaldo)"
   style="
   background:#00ff88;
   color:black;
@@ -2694,11 +2706,12 @@ Cargando historial...
       <h3>Boletos, reservas y compras</h3>
       <details>
         <summary>¿Cómo elijo mis números o pido que se elijan al azar?</summary>
-        <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y elige 1, 3, 5 o 10 boletos. Verás los números seleccionados al azar en el <strong>Centro de Compra</strong>. Ahí decides si los reservas o los compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
+        <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y toca una de las cantidades rápidas. Para elegir otra, escribe cuántos boletos quieres en <strong>Otra cantidad de boletos</strong>, revisa el importe y pulsa <strong>Agregar al azar</strong>. Por ejemplo, si cada boleto cuesta 1 MASS MXN, escribe 200 para agregar 200 boletos por 200 MASS MXN. Los nuevos boletos se suman a los que ya elegiste. En el <strong>Centro de Compra</strong> puedes revisar tus números, quitar boletos y decidir si reservas o compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
         <figure id="ejemploEligePorMiMass" hidden>
           <figcaption>Ejemplo de las opciones que verás en la rifa</figcaption>
           <strong></strong>
-          <ul aria-label="Cantidades de boletos"></ul>
+          <ul aria-label="Cantidades rápidas de boletos"></ul>
+          <p>También puedes escribir tu propia cantidad de boletos.</p>
         </figure>
       </details>
       <details>
@@ -86026,6 +86039,18 @@ async function abrirRifa(rifaId){
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
 
+    busquedaAzarMass?.abort();
+    if (RIFA_ID !== rifaId) {
+        if (boletosSeleccionados.some(boleto => String(boleto.rifa_id) !== String(rifaId))) {
+            boletosSeleccionados = [];
+            boletoSeleccionado = null;
+            mostrarSeleccionCompraMass(1);
+            actualizarResumenCompra();
+        }
+        document.getElementById("selectorSuerte").style.display = "none";
+        document.getElementById("btnEligePorMiMass").setAttribute("aria-expanded", "false");
+        document.getElementById("cantidadAzarMass").value = "";
+    }
     RIFA_ID = rifaId;
 
     ocultarBarraSocialRifa();
@@ -87879,6 +87904,43 @@ async function irPaginaBoletos() {
 	
 // 🔥 SELECCIONAR
 
+function mostrarSeleccionCompraMass(paginaPedida) {
+  const lista = document.getElementById("seleccionTexto");
+  if (!lista) return;
+  const cantidad = boletosSeleccionados.length;
+  const porPagina = 40;
+  const paginas = Math.ceil(cantidad / porPagina);
+  const pagina = Math.max(1, Math.min(paginas, paginaPedida || Number(lista.dataset.pagina) || 1));
+  lista.dataset.pagina = String(pagina);
+  lista.textContent = cantidad ? "Boletos seleccionados:" : "Selecciona un número disponible";
+  if (!cantidad) return;
+  const inicio = (pagina - 1) * porPagina;
+  const grupo = document.createElement("div");
+  for (const boleto of boletosSeleccionados.slice(inicio, inicio + porPagina)) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.textContent = boleto.numero + " ❌";
+    boton.setAttribute("aria-label", "Quitar boleto " + boleto.numero);
+    boton.style.margin = "4px";
+    boton.onclick = () => quitarBoletoSeleccionado(boleto.id);
+    grupo.append(boton);
+  }
+  lista.append(grupo);
+  if (paginas > 1) {
+    const nav = document.createElement("div");
+    const botonPagina = (texto, destino) => {
+      const boton = document.createElement("button");
+      boton.type = "button";
+      boton.textContent = texto;
+      boton.disabled = destino < 1 || destino > paginas;
+      boton.onclick = () => mostrarSeleccionCompraMass(destino);
+      return boton;
+    };
+    nav.append(botonPagina("Anterior", pagina - 1), " " + pagina + " de " + paginas + " ", botonPagina("Siguiente", pagina + 1));
+    lista.append(nav);
+  }
+}
+
   function seleccionarBoleto(b){
 
   const estadoBoleto =
@@ -87941,6 +88003,7 @@ async function irPaginaBoletos() {
     return;
   }
 
+  busquedaAzarMass?.abort();
   const existe = boletosSeleccionados.find(x => x.id === b.id);
 
   if(existe){
@@ -87951,16 +88014,8 @@ async function irPaginaBoletos() {
 
   boletoSeleccionado = boletosSeleccionados[0] || null;
 
-  document.getElementById("seleccionTexto").innerHTML =
-  boletosSeleccionados.length
-    ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
-        <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
-          ${x.numero} ❌
-        </button>
-      `).join("")
-    : "Selecciona un número disponible";
-
-	actualizarResumenCompra();
+  mostrarSeleccionCompraMass();
+  actualizarResumenCompra();
 
   document.getElementById("seleccionTexto").scrollIntoView({
     behavior: "smooth",
@@ -87969,19 +88024,12 @@ async function irPaginaBoletos() {
 }
 
 function quitarBoletoSeleccionado(id){
+  busquedaAzarMass?.abort();
   boletosSeleccionados = boletosSeleccionados.filter(x => x.id !== id);
   boletoSeleccionado = boletosSeleccionados[0] || null;
 
-  document.getElementById("seleccionTexto").innerHTML =
-    boletosSeleccionados.length
-      ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
-          <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
-            ${x.numero} ❌
-          </button>
-        `).join("")
-      : "Selecciona un número disponible";
-	
-	actualizarResumenCompra();
+  mostrarSeleccionCompraMass();
+  actualizarResumenCompra();
 
   cargarBoletos();
 }
@@ -88838,800 +88886,196 @@ function mostrarTodos(){
     bajarAListaBoletos();
 }
 
-function abrirSelectorSuerte(){
+let busquedaAzarMass = null;
+let confirmandoBoletosMass = false;
 
-    const selector = document.getElementById("selectorSuerte");
-
-    if(!selector) return;
-
-    selector.style.display =
-        selector.style.display === "none" ? "block" : "none";
-
-	if (selector.style.display === "block") {
-    setTimeout(() => {
-        selector.scrollIntoView({
-            behavior: "smooth",
-            block: "start"
-        });
-    }, 150);
+async function confirmarSeleccionBoletosMass(operacion) {
+  if (confirmandoBoletosMass) return;
+  confirmandoBoletosMass = true;
+  busquedaAzarMass?.abort();
+  try {
+    await operacion();
+  } finally {
+    confirmandoBoletosMass = false;
   }
-}	
+}
+
+function mostrarImporteAzarMass() {
+  const campo = document.getElementById("cantidadAzarMass");
+  const importe = document.getElementById("importeAzarMass");
+  const cantidad = campo.valueAsNumber;
+  const precio = Number(window.precioBoletoActual);
+  const unidad = window.unidadMassActual;
+  importe.textContent = campo.validity.valid && Number.isSafeInteger(cantidad) && cantidad > 0 && precio > 0 && unidad
+    ? "Importe por agregar: " + (cantidad * precio).toLocaleString("es-MX", { maximumFractionDigits: 2 }) + " MASS " + unidad
+    : "";
+}
+
+function abrirSelectorSuerte() {
+  const selector = document.getElementById("selectorSuerte");
+  if (!selector) return;
+  const abrir = selector.style.display === "none";
+  selector.style.display = abrir ? "block" : "none";
+  document.getElementById("btnEligePorMiMass").setAttribute("aria-expanded", String(abrir));
+  if (!abrir) {
+    busquedaAzarMass?.abort();
+    return;
+  }
+  const campo = document.getElementById("cantidadAzarMass");
+  const configuracion = obtenerConfiguracionPaginacionRifa();
+  if (configuracion) campo.max = String(configuracion.limiteVisible);
+  else campo.removeAttribute("max");
+  document.getElementById("estadoAzarMass").textContent = "";
+  mostrarImporteAzarMass();
+  selector.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function buscarBasesAlAzarMass(rifaId, config, cantidad, excluidas, signal) {
+  const { modalidad, limiteVisible, digitos, ultimoNumeroBaseTexto } = config;
+  const limiteConsulta = 150;
+  const porGrupo = Math.max(1, Math.floor(limiteConsulta / modalidad));
+  const textoNumero = n => String(n).padStart(digitos, "0");
+  const disponibles = (columnas, opciones) => supabaseClient.from("boletos").select(columnas, opciones)
+    .eq("rifa_id", rifaId).eq("estado", "disponible");
+  async function leer(consulta) {
+    if (signal.aborted || RIFA_ID !== rifaId) throw new Error("La selección cambió.");
+    const resultado = await consulta.abortSignal(signal);
+    if (resultado.error) {
+      console.error("Error consultando boletos disponibles:", resultado.error);
+      throw new Error("No se pudo consultar la disponibilidad. Vuelve a intentar.");
+    }
+    return resultado;
+  }
+
+  const { count } = await leer(disponibles("id", { count: "exact", head: true }).lte("numero", ultimoNumeroBaseTexto));
+  if (!Number.isSafeInteger(count)) throw new Error("No se pudo consultar la disponibilidad.");
+  if (count < cantidad) throw new Error("Solo hay " + count + " boletos base disponibles en esta rifa.");
+
+  // Las consultas acotadas caben en la URL y comprueban también los complementarios.
+  async function paquetesDisponibles(bases) {
+    const numeros = bases.flatMap(base => Array.from({ length: modalidad }, (_, i) => textoNumero(base + i * limiteVisible)));
+    const { data } = await leer(disponibles("id, rifa_id, numero, estado").in("numero", numeros));
+    const porNumero = new Map(data.map(boleto => [Number(boleto.numero), boleto]));
+    return bases.filter(base => {
+      for (let i = 0; i < modalidad; i++) if (!porNumero.has(base + i * limiteVisible)) return false;
+      return true;
+    }).map(base => porNumero.get(base));
+  }
+
+  const seleccion = [];
+  const conocidas = new Set(excluidas);
+  const densidad = count / limiteVisible;
+  // En rifas grandes con stock, probar bases de toda la rifa en orden aleatorio, sin repeticiones.
+  if (densidad >= 0.125 && cantidad * 4 <= count) {
+    const cambios = new Map();
+    let restantes = limiteVisible;
+    const intentos = Math.min(limiteVisible, Math.ceil(2 * (cantidad + excluidas.size * cantidad / limiteVisible) / densidad) + 12);
+    while (seleccion.length < cantidad && limiteVisible - restantes < intentos) {
+      const cuantos = Math.min(porGrupo, restantes, Math.ceil((cantidad - seleccion.length) / densidad));
+      const bases = [];
+      for (let i = 0; i < cuantos; i++) {
+        const posicion = Math.floor(Math.random() * restantes);
+        const base = cambios.get(posicion) ?? posicion;
+        restantes--;
+        if (posicion !== restantes) cambios.set(posicion, cambios.get(restantes) ?? restantes);
+        cambios.delete(restantes);
+        if (!conocidas.has(base)) bases.push(base);
+      }
+      if (!bases.length) continue;
+      for (const boleto of await paquetesDisponibles(bases)) {
+        seleccion.push(boleto);
+        conocidas.add(Number(boleto.numero));
+        if (seleccion.length === cantidad) return seleccion;
+      }
+    }
+  }
+
+  // Con pocos disponibles o una compra grande, muestrear entre los paquetes completos
+  // por páginas. El cursor por número evita saltos si se vende un boleto de una página anterior.
+  const faltan = cantidad - seleccion.length;
+  const muestra = [];
+  let vistos = 0;
+  let cursor = null;
+  while (true) {
+    let consulta = disponibles("id, rifa_id, numero, estado").lte("numero", ultimoNumeroBaseTexto);
+    if (cursor !== null) consulta = consulta.gt("numero", cursor);
+    const { data: pagina } = await leer(consulta.order("numero", { ascending: true }).limit(500));
+    if (!pagina.length) break;
+    cursor = pagina[pagina.length - 1].numero;
+    const nuevas = pagina.filter(boleto => !conocidas.has(Number(boleto.numero)));
+    for (let inicio = 0; inicio < nuevas.length; inicio += porGrupo) {
+      const grupo = nuevas.slice(inicio, inicio + porGrupo);
+      const validos = modalidad === 1 ? grupo : await paquetesDisponibles(grupo.map(boleto => Number(boleto.numero)));
+      for (const boleto of validos) {
+        vistos++;
+        if (muestra.length < faltan) muestra.push(boleto);
+        else {
+          const indice = Math.floor(Math.random() * vistos);
+          if (indice < faltan) muestra[indice] = boleto;
+        }
+      }
+    }
+  }
+  if (muestra.length < faltan) {
+    throw new Error("Solo se encontraron " + (seleccion.length + vistos) + " boletos completos disponibles para agregar. Prueba con una cantidad menor.");
+  }
+  return seleccion.concat(muestra);
+}
 
 async function numeroSuerte(cantidad = 1) {
-
-  const cantidadSolicitada =
-    Math.max(
-      1,
-      Math.floor(
-        Number(cantidad) || 1
-      )
-    );
-
-
-  const selector =
-    document.getElementById(
-      "selectorSuerte"
-    );
-
-
-  const botonesSelector =
-    selector
-      ? selector.querySelectorAll(
-          "button"
-        )
-      : [];
-
-
-  botonesSelector.forEach(
-    boton => {
-      boton.disabled = true;
-    }
-  );
-
-
-  try {
-
-    const rifaActual =
-      obtenerRifaActualParaBoletos();
-
-
-    if (!rifaActual || !RIFA_ID) {
-
-      alert(
-        "❌ No se encontró la rifa seleccionada."
-      );
-
-      return;
-    }
-
-
-    const modalidadActual =
-      Math.max(
-        1,
-        Number(
-          rifaActual.modalidad || 1
-        )
-      );
-
-
-    const totalNumerosRifa =
-      Number(
-        rifaActual.total_numeros || 0
-      );
-
-
-    if (
-      !Number.isInteger(
-        totalNumerosRifa
-      ) ||
-      totalNumerosRifa <= 0 ||
-      totalNumerosRifa %
-        modalidadActual !== 0
-    ) {
-
-      alert(
-        "❌ La configuración de esta rifa no es válida."
-      );
-
-      return;
-    }
-
-
-    const saltoNumeros =
-      totalNumerosRifa /
-      modalidadActual;
-
-
-    const digitosRifa =
-      Math.max(
-        2,
-        String(
-          totalNumerosRifa - 1
-        ).length
-      );
-
-
-    const ultimoNumeroBaseTexto =
-      String(
-        saltoNumeros - 1
-      ).padStart(
-        digitosRifa,
-        "0"
-      );
-
-
-    /*
-      Contar solamente números base
-      disponibles, sin descargar la rifa.
-    */
-
-    const {
-      count: totalBasesDisponibles,
-      error: errorConteo
-    } =
-      await supabaseClient
-        .from("boletos")
-        .select(
-          "id",
-          {
-            count: "exact",
-            head: true
-          }
-        )
-        .eq(
-          "rifa_id",
-          RIFA_ID
-        )
-        .eq(
-          "estado",
-          "disponible"
-        )
-        .lte(
-          "numero",
-          ultimoNumeroBaseTexto
-        );
-
-
-    if (errorConteo) {
-
-      console.error(
-        "ERROR CONTANDO BASES DISPONIBLES:",
-        errorConteo
-      );
-
-      alert(
-        "❌ No fue posible buscar números disponibles."
-      );
-
-      return;
-    }
-
-
-    const cantidadBasesDisponibles =
-      Number(
-        totalBasesDisponibles || 0
-      );
-
-
-    if (
-      cantidadBasesDisponibles <
-      cantidadSolicitada
-    ) {
-
-      alert(
-        `❌ Solo quedan ${cantidadBasesDisponibles} números base disponibles.`
-      );
-
-      return;
-    }
-
-
-    const basesElegidas =
-      [];
-
-
-    const idsBasesElegidas =
-      new Set();
-
-
-    const basesRevisadas =
-      new Set();
-
-
-    /*
-      Recibe números base candidatos
-      y consulta solamente sus paquetes.
-    */
-
-    async function validarBasesCandidatas(
-      candidatas
-    ) {
-
-      const candidatasNuevas =
-        (candidatas || []).filter(
-          boleto => {
-
-            const clave =
-              String(
-                boleto.numero
-              );
-
-            if (
-              basesRevisadas.has(
-                clave
-              )
-            ) {
-              return false;
-            }
-
-
-            basesRevisadas.add(
-              clave
-            );
-
-            return true;
-          }
-        );
-
-
-      if (
-        candidatasNuevas.length === 0
-      ) {
-        return [];
-      }
-
-
-      const numerosPaqueteTexto =
-        [
-          ...new Set(
-            candidatasNuevas.flatMap(
-              boletoBase => {
-
-                const numeroBase =
-                  Number(
-                    boletoBase.numero
-                  );
-
-
-                return Array.from(
-                  {
-                    length:
-                      modalidadActual
-                  },
-
-                  (_, indice) =>
-                    String(
-                      numeroBase +
-                      (
-                        indice *
-                        saltoNumeros
-                      )
-                    ).padStart(
-                      digitosRifa,
-                      "0"
-                    )
-                );
-              }
-            )
-          )
-        ];
-
-
-      const {
-        data: registrosPaquetes,
-        error: errorPaquetes
-      } =
-        await supabaseClient
-          .from("boletos")
-          .select(
-            "id, rifa_id, numero, estado"
-          )
-          .eq(
-            "rifa_id",
-            RIFA_ID
-          )
-          .in(
-            "numero",
-            numerosPaqueteTexto
-          );
-
-
-      if (errorPaquetes) {
-
-        throw errorPaquetes;
-
-      }
-
-
-      const paquetesPorBase =
-        new Map();
-
-
-      (
-        registrosPaquetes || []
-      ).forEach(
-        boleto => {
-
-          const numero =
-            Number(
-              boleto.numero
-            );
-
-
-          const numeroBase =
-            numero %
-            saltoNumeros;
-
-
-          if (
-            !paquetesPorBase.has(
-              numeroBase
-            )
-          ) {
-
-            paquetesPorBase.set(
-              numeroBase,
-              []
-            );
-
-          }
-
-
-          paquetesPorBase
-            .get(
-              numeroBase
-            )
-            .push(
-              boleto
-            );
-        }
-      );
-
-
-      return candidatasNuevas.filter(
-        boletoBase => {
-
-          const numeroBase =
-            Number(
-              boletoBase.numero
-            );
-
-
-          const paquete =
-            paquetesPorBase.get(
-              numeroBase
-            ) || [];
-
-
-          return (
-            paquete.length ===
-              modalidadActual &&
-
-            paquete.every(
-              boleto =>
-                String(
-                  boleto.estado ||
-                  ""
-                )
-                  .trim()
-                  .toLowerCase() ===
-                "disponible"
-            )
-          );
-        }
-      );
-
-    }
-
-
-    /*
-      Buscar ventanas pequeñas en posiciones
-      aleatorias de los números disponibles.
-    */
-
-    const tamanoVentana = 1;
-
-    const MAX_INTENTOS_ALEATORIOS =
-  Math.max(
-    50,
-    cantidadSolicitada * 20
-  );
-
-   for (
-      let intento = 0;
-      intento <
-        MAX_INTENTOS_ALEATORIOS &&
-      basesElegidas.length <
-        cantidadSolicitada;
-      intento++
-    ) {
-
-      const desplazamientoMaximo =
-        Math.max(
-          0,
-          cantidadBasesDisponibles -
-          tamanoVentana
-        );
-
-
-      const desplazamiento =
-        desplazamientoMaximo > 0
-
-          ? Math.floor(
-              Math.random() *
-              (
-                desplazamientoMaximo +
-                1
-              )
-            )
-
-          : 0;
-
-
-      const {
-        data: basesCandidatas,
-        error: errorBases
-      } =
-        await supabaseClient
-          .from("boletos")
-          .select(
-            "id, rifa_id, numero, estado"
-          )
-          .eq(
-            "rifa_id",
-            RIFA_ID
-          )
-          .eq(
-            "estado",
-            "disponible"
-          )
-          .lte(
-            "numero",
-            ultimoNumeroBaseTexto
-          )
-          .order(
-            "numero",
-            {
-              ascending: true
-            }
-          )
-          .range(
-            desplazamiento,
-            desplazamiento +
-              tamanoVentana -
-              1
-          );
-
-
-      if (errorBases) {
-
-        throw errorBases;
-
-      }
-
-
-      /*
-        Mezcla Fisher-Yates para evitar
-        ordenar todo el arreglo con Math.random.
-      */
-
-      const mezcla =
-        [
-          ...(
-            basesCandidatas || []
-          )
-        ];
-
-
-      for (
-        let indice =
-          mezcla.length - 1;
-
-        indice > 0;
-
-        indice--
-      ) {
-
-        const indiceAleatorio =
-          Math.floor(
-            Math.random() *
-            (
-              indice + 1
-            )
-          );
-
-
-        [
-          mezcla[indice],
-          mezcla[indiceAleatorio]
-        ] =
-        [
-          mezcla[indiceAleatorio],
-          mezcla[indice]
-        ];
-
-      }
-
-
-      const basesValidas =
-        await validarBasesCandidatas(
-          mezcla
-        );
-
-
-      for (
-        const boletoBase of
-        basesValidas
-      ) {
-
-        if (
-          basesElegidas.length >=
-          cantidadSolicitada
-        ) {
-          break;
-        }
-
-
-        if (
-          idsBasesElegidas.has(
-            boletoBase.id
-          )
-        ) {
-          continue;
-        }
-
-
-        idsBasesElegidas.add(
-          boletoBase.id
-        );
-
-
-        basesElegidas.push(
-          boletoBase
-        );
-
-      }
-
-    }
-
-
-    /*
-      Respaldo para rifas pequeñas o con pocos
-      paquetes completos disponibles.
-    */
-
-    let desplazamientoRespaldo =
-      0;
-
-
-    const LIMITE_REVISION_RESPALDO =
-      Math.min(
-        cantidadBasesDisponibles,
-        500
-      );
-
-
-    while (
-      basesElegidas.length <
-        cantidadSolicitada &&
-
-      desplazamientoRespaldo <
-        LIMITE_REVISION_RESPALDO
-    ) {
-
-      const {
-        data: basesRespaldo,
-        error: errorRespaldo
-      } =
-        await supabaseClient
-          .from("boletos")
-          .select(
-            "id, rifa_id, numero, estado"
-          )
-          .eq(
-            "rifa_id",
-            RIFA_ID
-          )
-          .eq(
-            "estado",
-            "disponible"
-          )
-          .lte(
-            "numero",
-            ultimoNumeroBaseTexto
-          )
-          .order(
-            "numero",
-            {
-              ascending: true
-            }
-          )
-          .range(
-            desplazamientoRespaldo,
-            desplazamientoRespaldo +
-              49
-          );
-
-
-      if (errorRespaldo) {
-
-        throw errorRespaldo;
-
-      }
-
-
-      desplazamientoRespaldo +=
-        50;
-
-
-      const basesValidas =
-        await validarBasesCandidatas(
-          basesRespaldo || []
-        );
-
-
-      for (
-        const boletoBase of
-        basesValidas
-      ) {
-
-        if (
-          basesElegidas.length >=
-          cantidadSolicitada
-        ) {
-          break;
-        }
-
-
-        if (
-          idsBasesElegidas.has(
-            boletoBase.id
-          )
-        ) {
-          continue;
-        }
-
-
-        idsBasesElegidas.add(
-          boletoBase.id
-        );
-
-
-        basesElegidas.push(
-          boletoBase
-        );
-
-      }
-
-    }
-
-
-    if (
-      basesElegidas.length <
-      cantidadSolicitada
-    ) {
-
-      alert(
-        "❌ No encontramos suficientes paquetes completos disponibles.\n\n" +
-        `Solicitados: ${cantidadSolicitada}\n` +
-        `Encontrados: ${basesElegidas.length}\n\n` +
-        "Intenta nuevamente o selecciona menos boletos."
-      );
-
-      return;
-    }
-
-
-    boletosSeleccionados =
-      basesElegidas.slice(
-        0,
-        cantidadSolicitada
-      );
-
-
-    boletoSeleccionado =
-      boletosSeleccionados[0] ||
-      null;
-
-
-    if (selector) {
-
-      selector.style.display =
-        "none";
-
-    }
-
-
-    const seleccionTexto =
-      document.getElementById(
-        "seleccionTexto"
-      );
-
-
-    if (seleccionTexto) {
-
-      seleccionTexto.innerHTML =
-        "Boletos seleccionados:<br>" +
-
-        boletosSeleccionados
-          .map(
-            boleto => `
-              <button
-                onclick="quitarBoletoSeleccionado('${boleto.id}')"
-                style="margin:4px;"
-              >
-                ${boleto.numero} ❌
-              </button>
-            `
-          )
-          .join("");
-
-    }
-
-
-    actualizarResumenCompra();
-
-
-    if (
-      typeof renderBoletos ===
-      "function"
-    ) {
-
-      renderBoletos();
-
-    }
-
-
-    setTimeout(
-      () => {
-
-        const centro =
-          document.getElementById(
-            "resumenCompra"
-          );
-
-
-        if (centro) {
-
-          centro.scrollIntoView({
-            behavior:
-              "smooth",
-
-            block:
-              "center"
-          });
-
-        }
-
-      },
-      300
-    );
-
-
-  } catch (errorNumeroSuerte) {
-
-    console.error(
-      "ERROR EN MASS ELIGE POR MÍ:",
-      errorNumeroSuerte
-    );
-
-
-    alert(
-      "❌ MASS Elige por Mí no pudo seleccionar los números disponibles.\n\n" +
-      "Intenta nuevamente."
-    );
-
-
-  } finally {
-
-    botonesSelector.forEach(
-      boton => {
-        boton.disabled = false;
-      }
-    );
-
+  const selector = document.getElementById("selectorSuerte");
+  const estado = document.getElementById("estadoAzarMass");
+  const config = obtenerConfiguracionPaginacionRifa();
+  const rifaId = RIFA_ID;
+  if (!selector || !estado || (busquedaAzarMass && !busquedaAzarMass.signal.aborted)) return;
+  if (confirmandoBoletosMass) {
+    estado.textContent = "Espera a que termine la reserva o compra en curso.";
+    return;
   }
-
+  if (!rifaId || !config || String(config.rifa.id) !== String(rifaId)) {
+    estado.textContent = "Abre una rifa para elegir boletos.";
+    return;
+  }
+  if (!Number.isSafeInteger(cantidad) || cantidad < 1) {
+    estado.textContent = "Escribe una cantidad entera mayor que cero.";
+    return;
+  }
+  const excluidas = new Set(boletosSeleccionados.map(boleto => Number(boleto.numero)));
+  const capacidad = config.limiteVisible - excluidas.size;
+  if (cantidad > capacidad) {
+    estado.textContent = "Puedes agregar como máximo " + capacidad + " boletos a esta selección, según disponibilidad.";
+    return;
+  }
+  const control = new AbortController();
+  busquedaAzarMass = control;
+  const controles = selector.querySelectorAll("button:not([data-cancelar-azar]), input");
+  const cancelar = selector.querySelector("[data-cancelar-azar]");
+  controles.forEach(el => { el.disabled = true; });
+  cancelar.hidden = false;
+  estado.textContent = "Buscando " + cantidad + (cantidad === 1 ? " boleto disponible…" : " boletos disponibles…");
+  try {
+    const elegidos = await buscarBasesAlAzarMass(rifaId, config, cantidad, excluidas, control.signal);
+    if (control.signal.aborted || RIFA_ID !== rifaId) return;
+    boletosSeleccionados = boletosSeleccionados.concat(elegidos);
+    boletoSeleccionado = boletosSeleccionados[0];
+    mostrarSeleccionCompraMass(1);
+    actualizarResumenCompra();
+    renderBoletos();
+    selector.style.display = "none";
+    document.getElementById("btnEligePorMiMass").setAttribute("aria-expanded", "false");
+    document.getElementById("resumenCompra")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  } catch (error) {
+    if (RIFA_ID === rifaId && !control.signal.aborted) {
+      estado.textContent = error instanceof Error ? error.message : "No se pudo consultar la disponibilidad. Vuelve a intentar.";
+    }
+  } finally {
+    if (busquedaAzarMass === control) {
+      if (control.signal.aborted) estado.textContent = "Búsqueda cancelada.";
+      controles.forEach(el => { el.disabled = false; });
+      cancelar.hidden = true;
+      busquedaAzarMass = null;
+    }
+  }
 }
 
 function abrirVideoRifa(){
@@ -108268,7 +107712,7 @@ function abrirGuiaUsuarioMass(rifaId = null) {
     if (!guia.dataset.busquedaActiva) {
         const ejemplo = guia.querySelector("#ejemploEligePorMiMass");
         const boton = document.getElementById("btnEligePorMiMass");
-        const cantidades = document.querySelectorAll("#selectorSuerte button");
+        const cantidades = document.querySelectorAll("#selectorSuerte [data-cantidad-azar]");
         if (boton && cantidades.length) {
             ejemplo.querySelector("strong").textContent = boton.textContent.trim();
             const lista = ejemplo.querySelector("ul");
