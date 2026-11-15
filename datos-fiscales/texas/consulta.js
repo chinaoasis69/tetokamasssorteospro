@@ -41,8 +41,11 @@ function evaluarCalle(grupos, numero, ciudad) {
     return {codigos: [...claves][0].split(',').filter(Boolean)};
 }
 
+class AccesoAlIndiceDenegado extends Error {}
+
 async function respuesta(archivo, signal) {
-    const res = await fetch(raiz + archivo, {signal, credentials: 'omit', referrerPolicy: 'no-referrer'});
+    const res = await fetch(raiz + archivo, {signal, credentials: 'same-origin', mode: 'same-origin', referrerPolicy: 'no-referrer'});
+    if (res.status === 401 || res.status === 403) throw new AccesoAlIndiceDenegado();
     if (!res.ok) throw new Error('No se pudo leer ' + archivo);
     return res;
 }
@@ -193,8 +196,11 @@ export function montarLocalizadorFiscalTexas(host, codigoPostal) {
                 }, {once:true});
                 desglose.append(confirmar);
             }
-        } catch {
-            if (peticion === control) mensaje.textContent = 'No se pudo leer el índice de Texas. Reintenta o abre el localizador oficial.';
+        } catch (error) {
+            if (peticion !== control) return;
+            mensaje.textContent = error instanceof AccesoAlIndiceDenegado
+                ? 'El sitio denegó el acceso a los archivos de Texas. Verifica tu acceso a la vista previa, recarga la página y vuelve a consultar.'
+                : 'No se pudo leer el índice de Texas. Reintenta o abre el localizador oficial.';
         } finally {
             clearTimeout(tiempo);
             if (peticion === control) {
