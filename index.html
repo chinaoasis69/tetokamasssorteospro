@@ -112111,7 +112111,8 @@ function montarBorradorFiscalPlanes(host, planes, cliente, abrirTexas) {
         <p>Prepara el criterio fiscal por plan y domicilio. Guardar un borrador no aplica impuestos al checkout.</p>
         <form style="display:grid;gap:10px">
             <fieldset data-ambito style="display:grid;gap:10px">
-                <legend>Plan y domicilio de facturación</legend>
+                <legend>Plan y ubicación fiscal</legend>
+                <p data-sede hidden>Para la ampliación de Mini 100 con uso íntegro en Texas, consulta la sede de TE-TO-KA en Brownsville (US, TX, 78521).</p>
                 <label>Plan <select name="plan" required></select></label>
                 <label>Modalidad de compra <select name="flujo" required></select></label>
                 <label>País <select name="pais" required><option value="">Elige un país</option><option value="MX">México</option><option value="US">Estados Unidos</option></select></label>
@@ -112138,7 +112139,11 @@ function montarBorradorFiscalPlanes(host, planes, cliente, abrirTexas) {
     const ambito = form.querySelector('[data-ambito]');
     const edicion = form.querySelector('[data-edicion]');
     const verTexas = form.querySelector('[data-ver-texas]');
-    const ajustarTexas = () => { verTexas.hidden = !abrirTexas || pais.value !== 'US' || !/^(TX|TEXAS)$/i.test(region.value.trim()); };
+    const esMiniAmpliacion = () => flujo.value === 'ampliacion' && planes.some(p => p.id === plan.value && p.codigo === 'mass_mini_100');
+    const ajustarTexas = () => {
+        form.querySelector('[data-sede]').hidden = !esMiniAmpliacion() || pais.value !== 'US';
+        verTexas.hidden = !abrirTexas || pais.value !== 'US' || !/^(TX|TEXAS)$/i.test(region.value.trim());
+    };
     for (const control of [pais, region]) {
         control.addEventListener('input', ajustarTexas);
         control.addEventListener('change', ajustarTexas);
@@ -112182,6 +112187,7 @@ function montarBorradorFiscalPlanes(host, planes, cliente, abrirTexas) {
     });
     ambito.addEventListener('input', reiniciar);
     ambito.addEventListener('change', reiniciar);
+    ambito.addEventListener('change', ajustarTexas);
     async function consultarOGuardar(escritura) {
         if (leyendo || (escritura && version === null)) return;
         const datos = {
@@ -112216,7 +112222,7 @@ function montarBorradorFiscalPlanes(host, planes, cliente, abrirTexas) {
             edicion.hidden = false;
             if (version > 0) {
                 const scope = JSON.parse(datosConsultados);
-                mostrarAprobacion({datos:scope, version, fuente:(data.fuente || fuente.value || '').trim(),
+                mostrarAprobacion({datos:scope, version, miniTexas:esMiniAmpliacion() && scope.p_pais==='US' && /^(TX|TEXAS)$/i.test(scope.p_region), fuente:(data.fuente || fuente.value || '').trim(),
                     plan:plan.selectedOptions[0].text, flujo:flujo.selectedOptions[0].text});
             }
             estado.textContent = version === 0 ? 'Puedes preparar el primer borrador para este domicilio.'
@@ -112259,7 +112265,7 @@ function montarAprobacionFiscalPlanes(host, cliente, bloquearFicha) {
             <div data-impuestos hidden><p>Componentes del impuesto</p><div data-lista></div>
               <button type="button" data-agregar>Agregar componente</button></div>
             <label>Vigente hasta (opcional, hora local) <input type="datetime-local" name="hasta"></label>
-            <label><input type="checkbox" name="confirmacion" required> Confirmo la fuente, el tratamiento y los porcentajes para aplicarlos al checkout de este domicilio.</label>
+            <label><input type="checkbox" name="confirmacion" required> <span data-confirmar-ambito>Confirmo la fuente, el tratamiento y los porcentajes para aplicarlos al checkout de este domicilio.</span></label>
             <button type="submit">Aprobar y vincular al checkout</button>
           </div></form>
         </fieldset>`;
@@ -112297,11 +112303,20 @@ function montarAprobacionFiscalPlanes(host, cliente, bloquearFicha) {
         const vigente = ultima.estado !== 'sin_aprobacion';
         const porcentaje = valor => new Intl.NumberFormat('es-MX',{maximumFractionDigits:6}).format(Number(valor)*100) + '%';
         const rotulos = {gravado:'Gravado',tasa_cero:'Tasa cero',exento:'Exento',no_sujeto:'No sujeto'};
+        const esSede = ultima.origen_fiscal === 'sede_brownsville';
         const resumen = vigente ? 'Regla ' + ultima.estado + ' · borrador versión ' + ultima.version + '. '
             + rotulos[ultima.tratamiento] + ', base ' + porcentaje(ultima.fraccion_base)
             + ultima.componentes.map(c => ', ' + c.codigo + ' ' + porcentaje(c.tasa)).join('')
             + (ultima.vigente_hasta ? '. Vence el ' + new Date(ultima.vigente_hasta).toLocaleString('es-MX') : '') + '.' : 'Sin regla aprobada para este ámbito.';
-        estado.textContent = resumen;
+        estado.textContent = resumen + (esSede ? ' Origen: sede de TE-TO-KA en Brownsville. Uso íntegro en Texas.' : '');
+        if (contexto.miniTexas && (contexto.datos.p_region !== 'TX' || contexto.datos.p_codigo_postal !== '78521')) {
+            form.hidden = true;
+            estado.textContent += ' Para aprobar por sede, consulta el borrador de US, TX, 78521.';
+            return;
+        }
+        if (contexto.miniTexas && vigente && !esSede && ultima.version === contexto.version) {
+            estado.textContent += ' Esta decisión corresponde al domicilio de facturación. Guarda un borrador revisado para decidir por sede.';
+        }
         form.hidden = !contexto.fuente || (vigente && ultima.version === contexto.version);
         if (!contexto.fuente) estado.textContent += ' Guarda la fuente del criterio antes de aprobar.';
         else if (vigente && ultima.version !== contexto.version) estado.textContent += ' Aprobar esta revisión reemplazará la regla anterior para este ámbito.';
@@ -112326,13 +112341,14 @@ function montarAprobacionFiscalPlanes(host, cliente, bloquearFicha) {
         enviando = true; controles.disabled = true; bloquearFicha(true);
         estado.textContent = 'Registrando aprobación…';
         try {
-            const {data,error} = await cliente.rpc('aprobar_regla_fiscal_plan_r3', payload);
+            const {data,error} = await cliente.rpc(ctx.miniTexas ? 'aprobar_regla_sede_mini_r3' : 'aprobar_regla_fiscal_plan_r3', payload);
             if (error) throw error;
             if (!data?.estado || data.version !== ctx.version) throw new Error();
             if (contexto === ctx && host.isConnected) pintar(data);
         } catch (err) {
             if (contexto === ctx && host.isConnected) {
-                estado.textContent = ['22023','40001','42501'].includes(err?.code) ? err.message
+                estado.textContent = ctx.miniTexas && err?.code==='PGRST202' ? 'Falta instalar el bloque de sede y uso para Mini 100.'
+                    : ['22023','40001','42501'].includes(err?.code) ? err.message
                     : 'No se confirmó la aprobación. Consulta el borrador para recuperar la decisión.';
                 form.elements.confirmacion.checked = false;
             }
@@ -112343,6 +112359,9 @@ function montarAprobacionFiscalPlanes(host, cliente, bloquearFicha) {
         form.hidden = true; form.reset(); lista.replaceChildren(); cambiarTratamiento();
         if (!ctx) return;
         const d = ctx.datos;
+        form.querySelector('[data-confirmar-ambito]').textContent = ctx.miniTexas
+            ? 'Verifiqué el tratamiento del plan y que la venta se atribuye a la sede de TE-TO-KA en Brownsville. Apruebo la regla para ampliaciones usadas en un solo domicilio de Texas. Vence al terminar el trimestre o en la fecha anterior que indique.'
+            : 'Confirmo la fuente, el tratamiento y los porcentajes para aplicarlos al checkout de este domicilio.';
         form.querySelector('[data-alcance]').textContent = ctx.plan + ' · ' + ctx.flujo + ' · ' + d.p_pais
             + ' · ' + d.p_region + ' · ' + d.p_codigo_postal + ' · borrador versión ' + ctx.version;
         estado.textContent = 'Consultando la aprobación…';
@@ -125876,9 +125895,15 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     fields.pais_iso2=field('pais_iso2','País de facturación',0,[['','Selecciona un país'],['MX','México'],['US','Estados Unidos']]);
     for(const [k,label,max] of [['estado_region','Estado o región',120],['ciudad','Ciudad',120],['codigo_postal','Código postal',20],['direccion_linea1','Dirección, número e interior',250]])fields[k]=field(k,label,max);
     form.append(el('small','Puedes usar otro domicilio para esta cotización. Esto no modifica Mi Perfil Legal.'));
+    const esMini=preview.plan_codigo==='mass_mini_100';
+    const uso=esMini ? field('uso_servicio','¿Dónde usarás el servicio durante la ampliación?',0,[
+        ['','Selecciona el lugar de uso'],['integro_texas','Íntegramente en un solo domicilio de Texas'],
+        ['integro_en_domicilio_fuera_tx','Íntegramente en mi domicilio de facturación, fuera de Texas'],
+        ['mixto_u_otro','En varios domicilios o en otro domicilio fuera de Texas']
+    ]) : null;
     const confirmLabel=el('label');confirmLabel.style.cssText='display:flex;align-items:flex-start;gap:10px;line-height:1.5';
     const confirmed=el('input');confirmed.type='checkbox';confirmed.required=true;confirmed.dataset.confirmacionDomicilioAmpliacion='true';confirmed.style.cssText='width:20px;height:20px;flex:0 0 20px;margin:3px 0';
-    confirmLabel.append(confirmed,el('span','Confirmo que este es el domicilio de facturación para la cotización de mi ampliación.'));
+    confirmLabel.append(confirmed,el('span',esMini?'Confirmo el domicilio de facturación y el lugar de uso que declaré para esta ampliación.':'Confirmo que este es el domicilio de facturación para la cotización de mi ampliación.'));
     const submit=button('Consultar total con impuestos');submit.type='submit';
     const recover=button('Recuperar cotización'), fresh=button('Nueva cotización'), close=button('Cerrar cotización');
     const actions=el('div');actions.style.cssText='display:flex;gap:10px;flex-wrap:wrap';actions.append(submit,recover,fresh,close);
@@ -125900,6 +125925,7 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     const sameLocation=(a,b)=>locationValid(a)&&locationValid(b)&&keys.every(k=>a[k]===b[k]);
     const controls=()=>{
         const disabled=closed||busy;for(const n of [currency,profile,confirmed,...Object.values(fields)])n.disabled=disabled;
+        if(uso)uso.disabled=disabled;
         submit.disabled=disabled||!!request;recover.disabled=disabled||!request;fresh.disabled=disabled||!request;
         if(acceptTotal)acceptTotal.disabled=disabled||contractConfirmed;
         if(confirmPurchase)confirmPurchase.disabled=disabled||contractConfirmed||confirmUncertain||!acceptTotal?.checked||!quote?.vigente||Date.parse(quote.expira_en)<=Date.now()||typeof onContratacion!=='function';
@@ -125916,6 +125942,8 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     const errors={
         SESION_REQUERIDA:'Inicia sesión de nuevo para consultar la cotización.',
         NO_AUTORIZADO:'La cotización está disponible para el propietario del organizador y el Súper Admin.',
+        CONFIRMA_LUGAR_DE_USO:'Selecciona dónde usarás el servicio durante la ampliación.',
+        USO_REQUIERE_REVISION:'Este lugar de uso requiere revisión fiscal. Contacta a soporte antes de pagar.',
         APLICABILIDAD_FISCAL_PLAN_PENDIENTE:'La cotización aún no está habilitada para este plan y domicilio. Falta la aprobación fiscal correspondiente. Puedes consultar los precios base y contactar a soporte.',
         APLICABILIDAD_FISCAL_AMBIGUA:'La configuración fiscal requiere revisión antes de emitir el total. Contacta a soporte.',
         REGLA_FISCAL_CAMBIO:'La configuración fiscal cambió. Solicita una nueva cotización.',
@@ -125943,6 +125971,9 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
             d.cotizacion_emitida!==true||d.contratacion_confirmada!==false||d.pago_habilitado!==false||d.vigencia_modificada!==false||
             d.requiere_revalidacion_al_confirmar!==true||typeof d.vigente!=='boolean'||!stamp(d.emitida_en)||!stamp(d.expira_en))return false;
         const c=d.condiciones,p=c?.previsualizacion,f=c?.calculo_fiscal,u=c?.ubicacion_facturacion;
+        if(expected?.uso && c?.uso_servicio!==expected.uso)return false;
+        if(c?.uso_servicio!=null && (!esMini || !['integro_texas','integro_en_domicilio_fuera_tx'].includes(c.uso_servicio) ||
+            c.origen_fiscal!==(c.uso_servicio==='integro_texas'?'sede_brownsville':'domicilio_facturacion')))return false;
         if(!c||c.misma_dinamica!==true||c.meses_adicionales!==1||c.zona_calculo!=='UTC'||c.ubicacion_confirmada!==true||
             c.requiere_revalidacion_al_confirmar!==true||!uuid(c.aplicacion_fiscal_id)||!/^[a-f0-9]{32}$/.test(c.regla_huella||'')||
             !locationValid(u)||!validPreview(p,preview.adquisicion_id)||p.ok!==true||p.rifa_original_id!==preview.rifa_original_id||
@@ -125973,6 +126004,8 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     function show(d){
         clearQuote();quote=d;currency.value=d.moneda;for(const k of keys)fields[k].value=d.condiciones.ubicacion_facturacion[k];confirmed.checked=true;
         const row=(name,value,highlight=false)=>{const r=el('div');r.style.cssText='display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid #576450'+(highlight?';font-size:19px;color:#b5ff9d':'');r.append(el('span',name),el('strong',value));output.append(r);};
+        if(uso)uso.value=d.condiciones.uso_servicio||'';
+        if(d.condiciones.origen_fiscal==='sede_brownsville')row('Origen de la tasa','TE-TO-KA · Brownsville, TX (uso íntegro en Texas)');
         row('Subtotal',money(d.subtotal,d.moneda));row('Impuestos',money(d.impuesto,d.moneda));row('Total cotizado',money(d.total,d.moneda),true);
         const p=d.condiciones.previsualizacion;
         row('Vencimiento actual',new Date(p.vencimiento_actual).toLocaleString('es-MX'));
@@ -126034,7 +126067,7 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
     panel.addEventListener('toggle',()=>{if(panel.open&&!profileTried&&!request)loadProfile();});
     profile.addEventListener('click',loadProfile);
     const changed=event=>{
-        if(![currency,confirmed,...Object.values(fields)].includes(event.target))return;
+        if(![currency,confirmed,uso,...Object.values(fields)].includes(event.target))return;
         revision++;busy=false;clearQuote();if(event.target!==confirmed)confirmed.checked=false;
         status.textContent=request?'Los datos cambiaron. Usa «Nueva cotización» para consultarlos o recupera la solicitud anterior.':'Confirma el domicilio y consulta el total en la moneda elegida.';controls();
     };
@@ -126043,18 +126076,28 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
         event.preventDefault();if(busy||request||!alive())return;
         const u=location(),moneda=currency.value;
         if(!locationValid(u)||!confirmed.checked||!['USD','MXN'].includes(moneda)){status.textContent='Completa y confirma el domicilio y elige USD o MXN.';return;}
+        const usoDeclarado=uso?.value;
+        if(uso && !usoDeclarado){status.textContent=errors.CONFIRMA_LUGAR_DE_USO;return;}
+        if(usoDeclarado==='mixto_u_otro'||(usoDeclarado==='integro_en_domicilio_fuera_tx'&&u.pais_iso2==='US'&&/^(TX|TEXAS)$/i.test(u.estado_region))){
+            status.textContent=errors.USO_REQUIERE_REVISION;return;
+        }
         if(!form.reportValidity())return;
         if(!globalThis.crypto?.randomUUID){status.textContent='Abre la página mediante una conexión segura para cotizar.';return;}
         run(async(_turn,current)=>{
             const id=crypto.randomUUID(),stored=saveRequest(id);clearQuote();controls();status.textContent='Consultando el total con impuestos...';
-            const {data,error}=await limit(client.rpc('emitir_cotizacion_ampliacion_r3_segura',{
+            const {data,error}=await limit(client.rpc(esMini?'emitir_cotizacion_ampliacion_con_uso_r3':'emitir_cotizacion_ampliacion_r3_segura',{
+                ...(esMini?{p_uso_servicio:usoDeclarado}:{}),
                 p_solicitud_id:id,p_organizador_id:organizadorId,p_adquisicion_id:preview.adquisicion_id,p_moneda:moneda,
                 p_ubicacion_facturacion:u,p_confirmacion_ubicacion:true
             }));
             if(!current()||!await verificarSesion()||!current())return;
-            if(error){status.textContent='La respuesta no se pudo confirmar. Pulsa «Recuperar cotización».';return;}
+            if(error){
+                if(esMini&&error.code==='PGRST202'){forgetRequest();status.textContent='La cotización por lugar de uso está pendiente de instalación.';}
+                else status.textContent='La respuesta no se pudo confirmar. Pulsa «Recuperar cotización».';
+                return;
+            }
             if(data?.ok===false){forgetRequest();status.textContent=errors[data.codigo]||'No fue posible emitir la cotización. Actualiza la ampliación o contacta a soporte.';return;}
-            if(!validQuote(data,id,{moneda,ubicacion:u})){status.textContent='No se pudo verificar el total recibido. Usa «Recuperar cotización».';return;}
+            if(!validQuote(data,id,{moneda,ubicacion:u,uso:usoDeclarado})){status.textContent='No se pudo verificar el total recibido. Usa «Recuperar cotización».';return;}
             show(data);status.textContent='Cotización emitida. Tu vencimiento sigue sin cambios.'+(stored?'':' Conserva esta pantalla abierta para poder recuperar la solicitud.');
         });
     });
@@ -126071,7 +126114,7 @@ function massMontarCotizacionAmpliacionR3({host,preview,organizadorId,actorEsper
         });
     });
     fresh.addEventListener('click',()=>{if(busy)return;revision++;forgetRequest();clearQuote();confirmed.checked=false;status.textContent='Revisa y confirma los datos para solicitar una cotización nueva.';controls();});
-    close.addEventListener('click',()=>{revision++;busy=false;clearQuote();Object.values(fields).forEach(n=>n.value='');confirmed.checked=false;panel.open=false;profileTried=false;status.textContent=request?'Hay una solicitud guardada. Puedes recuperarla al volver a abrir.':'';controls();title.focus();});
+    close.addEventListener('click',()=>{revision++;busy=false;clearQuote();Object.values(fields).forEach(n=>n.value='');if(uso)uso.value='';confirmed.checked=false;panel.open=false;profileTried=false;status.textContent=request?'Hay una solicitud guardada. Puedes recuperarla al volver a abrir.':'';controls();title.focus();});
     status.textContent=request?'Hay una solicitud anterior. Usa «Recuperar cotización» para consultar su resultado.':'Abre este apartado para consultar el domicilio y elegir la moneda.';
     controls();return dispose;
 }
