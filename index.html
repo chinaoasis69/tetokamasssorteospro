@@ -1039,6 +1039,51 @@ button{cursor:pointer}
   defer
 ></script>	
 	
+<style>
+  .guia-organizador {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 780px;
+    margin: 14px auto;
+    border: 1px solid #58ae41;
+    border-radius: 12px;
+    background: #101510;
+    color: #f1f5ef;
+    text-align: left;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+  .guia-organizador summary {
+    padding: 12px 14px;
+    cursor: pointer;
+    font-weight: 650;
+  }
+  .guia-organizador > summary { color: #91ed73; }
+  .guia-organizador summary:focus-visible,
+  .guia-organizador input:focus-visible { outline: 2px solid #91ed73; outline-offset: -2px; }
+  .guia-organizador-contenido { padding: 0 14px 16px; }
+  .guia-organizador-contenido label { display: block; }
+  .guia-organizador input[type="search"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 5px 0;
+    padding: 10px;
+    font: inherit;
+    color: #f1f5ef;
+    background: #172017;
+    border: 1px solid #82957f;
+    border-radius: 7px;
+  }
+  .guia-organizador h3 { margin: 20px 0 6px; font-size: 1.08em; color: #a0e58b; }
+  .guia-organizador section details { border-top: 1px solid #394737; }
+  .guia-organizador section summary { padding: 11px 0; }
+  .guia-organizador section p { margin: 0 0 10px; }
+  .guia-organizador ol { margin: 0 0 12px; padding-inline-start: 1.6em; }
+  .guia-organizador li + li { margin-top: 6px; }
+  .guia-organizador [role="status"] { margin: 8px 0; }
+  .guia-organizador [hidden] { display: none; }
+</style>
 </head>
 
 <body>
@@ -2571,6 +2616,138 @@ Cargando historial...
 © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
 
+<template id="plantillaGuiaOrganizadorMass">
+  <details class="guia-organizador">
+    <summary>Preguntas frecuentes del organizador</summary>
+    <div class="guia-organizador-contenido">
+      <label>Buscar en la guía
+        <input type="search" placeholder="Rifa, boletos, QR, planes…" autocomplete="off">
+      </label>
+      <p role="status" aria-live="polite"></p>
+
+      <section>
+        <h3>Crear y administrar una rifa</h3>
+        <details open>
+          <summary>¿Cómo creo mi primera rifa?</summary>
+          <ol>
+            <li>En el <strong>Panel Administrativo</strong>, abre <strong>Sorteos y premios → Sorteos → Nueva dinámica</strong>.</li>
+            <li>Escribe el título y el primer premio. Indica el precio del boleto en la divisa principal. Elige la cantidad de números en múltiplos de 100, dentro de la capacidad de tu plan. En <strong>Modalidad</strong>, elige cuántos números entrega cada boleto.</li>
+            <li>Elige fecha, hora y zona horaria. Define el tiempo máximo de apartado, cuándo cierran los apartados y el porcentaje mínimo para sortear.</li>
+            <li>Selecciona el método del resultado. Si eliges <strong>Aleatorio automático</strong> con varios premios, escribe el nombre de cada uno. Si el método pide las últimas cifras, elige una cantidad admitida.</li>
+            <li>Pulsa <strong>Guardar dinámica</strong>. La rifa queda <strong>programada</strong>. Para abrirla a los participantes, publica sus reglas y actívala como se indica en la siguiente pregunta.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>¿Cómo publico las reglas y activo la rifa?</summary>
+          <ol>
+            <li>En <strong>Sorteos</strong>, localiza la rifa por su título y abre <strong>Reglas Oficiales → Crear primer borrador</strong>. Si ya existe, abre <strong>Editar borrador</strong>.</li>
+            <li>Completa las condiciones de participación, el método del resultado y la entrega de premios. Revisa la <strong>Vista previa</strong> y pulsa <strong>Guardar borrador</strong>.</li>
+            <li>En <strong>Reglas Oficiales</strong>, pulsa <strong>Publicar</strong> y confirma. Vuelve a la rifa programada y pulsa <strong>Activar dinámica</strong>.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>¿Qué diferencia hay entre el tiempo de apartado y el cierre de apartados?</summary>
+          <p><strong>Tiempo máximo de apartado</strong> indica cuánto tiempo se conserva una reserva. <strong>Cierre de apartados antes del sorteo</strong> indica con cuánta anticipación dejan de aceptarse nuevos apartados. Por ejemplo, puedes permitir reservas de un día y cerrar los nuevos apartados dos días antes del sorteo.</p>
+        </details>
+        <details>
+          <summary>¿Cómo cambio, pauso o reprogramo una dinámica?</summary>
+          <p>En <strong>Sorteos</strong>, abre la rifa por su título. Usa <strong>Editar dinámica</strong> para cambiar los campos disponibles. Para detenerla temporalmente, pulsa <strong>Pausar dinámica</strong>. Cuando esté pausada, usa <strong>Reanudar dinámica</strong>.</p>
+          <p>Si quedó con el mínimo de ventas sin alcanzar y aparece <strong>Reprogramar dinámica</strong>, abre esa opción, revisa la nueva fecha, hora y condiciones y confirma. Los botones disponibles dependen del estado de la rifa y de tus permisos.</p>
+        </details>
+        <details>
+          <summary>¿Cómo comparto la rifa y dónde ve sus boletos el participante?</summary>
+          <p>Abre la dinámica en la vista pública y pulsa <strong>Compartir</strong>. Elige una aplicación o copia el enlace que te ofrece la pantalla. El participante puede consultar sus números desde su cuenta en <strong>Mis boletos → Ver mis boletos</strong>.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Premios, resultados y patrocinadores</h3>
+        <details>
+          <summary>¿Cómo administro los premios y los pre-sorteos?</summary>
+          <p>En <strong>Sorteos</strong>, busca el título de la dinámica. Abre <strong>Premios</strong> para revisar sus premios. Para preparar un sorteo previo, abre <strong>Pre-sorteos → Crear pre-sorteo</strong> desde esa misma tarjeta y completa el formulario.</p>
+        </details>
+        <details>
+          <summary>¿Cómo agrego un premio de MASS Lucky Spin?</summary>
+          <p>En <strong>Sorteos y premios → Premios MASS Lucky Spin</strong>, selecciona una dinámica programada o activa y pulsa <strong>Agregar premio</strong>. Elige el tipo de premio, indica la cantidad y guarda. En esa pantalla puedes revisar cuántas unidades quedan disponibles.</p>
+        </details>
+        <details>
+          <summary>¿Cómo escaneo el QR y confirmo la entrega de un premio Lucky Spin?</summary>
+          <p>Abre <strong>Sorteos y premios → Canjear QR MASS Lucky Spin → Iniciar cámara</strong>. Apunta al QR y revisa el premio y su estado. Al entregar el premio, pulsa <strong>Confirmar entrega del premio</strong> si está disponible. Escanear el QR solo abre la consulta.</p>
+        </details>
+        <details>
+          <summary>¿Cómo publico un ganador?</summary>
+          <p>Abre <strong>Sorteos y premios → Ganadores</strong>. Elige primero el sorteo y después el premio. Si el resultado es manual, captura el número ganador. Si es automático, espera el resultado oficial que muestra la app. Revisa los datos y, cuando esté disponible, pulsa <strong>Publicar ganador</strong>. Los participantes pueden consultar la sección <strong>Ganadores</strong>.</p>
+        </details>
+        <details>
+          <summary>¿Cómo muestro un patrocinador en una rifa?</summary>
+          <p>En <strong>Sorteos y premios → Patrocinadores</strong>, pulsa <strong>Agregar patrocinador</strong> y guarda su ficha. Luego abre la rifa en <strong>Sorteos → Patrocinadores de esta dinámica</strong> y pulsa <strong>Agregar patrocinador a esta rifa</strong> para elegir el que le corresponde.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Recargas, divisas y comprobantes</h3>
+        <details>
+          <summary>¿Cómo configuro las divisas y los métodos de pago?</summary>
+          <p>Abre <strong>Finanzas MASS → Administrar Divisas</strong> para revisar la divisa principal y las adicionales. En <strong>Administrar Métodos de Pago</strong>, revisa la divisa y los datos de cada método que ofrecerás a tus participantes. Para consultar una equivalencia, abre <strong>Convertidor MASS</strong>.</p>
+        </details>
+        <details>
+          <summary>¿Cómo reviso y acredito una recarga MASS?</summary>
+          <p>Abre <strong>Finanzas MASS → Recargas MASS</strong>, localiza la solicitud pendiente y pulsa <strong>Ver comprobante</strong>. Compara el monto, la divisa y la referencia con el depósito recibido en tu cuenta. Usa <strong>Aprobar</strong> cuando confirmes los fondos o <strong>Rechazar</strong> si corresponde. Puedes consultar la operación después en <strong>Historial recargas</strong>.</p>
+        </details>
+        <details>
+          <summary>¿Dónde atiendo una revisión o un reembolso?</summary>
+          <p>En <strong>Finanzas MASS → Solicitudes de revisión</strong>, abre el caso pendiente y revisa su motivo y la operación asociada. Para dar seguimiento a una devolución de recarga, entra en <strong>Reembolsos MASS</strong>. El participante puede consultar el estado desde <strong>Mis recargas MASS</strong>.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Mensajes, perfil y equipo</h3>
+        <details>
+          <summary>¿Cómo respondo a un cliente o preparo un aviso para varios participantes?</summary>
+          <p>Para responder a una persona, entra en <strong>Gestión y comunicación → Mensajes de clientes</strong> y abre su conversación. Para un aviso a varios participantes, entra en <strong>Comunicaciones masivas</strong>, elige el público, escribe el mensaje y revisa los destinatarios. <strong>Crear borrador</strong> guarda el mensaje para revisión. <strong>Enviar ahora</strong> lo envía cuando confirmas.</p>
+        </details>
+        <details>
+          <summary>¿Cómo agrego un colaborador y elijo qué puede hacer?</summary>
+          <p>Como propietario, abre <strong>Configuración y equipo → Mi equipo / Accesos → Agregar colaborador</strong>. Busca a la persona por su <strong>MASS ID</strong> y verifica su identidad antes de agregarla. En su ficha, elige las funciones que necesita y pulsa <strong>Guardar permisos</strong>. Para crear rifas, necesita el permiso de crear dinámicas.</p>
+        </details>
+        <details>
+          <summary>¿Dónde actualizo el perfil legal de mi organización?</summary>
+          <p>Abre <strong>Configuración y equipo → Configuración → Mi Perfil Legal</strong>. Revisa el estado del perfil. Si tienes una solicitud de corrección, abre las indicaciones, actualiza los campos señalados y vuelve a enviarlo a revisión.</p>
+        </details>
+        <details>
+          <summary>¿Cómo registro un Punto MASS?</summary>
+          <p>Abre <strong>Puntos MASS → Mis Puntos MASS</strong>. Cuando esté disponible <strong>Registrar nuevo Punto MASS</strong>, selecciónalo, completa los datos del punto y revisa su ubicación. Pulsa <strong>Registrar Punto MASS</strong> para guardar el registro.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Planes y complementos</h3>
+        <details>
+          <summary>¿Cuándo empieza mi plan por dinámica?</summary>
+          <p>La vigencia comienza cuando el Súper Admin aprueba el pago. Mientras veas <strong>Pago en revisión</strong>, el comprobante está pendiente de aprobación.</p>
+        </details>
+        <details>
+          <summary>¿Cómo amplío un mes y por qué a veces la lista está vacía?</summary>
+          <p>Como propietario, abre <strong>Gestión y comunicación → Mis planes · Ampliar vigencia</strong>. La lista muestra compras por dinámica activadas y vigentes. Si está vacía, pulsa <strong>Actualizar planes</strong> y comprueba el estado de tu compra.</p>
+          <p>En un plan disponible, pulsa <strong>Consultar 1 mes adicional → Cotización e impuestos · USD / MXN</strong>. Elige la moneda y confirma el domicilio. Para Mini 100, indica también dónde usarás el servicio. Cuando la cotización esté disponible, revisa el total antes de confirmar.</p>
+        </details>
+        <details>
+          <summary>¿Puedo usar el mes adicional para otra rifa?</summary>
+          <p>La ampliación continúa la misma dinámica y conserva su capacidad de números. Para iniciar una rifa distinta necesitas un plan que la cubra.</p>
+        </details>
+        <details>
+          <summary>¿Qué ofrecen MI EQUIPO MASS y PUNTOS MASS PRO?</summary>
+          <p><strong>MI EQUIPO MASS</strong> amplía las plazas de colaboradores. El propietario no ocupa plaza. <strong>PUNTOS MASS PRO</strong> amplía la cantidad de relaciones que puedes tener con Puntos MASS.</p>
+        </details>
+        <details>
+          <summary>¿Ya puedo contratar un complemento si aparece su precio?</summary>
+          <p>Abre <strong>Complementos MASS · Paquetes y precios</strong> y elige un paquete para consultar su capacidad, vigencia y precio base. Mientras el botón diga <strong>Contratación próximamente</strong>, el paquete está disponible para consulta.</p>
+        </details>
+      </section>
+    </div>
+  </details>
+</template>
+
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
@@ -2588,6 +2765,8 @@ Cargando historial...
 >
   📊 Dashboard
 </button>
+
+<button type="button" id="btnGuiaOrganizadorMass" onclick="mostrarGuiaOrganizadorMass()">Preguntas frecuentes</button>
 
 <!-- BJ-123-C: lectura contractual previa; sin checkout ni pagos -->
 <button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarCatalogoInformativoComplementosC06()">📦 Complementos MASS · Paquetes y precios</button>
@@ -3686,6 +3865,7 @@ window.addEventListener("load", () => {
       
 ids: [
   "btnDashboardOrganizador",
+  "btnGuiaOrganizadorMass",
   "btnAmpliacionesPlanesR3",
   "btnMensajesClientesAdmin",
   "btnComunicacionesMasivasAdminMass"
@@ -107749,6 +107929,49 @@ async function abrirMiPerfil(){
     }, 300);
 }
 
+function crearGuiaOrganizadorMass() {
+    const plantilla = document.getElementById("plantillaGuiaOrganizadorMass");
+    const guia = plantilla.content.firstElementChild.cloneNode(true);
+    const buscador = guia.querySelector('input[type="search"]');
+    const estado = guia.querySelector('[role="status"]');
+    const normalizar = texto => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const secciones = Array.from(guia.querySelectorAll("section"), seccion => {
+        const titulo = seccion.querySelector("h3").textContent;
+        const preguntas = Array.from(seccion.querySelectorAll("details"), pregunta => ({
+            elemento: pregunta,
+            texto: normalizar(titulo + " " + pregunta.textContent)
+        }));
+        return { seccion, preguntas };
+    });
+
+    buscador.addEventListener("input", () => {
+        const palabras = normalizar(buscador.value).trim().split(/\s+/).filter(Boolean);
+        let visibles = 0;
+        for (const { seccion, preguntas } of secciones) {
+            let enSeccion = 0;
+            for (const { elemento, texto } of preguntas) {
+                const coincide = palabras.every(palabra => texto.includes(palabra));
+                elemento.hidden = !coincide;
+                if (coincide) enSeccion++;
+            }
+            seccion.hidden = enSeccion === 0;
+            visibles += enSeccion;
+        }
+        if (!palabras.length) estado.textContent = "";
+        else if (!visibles) estado.textContent = "Sin coincidencias. Prueba con otra palabra.";
+        else estado.textContent = visibles === 1 ? "1 pregunta encontrada." : visibles + " preguntas encontradas.";
+    });
+    return guia;
+}
+
+function mostrarGuiaOrganizadorMass() {
+    const contenido = document.getElementById("adminContenido");
+    const guia = crearGuiaOrganizadorMass();
+    guia.open = true;
+    contenido.replaceChildren(guia);
+    guia.querySelector("summary").focus();
+}
+
 async function mostrarDashboardOrganizador(){
 
     const cont = document.getElementById("adminContenido");
@@ -107851,6 +108074,7 @@ if(idsRifas.length > 0){
             <div style="font-size:32px;font-weight:bold;color:#39ff14;">0 MASS</div>
         </div>
     `;
+    cont.querySelector("h2").after(crearGuiaOrganizadorMass());
 }	
 
 </script>
