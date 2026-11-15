@@ -1040,7 +1040,7 @@ button{cursor:pointer}
 ></script>	
 	
 <style>
-  .guia-organizador {
+  .guia-mass {
     box-sizing: border-box;
     width: 100%;
     max-width: 780px;
@@ -1053,17 +1053,17 @@ button{cursor:pointer}
     line-height: 1.55;
     overflow-wrap: anywhere;
   }
-  .guia-organizador summary {
+  .guia-mass summary {
     padding: 12px 14px;
     cursor: pointer;
     font-weight: 650;
   }
-  .guia-organizador > summary { color: #91ed73; }
-  .guia-organizador summary:focus-visible,
-  .guia-organizador input:focus-visible { outline: 2px solid #91ed73; outline-offset: -2px; }
-  .guia-organizador-contenido { padding: 0 14px 16px; }
-  .guia-organizador-contenido label { display: block; }
-  .guia-organizador input[type="search"] {
+  .guia-mass > summary { color: #91ed73; }
+  .guia-mass summary:focus-visible,
+  .guia-mass input:focus-visible { outline: 2px solid #91ed73; outline-offset: -2px; }
+  .guia-mass-contenido { padding: 0 14px 16px; }
+  .guia-mass-contenido label { display: block; }
+  .guia-mass input[type="search"] {
     display: block;
     width: 100%;
     box-sizing: border-box;
@@ -1075,14 +1075,36 @@ button{cursor:pointer}
     border: 1px solid #82957f;
     border-radius: 7px;
   }
-  .guia-organizador h3 { margin: 20px 0 6px; font-size: 1.08em; color: #a0e58b; }
-  .guia-organizador section details { border-top: 1px solid #394737; }
-  .guia-organizador section summary { padding: 11px 0; }
-  .guia-organizador section p { margin: 0 0 10px; }
-  .guia-organizador ol { margin: 0 0 12px; padding-inline-start: 1.6em; }
-  .guia-organizador li + li { margin-top: 6px; }
-  .guia-organizador [role="status"] { margin: 8px 0; }
-  .guia-organizador [hidden] { display: none; }
+  .guia-mass h3 { margin: 20px 0 6px; font-size: 1.08em; color: #a0e58b; }
+  .guia-mass section details { border-top: 1px solid #394737; }
+  .guia-mass section summary { padding: 11px 0; }
+  .guia-mass section p { margin: 0 0 10px; }
+  .guia-mass ol { margin: 0 0 12px; padding-inline-start: 1.6em; }
+  .guia-mass li + li { margin-top: 6px; }
+  .guia-mass [role="status"] { margin: 8px 0; }
+  .guia-mass [hidden] { display: none; }
+  #guiaUsuarioMass {
+    width: min(780px, calc(100% - 24px));
+    max-height: calc(100% - 32px);
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  #guiaUsuarioMass[open] { display: flex; flex-direction: column; }
+  #guiaUsuarioMass::backdrop { background: rgba(0, 0, 0, .76); }
+  #guiaUsuarioMass .cabecera-guia-usuario {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #394737;
+  }
+  #guiaUsuarioMass h2 { margin: 0; font-size: 1.18rem; color: #91ed73; }
+  #guiaUsuarioMass form { margin: 0; }
+  #guiaUsuarioMass form button { margin: 0; width: auto; }
+  #guiaUsuarioMass .guia-mass-contenido { padding-top: 12px; overflow-y: auto; overscroll-behavior: contain; }
 </style>
 </head>
 
@@ -1396,6 +1418,8 @@ Selecciona una rifa
 >
   ⚖️ Ver Reglas Oficiales
 </button>
+
+<button type="button" class="btn-dark" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
 
 <button
   id="btnContactoSoporteRifa"
@@ -2616,10 +2640,125 @@ Cargando historial...
 © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
 
+<dialog id="guiaUsuarioMass" class="guia-mass" aria-labelledby="tituloGuiaUsuarioMass">
+  <div class="cabecera-guia-usuario">
+    <h2 id="tituloGuiaUsuarioMass">Preguntas frecuentes del usuario</h2>
+    <form method="dialog"><button type="submit" autofocus>Cerrar</button></form>
+  </div>
+  <div class="guia-mass-contenido">
+    <label>Buscar en la guía
+      <input type="search" placeholder="Boletos, recargas, premios…" autocomplete="off">
+    </label>
+    <p role="status" aria-live="polite"></p>
+
+    <section>
+      <h3>Primeros pasos</h3>
+      <details open>
+        <summary>¿Cómo participo por primera vez?</summary>
+        <ol>
+          <li>En la pantalla de acceso, entra con tu <strong>MASS ID</strong>. Si es tu primera visita, pulsa <strong>Crear cuenta</strong> y completa el registro.</li>
+          <li>En la portada, pulsa <strong>Ver organizadores activos</strong>. Busca al organizador por su nombre y abre <strong>Ver dinámica</strong> o <strong>Ver dinámicas</strong>. Si aparecen varias rifas, elige <strong>Ver este sorteo</strong> en la que te interesa.</li>
+          <li>En la rifa, revisa el premio, el precio por número y las condiciones en <strong>Ver Reglas Oficiales</strong>.</li>
+          <li>Elige tus números disponibles. Para apartarlos, pulsa <strong>Reservar boletos</strong>. Para comprarlos, comprueba el total y tu saldo con ese organizador antes de pulsar <strong>Comprar con MASS</strong>.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>¿Cómo creo mi MASS ID o entro con una cuenta que ya tengo?</summary>
+        <p>En <strong>Crear cuenta</strong>, escribe tu nombre, elige el país de tu número de teléfono e ingresa el número nacional, tu correo y tu contraseña. Confirma la contraseña y sigue las indicaciones de verificación. Si la pantalla te pide confirmar tu correo, abre el enlace que recibas.</p>
+        <p>Si ya tienes MASS ID, pulsa <strong>Iniciar sesión</strong> e introduce tu correo y contraseña. Si ya configuraste una llave de acceso, puedes usar <strong>Entrar con Face ID o Passkey</strong>. En tu primer acceso a Sorteos Pro, revisa los documentos y la declaración de elegibilidad que te presente la plataforma.</p>
+      </details>
+      <details>
+        <summary>¿Qué hago si olvidé mi contraseña?</summary>
+        <p>Abre <strong>Iniciar sesión</strong>, escribe el correo de tu MASS ID y pulsa <strong>¿Olvidaste tu contraseña?</strong>. Abre el mensaje de recuperación y sigue el enlace para crear una contraseña nueva. Si el correo tarda en llegar, revisa también la carpeta de correo no deseado.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Boletos, reservas y compras</h3>
+      <details>
+        <summary>¿Cómo elijo mis números o pido que se elijan al azar?</summary>
+        <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres una selección al azar, pulsa <strong>Número de la suerte</strong> y elige cuántos quieres. Revisa la selección en el <strong>Centro de Compra</strong> antes de reservar o comprar.</p>
+      </details>
+      <details>
+        <summary>¿Cómo reservo boletos y cómo los pago después?</summary>
+        <ol>
+          <li>Selecciona tus números, pulsa <strong>Reservar boletos</strong> y confirma la cantidad. Espera el mensaje de reserva. El plazo de apartado depende de la rifa.</li>
+          <li>Para pagar, abre <strong>Mis boletos → Ver mis boletos</strong>. Busca la rifa y pulsa <strong>Ver boletos</strong>.</li>
+          <li>Localiza el número marcado como <strong>Reservado</strong>. Mientras la reserva siga disponible, pulsa <strong>Pagar con MASS</strong> y confirma el pago con tu saldo de ese organizador.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>¿Cómo compro con mi Wallet MASS y dónde veo la compra?</summary>
+        <p>Selecciona los números en la rifa. En el <strong>Centro de Compra</strong>, revisa los boletos, el total y tu saldo disponible. Si necesitas saldo, recarga primero. Cuando estés listo, pulsa <strong>Comprar con MASS</strong> y completa las aceptaciones que te pida la plataforma.</p>
+        <p>Consulta los números en <strong>Mis boletos → Ver mis boletos</strong>. Para revisar el registro de la operación, abre <strong>Mis compras MASS → Ver mis compras MASS</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Cómo pido que el organizador revise una compra?</summary>
+        <p>En <strong>Mis compras MASS</strong>, busca la operación. Si aparece <strong>Solicitar revisión</strong>, ábrela, explica qué ocurrió y pulsa <strong>Enviar solicitud</strong>. Vuelve a esa compra para consultar el estado y la respuesta del organizador.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Wallet MASS y recargas</h3>
+      <details>
+        <summary>¿Por qué veo un saldo diferente al cambiar de organizador?</summary>
+        <p>Cada organizador tiene su propia Wallet MASS para tus operaciones con él. Entra al organizador de la rifa y consulta <strong>Disponible con este organizador</strong> en el Centro de Compra. Antes de enviar una recarga, verifica el nombre del organizador y la moneda del método elegido.</p>
+      </details>
+      <details>
+        <summary>¿Cómo recargo con una transferencia o un depósito?</summary>
+        <ol>
+          <li>Con tu sesión iniciada, selecciona el organizador o abre su rifa. En <strong>Recarga tu Wallet MASS → Métodos de pago disponibles</strong>, elige un método marcado para <strong>Recarga Wallet MASS</strong>.</li>
+          <li>Revisa el titular, el destino y las instrucciones. Haz el pago por el medio indicado y conserva el comprobante.</li>
+          <li>En la misma recarga, selecciona la imagen o el PDF del comprobante y confirma el organizador cuando se te pida. Espera el aviso <strong>Recarga enviada</strong>.</li>
+          <li>Consulta <strong>Mis recargas MASS → Ver mis recargas MASS</strong>. El saldo se acredita cuando el organizador verifica los fondos recibidos.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>¿Cómo estimo cuánto equivale una recarga en otra moneda?</summary>
+        <p>Si el organizador habilitó el convertidor, entra en <strong>Recarga tu Wallet MASS → Abrir Convertidor MASS</strong>. Elige la moneda, escribe la <strong>Cantidad a depositar</strong> y pulsa <strong>Calcular</strong>. Verás una estimación. El saldo que se acredita depende del importe que reciba y verifique el organizador.</p>
+      </details>
+      <details>
+        <summary>¿Cómo recargo en efectivo en un Punto MASS?</summary>
+        <p>Si el organizador ofrece pago en efectivo en un punto autorizado, elige ese método en <strong>Recarga tu Wallet MASS</strong>. Confirma el organizador, indica el importe y pulsa <strong>Seleccionar este Punto MASS</strong> en el lugar donde vas a pagar.</p>
+        <p>En la <strong>Ficha MASS</strong>, revisa el punto, la cantidad, el código y el vencimiento. Presenta el código al operador y entrega el efectivo indicado. El saldo se acredita cuando el operador confirma la recepción. Para volver a consultar la ficha, usa <strong>Ver mi Ficha MASS</strong> o <strong>Historial de Fichas MASS</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Qué hago si ya pagué y todavía no aparece el saldo?</summary>
+        <p>Verifica que estás en el organizador al que pagaste. En <strong>Mis recargas MASS → Ver mis recargas MASS</strong>, busca el movimiento y revisa su estado. Una recarga con comprobante puede seguir pendiente de verificación. Si tienes dudas sobre el pago o aparece rechazado, contacta al organizador con la fecha, el importe y la referencia del comprobante.</p>
+      </details>
+      <details>
+        <summary>¿Cómo consulto o solicito el reembolso de una recarga?</summary>
+        <p>Abre la recarga en <strong>Mis recargas MASS</strong>. Si aparece <strong>Solicitar reembolso</strong>, lee la confirmación antes de continuar. La solicitud es por la recarga completa y los MASS correspondientes quedan retenidos mientras se procesa. Consulta el estado en esa misma tarjeta. Cuando se reporte el pago, comprueba que recibiste el depósito antes de confirmar la recepción.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Lucky Spin, premios y ayuda</h3>
+      <details>
+        <summary>¿Cómo uso el giro de mi boleto en MASS Lucky Spin?</summary>
+        <p>En <strong>MASS Lucky Spin</strong>, pulsa <strong>Elegir boleto</strong>. Selecciona un boleto de la lista y toca <strong>Girar ahora</strong> para usar su giro. La lista muestra los boletos que todavía tienen un giro disponible en sorteos habilitados. Puedes consultar tus boletos en <strong>Mis boletos</strong> aunque ya hayas usado su giro.</p>
+      </details>
+      <details>
+        <summary>Gané en Lucky Spin. ¿Dónde encuentro mi premio o el QR para canjearlo?</summary>
+        <p>Abre <strong>Mis Premios → Ver mis premios</strong> y localiza el premio de MASS Lucky Spin. Si figura como <strong>Premio pendiente de canje</strong>, presenta al organizador el QR que aparece en la tarjeta para recibirlo. Si ganaste un <strong>Boleto Gratis MASS</strong>, se entrega automáticamente y puedes consultar su número en <strong>Mis boletos</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Dónde veo los ganadores y cómo confirmo que recibí mi premio del sorteo?</summary>
+        <p>En <strong>Ganadores → Historial de ganadores</strong>, consulta los resultados publicados por el organizador. Si ganaste, entra a <strong>Mis Premios → Ver mis premios</strong> y revisa el estado de entrega del premio.</p>
+        <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
+      </details>
+      <details>
+        <summary>¿Cómo contacto al organizador de mi rifa?</summary>
+        <p>Abre la rifa y busca <strong>Contacto y Soporte</strong> para ver los canales que el organizador haya publicado. Si tienes la sesión iniciada, también puedes abrir <strong>Chat con el organizador</strong>, escribir tu consulta y pulsar <strong>Enviar mensaje</strong>. Incluye el nombre de la rifa y el número de boleto si tu pregunta es sobre una participación.</p>
+      </details>
+    </section>
+  </div>
+</dialog>
+
 <template id="plantillaGuiaOrganizadorMass">
-  <details class="guia-organizador">
+  <details class="guia-mass guia-organizador">
     <summary>Preguntas frecuentes del organizador</summary>
-    <div class="guia-organizador-contenido">
+    <div class="guia-mass-contenido guia-organizador-contenido">
       <label>Buscar en la guía
         <input type="search" placeholder="Divisas, métodos de pago, rifas, boletos…" autocomplete="off">
       </label>
@@ -65698,6 +65837,8 @@ if (errorOrganizadoresPublicos) {
     👥 Ver organizadores activos
 </button>
 
+<button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+
 <button
     type="button"
     onclick="mostrarPlanesOrganizadorPublicos()"
@@ -107958,6 +108099,11 @@ async function abrirMiPerfil(){
 function crearGuiaOrganizadorMass() {
     const plantilla = document.getElementById("plantillaGuiaOrganizadorMass");
     const guia = plantilla.content.firstElementChild.cloneNode(true);
+    activarBusquedaGuiaMass(guia);
+    return guia;
+}
+
+function activarBusquedaGuiaMass(guia) {
     const buscador = guia.querySelector('input[type="search"]');
     const estado = guia.querySelector('[role="status"]');
     const normalizar = texto => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -107987,7 +108133,15 @@ function crearGuiaOrganizadorMass() {
         else if (!visibles) estado.textContent = "Sin coincidencias. Prueba con otra palabra.";
         else estado.textContent = visibles === 1 ? "1 pregunta encontrada." : visibles + " preguntas encontradas.";
     });
-    return guia;
+}
+
+function abrirGuiaUsuarioMass() {
+    const guia = document.getElementById("guiaUsuarioMass");
+    if (!guia.dataset.busquedaActiva) {
+        activarBusquedaGuiaMass(guia);
+        guia.dataset.busquedaActiva = "true";
+    }
+    if (!guia.open) guia.showModal();
 }
 
 function mostrarGuiaOrganizadorMass() {
@@ -118232,6 +118386,8 @@ font-family:Arial, sans-serif;">
       <button type="button" onclick="mostrarLoginOrganizadorV2()">
         📝 Crear cuenta
       </button>
+
+      <button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
 
 	<button
   type="button"
