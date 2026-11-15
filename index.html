@@ -2834,7 +2834,7 @@ Cargando historial...
           <summary>¿Cómo creo mi primera rifa?</summary>
           <ol>
             <li>En el <strong>Panel Administrativo</strong>, abre <strong>Sorteos y premios → Sorteos → Nueva dinámica</strong>.</li>
-            <li>Escribe el título y el primer premio. Indica el precio del boleto en la divisa principal. Elige la cantidad de números en múltiplos de 100, dentro de la capacidad de tu plan. En <strong>Modalidad</strong>, elige cuántos números entrega cada boleto.</li>
+            <li>Escribe el título y el primer premio. Indica el precio del boleto en la divisa principal. En <strong>Plan para esta dinámica</strong>, selecciona un plan vigente con cupo de tu organización. Elige la cantidad de números en múltiplos de 100, dentro del límite que muestra ese plan. En <strong>Modalidad</strong>, elige cuántos números entrega cada boleto.</li>
             <li>Elige fecha, hora y zona horaria. Define el tiempo máximo de apartado, cuándo cierran los apartados y el porcentaje mínimo para sortear.</li>
             <li>Selecciona el método del resultado. Si eliges <strong>Aleatorio automático</strong> con varios premios, escribe el nombre de cada uno. Si el método pide las últimas cifras, elige una cantidad admitida.</li>
             <li>Pulsa <strong>Guardar dinámica</strong>. La rifa queda <strong>programada</strong>. Para abrirla a los participantes, publica sus reglas y actívala como se indica en la siguiente pregunta.</li>
@@ -31377,6 +31377,8 @@ function actualizarCamposPremiosAutomaticos() {
 }	
 
 	function cerrarModalRifa() {
+    consultaPlanesRifaMass++;
+    planesRifaMass = { organizador: "", opciones: [] };
     document.getElementById("modalRifa").style.display = "none";
 }
 
@@ -31814,6 +31816,88 @@ renderizarDivisasAdicionales();
   }
 }	
 
+let consultaPlanesRifaMass = 0;
+let guardandoFormularioRifaMass = false;
+let planesRifaMass = { organizador: "", opciones: [] };
+
+function organizadorFormularioRifaMass() {
+  return String(localStorage.getItem("admin_organizador_id") || clienteActual?.id || "").trim();
+}
+
+async function cargarPlanesRifaMass() {
+  const turno = ++consultaPlanesRifaMass;
+  const grupo = document.getElementById("grupoPlanRifaMass");
+  const selector = document.getElementById("planRifaMass");
+  const aviso = document.getElementById("estadoPlanRifaMass");
+  const edicion = Boolean(document.getElementById("formRifaId").value);
+  const organizador = organizadorFormularioRifaMass();
+  const anterior = planesRifaMass.organizador === organizador ? selector.value : "";
+  planesRifaMass = { organizador: "", opciones: [] };
+  grupo.hidden = edicion;
+  selector.replaceChildren(new Option("Selecciona un plan", ""));
+  selector.disabled = true;
+  aviso.textContent = "";
+  if (edicion) return;
+  if (!organizador) {
+    aviso.textContent = "Abre el panel del organizador para consultar sus planes.";
+    return;
+  }
+  aviso.textContent = "Consultando los planes disponibles…";
+  try {
+    const { data, error } = await supabaseClient.rpc("listar_derechos_disponibles_creacion_r3_seguro", {
+      p_organizador_id: organizador
+    });
+    if (turno !== consultaPlanesRifaMass || organizador !== organizadorFormularioRifaMass()) return;
+    if (data?.codigo === "SIN_PERMISO_COMERCIAL" || data?.codigo === "NO_AUTORIZADO") {
+      aviso.textContent = "Tu sesión no tiene permiso para consultar los planes de este organizador.";
+      return;
+    }
+    const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
+    if (error || data?.ok !== true || data.organizador_id !== organizador || !Array.isArray(data.opciones) ||
+        !data.opciones.every(op => op && uuid.test(op.adquisicion_id) && Number.isSafeInteger(op.limite_numeros) &&
+          op.limite_numeros > 0 && Number.isSafeInteger(op.cupos_disponibles) && op.cupos_disponibles > 0)) {
+      throw new Error("Consulta de planes incompleta");
+    }
+    planesRifaMass = { organizador, opciones: data.opciones };
+    if (!data.opciones.length) {
+      aviso.textContent = "Este organizador no tiene un plan vigente con cupo disponible para crear otra dinámica.";
+      return;
+    }
+    for (const op of data.opciones) {
+      const nombre = op.plan_nombre || op.plan_codigo || "Plan MASS";
+      const plazas = op.cupos_disponibles === 1 ? "1 cupo" : op.cupos_disponibles + " cupos";
+      selector.add(new Option(nombre + " · Hasta " + op.limite_numeros.toLocaleString("es-MX") +
+        " números · " + plazas + " · Ref. " + op.adquisicion_id.slice(-8), op.adquisicion_id));
+    }
+    if (data.opciones.some(op => op.adquisicion_id === anterior)) selector.value = anterior;
+    selector.disabled = false;
+    aviso.textContent = "Al crear la dinámica se usará un cupo del plan que elijas.";
+  } catch (error) {
+    if (turno === consultaPlanesRifaMass && organizador === organizadorFormularioRifaMass()) {
+      aviso.textContent = "No se pudieron consultar los planes. Pulsa Actualizar planes para volver a intentar.";
+    }
+  }
+}
+
+function seleccionarPlanParaNuevaRifaMass(total) {
+  const selector = document.getElementById("planRifaMass");
+  const aviso = document.getElementById("estadoPlanRifaMass");
+  const seleccion = planesRifaMass.opciones.find(op => op.adquisicion_id === selector.value);
+  if (planesRifaMass.organizador !== organizadorFormularioRifaMass() || selector.disabled || !seleccion) {
+    alert(selector.disabled && aviso.textContent ? aviso.textContent : "Selecciona el plan de este organizador que usarás para la dinámica.");
+    if (selector.disabled) document.getElementById("actualizarPlanesRifaMass").focus();
+    else selector.focus();
+    return null;
+  }
+  if (total > seleccion.limite_numeros) {
+    alert("El plan seleccionado admite hasta " + seleccion.limite_numeros.toLocaleString("es-MX") +
+      " números. Ajusta la cantidad o elige otro plan disponible.");
+    document.getElementById("formTotal").focus();
+    return null;
+  }
+  return seleccion;
+}
+
 function abrirModalRifa(datos = null) {
 
     document.getElementById("modalRifa").style.display = "block";
@@ -31822,6 +31906,8 @@ function abrirModalRifa(datos = null) {
         datos ? "✏️ Editar rifa" : "🎯 Nueva rifa";
 
     document.getElementById("formRifaId").value = datos?.id || "";
+    planesRifaMass = { organizador: "", opciones: [] };
+    cargarPlanesRifaMass();
     document.getElementById("formTitulo").value = datos?.titulo || "";
     document.getElementById("formPremio").value = datos?.premio || "";
     document.getElementById("formPrecio").value = datos?.precio_boleto || "";
@@ -31908,6 +31994,22 @@ premiosExistentes.forEach(
 }
 
 async function guardarRifaFormulario() {
+  if (guardandoFormularioRifaMass) return;
+  guardandoFormularioRifaMass = true;
+  const boton = document.getElementById("guardarFormularioRifaMass");
+  boton.disabled = true;
+  try {
+    await guardarDatosFormularioRifaMass();
+  } catch (error) {
+    console.error("Error al confirmar la operación de la dinámica:", error);
+    alert("No se pudo confirmar el resultado. Revisa la lista de sorteos antes de volver a guardar.");
+  } finally {
+    guardandoFormularioRifaMass = false;
+    boton.disabled = false;
+  }
+}
+
+async function guardarDatosFormularioRifaMass() {
   const id = document.getElementById("formRifaId").value;
 
   const titulo = document.getElementById("formTitulo").value.trim();
@@ -32271,9 +32373,11 @@ precios_mass_unidad:
     }
 
   } else {
+    const plan = seleccionarPlanParaNuevaRifaMass(totalNumeros);
+    if (!plan) return;
+    payload.adquisicion_id = plan.adquisicion_id;
     payload.estado = "programada";
-    payload.organizador_id =
-      localStorage.getItem("admin_organizador_id") || clienteActual?.id;
+    payload.organizador_id = planesRifaMass.organizador;
 
         // PLAN-F4A5-C3B4C6-G3A
     // Creación segura con premios iniciales.
@@ -32311,13 +32415,16 @@ precios_mass_unidad:
     nuevaRifa =
       !error &&
       res.data?.ok === true &&
-      res.data?.rifa_id
+      res.data?.rifa_id &&
+      res.data.asociacion_comercial_r3 === true &&
+      res.data.organizador_id === payload.organizador_id &&
+      res.data.adquisicion_id === payload.adquisicion_id
         ? { id: res.data.rifa_id }
         : null;
 
     if (!error && !nuevaRifa) {
       error = new Error(
-        "La creación segura no devolvió una dinámica válida."
+        "No se pudo confirmar la asociación de la dinámica al plan. Revisa la lista de sorteos antes de volver a guardar."
       );
     }
 
@@ -32361,7 +32468,10 @@ precios_mass_unidad:
       error.message || ""
     );
 
-    if (motivo.includes("ESTRUCTURA_INMUTABLE")) {
+    if (!id && /R3_(COMPRA_YA_UTILIZADA|CUPO_MENSUAL_(AGOTADO|EXCEDIDO)|DERECHO_(NO_VIGENTE|NO_EXISTE)|ADQUISICION_NO_(ACTIVADA|COINCIDE)|LIMITE_(NUMEROS|CONTRATADO)_EXCEDIDO)/.test(motivo)) {
+      alert("El plan ya no dispone del cupo, la vigencia o la capacidad que requiere esta rifa. Revisa los planes disponibles.");
+      await cargarPlanesRifaMass();
+    } else if (motivo.includes("ESTRUCTURA_INMUTABLE")) {
       alert(
         "🔒 Modificación estructural bloqueada.\n\n" +
         "No puedes cambiar la cantidad de boletos, " +
@@ -32391,264 +32501,8 @@ cerrarModalRifa();
 mostrarSorteosAdmin();
 }	
 
-async function crearRifaAdmin(){
-
-    const titulo = prompt("Título de la rifa");
-    if(!titulo) return;
-
-    const premio = prompt("1° Premio");
-    if(!premio) return;
-
-    const precio = prompt("Precio por boleto");
-    if(!precio) return;
-
-    const total = prompt("Cantidad de números");
-    if(!total) return;
-
-const totalNumeros =
-  Number(total);
-
-if (
-  !Number.isInteger(
-    totalNumeros
-  ) ||
-  totalNumeros < 100 ||
-  totalNumeros > 1000000 ||
-  totalNumeros % 100 !== 0
-) {
-
-  alert(
-    "❌ Cantidad no válida.\n\n" +
-    "Usa una cantidad entre 100 y 1,000,000, " +
-    "en múltiplos de 100."
-  );
-
-  return;
-}
-
-const modalidadIngresada = prompt(
-`Modalidad de la rifa:
-
-1 = entrega 1 número
-2 = entrega 2 números
-4 = entrega 4 números
-5 = entrega 5 números
-10 = entrega 10 números
-
-Escribe la modalidad:`,
-"1"
-);
-
-if(!modalidadIngresada) return;
-
-const modalidad = Number(modalidadIngresada);
-
-if (
-  !Number.isInteger(modalidad) ||
-  modalidad <= 0 ||
-  totalNumeros % modalidad !== 0
-) {
-  alert("❌ Esa modalidad no es válida para la cantidad de números elegida.");
-  return;
-}
-
-const numerosVisibles = totalNumeros / modalidad;	
-
-    const fecha = prompt(
-`📅 Fecha del sorteo
-
-Formato:
-AAAA-MM-DD
-
-Ejemplo:
-2026-12-24`
-);
-    if(!fecha) return;
-
-	const metodoIngresado = prompt(
-`Método de selección del ganador:
-
-1 = Pick 3 Texas
-2 = Lotería Nacional
-3 = Resultado manual
-4 = Aleatorio automático
-
-Escribe el número del método:`,
-"1"
-);
-
-if(!metodoIngresado) return;
-
-const metodosSorteo = {
-  "1": "pick 3 texas",
-  "2": "lotería nacional",
-  "3": "prueba manual",
-  "4": "aleatorio automático"
-};
-
-const metodo =
-  metodosSorteo[
-    metodoIngresado.trim()
-  ];
-
-if(!metodo){
-  alert(
-    "❌ Método no válido. Escribe 1, 2, 3 o 4."
-  );
-  return;
-}
-
-let cifrasSorteo = null;
-
-if (metodo !== "aleatorio automático") {
-
-  let cifrasPermitidas =
-  [2, 3, 4, 5, 6];
-
-let textoCifrasPermitidas =
-  "2, 3, 4, 5 o 6";
-
-if (metodo === "pick 3 texas") {
-
-  cifrasPermitidas =
-    [2, 3];
-
-  textoCifrasPermitidas =
-    "2 o 3";
-
-} else if (
-  metodo === "lotería nacional" ||
-  metodo === "loteria nacional"
-) {
-
-  cifrasPermitidas =
-    [2, 3, 4, 5];
-
-  textoCifrasPermitidas =
-    "2, 3, 4 o 5";
-}
-
-const cifrasIngresadas = prompt(
-  "Últimas cuántas cifras se utilizarán (" +
-  textoCifrasPermitidas +
-  ")"
-);
-
-if (!cifrasIngresadas) return;
-
-cifrasSorteo =
-  Number(cifrasIngresadas);
-
-if (
-  !Number.isInteger(cifrasSorteo) ||
-  !cifrasPermitidas.includes(
-    cifrasSorteo
-  )
-) {
-
-  alert(
-    "❌ Cantidad de cifras no válida. Usa " +
-    textoCifrasPermitidas +
-    "."
-  );
-
-  return;
-}
-}
-
-const imagen = prompt(
-"URL de imagen del premio (opcional)"
-) || "";
-
-    
-  // PLAN-F4A5-C3B4C6-G3B
-  // Crear dinámica y premio inicial mediante Supabase.
-
-  const organizadorId = clienteActual?.id;
-
-  if (!organizadorId) {
-    alert("❌ No se identificó el organizador.");
-    return;
-  }
-
-  const { data: resultadoCreacion, error } =
-    await supabaseClient.rpc(
-      "crear_dinamica_premios_iniciales_segura",
-      {
-        p_organizador_id: organizadorId,
-
-        p_configuracion: {
-          titulo,
-          premio,
-          precio_boleto: Number(precio),
-          total_numeros: totalNumeros,
-          modalidad,
-          fecha_sorteo: fecha,
-          metodo_sorteo: metodo,
-          cifras_sorteo: cifrasSorteo,
-          imagen_url: imagen,
-          estado: "programada",
-          organizador_id: organizadorId
-        },
-
-        p_premios: [
-          {
-            lugar: 1,
-            nombre: premio,
-            descripcion: "Premio principal",
-            imagen_url: imagen || null
-          }
-        ]
-      }
-    );
-
-  if (
-    error ||
-    resultadoCreacion?.ok !== true ||
-    !resultadoCreacion?.rifa_id
-  ) {
-    console.error(
-      "Error en creación segura de dinámica:",
-      error || resultadoCreacion
-    );
-
-    alert("❌ No fue posible crear la dinámica.");
-    return;
-  }
-
-  const nuevaRifa = {
-    id: resultadoCreacion.rifa_id
-  };
-
-  // Los premios iniciales ya están guardados.
-  // Generar boletos mediante la RPC existente.
-
-  const generacionBoletosCompleta =
-    await generarBoletosParaRifa(
-      nuevaRifa.id,
-      totalNumeros
-    );
-
-  if (!generacionBoletosCompleta) {
-    console.error(
-      "Dinámica creada con premios, " +
-      "pero generación de boletos incompleta:",
-      nuevaRifa.id
-    );
-
-    alert(
-      "⚠️ La dinámica y sus premios fueron guardados, " +
-      "pero los boletos no quedaron completos.\n\n" +
-      "La dinámica permanecerá programada."
-    );
-
-    mostrarSorteosAdmin();
-    return;
-  }
-
-  alert("✅ Dinámica creada");
-  mostrarSorteosAdmin();
-
+function crearRifaAdmin() {
+  abrirModalRifa();
 }
 
 async function generarBoletosParaRifa(
@@ -117751,7 +117605,13 @@ font-family:Arial, sans-serif;">
     Las divisas adicionales son únicamente informativas.
   </div>
 </div>
-    <input id="formTotal" type="number" placeholder="Cantidad de números">
+    <div id="grupoPlanRifaMass" hidden>
+      <label for="planRifaMass">Plan para esta dinámica</label>
+      <select id="planRifaMass" aria-describedby="estadoPlanRifaMass" disabled></select>
+      <div id="estadoPlanRifaMass" role="status" aria-live="polite"></div>
+      <button type="button" id="actualizarPlanesRifaMass" onclick="cargarPlanesRifaMass()">Actualizar planes</button>
+    </div>
+    <input id="formTotal" type="number" min="100" max="1000000" step="100" placeholder="Cantidad de números">
 
 <select id="formModalidad">
   <option value="1">Modalidad 1 — entrega 1 número</option>
@@ -117899,7 +117759,7 @@ font-family:Arial, sans-serif;">
 
     <br><br>
 
-    <button class="btn-main" onclick="guardarRifaFormulario()">💾 Guardar dinámica</button>
+    <button type="button" id="guardarFormularioRifaMass" class="btn-main" onclick="guardarRifaFormulario()">💾 Guardar dinámica</button>
     <button class="btn-dark" onclick="cerrarModalRifa()">❌ Cancelar</button>
   </div>
 </div>
