@@ -44,6 +44,60 @@ button,input{
   font-weight:bold;
 }
 button{cursor:pointer}
+#barraSocialRifa {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px auto;
+}
+#barraSocialRifa button {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  min-width: 52px;
+  min-height: 48px;
+  margin: 0;
+  padding: 5px 6px;
+  border: 1px solid rgba(var(--mass-org-accent-rgb, 57,255,20), .26);
+  border-radius: 12px;
+  background: transparent;
+  color: #f4f4f4;
+  font-size: 12px;
+  line-height: 1.1;
+}
+#barraSocialRifa .icono-social {
+  font-size: 20px;
+  line-height: 1;
+}
+#barraSocialRifa button[aria-pressed="true"] {
+  background: rgba(var(--mass-org-accent-rgb, 57,255,20), .14);
+  border-color: var(--mass-org-accent, #39ff14);
+}
+#barraSocialRifa button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  #barraSocialRifa button:hover {
+    border-color: var(--mass-org-accent, #39ff14);
+  }
+}
+@media (min-width: 1360px) and (min-height: 600px) {
+  #barraSocialRifa {
+    position: fixed;
+    right: 14px;
+    bottom: 166px;
+    z-index: 99997;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    margin: 0;
+  }
+}
+
 .btn-main{background:#38b000;color:white}
 .btn-dark{background:#222;color:white;border:1px solid #38b000}
 
@@ -1254,6 +1308,29 @@ margin:0 auto 10px auto;
 
 </div>
 
+
+<div id="barraSocialRifa" role="group" aria-label="Interacciones de la dinámica">
+  <button id="btnMeGustaRifa" type="button" data-activa="false" aria-pressed="false"
+    aria-label="Me gusta esta dinámica" title="Me gusta" onclick="alternarReaccionRifa('me_gusta')">
+    <span class="icono-social" aria-hidden="true">👍</span>
+    <span id="contadorMeGustaRifa">0</span>
+  </button>
+  <button id="btnNoMeGustaRifa" type="button" data-activa="false" aria-pressed="false"
+    aria-label="No me gusta esta dinámica" title="No me gusta" onclick="alternarReaccionRifa('no_me_gusta')">
+    <span class="icono-social" aria-hidden="true">👎</span>
+    <span id="contadorNoMeGustaRifa">0</span>
+  </button>
+  <button id="btnComentariosRifa" type="button" aria-label="Comentarios de esta dinámica"
+    title="Comentarios" onclick="abrirComentariosRifa()">
+    <span class="icono-social" aria-hidden="true">💬</span>
+    <span id="contadorComentariosRifa">0</span>
+  </button>
+  <button id="btnCompartirRifa" type="button" aria-label="Compartir esta dinámica"
+    title="Compartir" onclick="compartirRifaActual()">
+    <span class="icono-social" aria-hidden="true">📤</span>
+    <span>Compartir</span>
+  </button>
+</div>
 
 <!-- ===================================================== -->
 <!-- MASS - BOTÓN CHAT CON EL ORGANIZADOR -->
@@ -83559,29 +83636,6 @@ function pintarEstadoReaccionesRifa(
                     : "false"
             );
 
-
-            boton.style.opacity =
-                activo
-                    ? "1"
-                    : ".78";
-
-
-            boton.style.background =
-                activo
-                    ? "rgba(var(--mass-org-accent-rgb, 57,255,20), .24)"
-                    : "rgba(8,8,8,.58)";
-
-
-            boton.style.borderColor =
-                activo
-                    ? "var(--mass-org-accent, #39ff14)"
-                    : "rgba(var(--mass-org-accent-rgb, 57,255,20), .48)";
-
-
-            boton.style.boxShadow =
-                activo
-                    ? "0 0 16px rgba(var(--mass-org-accent-rgb, 57,255,20), .48)"
-                    : "none";
         };
 
 
@@ -118790,257 +118844,6 @@ font-family:Arial, sans-serif;">
 
   </div>
 </div>
-
-<!-- ===================================================== -->
-<!-- MASS — INTERACCIÓN SOCIAL DE LA DINÁMICA -->
-<!-- DYN-F3A4 -->
-<!-- ===================================================== -->
-
-<div
-  id="barraSocialRifa"
-  aria-label="Interacciones de la dinámica"
-  style="
-    display:none;
-    position:fixed;
-    right:14px;
-    bottom:166px;
-    z-index:99997;
-
-    flex-direction:column;
-    align-items:center;
-    gap:8px;
-
-    padding:7px 6px;
-
-    border:1px solid
-      rgba(
-        var(--mass-org-accent-rgb, 57,255,20),
-        .42
-      );
-
-    border-radius:22px;
-
-    background:rgba(8,8,8,.46);
-
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-
-    box-shadow:
-      0 0 16px
-      rgba(
-        var(--mass-org-accent-rgb, 57,255,20),
-        .18
-      );
-  "
->
-
-  <button
-    id="btnMeGustaRifa"
-    type="button"
-    data-activa="false"
-    aria-pressed="false"
-    aria-label="Me gusta esta dinámica"
-    title="Me gusta"
-    onclick="alternarReaccionRifa('me_gusta')"
-    style="
-      width:48px;
-      min-width:48px;
-      height:58px;
-      padding:4px 2px;
-
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:1px;
-
-      border:1px solid
-        rgba(
-          var(--mass-org-accent-rgb, 57,255,20),
-          .48
-        );
-
-      border-radius:16px;
-
-      background:rgba(8,8,8,.58);
-
-      color:white;
-      cursor:pointer;
-      opacity:.78;
-    "
-  >
-    <span style="font-size:23px;line-height:1;">
-      👍
-    </span>
-
-    <span
-      id="contadorMeGustaRifa"
-      style="
-        font-size:11px;
-        line-height:1;
-        font-weight:bold;
-      "
-    >
-      0
-    </span>
-  </button>
-
-
-  <button
-    id="btnNoMeGustaRifa"
-    type="button"
-    data-activa="false"
-    aria-pressed="false"
-    aria-label="No me gusta esta dinámica"
-    title="No me gusta"
-    onclick="alternarReaccionRifa('no_me_gusta')"
-    style="
-      width:48px;
-      min-width:48px;
-      height:58px;
-      padding:4px 2px;
-
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:1px;
-
-      border:1px solid
-        rgba(
-          var(--mass-org-accent-rgb, 57,255,20),
-          .48
-        );
-
-      border-radius:16px;
-
-      background:rgba(8,8,8,.58);
-
-      color:white;
-      cursor:pointer;
-      opacity:.78;
-    "
-  >
-    <span style="font-size:23px;line-height:1;">
-      👎
-    </span>
-
-    <span
-      id="contadorNoMeGustaRifa"
-      style="
-        font-size:11px;
-        line-height:1;
-        font-weight:bold;
-      "
-    >
-      0
-    </span>
-  </button>
-
-    <button
-    id="btnComentariosRifa"
-    type="button"
-    aria-label="Comentarios de esta dinámica"
-    title="Comentarios"
-    onclick="abrirComentariosRifa()"
-    style="
-      width:48px;
-      min-width:48px;
-      height:58px;
-      padding:4px 2px;
-
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:1px;
-
-      border:1px solid
-        rgba(
-          var(--mass-org-accent-rgb, 57,255,20),
-          .48
-        );
-
-      border-radius:16px;
-
-      background:rgba(8,8,8,.58);
-
-      color:white;
-      cursor:pointer;
-      opacity:.78;
-    "
-  >
-    <span style="font-size:23px;line-height:1;">
-      💬
-    </span>
-
-    <span
-      id="contadorComentariosRifa"
-      style="
-        font-size:11px;
-        line-height:1;
-        font-weight:bold;
-      "
-    >
-      0
-    </span>
-  </button>
-
-    <button
-    id="btnCompartirRifa"
-    type="button"
-    aria-label="Compartir esta dinámica"
-    title="Compartir"
-    onclick="compartirRifaActual()"
-    style="
-      width:48px;
-      min-width:48px;
-      height:58px;
-      padding:4px 2px;
-
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:1px;
-
-      border:1px solid
-        rgba(
-          var(--mass-org-accent-rgb, 57,255,20),
-          .48
-        );
-
-      border-radius:16px;
-
-      background:rgba(8,8,8,.58);
-
-      color:white;
-      cursor:pointer;
-      opacity:.78;
-    "
-  >
-    <span
-      style="
-        font-size:23px;
-        line-height:1;
-      "
-    >
-      📤
-    </span>
-
-    <span
-      style="
-        font-size:9px;
-        line-height:1;
-        font-weight:bold;
-      "
-    >
-      Compartir
-    </span>
-  </button>
-
-</div>
-
 
 <button
   id="btnNotificacionesMass"
