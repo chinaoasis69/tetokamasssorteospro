@@ -1105,6 +1105,11 @@ button{cursor:pointer}
   #guiaUsuarioMass form { margin: 0; }
   #guiaUsuarioMass form button { margin: 0; width: auto; }
   #guiaUsuarioMass .guia-mass-contenido { padding-top: 12px; overflow-y: auto; overscroll-behavior: contain; }
+  #ejemploEligePorMiMass { margin: 10px 0 14px; padding: 12px; border: 1px solid #394737; border-radius: 10px; }
+  #ejemploEligePorMiMass figcaption { margin-bottom: 6px; }
+  #ejemploEligePorMiMass strong { color: #91ed73; }
+  #ejemploEligePorMiMass ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding: 0; margin: 8px 0 0; list-style: none; }
+  #ejemploEligePorMiMass li { margin: 0; }
 </style>
 </head>
 
@@ -1407,7 +1412,7 @@ Selecciona una rifa
   <div id="barraPorcentaje" style="width:0%; height:18px; background:#39ff14;"></div>
 </div>  
 	  
-  <button class="btn-main" onclick="abrirSelectorSuerte()">🎟️ MASS Elige por Mí</button>
+  <button id="btnEligePorMiMass" class="btn-main" onclick="abrirSelectorSuerte()">🎟️ MASS Elige por Mí</button>
   <button class="btn-dark" onclick="abrirRecargaWalletDesdeRifa();">💰 Recarga tu Wallet MASS</button>
   <button class="btn-dark" onclick="mostrarSoloDisponibles()">🟢 Solo disponibles</button>
   <button class="btn-dark" onclick="mostrarTodos()">👁️ Ver todos</button>
@@ -2678,6 +2683,11 @@ Cargando historial...
       <details>
         <summary>¿Cómo elijo mis números o pido que se elijan al azar?</summary>
         <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y elige 1, 3, 5 o 10 boletos. Verás los números seleccionados al azar en el <strong>Centro de Compra</strong>. Ahí decides si los reservas o los compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
+        <figure id="ejemploEligePorMiMass" hidden>
+          <figcaption>Ejemplo de las opciones que verás en la rifa</figcaption>
+          <strong></strong>
+          <ul aria-label="Cantidades de boletos"></ul>
+        </figure>
       </details>
       <details>
         <summary>¿Cómo reservo boletos y cómo los pago después?</summary>
@@ -2686,6 +2696,11 @@ Cargando historial...
           <li>Para pagar, abre <strong>Mis boletos → Ver mis boletos</strong>. Busca la rifa y pulsa <strong>Ver boletos</strong>.</li>
           <li>Localiza el número marcado como <strong>Reservado</strong>. Mientras la reserva siga disponible, pulsa <strong>Pagar con MASS</strong> y confirma el pago con tu saldo de ese organizador.</li>
         </ol>
+      </details>
+      <details>
+        <summary>¿Qué pasa si no pago mi número reservado antes del sorteo?</summary>
+        <p>El número vuelve a estar <strong>disponible</strong> cuando se cumple el límite que el organizador configuró. Si fijó un <strong>tiempo máximo de apartado</strong>, el plazo cuenta desde que reservaste. Si fijó un <strong>cierre de apartados antes del sorteo</strong>, al llegar ese cierre también se liberan los números que sigan reservados sin pagar. Si configuró ambos límites, se aplica el que llegue primero. Si desactivó los dos, la reserva queda sin liberación automática por esos plazos.</p>
+        <p>Por ejemplo, si el sorteo es el sábado a las 8 de la noche y el cierre de apartados es 24 horas antes, los apartados pendientes se liberan el viernes a las 8 de la noche, aunque todavía les quedara tiempo individual. Si tienes dudas sobre los plazos de tu rifa, consulta <strong>Ver Reglas Oficiales</strong> o pregunta al organizador.</p>
       </details>
       <details>
         <summary>¿Cómo compro con mi Wallet MASS y dónde veo la compra?</summary>
@@ -2737,6 +2752,10 @@ Cargando historial...
       <details>
         <summary>¿Cómo uso el giro de mi boleto en MASS Lucky Spin?</summary>
         <p>En <strong>MASS Lucky Spin</strong>, pulsa <strong>Elegir boleto</strong>. Selecciona un boleto de la lista y toca <strong>Girar ahora</strong> para usar su giro. La lista muestra los boletos que todavía tienen un giro disponible en sorteos habilitados. Puedes consultar tus boletos en <strong>Mis boletos</strong> aunque ya hayas usado su giro.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si termina el sorteo y no usé mis giros de MASS Lucky Spin?</summary>
+        <p>Usa tus giros mientras la rifa esté activa, antes de la fecha y hora del sorteo. Cuando termina esa rifa, los giros que te quedaron pendientes dejan de estar disponibles. Tu boleto sigue en <strong>Mis boletos</strong> y los premios que ya ganaste se consultan en <strong>Mis Premios</strong>.</p>
       </details>
       <details>
         <summary>Gané en Lucky Spin. ¿Dónde encuentro mi premio o el QR para canjearlo?</summary>
@@ -2800,7 +2819,7 @@ Cargando historial...
         </details>
         <details>
           <summary>¿Qué diferencia hay entre el tiempo de apartado y el cierre de apartados?</summary>
-          <p><strong>Tiempo máximo de apartado</strong> indica cuánto tiempo se conserva una reserva. <strong>Cierre de apartados antes del sorteo</strong> indica con cuánta anticipación dejan de aceptarse nuevos apartados. Por ejemplo, puedes permitir reservas de un día y cerrar los nuevos apartados dos días antes del sorteo.</p>
+          <p><strong>Tiempo máximo de apartado</strong> indica cuánto tiempo puede pasar desde que se reserva un número hasta que se libera por falta de pago. <strong>Cierre de apartados antes del sorteo</strong> fija el momento en que dejan de aceptarse nuevos apartados y se liberan los que sigan pendientes de pago. Si activas ambos límites, se aplica el primero que se cumpla.</p>
         </details>
         <details>
           <summary>¿Cómo cambio, pauso o reprogramo una dinámica?</summary>
@@ -108138,6 +108157,19 @@ function activarBusquedaGuiaMass(guia) {
 function abrirGuiaUsuarioMass() {
     const guia = document.getElementById("guiaUsuarioMass");
     if (!guia.dataset.busquedaActiva) {
+        const ejemplo = guia.querySelector("#ejemploEligePorMiMass");
+        const boton = document.getElementById("btnEligePorMiMass");
+        const cantidades = document.querySelectorAll("#selectorSuerte button");
+        if (boton && cantidades.length) {
+            ejemplo.querySelector("strong").textContent = boton.textContent.trim();
+            const lista = ejemplo.querySelector("ul");
+            for (const cantidad of cantidades) {
+                const item = document.createElement("li");
+                item.textContent = cantidad.textContent.trim();
+                lista.appendChild(item);
+            }
+            ejemplo.hidden = false;
+        }
         activarBusquedaGuiaMass(guia);
         guia.dataset.busquedaActiva = "true";
     }
