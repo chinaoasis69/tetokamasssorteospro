@@ -1106,6 +1106,8 @@ button{cursor:pointer}
   #guiaUsuarioMass form button { margin: 0; width: auto; }
   #guiaUsuarioMass .guia-mass-contenido { padding-top: 12px; overflow-y: auto; overscroll-behavior: contain; }
   #ejemploEligePorMiMass { margin: 10px 0 14px; padding: 12px; border: 1px solid #394737; border-radius: 10px; }
+  #publicacionReglasGuiaMass .texto-reglas-guia-mass { white-space: pre-wrap; overflow-wrap: anywhere; }
+  #publicacionReglasGuiaMass select { max-width: 100%; font: inherit; }
   #ejemploEligePorMiMass figcaption { margin-bottom: 6px; }
   #ejemploEligePorMiMass strong { color: #91ed73; }
   #ejemploEligePorMiMass ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding: 0; margin: 8px 0 0; list-style: none; }
@@ -1424,7 +1426,7 @@ Selecciona una rifa
   ⚖️ Ver Reglas Oficiales
 </button>
 
-<button type="button" class="btn-dark" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+<button type="button" class="btn-dark" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass(RIFA_ID)">Preguntas frecuentes del usuario</button>
 
 <button
   id="btnContactoSoporteRifa"
@@ -2676,6 +2678,16 @@ Cargando historial...
         <summary>¿Qué hago si olvidé mi contraseña?</summary>
         <p>Abre <strong>Iniciar sesión</strong>, escribe el correo de tu MASS ID y pulsa <strong>¿Olvidaste tu contraseña?</strong>. Abre el mensaje de recuperación y sigue el enlace para crear una contraseña nueva. Si el correo tarda en llegar, revisa también la carpeta de correo no deseado.</p>
       </details>
+    </section>
+
+    <section>
+      <h3>Reglas Oficiales de la rifa</h3>
+      <details>
+        <summary>¿Dónde consulto las condiciones para participar en una rifa?</summary>
+        <p>Abre la rifa que te interesa y pulsa <strong>Preguntas frecuentes del usuario</strong>. Aquí verás las reglas que publicó su organizador y el número de versión. Si publicó varias versiones, puedes elegir cuál leer. También puedes abrir el documento desde el botón <strong>Ver Reglas Oficiales</strong> de la rifa.</p>
+        <p>Con la plantilla de MASS, puedes abrir preguntas como «¿Quién puede participar?», «¿Cómo se elige al ganador?» o «¿Cómo y cuándo puedo reclamar mi premio?». Cada respuesta reproduce el apartado que publicó el organizador. También puedes leer el texto completo, incluidas las reglas que el organizador haya escrito en formato libre.</p>
+      </details>
+      <div id="publicacionReglasGuiaMass"></div>
     </section>
 
     <section>
@@ -20507,6 +20519,10 @@ async function ejecutarRifaAleatoria(
 //   public.rifa_reglas_oficiales
 // ============================================================
 
+function consultarReglasPublicadasMass(rifaId) {
+    return supabaseClient.rpc("obtener_reglas_oficiales_publicas_seguras", { p_rifa_id: rifaId });
+}
+
 async function abrirReglasOficialesRifa(
     rifaId,
     soloLectura = false
@@ -20657,13 +20673,7 @@ if (soloLectura === true) {
             const {
                 data,
                 error
-            } = await supabaseClient.rpc(
-                "obtener_reglas_oficiales_publicas_seguras",
-                {
-                    p_rifa_id:
-                        rifaIdSeguro
-                }
-            );
+            } = await consultarReglasPublicadasMass(rifaIdSeguro);
 
 
             if (error) {
@@ -108132,21 +108142,14 @@ function activarBusquedaGuiaMass(guia) {
     const buscador = guia.querySelector('input[type="search"]');
     const estado = guia.querySelector('[role="status"]');
     const normalizar = texto => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    const secciones = Array.from(guia.querySelectorAll("section"), seccion => {
-        const titulo = seccion.querySelector("h3").textContent;
-        const preguntas = Array.from(seccion.querySelectorAll("details"), pregunta => ({
-            elemento: pregunta,
-            texto: normalizar(titulo + " " + pregunta.textContent)
-        }));
-        return { seccion, preguntas };
-    });
-
     buscador.addEventListener("input", () => {
         const palabras = normalizar(buscador.value).trim().split(/\s+/).filter(Boolean);
         let visibles = 0;
-        for (const { seccion, preguntas } of secciones) {
+        for (const seccion of guia.querySelectorAll("section")) {
+            const titulo = seccion.querySelector("h3").textContent;
             let enSeccion = 0;
-            for (const { elemento, texto } of preguntas) {
+            for (const elemento of seccion.querySelectorAll("details")) {
+                const texto = palabras.length ? normalizar(titulo + " " + elemento.textContent) : "";
                 const coincide = palabras.every(palabra => texto.includes(palabra));
                 elemento.hidden = !coincide;
                 if (coincide) enSeccion++;
@@ -108160,7 +108163,107 @@ function activarBusquedaGuiaMass(guia) {
     });
 }
 
-function abrirGuiaUsuarioMass() {
+function preguntasDelTextoOficialMass(contenido) {
+    const titulos = [
+        ["1. PREMIO U OBJETO DE LA DINÁMICA", "¿Cuál es el premio de esta rifa?"],
+        ["2. ELEGIBILIDAD", "¿Quién puede participar?"],
+        ["3. PERIODO DE PARTICIPACIÓN", "¿Cuándo puedo participar?"],
+        ["4. MECÁNICA DE PARTICIPACIÓN", "¿Cómo participo según las reglas de esta rifa?"],
+        ["5. SELECCIÓN DEL GANADOR", "¿Cómo se elige al ganador?"],
+        ["6. ENTREGA O RECLAMACIÓN DEL PREMIO", "¿Cómo y cuándo puedo reclamar mi premio?"],
+        ["7. RESTRICCIONES Y DESCALIFICACIÓN", "¿Qué restricciones pueden afectar mi participación?"],
+        ["8. INFORMACIÓN ADICIONAL", "¿Qué otras condiciones publicó el organizador?"],
+        ["9. ACEPTACIÓN DE LAS REGLAS", "¿Qué dice esta rifa sobre la aceptación de sus reglas?"]
+    ];
+    const lineas = contenido.replace(/\r\n?/g, "\n").trim().split("\n");
+    if (lineas[0].trim() !== "REGLAS OFICIALES") return [];
+
+    // Reconocer los encabezados completos de la plantilla y respetar su orden.
+    // Ante un formato distinto, el lector conserva el documento íntegro.
+    const secciones = [];
+    let anterior = -1;
+    for (let i = 1; i < lineas.length; i++) {
+        const linea = lineas[i].trim();
+        if (lineas[i - 1].trim() || !/^\d+\.\s+\p{Lu}/u.test(linea) || linea !== linea.toUpperCase()) continue;
+        const posicion = titulos.findIndex(([titulo]) => titulo === linea);
+        if (posicion <= anterior) return [];
+        secciones.push({ pregunta: titulos[posicion][1], inicio: i });
+        anterior = posicion;
+    }
+    if (anterior !== titulos.length - 1) return [];
+    return secciones.map(({ pregunta, inicio }, i) => ({
+        pregunta,
+        respuesta: lineas.slice(inicio + 1, secciones[i + 1]?.inicio ?? lineas.length).join("\n").trim()
+    })).filter(item => item.respuesta);
+}
+
+async function cargarReglasEnGuiaUsuarioMass(guia, rifaId) {
+    const host = guia.querySelector("#publicacionReglasGuiaMass");
+    const filtrar = () => guia.querySelector('input[type="search"]').dispatchEvent(new Event("input"));
+    host.replaceChildren();
+    filtrar();
+    if (!rifaId) return;
+
+    const panel = document.createElement("div");
+    const estado = document.createElement("p");
+    estado.setAttribute("aria-live", "polite");
+    estado.textContent = "Consultando las reglas publicadas de esta rifa…";
+    panel.append(estado);
+    host.append(panel);
+
+    try {
+        const { data, error } = await consultarReglasPublicadasMass(rifaId);
+        if (!panel.isConnected || !guia.open) return;
+        if (error || !Array.isArray(data)) throw new Error("Consulta de reglas no disponible");
+        if (!data.length) {
+            estado.textContent = "Esta rifa todavía no tiene Reglas Oficiales publicadas.";
+            return;
+        }
+        if (data.some(doc => doc?.rifa_id !== rifaId || !Number.isInteger(doc.version) ||
+            doc.version < 1 || typeof doc.contenido !== "string" || !doc.contenido.trim())) {
+            throw new Error("Publicación incompleta");
+        }
+        const documentos = data.slice().sort((a, b) => b.version - a.version);
+        const respuestas = document.createElement("div");
+        function mostrarVersion(doc) {
+            const fecha = new Date(doc.publicada_en);
+            const publicacion = doc.publicada_en && Number.isFinite(fecha.getTime())
+                ? " · Publicada el " + fecha.toLocaleDateString("es-MX") : "";
+            estado.textContent = [doc.dinamica_titulo_actual, doc.organizador_nombre_actual,
+                "Versión " + doc.version + publicacion].filter(Boolean).join(" · ");
+            respuestas.replaceChildren();
+            const agregar = (pregunta, texto) => {
+                const detalle = document.createElement("details");
+                const titulo = document.createElement("summary");
+                titulo.textContent = pregunta;
+                const cuerpo = document.createElement("p");
+                cuerpo.className = "texto-reglas-guia-mass";
+                cuerpo.textContent = texto;
+                detalle.append(titulo, cuerpo);
+                respuestas.append(detalle);
+            };
+            for (const item of preguntasDelTextoOficialMass(doc.contenido)) agregar(item.pregunta, item.respuesta);
+            agregar("¿Dónde leo el texto completo de esta versión?", doc.contenido);
+            filtrar();
+        }
+        if (documentos.length > 1) {
+            const etiqueta = document.createElement("label");
+            etiqueta.append("Versión publicada ");
+            const selector = document.createElement("select");
+            for (const doc of documentos) selector.add(new Option("Versión " + doc.version, String(doc.version)));
+            selector.addEventListener("change", () => mostrarVersion(documentos[selector.selectedIndex]));
+            etiqueta.append(selector);
+            panel.append(etiqueta);
+        }
+        panel.append(respuestas);
+        mostrarVersion(documentos[0]);
+    } catch (error) {
+        if (!panel.isConnected || !guia.open) return;
+        estado.textContent = "No se pudieron consultar las reglas. Cierra la guía y vuelve a abrirla desde esta rifa para reintentar.";
+    }
+}
+
+function abrirGuiaUsuarioMass(rifaId = null) {
     const guia = document.getElementById("guiaUsuarioMass");
     if (!guia.dataset.busquedaActiva) {
         const ejemplo = guia.querySelector("#ejemploEligePorMiMass");
@@ -108180,6 +108283,7 @@ function abrirGuiaUsuarioMass() {
         guia.dataset.busquedaActiva = "true";
     }
     if (!guia.open) guia.showModal();
+    cargarReglasEnGuiaUsuarioMass(guia, rifaId);
 }
 
 function mostrarGuiaOrganizadorMass() {
