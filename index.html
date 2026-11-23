@@ -1029,6 +1029,37 @@ button{cursor:pointer}
 }
 
 
+.mass-transmision-enlace {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:44px;
+    max-width:100%;
+    padding:10px 14px;
+    border:1px solid var(--mass-org-accent,#39ff14);
+    border-radius:10px;
+    background:#111;
+    color:white;
+    font-size:16px;
+    font-weight:bold;
+    line-height:1.35;
+    text-align:center;
+    text-decoration:none;
+}
+.mass-transmision-enlace:hover,
+.mass-transmision-enlace:focus-visible {
+    outline:2px solid var(--mass-org-accent,#39ff14);
+    outline-offset:2px;
+}
+.mass-transmision-nota {
+    display:block;
+    margin-top:5px;
+    color:#ccc;
+    font-size:13px;
+    font-weight:normal;
+    line-height:1.45;
+}
+
 .mass-rifa-acento-publico {
     color:
         var(
@@ -85938,6 +85969,39 @@ async function () {
     );
 };
 
+// Destinos oficiales verificados; no dependen de enlaces ingresados por terceros.
+function renderEnlaceTransmisionOficialMass(metodo) {
+    const clave = String(metodo || "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .trim().toLowerCase().replace(/\s+/g, " ");
+    let fuente = null;
+    if (clave === "loteria nacional") {
+        fuente = {
+            nombre: "Lotería Nacional · México",
+            url: "https://loterianacional.gob.mx/Home/EnVivo"
+        };
+    } else if (clave === "pick 3 texas") {
+        fuente = {
+            nombre: "Texas Lottery · Pick 3",
+            url: "https://www.texaslottery.com/export/sites/lottery/Games/Web_Cast.html"
+        };
+    }
+    if (!fuente) return "";
+    return `
+        <div class="mass-rifa-fila-publica">
+            <span class="mass-rifa-icono-publico" aria-hidden="true">📺</span>
+            <div>
+                <a class="mass-transmision-enlace" href="${fuente.url}"
+                   target="_blank" rel="noopener noreferrer"
+                   aria-label="Ver transmisión oficial de ${fuente.nombre} (abre en otra pestaña)">
+                    Ver transmisión oficial
+                </a>
+                <span class="mass-transmision-nota">${fuente.nombre}. Abre en otra pestaña.</span>
+                <span class="mass-transmision-nota">Transmisión disponible según la programación de la lotería. Revisa la fecha y la hora de esta dinámica.</span>
+            </div>
+        </div>`;
+}
+
 async function abrirRifa(rifaId){
 
     restaurarContenidoDinamicaDespuesPerfilOrganizador();
@@ -86338,6 +86402,8 @@ if (logoOrg) {
         ${rifa.metodo_sorteo || "Pendiente"}
       </span>
     </div>
+
+    ${renderEnlaceTransmisionOficialMass(rifa.metodo_sorteo)}
 
 
     <div class="mass-rifa-fila-publica">
