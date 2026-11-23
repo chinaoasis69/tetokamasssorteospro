@@ -1570,19 +1570,11 @@ Selecciona una rifa
         ¿Cuántos boletos quieres agregar al azar a tu selección?
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:10px;">
-        <button type="button" data-cantidad-azar="1" onclick="numeroSuerte(1)">1 boleto</button>
-        <button type="button" data-cantidad-azar="3" onclick="numeroSuerte(3)">3 boletos</button>
-        <button type="button" data-cantidad-azar="5" onclick="numeroSuerte(5)">5 boletos</button>
-        <button type="button" data-cantidad-azar="10" onclick="numeroSuerte(10)">10 boletos</button>
-        <button type="button" data-cantidad-azar="25" onclick="numeroSuerte(25)">25 boletos</button>
-        <button type="button" data-cantidad-azar="50" onclick="numeroSuerte(50)">50 boletos</button>
-        <button type="button" data-cantidad-azar="100" onclick="numeroSuerte(100)">100 boletos</button>
-        <button type="button" data-cantidad-azar="200" onclick="numeroSuerte(200)">200 boletos</button>
-    </div>
+    <div id="cantidadesRapidasAzarMass" role="group" aria-label="Cantidades rápidas de boletos"
+      style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;"></div>
     <form id="formCantidadAzarMass" style="display:grid;gap:8px;margin-top:16px;" onsubmit="event.preventDefault(); numeroSuerte(this.elements.cantidad.valueAsNumber);">
       <label for="cantidadAzarMass">Otra cantidad de boletos</label>
-      <input id="cantidadAzarMass" name="cantidad" type="number" min="1" step="1" inputmode="numeric" required placeholder="Ej. 80" oninput="mostrarImporteAzarMass()">
+      <input id="cantidadAzarMass" name="cantidad" type="number" min="1" step="1" inputmode="numeric" required placeholder="Escribe una cantidad" oninput="mostrarImporteAzarMass()">
       <output id="importeAzarMass" for="cantidadAzarMass"></output>
       <button type="submit">Agregar al azar</button>
     </form>
@@ -2783,7 +2775,7 @@ Cargando historial...
       <h3>Boletos, reservas y compras</h3>
       <details>
         <summary>¿Cómo elijo mis números o pido que se elijan al azar?</summary>
-        <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y toca una de las cantidades rápidas. Para elegir otra, escribe cuántos boletos quieres en <strong>Otra cantidad de boletos</strong>, revisa el importe y pulsa <strong>Agregar al azar</strong>. Por ejemplo, si cada boleto cuesta 1 MASS MXN, escribe 200 para agregar 200 boletos por 200 MASS MXN. Los nuevos boletos se suman a los que ya elegiste. En el <strong>Centro de Compra</strong> puedes revisar tus números, quitar boletos y decidir si reservas o compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
+        <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y toca una de las cantidades rápidas, que se adaptan al tamaño de la rifa y a su modalidad. Para elegir otra, escribe cuántos boletos quieres en <strong>Otra cantidad de boletos</strong>, revisa el importe y pulsa <strong>Agregar al azar</strong>. Por ejemplo, si cada boleto cuesta 1 MASS MXN, escribe 200 para agregar 200 boletos por 200 MASS MXN. Los nuevos boletos se suman a los que ya elegiste. En el <strong>Centro de Compra</strong> puedes revisar tus números, quitar boletos y decidir si reservas o compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
         <figure id="ejemploEligePorMiMass" hidden>
           <figcaption>Ejemplo de las opciones que verás en la rifa</figcaption>
           <strong></strong>
@@ -88819,6 +88811,18 @@ function mostrarImporteAzarMass() {
     : "";
 }
 
+function obtenerCantidadesRapidasAzarMass(configuracion) {
+  if (!configuracion) return [];
+  const capacidad = configuracion.limiteVisible;
+  let cantidades = [1, 3, 5, 10, 25, 50, 100, 200];
+  if (capacidad <= 100) {
+    cantidades = [1, 2, 3, 5, 10, 20];
+  } else if (capacidad <= 1000) {
+    cantidades = [1, 5, 10, 20, 25, 50];
+  }
+  return cantidades.filter(cantidad => cantidad <= capacidad);
+}
+
 function abrirSelectorSuerte() {
   const selector = document.getElementById("selectorSuerte");
   if (!selector) return;
@@ -88831,8 +88835,20 @@ function abrirSelectorSuerte() {
   }
   const campo = document.getElementById("cantidadAzarMass");
   const configuracion = obtenerConfiguracionPaginacionRifa();
+  const cantidades = obtenerCantidadesRapidasAzarMass(configuracion);
+  const opciones = document.getElementById("cantidadesRapidasAzarMass");
+  opciones.replaceChildren();
+  for (const cantidad of cantidades) {
+    const boton = document.createElement("button");
+    boton.type = "button";
+    boton.dataset.cantidadAzar = String(cantidad);
+    boton.textContent = cantidad + (cantidad === 1 ? " boleto" : " boletos");
+    boton.onclick = () => numeroSuerte(cantidad);
+    opciones.appendChild(boton);
+  }
   if (configuracion) campo.max = String(configuracion.limiteVisible);
   else campo.removeAttribute("max");
+  campo.placeholder = cantidades.length ? "Ej. " + (cantidades[3] || cantidades[0]) : "Escribe una cantidad";
   document.getElementById("estadoAzarMass").textContent = "";
   mostrarImporteAzarMass();
   selector.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -107617,20 +107633,20 @@ async function cargarReglasEnGuiaUsuarioMass(guia, rifaId) {
 
 function abrirGuiaUsuarioMass(rifaId = null) {
     const guia = document.getElementById("guiaUsuarioMass");
+    const ejemplo = guia.querySelector("#ejemploEligePorMiMass");
+    const configuracion = obtenerConfiguracionPaginacionRifa();
+    const rifaCoincide = rifaId && configuracion && String(configuracion.rifa.id) === String(rifaId);
+    const cantidades = obtenerCantidadesRapidasAzarMass(rifaCoincide ? configuracion : null);
+    const lista = ejemplo.querySelector("ul");
+    lista.replaceChildren();
+    ejemplo.hidden = !cantidades.length;
+    ejemplo.querySelector("strong").textContent = document.getElementById("btnEligePorMiMass").textContent.trim();
+    for (const cantidad of cantidades) {
+        const item = document.createElement("li");
+        item.textContent = cantidad + (cantidad === 1 ? " boleto" : " boletos");
+        lista.appendChild(item);
+    }
     if (!guia.dataset.busquedaActiva) {
-        const ejemplo = guia.querySelector("#ejemploEligePorMiMass");
-        const boton = document.getElementById("btnEligePorMiMass");
-        const cantidades = document.querySelectorAll("#selectorSuerte [data-cantidad-azar]");
-        if (boton && cantidades.length) {
-            ejemplo.querySelector("strong").textContent = boton.textContent.trim();
-            const lista = ejemplo.querySelector("ul");
-            for (const cantidad of cantidades) {
-                const item = document.createElement("li");
-                item.textContent = cantidad.textContent.trim();
-                lista.appendChild(item);
-            }
-            ejemplo.hidden = false;
-        }
         activarBusquedaGuiaMass(guia);
         guia.dataset.busquedaActiva = "true";
     }
