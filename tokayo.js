@@ -8,6 +8,11 @@
   const respuesta = document.getElementById("tokayoRespuesta");
   const opciones = document.getElementById("tokayoOpciones");
   let temas = [];
+  let respuestaActiva = -1;
+  const enIngles = () => document.documentElement.lang === "en";
+  const traducir = texto => window.MassIdioma?.texto(texto) ?? texto;
+  const omitirIngles = new Set(("a an and are as at be by can could do does for from get have how i " +
+    "in is it me my of on or please the their them to with what when where which will would you your mass tokayo").split(" "));
 
   const omitir = new Set(("a al algo alguna algun algunos algunas ante con cual cuales cuando cuanto cuantos de del desde " +
     "donde el ella en es esa ese eso esta estan este esto hacer hago hay hola la las le lo los me mi mis muy " +
@@ -28,6 +33,19 @@
     "contrasena clave password", "publicar publico", "activar activo activacion",
     "vence vencen vencimiento caduca caducan", "reembolso reembolsos devolver devolucion"
   ];
+  const familiasIngles = [
+    "ticket tickets", "number numbers", "spin spins spinning", "raffle raffles draw draws",
+    "prize prizes reward rewards", "sponsor sponsors sponsored", "pay paid paying",
+    "reserve reserved reserving reservation reservations book hold", "purchase purchases bought buying buy",
+    "create creating", "add adding", "win won winning", "expire expired expires expiry",
+    "transfer transfers", "method methods", "currency currencies", "organizer organizers",
+    "member members", "participant participants", "refund refunds", "redeem redeeming redemption"
+  ];
+  const equivalenciasIngles = new Map();
+  for (const familia of familiasIngles) {
+    const [base, ...variantes] = familia.split(" ");
+    for (const variante of variantes) equivalenciasIngles.set(variante, base);
+  }
   const equivalencias = new Map();
   for (const familia of familias) {
     const [base, ...variantes] = familia.split(" ");
@@ -40,8 +58,10 @@
   }
 
   function palabras(texto) {
-    return new Set(normalizar(texto).split(" ").filter(p => p && !omitir.has(p))
-      .map(p => equivalencias.get(p) || p));
+    const palabrasVacias = enIngles() ? omitirIngles : omitir;
+    const variantes = enIngles() ? equivalenciasIngles : equivalencias;
+    return new Set(normalizar(texto).split(" ").filter(p => p && !palabrasVacias.has(p))
+      .map(p => variantes.get(p) || p));
   }
 
   function leerTemas() {
@@ -121,7 +141,8 @@
   }
 
   function mostrarRespuesta(tema) {
-    estado.textContent = "Guía del " + guia.value + " · " + tema.seccion;
+    respuestaActiva = temas.indexOf(tema);
+    estado.textContent = traducir("Guía del " + guia.value) + " · " + tema.seccion;
     const titulo = document.createElement("h3");
     titulo.textContent = tema.titulo;
     titulo.tabIndex = -1;
@@ -131,11 +152,12 @@
   }
 
   function iniciarGuia() {
+    respuestaActiva = -1;
     temas = leerTemas();
     pregunta.value = "";
-    pregunta.placeholder = guia.value === "organizador" ? "¿Cómo creo mi primera rifa?" : "¿Cómo aparto boletos?";
+    pregunta.placeholder = traducir(guia.value === "organizador" ? "¿Cómo creo mi primera rifa?" : "¿Cómo aparto boletos?");
     respuesta.replaceChildren();
-    estado.textContent = "También puedes elegir una pregunta.";
+    estado.textContent = traducir("También puedes elegir una pregunta.");
     sugerir(temas.filter(t => t.inicio));
   }
 
@@ -147,11 +169,21 @@
     if (!dialogo.open) dialogo.showModal();
   });
   guia.addEventListener("change", iniciarGuia);
+  document.addEventListener("mass:idioma", () => {
+    if (!dialogo.open) return;
+    const anterior = respuestaActiva;
+    const escrita = pregunta.value;
+    const eraSugerencia = anterior !== -1 && escrita === temas[anterior]?.titulo;
+    iniciarGuia();
+    pregunta.value = eraSugerencia ? temas[anterior]?.titulo || "" : escrita;
+    if (anterior !== -1 && temas[anterior]) mostrarRespuesta(temas[anterior]);
+  });
   document.getElementById("tokayoConsulta").addEventListener("submit", evento => {
     evento.preventDefault();
+    respuestaActiva = -1;
     const consulta = pregunta.value.trim();
     if (!consulta) {
-      estado.textContent = "Escribe una pregunta o elige una de las sugerencias.";
+      estado.textContent = traducir("Escribe una pregunta o elige una de las sugerencias.");
       respuesta.replaceChildren();
       sugerir(temas.filter(t => t.inicio));
       pregunta.focus();
@@ -164,10 +196,10 @@
     }
     respuesta.replaceChildren();
     if (resultado.opciones.length) {
-      estado.textContent = "¿Cuál de estas preguntas se acerca más a tu duda?";
+      estado.textContent = traducir("¿Cuál de estas preguntas se acerca más a tu duda?");
       sugerir(resultado.opciones);
     } else {
-      estado.textContent = "No encontré una respuesta en esta guía. Prueba con otras palabras o elige una pregunta.";
+      estado.textContent = traducir("No encontré una respuesta en esta guía. Prueba con otras palabras o elige una pregunta.");
       sugerir(temas.filter(t => t.inicio));
     }
   });
