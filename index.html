@@ -1201,6 +1201,8 @@ button{cursor:pointer}
   #ejemploEligePorMiMass ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; padding: 0; margin: 8px 0 0; list-style: none; }
   #ejemploEligePorMiMass li { margin: 0; }
 </style>
+<link rel="stylesheet" href="/tokayo.css">
+<script defer src="/tokayo.js"></script>
 </head>
 
 <body>
@@ -1538,6 +1540,7 @@ Selecciona una rifa
 </button>
 
 <button type="button" class="btn-dark" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass(RIFA_ID)">Preguntas frecuentes del usuario</button>
+<button type="button" class="btn-dark" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 <button
   id="btnContactoSoporteRifa"
@@ -2762,6 +2765,30 @@ Cargando historial...
 © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
 
+<dialog id="tokayoMass" aria-labelledby="tokayoTitulo">
+  <header class="tokayo-cabecera">
+    <div><h2 id="tokayoTitulo">TOKAYO</h2><p>Asistente virtual de MASS Sorteos Pro</p></div>
+    <form method="dialog"><button type="submit" class="tokayo-secundario">Cerrar</button></form>
+  </header>
+  <div class="tokayo-contenido">
+    <label for="tokayoGuia">Guía de ayuda</label>
+    <select id="tokayoGuia">
+      <option value="participante">Participante</option>
+      <option value="organizador">Organizador</option>
+    </select>
+    <form id="tokayoConsulta">
+      <label for="tokayoPregunta">¿En qué te ayudo?</label>
+      <div class="tokayo-envio">
+        <input id="tokayoPregunta" type="text" maxlength="300" autocomplete="off" required autofocus>
+        <button type="submit">Preguntar</button>
+      </div>
+    </form>
+    <p id="tokayoEstado" role="status"></p>
+    <div id="tokayoRespuesta"></div>
+    <div id="tokayoOpciones"></div>
+  </div>
+</dialog>
+
 <dialog id="guiaUsuarioMass" class="guia-mass" aria-labelledby="tituloGuiaUsuarioMass">
   <div class="cabecera-guia-usuario">
     <h2 id="tituloGuiaUsuarioMass">Preguntas frecuentes del usuario</h2>
@@ -2776,7 +2803,7 @@ Cargando historial...
     <section>
       <h3>Primeros pasos</h3>
       <details open>
-        <summary>¿Cómo participo por primera vez?</summary>
+        <summary data-tokayo-claves="primeros pasos empezar participar comprar por primera vez" data-tokayo-inicio>¿Cómo participo por primera vez?</summary>
         <ol>
           <li>En la pantalla de acceso, entra con tu <strong>MASS ID</strong>. Si es tu primera visita, pulsa <strong>Crear cuenta</strong> y completa el registro.</li>
           <li>En la portada, pulsa <strong>Ver organizadores activos</strong>. Busca al organizador por su nombre y abre <strong>Ver dinámica</strong> o <strong>Ver dinámicas</strong>. Si aparecen varias rifas, elige <strong>Ver este sorteo</strong> en la que te interesa.</li>
@@ -2785,12 +2812,12 @@ Cargando historial...
         </ol>
       </details>
       <details>
-        <summary>¿Cómo creo mi MASS ID o entro con una cuenta que ya tengo?</summary>
+        <summary data-tokayo-claves="registro registrarme iniciar sesión abrir cuenta entrar acceso">¿Cómo creo mi MASS ID o entro con una cuenta que ya tengo?</summary>
         <p>En <strong>Crear cuenta</strong>, escribe tu nombre, elige el país de tu número de teléfono e ingresa el número nacional, tu correo y tu contraseña. Confirma la contraseña y sigue las indicaciones de verificación. Si la pantalla te pide confirmar tu correo, abre el enlace que recibas.</p>
         <p>Si ya tienes MASS ID, pulsa <strong>Iniciar sesión</strong> e introduce tu correo y contraseña. Si ya configuraste una llave de acceso, puedes usar <strong>Entrar con Face ID o Passkey</strong>. En tu primer acceso a Sorteos Pro, revisa los documentos y la declaración de elegibilidad que te presente la plataforma.</p>
       </details>
       <details>
-        <summary>¿Qué hago si olvidé mi contraseña?</summary>
+        <summary data-tokayo-claves="recuperar clave restablecer contraseña">¿Qué hago si olvidé mi contraseña?</summary>
         <p>Abre <strong>Iniciar sesión</strong>, escribe el correo de tu MASS ID y pulsa <strong>¿Olvidaste tu contraseña?</strong>. Abre el mensaje de recuperación y sigue el enlace para crear una contraseña nueva. Si el correo tarda en llegar, revisa también la carpeta de correo no deseado.</p>
       </details>
     </section>
@@ -2798,7 +2825,7 @@ Cargando historial...
     <section>
       <h3>Reglas Oficiales de la rifa</h3>
       <details>
-        <summary>¿Dónde consulto las condiciones para participar en una rifa?</summary>
+        <summary data-tokayo-claves="reglas oficiales elegibilidad requisitos restricciones">¿Dónde consulto las condiciones para participar en una rifa?</summary>
         <p>Abre la rifa que te interesa y pulsa <strong>Preguntas frecuentes del usuario</strong>. Aquí verás las reglas que publicó su organizador y el número de versión. Si publicó varias versiones, puedes elegir cuál leer. También puedes abrir el documento desde el botón <strong>Ver Reglas Oficiales</strong> de la rifa.</p>
         <p>Con la plantilla de MASS, puedes abrir preguntas como «¿Quién puede participar?», «¿Cómo se elige al ganador?» o «¿Cómo y cuándo puedo reclamar mi premio?». Cada respuesta reproduce el apartado que publicó el organizador. También puedes leer el texto completo, incluidas las reglas que el organizador haya escrito en formato libre.</p>
       </details>
@@ -2808,7 +2835,7 @@ Cargando historial...
     <section>
       <h3>Boletos, reservas y compras</h3>
       <details>
-        <summary>¿Cómo elijo mis números o pido que se elijan al azar?</summary>
+        <summary data-tokayo-claves="elige por mí aleatorio suerte">¿Cómo elijo mis números o pido que se elijan al azar?</summary>
         <p>Abre la rifa y pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Si prefieres que la plataforma elija por ti, pulsa <strong>MASS Elige por Mí</strong> y toca una de las cantidades rápidas, que se adaptan al tamaño de la rifa y a su modalidad. Para elegir otra, escribe cuántos boletos quieres en <strong>Otra cantidad de boletos</strong>, revisa el importe y pulsa <strong>Agregar al azar</strong>. Por ejemplo, si cada boleto cuesta 1 MASS MXN, escribe 200 para agregar 200 boletos por 200 MASS MXN. Los nuevos boletos se suman a los que ya elegiste. En el <strong>Centro de Compra</strong> puedes revisar tus números, quitar boletos y decidir si reservas o compras. Para la misma cantidad de boletos, elegir al azar no aumenta tus probabilidades de ganar.</p>
         <figure id="ejemploEligePorMiMass" hidden>
           <figcaption>Ejemplo de las opciones que verás en la rifa</figcaption>
@@ -2818,7 +2845,7 @@ Cargando historial...
         </figure>
       </details>
       <details>
-        <summary>¿Cómo reservo boletos y cómo los pago después?</summary>
+        <summary data-tokayo-claves="apartar pagar apartado reservar boletos" data-tokayo-inicio>¿Cómo reservo boletos y cómo los pago después?</summary>
         <ol>
           <li>Selecciona tus números, pulsa <strong>Reservar boletos</strong> y confirma la cantidad. Espera el mensaje de reserva. El plazo de apartado depende de la rifa.</li>
           <li>Para pagar, abre <strong>Mis boletos → Ver mis boletos</strong>. Busca la rifa y pulsa <strong>Ver boletos</strong>.</li>
@@ -2826,7 +2853,7 @@ Cargando historial...
         </ol>
       </details>
       <details>
-        <summary>¿Qué pasa si no pago mi número reservado antes del sorteo?</summary>
+        <summary data-tokayo-claves="vencimiento reserva vence plazo liberación apartado sin pagar">¿Qué pasa si no pago mi número reservado antes del sorteo?</summary>
         <p>El número vuelve a estar <strong>disponible</strong> cuando se cumple el límite que el organizador configuró. Si fijó un <strong>tiempo máximo de apartado</strong>, el plazo cuenta desde que reservaste. Si fijó un <strong>cierre de apartados antes del sorteo</strong>, al llegar ese cierre también se liberan los números que sigan reservados sin pagar. Si configuró ambos límites, se aplica el que llegue primero. Si desactivó los dos, la reserva queda sin liberación automática por esos plazos.</p>
         <p>Por ejemplo, si el sorteo es el sábado a las 8 de la noche y el cierre de apartados es 24 horas antes, los apartados pendientes se liberan el viernes a las 8 de la noche, aunque todavía les quedara tiempo individual. Si tienes dudas sobre los plazos de tu rifa, consulta <strong>Ver Reglas Oficiales</strong> o pregunta al organizador.</p>
       </details>
@@ -2854,7 +2881,7 @@ Cargando historial...
         <p>Cada organizador tiene su propia Wallet MASS para tus operaciones con él. Entra al organizador de la rifa y consulta <strong>Disponible con este organizador</strong> en el Centro de Compra. Antes de enviar una recarga, verifica el nombre del organizador y la moneda del método elegido.</p>
       </details>
       <details>
-        <summary>¿Cómo recargo con una transferencia o un depósito?</summary>
+        <summary data-tokayo-claves="agregar cargar saldo wallet transferencia depósito" data-tokayo-inicio>¿Cómo recargo con una transferencia o un depósito?</summary>
         <ol>
           <li>Con tu sesión iniciada, selecciona el organizador o abre su rifa. En <strong>Recarga tu Wallet MASS → Métodos de pago disponibles</strong>, elige un método marcado para <strong>Recarga Wallet MASS</strong>.</li>
           <li>Revisa el titular, el destino y las instrucciones. Haz el pago por el medio indicado y conserva el comprobante.</li>
@@ -2884,15 +2911,20 @@ Cargando historial...
     <section>
       <h3>Lucky Spin, premios y ayuda</h3>
       <details>
-        <summary>¿Cómo uso el giro de mi boleto en MASS Lucky Spin?</summary>
+        <summary data-tokayo-claves="boleto gratis gratuito ganado números adicionales paquete modalidad giro extra principal">¿Qué boletos generan un giro en MASS Lucky Spin?</summary>
+        <p>Cuando la rifa tiene MASS Lucky Spin habilitado, cada boleto comprado y pagado genera un giro vinculado a su número principal. Si la modalidad incluye varios números por boleto, los adicionales del paquete no generan giros extra. Un <strong>Boleto Gratis MASS</strong> ganado en Lucky Spin tampoco genera otro giro.</p>
+        <p>Por ejemplo, si compras un boleto que incluye cuatro números, ese boleto te da un giro. La participación de los números en el sorteo principal se rige por las <strong>Reglas Oficiales</strong> de la rifa.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="usar girar ruleta giro disponible">¿Cómo uso el giro de mi boleto en MASS Lucky Spin?</summary>
         <p>En <strong>MASS Lucky Spin</strong>, pulsa <strong>Elegir boleto</strong>. Selecciona un boleto de la lista y toca <strong>Girar ahora</strong> para usar su giro. La lista muestra los boletos que todavía tienen un giro disponible en sorteos habilitados. Puedes consultar tus boletos en <strong>Mis boletos</strong> aunque ya hayas usado su giro.</p>
       </details>
       <details>
-        <summary>¿Qué pasa si termina el sorteo y no usé mis giros de MASS Lucky Spin?</summary>
+        <summary data-tokayo-claves="giros vencidos pendientes sin usar">¿Qué pasa si termina el sorteo y no usé mis giros de MASS Lucky Spin?</summary>
         <p>Usa tus giros mientras la rifa esté activa, antes de la fecha y hora del sorteo. Cuando termina esa rifa, los giros que te quedaron pendientes dejan de estar disponibles. Tu boleto sigue en <strong>Mis boletos</strong> y los premios que ya ganaste se consultan en <strong>Mis Premios</strong>.</p>
       </details>
       <details>
-        <summary>Gané en Lucky Spin. ¿Dónde encuentro mi premio o el QR para canjearlo?</summary>
+        <summary data-tokayo-claves="código QR canjear premio ganado">Gané en Lucky Spin. ¿Dónde encuentro mi premio o el QR para canjearlo?</summary>
         <p>Abre <strong>Mis Premios → Ver mis premios</strong> y localiza el premio de MASS Lucky Spin. Si figura como <strong>Premio pendiente de canje</strong>, presenta al organizador el QR que aparece en la tarjeta para recibirlo. Si ganaste un <strong>Boleto Gratis MASS</strong>, se entrega automáticamente y puedes consultar su número en <strong>Mis boletos</strong>.</p>
       </details>
       <details>
@@ -2901,7 +2933,7 @@ Cargando historial...
         <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
       </details>
       <details>
-        <summary>¿Cómo contacto al organizador de mi rifa?</summary>
+        <summary data-tokayo-claves="ayuda soporte hablar con alguien atención humana contactar organizador">¿Cómo contacto al organizador de mi rifa?</summary>
         <p>Abre la rifa y busca <strong>Contacto y Soporte</strong> para ver los canales que el organizador haya publicado. Si tienes la sesión iniciada, también puedes abrir <strong>Chat con el organizador</strong>, escribir tu consulta y pulsar <strong>Enviar mensaje</strong>. Incluye el nombre de la rifa y el número de boleto si tu pregunta es sobre una participación.</p>
       </details>
     </section>
@@ -2920,7 +2952,7 @@ Cargando historial...
       <section>
         <h3>Primeros pasos del organizador</h3>
         <details open>
-          <summary>¿Por dónde empiezo antes de crear mi primera rifa?</summary>
+          <summary data-tokayo-claves="primeros pasos comenzar configurar antes empezar" data-tokayo-inicio>¿Por dónde empiezo antes de crear mi primera rifa?</summary>
           <ol>
             <li><strong>Elige tu divisa principal.</strong> En el Panel Administrativo, abre <strong>Finanzas MASS → Administrar Divisas</strong>. Si tu moneda ya figura como <strong>ACTIVA</strong> y tiene una estrella en la columna <strong>Principal</strong>, sigue al paso 2. Si la moneda que quieres usar (por ejemplo, MXN o USD) falta en la lista, pulsa <strong>Agregar divisa</strong>, elígela del catálogo y confirma. Si ya está en la lista como inactiva, pulsa <strong>Reactivar</strong>. Para cambiar de principal, pulsa <strong>Hacer principal</strong> en la fila de la moneda activa y confirma. Esta es la moneda que se propone para el precio del boleto.</li>
             <li><strong>Configura cómo recibirás los pagos.</strong> En <strong>Finanzas MASS → Administrar Métodos de Pago</strong>, selecciona el país y pulsa <strong>Configurar</strong> en el método que vas a ofrecer, o <strong>Editar</strong> si ya existe. Para que los participantes puedan recargar saldo, marca <strong>Recarga Wallet MASS</strong> si el método lo permite. Completa los datos que pide la pantalla, pulsa <strong>Guardar configuración</strong> y comprueba que el método figure como <strong>Activo</strong>.</li>
@@ -2934,7 +2966,7 @@ Cargando historial...
       <section>
         <h3>Crear y administrar una rifa</h3>
         <details>
-          <summary>¿Cómo creo mi primera rifa?</summary>
+          <summary data-tokayo-claves="crear sorteo nueva dinámica organizar montar rifa" data-tokayo-inicio>¿Cómo creo mi primera rifa?</summary>
           <ol>
             <li>En el <strong>Panel Administrativo</strong>, abre <strong>Sorteos y premios → Sorteos → Nueva dinámica</strong>.</li>
             <li>Escribe el título y el primer premio. Indica el precio del boleto en la divisa principal. En <strong>Plan para esta dinámica</strong>, selecciona un plan vigente con cupo de tu organización. Elige la cantidad de números en múltiplos de 100, dentro del límite que muestra ese plan. En <strong>Modalidad</strong>, elige cuántos números entrega cada boleto.</li>
@@ -2973,7 +3005,7 @@ Cargando historial...
           <p>En <strong>Sorteos</strong>, busca el título de la dinámica. Abre <strong>Premios</strong> para revisar sus premios. Para preparar un sorteo previo, abre <strong>Pre-sorteos → Crear pre-sorteo</strong> desde esa misma tarjeta y completa el formulario.</p>
         </details>
         <details>
-          <summary>¿Cómo agrego un premio de MASS Lucky Spin?</summary>
+          <summary data-tokayo-claves="agregar premio lucky spin ruleta aportado por proveedor" data-tokayo-inicio>¿Cómo agrego un premio de MASS Lucky Spin?</summary>
           <p>Si el premio lo aporta un patrocinador nuevo para esta rifa, regístralo primero en <strong>Patrocinadores → Agregar patrocinador</strong>. Elige <strong>Sorteo específico</strong>, selecciona la rifa y pulsa <strong>Continuar</strong>. Completa su ficha y pulsa <strong>Guardar patrocinador</strong>. Si ya aparece entre los patrocinadores activos de la rifa o tú aportas el premio, empieza en el paso 1.</p>
           <ol>
             <li>En <strong>Sorteos y premios → Premios MASS Lucky Spin</strong>, selecciona una dinámica programada o activa y pulsa <strong>Agregar premio</strong>.</li>
@@ -2983,7 +3015,7 @@ Cargando historial...
           </ol>
         </details>
         <details>
-          <summary>¿Cómo escaneo el QR y confirmo la entrega de un premio Lucky Spin?</summary>
+          <summary data-tokayo-claves="escanear canjear código QR">¿Cómo escaneo el QR y confirmo la entrega de un premio Lucky Spin?</summary>
           <p>Abre <strong>Sorteos y premios → Canjear QR MASS Lucky Spin → Iniciar cámara</strong>. Apunta al QR y revisa el premio y su estado. Al entregar el premio, pulsa <strong>Confirmar entrega del premio</strong> si está disponible. Escanear el QR solo abre la consulta.</p>
         </details>
         <details>
@@ -2991,7 +3023,7 @@ Cargando historial...
           <p>Abre <strong>Sorteos y premios → Ganadores</strong>. Elige primero el sorteo y después el premio. Si el resultado es manual, captura el número ganador. Si es automático, espera el resultado oficial que muestra la app. Revisa los datos y, cuando esté disponible, pulsa <strong>Publicar ganador</strong>. Los participantes pueden consultar la sección <strong>Ganadores</strong>.</p>
         </details>
         <details>
-          <summary>¿Cómo muestro un patrocinador en una rifa?</summary>
+          <summary data-tokayo-claves="registrar patrocinador alta negocio patrocinio agregar patrocinador">¿Cómo muestro un patrocinador en una rifa?</summary>
           <ol>
             <li>Abre <strong>Sorteos y premios → Patrocinadores → Agregar patrocinador</strong>. En <strong>Asignar patrocinador a</strong>, elige <strong>Sorteo específico</strong>. La opción <strong>General del Organizador</strong> guarda la ficha a nivel de la organización, sin asociarla a una rifa.</li>
             <li>En <strong>Seleccionar sorteo</strong>, elige tu rifa programada o activa y pulsa <strong>Continuar</strong>. Escribe el nombre del patrocinador, completa los datos que quieras mostrar y pulsa <strong>Guardar patrocinador</strong>.</li>
@@ -3004,7 +3036,7 @@ Cargando historial...
       <section>
         <h3>Recargas, divisas y comprobantes</h3>
         <details>
-          <summary>¿Cómo configuro las divisas y los métodos de pago?</summary>
+          <summary data-tokayo-claves="moneda principal configurar divisa métodos de cobro">¿Cómo configuro las divisas y los métodos de pago?</summary>
           <p>En <strong>Finanzas MASS → Administrar Divisas</strong>, usa <strong>Agregar divisa</strong> si la moneda falta del listado o <strong>Reactivar</strong> si ya figura como inactiva. Si el panel avisa que detectó cero o varias divisas principales, pulsa <strong>Actualizar</strong>. Si el aviso persiste, solicita ayuda a soporte antes de hacer cambios. En el formulario de la rifa, las divisas adicionales sirven como referencia. Para consultar una equivalencia, abre <strong>Convertidor MASS</strong>.</p>
           <p>En <strong>Finanzas MASS → Administrar Métodos de Pago</strong>, selecciona el país. Para corregir un método existente, pulsa <strong>Editar</strong>, revisa el destino, el titular y las instrucciones que correspondan y pulsa <strong>Guardar configuración</strong>. Si está deshabilitado y deseas ofrecerlo, pulsa <strong>Habilitar</strong>. Para que aparezca en la Wallet del participante debe estar activo y tener marcado el uso <strong>Recarga Wallet MASS</strong>.</p>
         </details>
@@ -3025,7 +3057,7 @@ Cargando historial...
           <p>Para responder a una persona, entra en <strong>Gestión y comunicación → Mensajes de clientes</strong> y abre su conversación. Para un aviso a varios participantes, entra en <strong>Comunicaciones masivas</strong>, elige el público, escribe el mensaje y revisa los destinatarios. <strong>Crear borrador</strong> guarda el mensaje para revisión. <strong>Enviar ahora</strong> lo envía cuando confirmas.</p>
         </details>
         <details>
-          <summary>¿Cómo agrego un colaborador y elijo qué puede hacer?</summary>
+          <summary data-tokayo-claves="equipo permisos colaboradores">¿Cómo agrego un colaborador y elijo qué puede hacer?</summary>
           <p>Como propietario, abre <strong>Configuración y equipo → Mi equipo / Accesos → Agregar colaborador</strong>. Busca a la persona por su <strong>MASS ID</strong> y verifica su identidad antes de agregarla. En su ficha, elige las funciones que necesita y pulsa <strong>Guardar permisos</strong>. Para crear rifas, necesita el permiso de crear dinámicas.</p>
         </details>
         <details>
@@ -3041,7 +3073,7 @@ Cargando historial...
       <section>
         <h3>Planes y complementos</h3>
         <details>
-          <summary>¿Cuándo empieza mi plan por dinámica?</summary>
+          <summary data-tokayo-claves="inicio vigencia aprobación pago plan">¿Cuándo empieza mi plan por dinámica?</summary>
           <p>La vigencia comienza cuando el Súper Admin aprueba el pago. Mientras veas <strong>Pago en revisión</strong>, el comprobante está pendiente de aprobación.</p>
         </details>
         <details>
@@ -3085,6 +3117,7 @@ Cargando historial...
 </button>
 
 <button type="button" id="btnGuiaOrganizadorMass" onclick="mostrarGuiaOrganizadorMass()">Preguntas frecuentes</button>
+<button type="button" id="btnTokayoOrganizadorMass" data-tokayo="organizador" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 <!-- BJ-123-C: lectura contractual previa; sin checkout ni pagos -->
 <button type="button" id="btnPreviaComplementosBJ123" onclick="mostrarCatalogoInformativoComplementosC06()">📦 Complementos MASS · Paquetes y precios</button>
@@ -4184,6 +4217,7 @@ window.addEventListener("load", () => {
 ids: [
   "btnDashboardOrganizador",
   "btnGuiaOrganizadorMass",
+  "btnTokayoOrganizadorMass",
   "btnAmpliacionesPlanesR3",
   "btnMensajesClientesAdmin",
   "btnComunicacionesMasivasAdminMass"
@@ -65843,6 +65877,7 @@ if (errorOrganizadoresPublicos) {
 </button>
 
 <button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+<button type="button" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 <button
     type="button"
@@ -117976,6 +118011,7 @@ font-family:Arial, sans-serif;">
       </button>
 
       <button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+<button type="button" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 	<button
   type="button"

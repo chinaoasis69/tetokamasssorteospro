@@ -1,0 +1,75 @@
+#tokayoMass {
+  box-sizing: border-box;
+  width: min(38rem, calc(100% - 1.5rem));
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  color: #f3f6f1;
+  background: #111612;
+  border: 1px solid #557252;
+  border-radius: 16px;
+  text-align: left;
+  line-height: 1.5;
+  color-scheme: dark;
+}
+#tokayoMass[open] { display: flex; flex-direction: column; }
+#tokayoMass::backdrop { background: rgba(0, 0, 0, .78); }
+#tokayoMass .tokayo-cabecera {
+  position: static;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid #394b39;
+  background: #162016;
+  text-align: left;
+}
+#tokayoMass h2 { margin: 0; color: #a2f08a; font-size: 1.35rem; }
+#tokayoMass .tokayo-cabecera p { margin: .1rem 0 0; font-size: .93rem; }
+#tokayoMass .tokayo-contenido { padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
+#tokayoMass form { margin: 0; }
+#tokayoMass label { display: block; margin: 0 0 .3rem; font-weight: 650; }
+#tokayoMass input, #tokayoMass select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: .5rem .7rem;
+  color: #f3f6f1;
+  background: #192119;
+  border: 1px solid #758a73;
+  border-radius: 8px;
+  font: inherit;
+}
+#tokayoMass select { margin-bottom: 1rem; }
+#tokayoMass .tokayo-envio { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; }
+#tokayoMass button {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: .45rem .8rem;
+  border: 1px solid #9cde83;
+  border-radius: 8px;
+  background: #a2f08a;
+  color: #101610;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+#tokayoMass .tokayo-secundario { background: #1d291e; color: #e1f1dc; border-color: #587452; }
+#tokayoMass :focus-visible { outline: 2px solid #a2f08a; outline-offset: 2px; }
+#tokayoEstado { margin: 1rem 0 .5rem; color: #c4d4c1; font-size: .93rem; }
+#tokayoRespuesta { overflow-wrap: anywhere; }
+#tokayoRespuesta h3 { margin: .5rem 0; color: #acf19a; font-size: 1.09rem; }
+#tokayoRespuesta p, #tokayoRespuesta ol, #tokayoRespuesta ul { margin: .6rem 0; }
+#tokayoRespuesta ol, #tokayoRespuesta ul { padding-inline-start: 1.55rem; }
+#tokayoRespuesta li + li { margin-top: .6rem; }
+#tokayoOpciones { display: grid; gap: .45rem; }
+#tokayoOpciones button { text-align: left; }
+@media (max-width: 360px) {
+  #tokayoMass .tokayo-envio { grid-template-columns: 1fr; }
+}
