@@ -1070,6 +1070,77 @@ button{cursor:pointer}
   defer
 ></script>	
 	
+<style>
+  .guia-mass {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 780px;
+    margin: 14px auto;
+    border: 1px solid #58ae41;
+    border-radius: 12px;
+    background: #101510;
+    color: #f1f5ef;
+    text-align: left;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+  }
+  .guia-mass summary {
+    padding: 12px 14px;
+    cursor: pointer;
+    font-weight: 650;
+  }
+  .guia-mass > summary { color: #91ed73; }
+  .guia-mass summary:focus-visible,
+  .guia-mass input:focus-visible { outline: 2px solid #91ed73; outline-offset: -2px; }
+  .guia-mass-contenido { padding: 0 14px 16px; }
+  .guia-mass-contenido label { display: block; }
+  .guia-mass input[type="search"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 5px 0;
+    padding: 10px;
+    font: inherit;
+    color: #f1f5ef;
+    background: #172017;
+    border: 1px solid #82957f;
+    border-radius: 7px;
+  }
+  .guia-mass h3 { margin: 20px 0 6px; font-size: 1.08em; color: #a0e58b; }
+  .guia-mass section details { border-top: 1px solid #394737; }
+  .guia-mass section summary { padding: 11px 0; }
+  .guia-mass section p { margin: 0 0 10px; }
+  .guia-mass ol { margin: 0 0 12px; padding-inline-start: 1.6em; }
+  .guia-mass li + li { margin-top: 6px; }
+  .guia-mass [role="status"] { margin: 8px 0; }
+  .guia-mass [hidden] { display: none; }
+  #guiaUsuarioMass {
+    width: min(780px, calc(100% - 24px));
+    max-height: calc(100% - 32px);
+    max-height: calc(100dvh - 32px);
+    margin: auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  #guiaUsuarioMass[open] { display: flex; flex-direction: column; }
+  #guiaUsuarioMass::backdrop { background: rgba(0, 0, 0, .76); }
+  #guiaUsuarioMass .cabecera-guia-usuario {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #394737;
+  }
+  #guiaUsuarioMass h2 { margin: 0; font-size: 1.18rem; color: #91ed73; }
+  #guiaUsuarioMass form { margin: 0; }
+  #guiaUsuarioMass form button { margin: 0; width: auto; }
+  #guiaUsuarioMass .guia-mass-contenido { padding-top: 12px; overflow-y: auto; overscroll-behavior: contain; }
+  #publicacionReglasGuiaMass .texto-reglas-guia-mass { white-space: pre-wrap; overflow-wrap: anywhere; }
+  #publicacionReglasGuiaMass select { max-width: 100%; font: inherit; }
+</style>
+<link rel="stylesheet" href="/tokayo.css">
+<script defer src="/tokayo.js"></script>
 </head>
 
 <body>
@@ -1382,6 +1453,9 @@ Selecciona una rifa
 >
   ⚖️ Ver Reglas Oficiales
 </button>
+
+<button type="button" class="btn-dark" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass(RIFA_ID)">Preguntas frecuentes del usuario</button>
+<button type="button" class="btn-dark" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 <button
   id="btnContactoSoporteRifa"
@@ -2602,6 +2676,309 @@ Cargando historial...
 © TE-TO-KA SOLUTIONS, LLC · TE-TO-KA MASS SORTEOS PRO
 </div>
 
+<dialog id="tokayoMass" aria-labelledby="tokayoTitulo">
+  <header class="tokayo-cabecera">
+    <div><h2 id="tokayoTitulo">TOKAYO</h2><p>Asistente virtual de MASS Sorteos Pro</p></div>
+    <form method="dialog"><button type="submit" class="tokayo-secundario">Cerrar</button></form>
+  </header>
+  <div class="tokayo-contenido">
+    <label for="tokayoGuia">Guía de ayuda</label>
+    <select id="tokayoGuia">
+      <option value="participante">Participante</option>
+      <option value="organizador">Organizador</option>
+    </select>
+    <form id="tokayoConsulta">
+      <label for="tokayoPregunta">¿En qué te ayudo?</label>
+      <div class="tokayo-envio">
+        <input id="tokayoPregunta" type="text" maxlength="300" autocomplete="off" required autofocus>
+        <button type="submit">Preguntar</button>
+      </div>
+    </form>
+    <p id="tokayoEstado" role="status"></p>
+    <div id="tokayoRespuesta"></div>
+    <div id="tokayoOpciones"></div>
+  </div>
+</dialog>
+
+<dialog id="guiaUsuarioMass" class="guia-mass" aria-labelledby="tituloGuiaUsuarioMass">
+  <div class="cabecera-guia-usuario">
+    <h2 id="tituloGuiaUsuarioMass">Preguntas frecuentes del usuario</h2>
+    <form method="dialog"><button type="submit" autofocus>Cerrar</button></form>
+  </div>
+  <div class="guia-mass-contenido">
+    <label>Buscar en la guía
+      <input type="search" placeholder="Boletos, recargas, premios…" autocomplete="off">
+    </label>
+    <p role="status" aria-live="polite"></p>
+
+    <section>
+      <h3>Primeros pasos</h3>
+      <details open>
+        <summary data-tokayo-claves="primeros pasos empezar participar comprar por primera vez" data-tokayo-inicio>¿Cómo participo por primera vez?</summary>
+        <ol>
+          <li>En la pantalla de acceso, entra con tu <strong>MASS ID</strong>. Si es tu primera visita, pulsa <strong>Crear cuenta</strong> y completa el registro.</li>
+          <li>En la portada, pulsa <strong>Ver organizadores activos</strong>. Busca al organizador por su nombre y abre <strong>Ver dinámica</strong> o <strong>Ver dinámicas</strong>. Si aparecen varias rifas, elige <strong>Ver este sorteo</strong> en la que te interesa.</li>
+          <li>En la rifa, revisa el premio, el precio por número y las condiciones en <strong>Ver Reglas Oficiales</strong>.</li>
+          <li>Elige tus números disponibles. Para apartarlos, pulsa <strong>Reservar boletos</strong>. Para comprarlos, comprueba el total y tu saldo con ese organizador antes de pulsar <strong>Comprar con MASS</strong>.</li>
+        </ol>
+      </details>
+      <details>
+        <summary data-tokayo-claves="registro registrarme iniciar sesión abrir cuenta entrar acceso">¿Cómo creo mi MASS ID o entro con una cuenta que ya tengo?</summary>
+        <p>En <strong>Crear cuenta</strong>, escribe tu nombre, elige el país de tu número de teléfono e ingresa el número nacional, tu correo y tu contraseña. Confirma la contraseña y sigue las indicaciones de verificación. Si la pantalla te pide confirmar tu correo, abre el enlace que recibas.</p>
+        <p>Si ya tienes MASS ID, pulsa <strong>Iniciar sesión</strong> e introduce tu correo y contraseña. Si ya configuraste una llave de acceso, puedes usar <strong>Entrar con Face ID o Passkey</strong>. En tu primer acceso a Sorteos Pro, revisa los documentos y la declaración de elegibilidad que te presente la plataforma.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="recuperar clave restablecer contraseña">¿Qué hago si olvidé mi contraseña?</summary>
+        <p>Abre <strong>Iniciar sesión</strong>, escribe el correo de tu MASS ID y pulsa <strong>¿Olvidaste tu contraseña?</strong>. Abre el mensaje de recuperación y sigue el enlace para crear una contraseña nueva. Si el correo tarda en llegar, revisa también la carpeta de correo no deseado.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Reglas Oficiales de la rifa</h3>
+      <details>
+        <summary data-tokayo-claves="reglas oficiales elegibilidad requisitos restricciones">¿Dónde consulto las condiciones para participar en una rifa?</summary>
+        <p>Abre la rifa que te interesa y pulsa <strong>Preguntas frecuentes del usuario</strong>. Aquí verás las reglas que publicó su organizador y el número de versión. Si publicó varias versiones, puedes elegir cuál leer. También puedes abrir el documento desde el botón <strong>Ver Reglas Oficiales</strong> de la rifa.</p>
+        <p>Con la plantilla de MASS, puedes abrir preguntas como «¿Quién puede participar?», «¿Cómo se elige al ganador?» o «¿Cómo y cuándo puedo reclamar mi premio?». Cada respuesta reproduce el apartado que publicó el organizador. También puedes leer el texto completo, incluidas las reglas que el organizador haya escrito en formato libre.</p>
+      </details>
+      <div id="publicacionReglasGuiaMass"></div>
+    </section>
+
+    <section>
+      <h3>Boletos, reservas y compras</h3>
+      <details>
+        <summary data-tokayo-claves="elige por mí aleatorio suerte">¿Cómo elijo mis números o pido que se elijan al azar?</summary>
+        <p>En la rifa, pulsa <strong>Solo disponibles</strong> para elegir tus números en la cuadrícula. Para que la plataforma elija al azar, pulsa <strong>Número de la suerte</strong> y selecciona una de las cantidades que aparecen. En el <strong>Centro de Compra</strong> puedes revisar la selección antes de reservar o comprar.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="apartar pagar apartado reservar boletos" data-tokayo-inicio>¿Cómo reservo boletos y cómo los pago después?</summary>
+        <ol>
+          <li>Selecciona tus números, pulsa <strong>Reservar boletos</strong> y confirma la cantidad. Espera el mensaje de reserva. El plazo de apartado depende de la rifa.</li>
+          <li>Para pagar, abre <strong>Mis boletos → Ver mis boletos</strong>. Busca la rifa y pulsa <strong>Ver boletos</strong>.</li>
+          <li>Localiza el número marcado como <strong>Reservado</strong>. Mientras la reserva siga disponible, pulsa <strong>Pagar con MASS</strong> y confirma el pago con tu saldo de ese organizador.</li>
+        </ol>
+      </details>
+      <details>
+        <summary data-tokayo-claves="vencimiento reserva vence plazo liberación apartado sin pagar">¿Qué pasa si no pago mi número reservado antes del sorteo?</summary>
+        <p>El número vuelve a estar <strong>disponible</strong> cuando se cumple el límite que el organizador configuró. Si fijó un <strong>tiempo máximo de apartado</strong>, el plazo cuenta desde que reservaste. Si fijó un <strong>cierre de apartados antes del sorteo</strong>, al llegar ese cierre también se liberan los números que sigan reservados sin pagar. Si configuró ambos límites, se aplica el que llegue primero. Si desactivó los dos, la reserva queda sin liberación automática por esos plazos.</p>
+        <p>Por ejemplo, si el sorteo es el sábado a las 8 de la noche y el cierre de apartados es 24 horas antes, los apartados pendientes se liberan el viernes a las 8 de la noche, aunque todavía les quedara tiempo individual. Si tienes dudas sobre los plazos de tu rifa, consulta <strong>Ver Reglas Oficiales</strong> o pregunta al organizador.</p>
+      </details>
+      <details>
+        <summary>¿Cómo compro con mi Wallet MASS y dónde veo la compra?</summary>
+        <p>Selecciona los números en la rifa. En el <strong>Centro de Compra</strong>, revisa los boletos, el total y tu saldo disponible. Si necesitas saldo, recarga primero. Cuando estés listo, pulsa <strong>Comprar con MASS</strong> y completa las aceptaciones que te pida la plataforma.</p>
+        <p>Consulta los números en <strong>Mis boletos → Ver mis boletos</strong>. Para revisar el registro de la operación, abre <strong>Mis compras MASS → Ver mis compras MASS</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Qué pasa si no se alcanza el mínimo para sortear?</summary>
+        <p>En la ficha de la rifa, <strong>Mínimo para sortear</strong> indica qué porcentaje de los números debe estar vendido. En una rifa de <strong>sorteo aleatorio automático</strong>, si al llegar la fecha y hora del sorteo las ventas quedan por debajo de ese porcentaje, la rifa se cierra sin elegir ganador. Por ejemplo, si hay 100 números y el mínimo es 60 %, 59 vendidos y uno reservado cuentan como 59 vendidos.</p>
+        <p><strong>Si el organizador la reprograma</strong>, tu boleto comprado conserva el mismo número para la nueva fecha sin que tengas que volver a pagarlo. Un número que solo tenías apartado y seguía sin pagar vuelve a estar disponible en la nueva rifa.</p>
+        <p>Puedes revisar tu número en <strong>Mis boletos → Ver mis boletos</strong>. Cuando el organizador publique la nueva fecha, consulta el día y la hora en la ficha de la rifa reprogramada. Si aún no hay fecha o la rifa usa otro método, revisa sus <strong>Reglas Oficiales</strong> o consulta al organizador desde su perfil.</p>
+      </details>
+      <details>
+        <summary>¿Cómo pido que el organizador revise una compra?</summary>
+        <p>En <strong>Mis compras MASS</strong>, busca la operación. Si aparece <strong>Solicitar revisión</strong>, ábrela, explica qué ocurrió y pulsa <strong>Enviar solicitud</strong>. Vuelve a esa compra para consultar el estado y la respuesta del organizador.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Wallet MASS y recargas</h3>
+      <details>
+        <summary>¿Por qué veo un saldo diferente al cambiar de organizador?</summary>
+        <p>Cada organizador tiene su propia Wallet MASS para tus operaciones con él. Entra al organizador de la rifa y consulta <strong>Disponible con este organizador</strong> en el Centro de Compra. Antes de enviar una recarga, verifica el nombre del organizador y la moneda del método elegido.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="agregar cargar saldo wallet transferencia depósito" data-tokayo-inicio>¿Cómo recargo con una transferencia o un depósito?</summary>
+        <ol>
+          <li>Con tu sesión iniciada, selecciona el organizador o abre su rifa. En <strong>Recarga tu Wallet MASS → Métodos de pago disponibles</strong>, elige un método marcado para <strong>Recarga Wallet MASS</strong>.</li>
+          <li>Revisa el titular, el destino y las instrucciones. Haz el pago por el medio indicado y conserva el comprobante.</li>
+          <li>En la misma recarga, selecciona la imagen o el PDF del comprobante y confirma el organizador cuando se te pida. Espera el aviso <strong>Recarga enviada</strong>.</li>
+          <li>Consulta <strong>Mis recargas MASS → Ver mis recargas MASS</strong>. El saldo se acredita cuando el organizador verifica los fondos recibidos.</li>
+        </ol>
+      </details>
+      <details>
+        <summary>¿Cómo estimo cuánto equivale una recarga en otra moneda?</summary>
+        <p>Si el organizador habilitó el convertidor, entra en <strong>Recarga tu Wallet MASS → Abrir Convertidor MASS</strong>. Elige la moneda, escribe la <strong>Cantidad a depositar</strong> y pulsa <strong>Calcular</strong>. Verás una estimación. El saldo que se acredita depende del importe que reciba y verifique el organizador.</p>
+      </details>
+      <details>
+        <summary>¿Cómo recargo en efectivo en un Punto MASS?</summary>
+        <p>Si el organizador ofrece pago en efectivo en un punto autorizado, elige ese método en <strong>Recarga tu Wallet MASS</strong>. Confirma el organizador, indica el importe y pulsa <strong>Seleccionar este Punto MASS</strong> en el lugar donde vas a pagar.</p>
+        <p>En la <strong>Ficha MASS</strong>, revisa el punto, la cantidad, el código y el vencimiento. Presenta el código al operador y entrega el efectivo indicado. El saldo se acredita cuando el operador confirma la recepción. Para volver a consultar la ficha, usa <strong>Ver mi Ficha MASS</strong> o <strong>Historial de Fichas MASS</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Qué hago si ya pagué y todavía no aparece el saldo?</summary>
+        <p>Verifica que estás en el organizador al que pagaste. En <strong>Mis recargas MASS → Ver mis recargas MASS</strong>, busca el movimiento y revisa su estado. Una recarga con comprobante puede seguir pendiente de verificación. Si tienes dudas sobre el pago o aparece rechazado, contacta al organizador con la fecha, el importe y la referencia del comprobante.</p>
+      </details>
+      <details>
+        <summary>¿Cómo consulto o solicito el reembolso de una recarga?</summary>
+        <p>Abre la recarga en <strong>Mis recargas MASS</strong>. Si aparece <strong>Solicitar reembolso</strong>, lee la confirmación antes de continuar. La solicitud es por la recarga completa y los MASS correspondientes quedan retenidos mientras se procesa. Consulta el estado en esa misma tarjeta. Cuando se reporte el pago, comprueba que recibiste el depósito antes de confirmar la recepción.</p>
+      </details>
+    </section>
+
+    <section>
+      <h3>Lucky Spin, premios y ayuda</h3>
+      <details>
+        <summary data-tokayo-claves="boleto gratis gratuito ganado números adicionales paquete modalidad giro extra principal">¿Qué boletos generan un giro en MASS Lucky Spin?</summary>
+        <p>Cuando la rifa tiene MASS Lucky Spin habilitado, cada boleto comprado y pagado genera un giro vinculado a su número principal. Si la modalidad incluye varios números por boleto, los adicionales del paquete no generan giros extra. Un <strong>Boleto Gratis MASS</strong> ganado en Lucky Spin tampoco genera otro giro.</p>
+        <p>Por ejemplo, si compras un boleto que incluye cuatro números, ese boleto te da un giro. La participación de los números en el sorteo principal se rige por las <strong>Reglas Oficiales</strong> de la rifa.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="usar girar ruleta giro disponible">¿Cómo uso el giro de mi boleto en MASS Lucky Spin?</summary>
+        <p>En <strong>MASS Lucky Spin</strong>, pulsa <strong>Elegir boleto</strong>. Selecciona un boleto de la lista y toca <strong>Girar ahora</strong> para usar su giro. La lista muestra los boletos que todavía tienen un giro disponible en sorteos habilitados. Puedes consultar tus boletos en <strong>Mis boletos</strong> aunque ya hayas usado su giro.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="giros vencidos pendientes sin usar">¿Qué pasa si termina el sorteo y no usé mis giros de MASS Lucky Spin?</summary>
+        <p>Usa tus giros mientras la rifa esté activa, antes de la fecha y hora del sorteo. Cuando termina esa rifa, los giros que te quedaron pendientes dejan de estar disponibles. Tu boleto sigue en <strong>Mis boletos</strong> y los premios que ya ganaste se consultan en <strong>Mis Premios</strong>.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="código QR canjear premio ganado">Gané en Lucky Spin. ¿Dónde encuentro mi premio o el QR para canjearlo?</summary>
+        <p>Abre <strong>Mis Premios → Ver mis premios</strong> y localiza el premio de MASS Lucky Spin. Si figura como <strong>Premio pendiente de canje</strong>, presenta al organizador el QR que aparece en la tarjeta para recibirlo. Si ganaste un <strong>Boleto Gratis MASS</strong>, se entrega automáticamente y puedes consultar su número en <strong>Mis boletos</strong>.</p>
+      </details>
+      <details>
+        <summary>¿Dónde veo los ganadores y cómo confirmo que recibí mi premio del sorteo?</summary>
+        <p>En <strong>Ganadores → Historial de ganadores</strong>, consulta los resultados publicados por el organizador. Si ganaste, entra a <strong>Mis Premios → Ver mis premios</strong> y revisa el estado de entrega del premio.</p>
+        <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
+      </details>
+      <details>
+        <summary data-tokayo-claves="ayuda soporte hablar con alguien atención humana contactar organizador">¿Cómo contacto al organizador de mi rifa?</summary>
+        <p>Abre la rifa y busca <strong>Contacto y Soporte</strong> para ver los canales que el organizador haya publicado. Si tienes la sesión iniciada, también puedes abrir <strong>Chat con el organizador</strong>, escribir tu consulta y pulsar <strong>Enviar mensaje</strong>. Incluye el nombre de la rifa y el número de boleto si tu pregunta es sobre una participación.</p>
+      </details>
+    </section>
+  </div>
+</dialog>
+
+<template id="plantillaGuiaOrganizadorMass">
+  <details class="guia-mass guia-organizador">
+    <summary>Preguntas frecuentes del organizador</summary>
+    <div class="guia-mass-contenido guia-organizador-contenido">
+      <label>Buscar en la guía
+        <input type="search" placeholder="Divisas, métodos de pago, rifas, boletos…" autocomplete="off">
+      </label>
+      <p role="status" aria-live="polite"></p>
+
+      <section>
+        <h3>Primeros pasos del organizador</h3>
+        <details open>
+          <summary data-tokayo-claves="primeros pasos comenzar configurar antes empezar" data-tokayo-inicio>¿Por dónde empiezo antes de crear mi primera rifa?</summary>
+          <ol>
+            <li><strong>Elige tu divisa principal.</strong> En el Panel Administrativo, abre <strong>Finanzas MASS → Administrar Divisas</strong>. Si tu moneda ya figura como <strong>ACTIVA</strong> y tiene una estrella en la columna <strong>Principal</strong>, sigue al paso 2. Si la moneda que quieres usar (por ejemplo, MXN o USD) falta en la lista, pulsa <strong>Agregar divisa</strong>, elígela del catálogo y confirma. Si ya está en la lista como inactiva, pulsa <strong>Reactivar</strong>. Para cambiar de principal, pulsa <strong>Hacer principal</strong> en la fila de la moneda activa y confirma. Esta es la moneda que se propone para el precio del boleto.</li>
+            <li><strong>Configura cómo recibirás los pagos.</strong> En <strong>Finanzas MASS → Administrar Métodos de Pago</strong>, selecciona el país y pulsa <strong>Configurar</strong> en el método que vas a ofrecer, o <strong>Editar</strong> si ya existe. Para que los participantes puedan recargar saldo, marca <strong>Recarga Wallet MASS</strong> si el método lo permite. Completa los datos que pide la pantalla, pulsa <strong>Guardar configuración</strong> y comprueba que el método figure como <strong>Activo</strong>.</li>
+            <li><strong>Comprueba qué verá el participante.</strong> Si ofrecerás recargas, entra con una cuenta de participante, selecciona tu organización y abre <strong>Recarga tu Wallet MASS → Métodos de pago disponibles</strong>. Elige el método y revisa el destino y las instrucciones que ingresaste. Basta con consultarlos.</li>
+            <li><strong>Crea la rifa.</strong> Vuelve al Panel Administrativo y abre <strong>Sorteos y premios → Sorteos → Nueva dinámica</strong>. En «¿Cómo creo mi primera rifa?» encontrarás cómo indicar el premio, el precio, los números y la fecha. Al pulsar <strong>Guardar dinámica</strong>, queda programada.</li>
+            <li><strong>Ábrela a los participantes.</strong> En la rifa programada, publica las <strong>Reglas Oficiales</strong> y luego pulsa <strong>Activar dinámica</strong>. Los pasos están en «¿Cómo publico las reglas y activo la rifa?».</li>
+          </ol>
+        </details>
+      </section>
+
+      <section>
+        <h3>Crear y administrar una rifa</h3>
+        <details>
+          <summary data-tokayo-claves="crear sorteo nueva dinámica organizar montar rifa" data-tokayo-inicio>¿Cómo creo mi primera rifa?</summary>
+          <ol>
+            <li>En el <strong>Panel Administrativo</strong>, abre <strong>Sorteos y premios → Sorteos → Nueva dinámica</strong>.</li>
+            <li>Escribe el título y el primer premio. Indica el precio del boleto en la divisa principal. En <strong>Cantidad de números</strong>, escribe un múltiplo de 100 entre 100 y 1,000,000. En <strong>Modalidad</strong>, elige cuántos números entrega cada boleto.</li>
+            <li>Elige fecha, hora y zona horaria. Define el tiempo máximo de apartado, cuándo cierran los apartados y el porcentaje mínimo para sortear.</li>
+            <li>Selecciona el método del resultado. Si eliges <strong>Aleatorio automático</strong> con varios premios, escribe el nombre de cada uno. Si el método pide las últimas cifras, elige una cantidad admitida.</li>
+            <li>Pulsa <strong>Guardar dinámica</strong>. La rifa queda <strong>programada</strong>. Para abrirla a los participantes, publica sus reglas y actívala como se indica en la siguiente pregunta.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>¿Cómo publico las reglas y activo la rifa?</summary>
+          <ol>
+            <li>En <strong>Sorteos</strong>, localiza la rifa por su título y abre <strong>Reglas Oficiales → Crear primer borrador</strong>. Si ya existe, abre <strong>Editar borrador</strong>.</li>
+            <li>Completa las condiciones de participación, el método del resultado y la entrega de premios. Revisa la <strong>Vista previa</strong> y pulsa <strong>Guardar borrador</strong>.</li>
+            <li>En <strong>Reglas Oficiales</strong>, pulsa <strong>Publicar</strong> y confirma. Vuelve a la rifa programada y pulsa <strong>Activar dinámica</strong>.</li>
+          </ol>
+        </details>
+        <details>
+          <summary>¿Qué diferencia hay entre el tiempo de apartado y el cierre de apartados?</summary>
+          <p><strong>Tiempo máximo de apartado</strong> indica cuánto tiempo puede pasar desde que se reserva un número hasta que se libera por falta de pago. <strong>Cierre de apartados antes del sorteo</strong> fija el momento en que dejan de aceptarse nuevos apartados y se liberan los que sigan pendientes de pago. Si activas ambos límites, se aplica el primero que se cumpla.</p>
+        </details>
+        <details>
+          <summary>¿Cómo cambio, pauso o reprogramo una dinámica?</summary>
+          <p>En <strong>Sorteos</strong>, abre la rifa por su título. Usa <strong>Editar dinámica</strong> para cambiar los campos disponibles. Para detenerla temporalmente, pulsa <strong>Pausar dinámica</strong>. Cuando esté pausada, usa <strong>Reanudar dinámica</strong>.</p>
+          <p>Si quedó con el mínimo de ventas sin alcanzar y aparece <strong>Reprogramar dinámica</strong>, abre esa opción, revisa la nueva fecha, hora y condiciones y confirma. Los botones disponibles dependen del estado de la rifa y de tus permisos.</p>
+        </details>
+        <details>
+          <summary>¿Cómo comparto la rifa y dónde ve sus boletos el participante?</summary>
+          <p>Abre la dinámica en la vista pública y pulsa <strong>Compartir</strong>. Elige una aplicación o copia el enlace que te ofrece la pantalla. El participante puede consultar sus números desde su cuenta en <strong>Mis boletos → Ver mis boletos</strong>.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Premios, resultados y patrocinadores</h3>
+        <details>
+          <summary>¿Cómo administro los premios y los pre-sorteos?</summary>
+          <p>En <strong>Sorteos</strong>, busca el título de la dinámica. Abre <strong>Premios</strong> para revisar sus premios. Para preparar un sorteo previo, abre <strong>Pre-sorteos → Crear pre-sorteo</strong> desde esa misma tarjeta y completa el formulario.</p>
+        </details>
+        <details>
+          <summary data-tokayo-claves="agregar premio lucky spin ruleta aportado por proveedor" data-tokayo-inicio>¿Cómo agrego un premio de MASS Lucky Spin?</summary>
+          <p>Si el premio lo aporta un patrocinador nuevo para esta rifa, regístralo primero en <strong>Patrocinadores → Agregar patrocinador</strong>. Elige <strong>Sorteo específico</strong>, selecciona la rifa y pulsa <strong>Continuar</strong>. Completa su ficha y pulsa <strong>Guardar patrocinador</strong>. Si ya aparece entre los patrocinadores activos de la rifa o tú aportas el premio, empieza en el paso 1.</p>
+          <ol>
+            <li>En <strong>Sorteos y premios → Premios MASS Lucky Spin</strong>, selecciona una dinámica programada o activa y pulsa <strong>Agregar premio</strong>.</li>
+            <li>Escribe el <strong>Nombre del premio</strong> y elige el <strong>Tipo de premio</strong>. Las opciones son <strong>Producto / Premio</strong>, <strong>Promoción / Cupón</strong> y <strong>Boleto Gratis MASS</strong>.</li>
+            <li>En <strong>Aportado por</strong>, deja <strong>Organizador</strong> si tú proporcionas el premio. Si lo proporciona un negocio o una persona que patrocina la rifa, elige <strong>Patrocinador</strong>. Aparecerá una lista de los patrocinadores activos de esa rifa. Selecciona el nombre de quien aporta el premio.</li>
+            <li>En <strong>Cantidad de premios disponibles</strong>, indica cuántas unidades vas a ofrecer. Por ejemplo, si el patrocinador aporta tres cupones iguales, escribe <strong>3</strong>. La descripción y el código interno son opcionales. Pulsa <strong>Guardar premio</strong>. En la tarjeta verás si lo aporta el organizador o un patrocinador, cuántas unidades se entregaron y cuántas quedan.</li>
+          </ol>
+        </details>
+        <details>
+          <summary data-tokayo-claves="escanear canjear código QR">¿Cómo escaneo el QR y confirmo la entrega de un premio Lucky Spin?</summary>
+          <p>Abre <strong>Sorteos y premios → Canjear QR MASS Lucky Spin → Iniciar cámara</strong>. Apunta al QR y revisa el premio y su estado. Al entregar el premio, pulsa <strong>Confirmar entrega del premio</strong> si está disponible. Escanear el QR solo abre la consulta.</p>
+        </details>
+        <details>
+          <summary>¿Cómo publico un ganador?</summary>
+          <p>Abre <strong>Sorteos y premios → Ganadores</strong>. Elige primero el sorteo y después el premio. Si el resultado es manual, captura el número ganador. Si es automático, espera el resultado oficial que muestra la app. Revisa los datos y, cuando esté disponible, pulsa <strong>Publicar ganador</strong>. Los participantes pueden consultar la sección <strong>Ganadores</strong>.</p>
+        </details>
+        <details>
+          <summary data-tokayo-claves="registrar patrocinador alta negocio patrocinio agregar patrocinador">¿Cómo muestro un patrocinador en una rifa?</summary>
+          <ol>
+            <li>Abre <strong>Sorteos y premios → Patrocinadores → Agregar patrocinador</strong>. En <strong>Asignar patrocinador a</strong>, elige <strong>Sorteo específico</strong>. La opción <strong>General del Organizador</strong> guarda la ficha a nivel de la organización, sin asociarla a una rifa.</li>
+            <li>En <strong>Seleccionar sorteo</strong>, elige tu rifa programada o activa y pulsa <strong>Continuar</strong>. Escribe el nombre del patrocinador, completa los datos que quieras mostrar y pulsa <strong>Guardar patrocinador</strong>.</li>
+            <li>Si aporta un premio, abre <strong>Premios MASS Lucky Spin</strong>, elige esa misma rifa y pulsa <strong>Agregar premio</strong>. En <strong>Aportado por</strong>, elige <strong>Patrocinador</strong> y selecciona su nombre.</li>
+          </ol>
+          <p>Si ya tienes abierta la rifa en <strong>Sorteos</strong>, puedes usar <strong>Patrocinadores de esta dinámica → Agregar patrocinador a esta rifa</strong>. Ese botón abre la misma ficha con la rifa ya seleccionada. Basta con guardarla por una de las dos rutas.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Recargas, divisas y comprobantes</h3>
+        <details>
+          <summary data-tokayo-claves="moneda principal configurar divisa métodos de cobro">¿Cómo configuro las divisas y los métodos de pago?</summary>
+          <p>En <strong>Finanzas MASS → Administrar Divisas</strong>, usa <strong>Agregar divisa</strong> si la moneda falta del listado o <strong>Reactivar</strong> si ya figura como inactiva. Si el panel avisa que detectó cero o varias divisas principales, pulsa <strong>Actualizar</strong>. Si el aviso persiste, solicita ayuda a soporte antes de hacer cambios. En el formulario de la rifa, las divisas adicionales sirven como referencia. Para consultar una equivalencia, abre <strong>Convertidor MASS</strong>.</p>
+          <p>En <strong>Finanzas MASS → Administrar Métodos de Pago</strong>, selecciona el país. Para corregir un método existente, pulsa <strong>Editar</strong>, revisa el destino, el titular y las instrucciones que correspondan y pulsa <strong>Guardar configuración</strong>. Si está deshabilitado y deseas ofrecerlo, pulsa <strong>Habilitar</strong>. Para que aparezca en la Wallet del participante debe estar activo y tener marcado el uso <strong>Recarga Wallet MASS</strong>.</p>
+        </details>
+        <details>
+          <summary>¿Cómo reviso y acredito una recarga MASS?</summary>
+          <p>Abre <strong>Finanzas MASS → Recargas MASS</strong>, localiza la solicitud pendiente y pulsa <strong>Ver comprobante</strong>. Compara el monto, la divisa y la referencia con el depósito recibido en tu cuenta. Usa <strong>Aprobar</strong> cuando confirmes los fondos o <strong>Rechazar</strong> si corresponde. Puedes consultar la operación después en <strong>Historial recargas</strong>.</p>
+        </details>
+        <details>
+          <summary>¿Dónde atiendo una revisión o un reembolso?</summary>
+          <p>En <strong>Finanzas MASS → Solicitudes de revisión</strong>, abre el caso pendiente y revisa su motivo y la operación asociada. Para dar seguimiento a una devolución de recarga, entra en <strong>Reembolsos MASS</strong>. El participante puede consultar el estado desde <strong>Mis recargas MASS</strong>.</p>
+        </details>
+      </section>
+
+      <section>
+        <h3>Mensajes, perfil y equipo</h3>
+        <details>
+          <summary>¿Cómo respondo a un cliente o preparo un aviso para varios participantes?</summary>
+          <p>Para responder a una persona, entra en <strong>Gestión y comunicación → Mensajes de clientes</strong> y abre su conversación. Para un aviso a varios participantes, entra en <strong>Comunicaciones masivas</strong>, elige el público, escribe el mensaje y revisa los destinatarios. <strong>Crear borrador</strong> guarda el mensaje para revisión. <strong>Enviar ahora</strong> lo envía cuando confirmas.</p>
+        </details>
+        <details>
+          <summary data-tokayo-claves="equipo permisos colaboradores">¿Cómo agrego un colaborador y elijo qué puede hacer?</summary>
+          <p>Como propietario, abre <strong>Configuración y equipo → Mi equipo / Accesos → Agregar colaborador</strong>. Busca a la persona por su <strong>MASS ID</strong> y verifica su identidad antes de agregarla. En su ficha, elige las funciones que necesita y pulsa <strong>Guardar permisos</strong>. Para crear rifas, necesita el permiso de crear dinámicas.</p>
+        </details>
+        <details>
+          <summary>¿Dónde actualizo el perfil legal de mi organización?</summary>
+          <p>Abre <strong>Configuración y equipo → Configuración → Mi Perfil Legal</strong>. Revisa el estado del perfil. Si tienes una solicitud de corrección, abre las indicaciones, actualiza los campos señalados y vuelve a enviarlo a revisión.</p>
+        </details>
+        <details>
+          <summary>¿Cómo registro un Punto MASS?</summary>
+          <p>Abre <strong>Puntos MASS → Mis Puntos MASS</strong>. Cuando esté disponible <strong>Registrar nuevo Punto MASS</strong>, selecciónalo, completa los datos del punto y revisa su ubicación. Pulsa <strong>Registrar Punto MASS</strong> para guardar el registro.</p>
+        </details>
+      </section>
+
+    </div>
+  </details>
+</template>
+
 <div id="panelAdmin" class="card" style="display:none;">
   <h2>📊 Panel Administrativo</h2>
 
@@ -2619,6 +2996,9 @@ Cargando historial...
 >
   📊 Dashboard
 </button>
+
+<button type="button" id="btnGuiaOrganizadorMass" onclick="mostrarGuiaOrganizadorMass()">Preguntas frecuentes</button>
+<button type="button" id="btnTokayoOrganizadorMass" data-tokayo="organizador" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
 
 <button
   id="btnMensajesClientesAdmin"
@@ -3706,6 +4086,8 @@ window.addEventListener("load", () => {
       titulo: "📊 Gestión y comunicación",
       
 ids: [
+  "btnTokayoOrganizadorMass",
+  "btnGuiaOrganizadorMass",
   "btnDashboardOrganizador",
   "btnMensajesClientesAdmin",
   "btnComunicacionesMasivasAdminMass"
@@ -65506,6 +65888,9 @@ if (errorOrganizadoresPublicos) {
     👥 Ver organizadores activos
 </button>
 
+<button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+<button type="button" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
+
 <button
     type="button"
     onclick="mostrarPlanesOrganizadorPublicos()"
@@ -107583,6 +107968,160 @@ async function abrirMiPerfil(){
     }, 300);
 }
 
+function consultarReglasPublicadasMass(rifaId) {
+    return supabaseClient.rpc("obtener_reglas_oficiales_publicas_seguras", { p_rifa_id: rifaId });
+}
+
+function crearGuiaOrganizadorMass() {
+    const plantilla = document.getElementById("plantillaGuiaOrganizadorMass");
+    const guia = plantilla.content.firstElementChild.cloneNode(true);
+    activarBusquedaGuiaMass(guia);
+    return guia;
+}
+
+function activarBusquedaGuiaMass(guia) {
+    const buscador = guia.querySelector('input[type="search"]');
+    const estado = guia.querySelector('[role="status"]');
+    const normalizar = texto => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    buscador.addEventListener("input", () => {
+        const palabras = normalizar(buscador.value).trim().split(/\s+/).filter(Boolean);
+        let visibles = 0;
+        for (const seccion of guia.querySelectorAll("section")) {
+            const titulo = seccion.querySelector("h3").textContent;
+            let enSeccion = 0;
+            for (const elemento of seccion.querySelectorAll("details")) {
+                const texto = palabras.length ? normalizar(titulo + " " + elemento.textContent) : "";
+                const coincide = palabras.every(palabra => texto.includes(palabra));
+                elemento.hidden = !coincide;
+                if (coincide) enSeccion++;
+            }
+            seccion.hidden = enSeccion === 0;
+            visibles += enSeccion;
+        }
+        if (!palabras.length) estado.textContent = "";
+        else if (!visibles) estado.textContent = "Sin coincidencias. Prueba con otra palabra.";
+        else estado.textContent = visibles === 1 ? "1 pregunta encontrada." : visibles + " preguntas encontradas.";
+    });
+}
+
+function preguntasDelTextoOficialMass(contenido) {
+    const titulos = [
+        ["1. PREMIO U OBJETO DE LA DINÁMICA", "¿Cuál es el premio de esta rifa?"],
+        ["2. ELEGIBILIDAD", "¿Quién puede participar?"],
+        ["3. PERIODO DE PARTICIPACIÓN", "¿Cuándo puedo participar?"],
+        ["4. MECÁNICA DE PARTICIPACIÓN", "¿Cómo participo según las reglas de esta rifa?"],
+        ["5. SELECCIÓN DEL GANADOR", "¿Cómo se elige al ganador?"],
+        ["6. ENTREGA O RECLAMACIÓN DEL PREMIO", "¿Cómo y cuándo puedo reclamar mi premio?"],
+        ["7. RESTRICCIONES Y DESCALIFICACIÓN", "¿Qué restricciones pueden afectar mi participación?"],
+        ["8. INFORMACIÓN ADICIONAL", "¿Qué otras condiciones publicó el organizador?"],
+        ["9. ACEPTACIÓN DE LAS REGLAS", "¿Qué dice esta rifa sobre la aceptación de sus reglas?"]
+    ];
+    const lineas = contenido.replace(/\r\n?/g, "\n").trim().split("\n");
+    if (lineas[0].trim() !== "REGLAS OFICIALES") return [];
+
+    // Reconocer los encabezados completos de la plantilla y respetar su orden.
+    // Ante un formato distinto, el lector conserva el documento íntegro.
+    const secciones = [];
+    let anterior = -1;
+    for (let i = 1; i < lineas.length; i++) {
+        const linea = lineas[i].trim();
+        if (lineas[i - 1].trim() || !/^\d+\.\s+\p{Lu}/u.test(linea) || linea !== linea.toUpperCase()) continue;
+        const posicion = titulos.findIndex(([titulo]) => titulo === linea);
+        if (posicion <= anterior) return [];
+        secciones.push({ pregunta: titulos[posicion][1], inicio: i });
+        anterior = posicion;
+    }
+    if (anterior !== titulos.length - 1) return [];
+    return secciones.map(({ pregunta, inicio }, i) => ({
+        pregunta,
+        respuesta: lineas.slice(inicio + 1, secciones[i + 1]?.inicio ?? lineas.length).join("\n").trim()
+    })).filter(item => item.respuesta);
+}
+
+async function cargarReglasEnGuiaUsuarioMass(guia, rifaId) {
+    const host = guia.querySelector("#publicacionReglasGuiaMass");
+    const filtrar = () => guia.querySelector('input[type="search"]').dispatchEvent(new Event("input"));
+    host.replaceChildren();
+    filtrar();
+    if (!rifaId) return;
+
+    const panel = document.createElement("div");
+    const estado = document.createElement("p");
+    estado.setAttribute("aria-live", "polite");
+    estado.textContent = "Consultando las reglas publicadas de esta rifa…";
+    panel.append(estado);
+    host.append(panel);
+
+    try {
+        const { data, error } = await consultarReglasPublicadasMass(rifaId);
+        if (!panel.isConnected || !guia.open) return;
+        if (error || !Array.isArray(data)) throw new Error("Consulta de reglas no disponible");
+        if (!data.length) {
+            estado.textContent = "Esta rifa todavía no tiene Reglas Oficiales publicadas.";
+            return;
+        }
+        if (data.some(doc => doc?.rifa_id !== rifaId || !Number.isInteger(doc.version) ||
+            doc.version < 1 || typeof doc.contenido !== "string" || !doc.contenido.trim())) {
+            throw new Error("Publicación incompleta");
+        }
+        const documentos = data.slice().sort((a, b) => b.version - a.version);
+        const respuestas = document.createElement("div");
+        function mostrarVersion(doc) {
+            const fecha = new Date(doc.publicada_en);
+            const publicacion = doc.publicada_en && Number.isFinite(fecha.getTime())
+                ? " · Publicada el " + fecha.toLocaleDateString("es-MX") : "";
+            estado.textContent = [doc.dinamica_titulo_actual, doc.organizador_nombre_actual,
+                "Versión " + doc.version + publicacion].filter(Boolean).join(" · ");
+            respuestas.replaceChildren();
+            const agregar = (pregunta, texto) => {
+                const detalle = document.createElement("details");
+                const titulo = document.createElement("summary");
+                titulo.textContent = pregunta;
+                const cuerpo = document.createElement("p");
+                cuerpo.className = "texto-reglas-guia-mass";
+                cuerpo.textContent = texto;
+                detalle.append(titulo, cuerpo);
+                respuestas.append(detalle);
+            };
+            for (const item of preguntasDelTextoOficialMass(doc.contenido)) agregar(item.pregunta, item.respuesta);
+            agregar("¿Dónde leo el texto completo de esta versión?", doc.contenido);
+            filtrar();
+        }
+        if (documentos.length > 1) {
+            const etiqueta = document.createElement("label");
+            etiqueta.append("Versión publicada ");
+            const selector = document.createElement("select");
+            for (const doc of documentos) selector.add(new Option("Versión " + doc.version, String(doc.version)));
+            selector.addEventListener("change", () => mostrarVersion(documentos[selector.selectedIndex]));
+            etiqueta.append(selector);
+            panel.append(etiqueta);
+        }
+        panel.append(respuestas);
+        mostrarVersion(documentos[0]);
+    } catch (error) {
+        if (!panel.isConnected || !guia.open) return;
+        estado.textContent = "No se pudieron consultar las reglas. Cierra la guía y vuelve a abrirla desde esta rifa para reintentar.";
+    }
+}
+
+function abrirGuiaUsuarioMass(rifaId = null) {
+    const guia = document.getElementById("guiaUsuarioMass");
+    if (!guia.dataset.busquedaActiva) {
+        activarBusquedaGuiaMass(guia);
+        guia.dataset.busquedaActiva = "true";
+    }
+    if (!guia.open) guia.showModal();
+    cargarReglasEnGuiaUsuarioMass(guia, rifaId);
+}
+
+function mostrarGuiaOrganizadorMass() {
+    const contenido = document.getElementById("adminContenido");
+    const guia = crearGuiaOrganizadorMass();
+    guia.open = true;
+    contenido.replaceChildren(guia);
+    guia.querySelector("summary").focus();
+}
+
 async function mostrarDashboardOrganizador(){
 
     const cont = document.getElementById("adminContenido");
@@ -117517,7 +118056,10 @@ font-family:Arial, sans-serif;">
         📝 Crear cuenta
       </button>
 
-	<button
+	<button type="button" aria-haspopup="dialog" aria-controls="guiaUsuarioMass" onclick="abrirGuiaUsuarioMass()">Preguntas frecuentes del usuario</button>
+<button type="button" data-tokayo="participante" aria-haspopup="dialog" aria-controls="tokayoMass">Pregúntale a TOKAYO</button>
+
+<button
   type="button"
   onclick="mostrarAccesoOrganizadorV2()"
 >
