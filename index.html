@@ -3379,7 +3379,7 @@ Cargando historial...
   📝 Solicitudes de revisión
 </button>	
 
-<button data-mass-ui=⚙️&#32;Configuración id="btnConfigAdmin" onclick="mostrarConfigAdmin()">
+<button data-mass-ui id="btnConfigAdmin" onclick="mostrarConfigAdmin()">
   ⚙️ Configuración
 </button>
 
@@ -4326,8 +4326,7 @@ window.addEventListener("load", () => {
 
   if (rol === "super_admin") {
 
-    btn.innerHTML =
-      "⚙️ Configuración";
+    window.MassIdioma.rotulo(btn, "⚙️ Configuración");
 
     btn.onclick =
       mostrarConfigAdmin;
@@ -4338,8 +4337,7 @@ window.addEventListener("load", () => {
 
   if (rol === "organizador") {
 
-    btn.innerHTML =
-      "⚙️ Mi Perfil";
+    window.MassIdioma.rotulo(btn, "⚙️ Mi Perfil");
 
     btn.onclick =
       abrirMiPerfil;
@@ -4930,7 +4928,7 @@ async function mostrarMetodosPagoAdmin() {
 
 
   contenedor.innerHTML = `
-    <div style="padding:18px;text-align:center;">
+    <div data-mass-ui style="padding:18px;text-align:center;">
       ⏳ Validando autorización y cargando métodos de pago...
     </div>
   `;
@@ -5017,7 +5015,7 @@ async function mostrarMetodosPagoAdmin() {
     if (!organizadorId) {
 
       contenedor.innerHTML = `
-        <div
+        <div data-mass-ui
           style="
             padding:16px;
             border:1px solid #facc15;
@@ -5063,7 +5061,7 @@ async function mostrarMetodosPagoAdmin() {
             color:#ff8a8a;
           "
         >
-          ❌ No fue posible cargar los métodos de pago.
+          <span data-mass-ui>❌ No fue posible cargar los métodos de pago.</span>
           <br><br>
           ${escaparHtml(
             error.message ||
@@ -5106,7 +5104,7 @@ async function mostrarMetodosPagoAdmin() {
             color:#ff8a8a;
           "
         >
-          ❌ No fue posible cargar los países disponibles.
+          <span data-mass-ui>❌ No fue posible cargar los países disponibles.</span>
           <br><br>
           ${escaparHtml(
             errorPaises.message ||
@@ -5130,20 +5128,12 @@ async function mostrarMetodosPagoAdmin() {
         .map(pais => `
 
           <option
-            value="${escaparHtml(
-              pais.codigo_iso2 || ""
-            )}"
-          >
-            ${escaparHtml(
-              pais.nombre || pais.codigo_iso2 || ""
-            )}
-            — ${Number(
-              pais.metodos_disponibles || 0
-            )} métodos
-            — ${Number(
-              pais.metodos_configurados || 0
-            )} configurados
-          </option>
+            value="${escaparHtml(pais.codigo_iso2 || "")}"
+            data-mass-country="${escaparHtml(pais.codigo_iso2 || "")}"
+            data-mass-country-name="${escaparHtml(pais.nombre || pais.codigo_iso2 || "")}"
+            data-method-count="${Number(pais.metodos_disponibles || 0)}"
+            data-configured-count="${Number(pais.metodos_configurados || 0)}"
+          >${escaparHtml(pais.nombre || pais.codigo_iso2 || "")}</option>
 
         `)
         .join("");
@@ -5217,19 +5207,19 @@ async function mostrarMetodosPagoAdmin() {
                 margin-bottom:10px;
               "
             >
-              ${escaparHtml(
+              <span data-mass-ui>${escaparHtml(
                 metodo.nombre ||
                 metodo.codigo ||
                 "Método de pago"
-              )}
+              )}</span>
             </div>
 
 
             <div>
-              <b>País:</b>
-              ${escaparHtml(
+              <b data-mass-ui>País:</b>
+              <span data-mass-country="${escaparHtml(pais.codigo_iso2 || '')}">${escaparHtml(
                 pais.nombre || "--"
-              )}
+              )}</span>
               ${pais.codigo_iso2
                 ? `(${escaparHtml(pais.codigo_iso2)})`
                 : ""
@@ -5238,33 +5228,33 @@ async function mostrarMetodosPagoAdmin() {
 
 
             <div>
-              <b>Categoría:</b>
-              ${escaparHtml(
+              <b data-mass-ui>Categoría:</b>
+              <span data-mass-ui>${escaparHtml(
                 metodo.categoria || "--"
-              )}
+              )}</span>
             </div>
 
 
             <div>
-              <b>Estado:</b>
-              ${estado}
+              <b data-mass-ui>Estado:</b>
+              <span data-mass-ui>${estado}</span>
             </div>
 
 
             <div>
-              <b>Pago directo:</b>
-              ${pagoDirecto}
+              <b data-mass-ui>Pago directo:</b>
+              <span data-mass-ui>${pagoDirecto}</span>
             </div>
 
 
             <div>
-              <b>Recarga Wallet MASS:</b>
-              ${recargaWallet}
+              <b data-mass-ui>Recarga Wallet MASS:</b>
+              <span data-mass-ui>${recargaWallet}</span>
             </div>
 
 
             <div>
-              <b>Destino:</b>
+              <b data-mass-ui>Destino:</b>
               ${escaparHtml(
                 item?.destino_valor || "--"
               )}
@@ -5272,15 +5262,15 @@ async function mostrarMetodosPagoAdmin() {
 
 
             <div>
-              <b>Tipo de destino:</b>
-              ${escaparHtml(
+              <b data-mass-ui>Tipo de destino:</b>
+              <span data-mass-ui>${escaparHtml(
                 item?.destino_tipo || "--"
-              )}
+              )}</span>
             </div>
 
 
             <div>
-              <b>Titular:</b>
+              <b data-mass-ui>Titular:</b>
               ${escaparHtml(
                 item?.titular || "--"
               )}
@@ -5288,7 +5278,7 @@ async function mostrarMetodosPagoAdmin() {
 
 
             <div>
-              <b>Versión:</b>
+              <b data-mass-ui>Versión:</b>
               ${escaparHtml(
                 item?.version ?? "--"
               )}
@@ -5306,7 +5296,7 @@ async function mostrarMetodosPagoAdmin() {
                     >
                       <button
                         type="button"
-                        class="btnEstadoMetodoPagoAdmin"
+                        data-mass-ui class="btnEstadoMetodoPagoAdmin"
                         data-configuracion-id="${escaparHtml(
                           item.id
                         )}"
@@ -5366,7 +5356,7 @@ async function mostrarMetodosPagoAdmin() {
             color:#ccc;
           "
         >
-          Organizador:
+          <span data-mass-ui>Organizador:</span>
           <b>${escaparHtml(organizadorId)}</b>
         </div>
 		
@@ -5409,7 +5399,7 @@ async function mostrarMetodosPagoAdmin() {
 
           </select>
 
-		 <div
+		 <div data-mass-ui
           id="metodosDisponiblesPaisAdmin"
           style="
             margin-bottom:20px;
@@ -5431,7 +5421,7 @@ async function mostrarMetodosPagoAdmin() {
             border-radius:12px;
           "
         >
-          Métodos configurados:
+          <span data-mass-ui>Métodos configurados:</span>
           <b>${total}</b>
         </div>
 
@@ -5439,7 +5429,7 @@ async function mostrarMetodosPagoAdmin() {
         ${
           total === 0
             ? `
-              <div
+              <div data-mass-ui
                 style="
                   padding:20px;
                   border:1px solid #39ff14;
@@ -5549,11 +5539,11 @@ document
                 // 3. CONFIRMACIÓN
                 // =========================================
 
-                const confirmado = confirm(
+                const confirmado = confirm(massTexto(
                     activoActual === true
                         ? "¿Deshabilitar este método de pago?"
                         : "¿Habilitar este método de pago?"
-                );
+                ));
 
                 if (!confirmado) {
                     return;
@@ -5578,8 +5568,7 @@ document
                 // 5. BLOQUEAR DOBLE CLIC
                 // =========================================
 
-                const textoOriginal =
-                    botonEstado.textContent;
+                const textoOriginal = activoActual ? "🔴 Deshabilitar" : "🟢 Habilitar";
 
                 botonEstado.disabled = true;
 
@@ -5633,11 +5622,11 @@ document
                     // 7. CONFIRMACIÓN
                     // =====================================
 
-                    alert(
+                    alert(massTexto(
                         activoActual === true
                             ? "✅ Método de pago deshabilitado correctamente."
                             : "✅ Método de pago habilitado correctamente."
-                    );
+                    ));
 
 
                     // =====================================
@@ -5761,14 +5750,14 @@ document
           if (!paisCodigo) {
 
             metodosDisponiblesPaisAdmin.innerHTML =
-              "Selecciona un país para ver sus métodos de pago disponibles.";
+              "<span data-mass-ui>Selecciona un país para ver sus métodos de pago disponibles.</span>";
 
             return;
           }
 
 
           metodosDisponiblesPaisAdmin.innerHTML = `
-            <div style="text-align:center;">
+            <div data-mass-ui style="text-align:center;">
               ⏳ Cargando métodos disponibles...
             </div>
           `;
@@ -5795,8 +5784,8 @@ document
 
             metodosDisponiblesPaisAdmin.innerHTML = `
               <div style="color:#ff8a8a;">
-                ❌ No fue posible cargar los métodos
-                disponibles para este país.
+                <span data-mass-ui>❌ No fue posible cargar los métodos
+                disponibles para este país.</span>
                 <br><br>
                 ${escaparHtml(
                   errorDisponibles.message ||
@@ -5818,7 +5807,7 @@ document
           if (metodosDisponibles.length === 0) {
 
             metodosDisponiblesPaisAdmin.innerHTML = `
-              <div>
+              <div data-mass-ui>
                 No existen métodos de pago disponibles
                 para el país seleccionado.
               </div>
@@ -5870,33 +5859,33 @@ document
                         margin-bottom:8px;
                       "
                     >
-                      ${escaparHtml(
+                      <span data-mass-ui>${escaparHtml(
                         metodo?.nombre ||
                         metodo?.codigo ||
                         "Método de pago"
-                      )}
+                      )}</span>
                     </div>
 
                     <div>
-                      <b>Categoría:</b>
-                      ${escaparHtml(
+                      <b data-mass-ui>Categoría:</b>
+                      <span data-mass-ui>${escaparHtml(
                         metodo?.categoria || "--"
-                      )}
+                      )}</span>
                     </div>
 
                     <div>
-                      <b>Pago directo:</b>
-                      ${pagoDirecto}
+                      <b data-mass-ui>Pago directo:</b>
+                      <span data-mass-ui>${pagoDirecto}</span>
                     </div>
 
                     <div>
-                      <b>Recarga Wallet MASS:</b>
-                      ${recargaWallet}
+                      <b data-mass-ui>Recarga Wallet MASS:</b>
+                      <span data-mass-ui>${recargaWallet}</span>
                     </div>
 
                     <div>
-                      <b>Estado:</b>
-                      ${configurado}
+                      <b data-mass-ui>Estado:</b>
+                      <span data-mass-ui>${configurado}</span>
                     </div>
 
 					<div
@@ -5909,7 +5898,7 @@ document
      `
         <button
           type="button"
-          class="btnConfigurarMetodoPagoAdmin"
+          data-mass-ui class="btnConfigurarMetodoPagoAdmin"
           data-metodo-pago-pais-id="${escaparHtml(
             metodo?.metodo_pago_pais_id || ""
           )}"
@@ -6361,10 +6350,10 @@ const destinoHtml = `
                 font-weight:bold;
             "
         >
-            ${escaparHtml(
+            <span data-mass-ui>${escaparHtml(
                 plantilla.destino_etiqueta ||
                 "Destino"
-            )}
+            )}</span>
             ${
                 plantilla.destino_valor_requerido === true
                     ? " *"
@@ -6449,10 +6438,10 @@ const titularHtml =
                         font-weight:bold;
                     "
                 >
-                    ${escaparHtml(
+                    <span data-mass-ui>${escaparHtml(
                         plantilla.titular_etiqueta ||
                         "Titular"
-                    )}
+                    )}</span>
                     ${
                         plantilla.titular_requerido === true
                             ? " *"
@@ -6520,10 +6509,10 @@ const instruccionesHtml =
                         font-weight:bold;
                     "
                 >
-                    ${escaparHtml(
+                    <span data-mass-ui>${escaparHtml(
                         plantilla.instrucciones_etiqueta ||
                         "Instrucciones"
-                    )}
+                    )}</span>
                     ${
                         plantilla.instrucciones_requeridas === true
                             ? " *"
@@ -6718,7 +6707,7 @@ contenedor.innerHTML = `
                 color:#ddd;
             "
         >
-            <b>${escaparHtml(
+            <b data-mass-ui>${escaparHtml(
                 metodoInfo.nombre ||
                 metodoInfo.codigo ||
                 boton.dataset.metodoNombre ||
@@ -6727,11 +6716,11 @@ contenedor.innerHTML = `
 
             <br>
 
-            ${escaparHtml(
+            <span data-mass-country="${escaparHtml(paisInfo.codigo_iso2 || '')}">${escaparHtml(
                 paisInfo.nombre ||
                 paisInfo.codigo_iso2 ||
                 ""
-            )}
+            )}</span>
         </div>
 
 
@@ -6745,14 +6734,14 @@ contenedor.innerHTML = `
         >
 
             <div>
-                Pago directo:
+                <span data-mass-ui>Pago directo:</span>
                 <b>
                     ${permitePagoDirecto ? "✅ Disponible" : "❌ No disponible"}
                 </b>
             </div>
 
             <div style="margin-top:6px;">
-                Recarga Wallet MASS:
+                <span data-mass-ui>Recarga Wallet MASS:</span>
                 <b>
                     ${permiteRecargaWallet ? "✅ Disponible" : "❌ No disponible"}
                 </b>
@@ -6775,7 +6764,7 @@ contenedor.innerHTML = `
     "
 >
 
-    <div
+    <div data-mass-ui
         style="
             font-weight:bold;
             margin-bottom:10px;
@@ -7610,7 +7599,7 @@ async function mostrarMisPuntosMassAdmin() {
 
 
     contenedor.innerHTML = `
-        <div
+        <div data-mass-ui
             style="
                 padding:18px;
                 text-align:center;
@@ -7787,7 +7776,7 @@ async function mostrarMisPuntosMassAdmin() {
             puntos.length === 0
 
                 ? `
-                    <div
+                    <div data-mass-ui
                         style="
                             padding:18px;
                             border:1px solid rgba(57,255,20,.35);
@@ -7848,7 +7837,7 @@ async function mostrarMisPuntosMassAdmin() {
 
 
                                 <div>
-                                    <b>Código:</b>
+                                    <b data-mass-ui>Código:</b>
                                     ${escaparHtml(
                                         punto?.codigo || "--"
                                     )}
@@ -7856,10 +7845,10 @@ async function mostrarMisPuntosMassAdmin() {
 
 
                                 <div>
-                                    <b>País:</b>
-                                    ${escaparHtml(
+                                    <b data-mass-ui>País:</b>
+                                    <span data-mass-country="${escaparHtml(pais?.codigo_iso2 || '')}">${escaparHtml(
                                         pais?.nombre || "--"
-                                    )}
+                                    )}</span>
 
                                     ${
                                         pais?.codigo_iso2
@@ -7872,7 +7861,7 @@ async function mostrarMisPuntosMassAdmin() {
 
 
                                 <div>
-                                    <b>Ciudad:</b>
+                                    <b data-mass-ui>Ciudad:</b>
                                     ${escaparHtml(
                                         punto?.ciudad || "--"
                                     )}
@@ -7880,7 +7869,7 @@ async function mostrarMisPuntosMassAdmin() {
 
 
                                 <div>
-                                    <b>Dirección:</b>
+                                    <b data-mass-ui>Dirección:</b>
                                     ${escaparHtml(
                                         punto?.direccion_linea1 ||
                                         "--"
@@ -7889,12 +7878,12 @@ async function mostrarMisPuntosMassAdmin() {
 
 
                                 <div>
-                                    <b>Estado:</b>
-                                    ${
+                                    <b data-mass-ui>Estado:</b>
+                                    <span data-mass-ui>${
                                         disponible
                                             ? "🟢 Activo"
                                             : "🔴 Deshabilitado"
-                                    }
+                                    }</span>
                                 </div>
 
 	<div
@@ -7949,7 +7938,7 @@ async function mostrarMisPuntosMassAdmin() {
                 </h2>
 
 
-                <div
+                <div data-mass-ui
                     style="
                         margin-bottom:18px;
                         text-align:center;
@@ -7991,7 +7980,7 @@ async function mostrarMisPuntosMassAdmin() {
                 ${
                     paises.length === 0
                         ? `
-                            <div
+                            <div data-mass-ui
                                 style="
                                     margin-bottom:18px;
                                     padding:14px;
@@ -8017,7 +8006,7 @@ async function mostrarMisPuntosMassAdmin() {
                         color:#ccc;
                     "
                 >
-                    Puntos registrados:
+                    <span data-mass-ui>Puntos registrados:</span>
                     <b>${puntos.length}</b>
                 </div>
 
@@ -8046,7 +8035,7 @@ async function mostrarMisPuntosMassAdmin() {
     </h3>
 
 
-    <div
+    <div data-mass-ui
         style="
             text-align:center;
             color:#aaa;
@@ -8080,7 +8069,7 @@ async function mostrarMisPuntosMassAdmin() {
                 </h3>
 
 
-                <div
+                <div data-mass-ui
                     style="
                         text-align:center;
                         color:#aaa;
@@ -8129,7 +8118,7 @@ async function mostrarMisPuntosMassAdmin() {
                     💰 Entregas de fondos por confirmar
                 </h3>
 
-                <div
+                <div data-mass-ui
                     style="
                         text-align:center;
                         color:#aaa;
@@ -8210,7 +8199,7 @@ async function mostrarMisPuntosMassAdmin() {
 
                         ? `
 
-                            <div
+                            <div data-mass-ui
                                 style="
                                     text-align:center;
                                     color:#aaa;
@@ -8285,7 +8274,7 @@ return `
                                             "
                                         >
 
-                                            <div
+                                            <div data-mass-ui
                                                 style="
                                                     text-align:center;
                                                     color:#ffd700;
@@ -8298,7 +8287,7 @@ return `
 
 
                                             <div>
-                                                <b>Folio:</b>
+                                                <b data-mass-ui>Folio:</b>
                                                 ${escaparHtml(
                                                     entrega?.folio ||
                                                     "—"
@@ -8307,16 +8296,16 @@ return `
 
 
                                             <div>
-                                                <b>Estado:</b>
-                                                ${escaparHtml(
+                                                <b data-mass-ui>Estado:</b>
+                                                <span data-mass-ui>${escaparHtml(
                                                     entrega?.estado ||
                                                     "—"
-                                                )}
+                                                )}</span>
                                             </div>
 
 
                                             <div>
-                                                <b>Monto:</b>
+                                                <b data-mass-ui>Monto:</b>
                                                 ${escaparHtml(
                                                     entrega?.monto ??
                                                     "—"
@@ -8329,7 +8318,7 @@ return `
 
 
                                             <div>
-                                                <b>Punto MASS:</b>
+                                                <b data-mass-ui>Punto MASS:</b>
                                                 ${escaparHtml(
                                                     punto?.nombre ||
                                                     "—"
@@ -8338,7 +8327,7 @@ return `
 
 
                                             <div>
-                                                <b>Código:</b>
+                                                <b data-mass-ui>Código:</b>
                                                 ${escaparHtml(
                                                     punto?.codigo ||
                                                     "—"
@@ -8361,7 +8350,7 @@ ${
                 "
             >
 
-                <div
+                <div data-mass-ui
                     style="
                         color:#39ff14;
                         font-weight:bold;
@@ -8372,7 +8361,7 @@ ${
                 </div>
 
 
-                <div
+                <div data-mass-ui
                     style="
                         color:#fff;
                         font-size:13px;
@@ -8385,7 +8374,7 @@ ${
                 </div>
 
 
-                <div
+                <div data-mass-ui
                     style="
                         color:#ffd700;
                         font-size:13px;
@@ -8422,7 +8411,7 @@ ${
                 </button>
 
 
-                <div
+                <div data-mass-ui
                     class="estadoConfirmarRecepcionEfectivoFondosAdmin"
 
                     data-entrega-id="${escaparHtml(
@@ -8460,13 +8449,13 @@ ${
                     font-weight:bold;
                 "
             >
-                ${
+                <span data-mass-ui>${
                     comprobante
                         ?.objeto_existe ===
                     true
                         ? "✅ Comprobante privado disponible"
                         : "❌ Comprobante privado no disponible"
-                }
+                }</span>
             </div>
 
 
@@ -8532,7 +8521,7 @@ ${
                                 </button>
 
 
-                                <div
+                                <div data-mass-ui
                                     class="estadoConfirmarRecepcionFondosAdmin"
 
                                     data-entrega-id="${escaparHtml(
@@ -8592,7 +8581,7 @@ ${
                             margin-bottom:10px;
                         "
                     >
-                        Total por confirmar:
+                        <span data-mass-ui>Total por confirmar:</span>
                         <b>${escaparHtml(
                             dataEntregas
                                 .total_por_confirmar ??
@@ -9733,7 +9722,7 @@ botonesConfirmarEfectivo.forEach(
                         💰 Entregas de fondos por confirmar
                     </h3>
 
-                    <div
+                    <div data-mass-ui
                         style="
                             text-align:center;
                             color:#ff8a8a;
@@ -9774,7 +9763,7 @@ botonesConfirmarEfectivo.forEach(
                 </h3>
 
 
-                <div
+                <div data-mass-ui
                     style="
                         text-align:center;
                         color:#aaa;
@@ -9917,7 +9906,7 @@ botonesConfirmarEfectivo.forEach(
 
                         ? `
 
-                            <div
+                            <div data-mass-ui
                                 style="
                                     text-align:center;
                                     color:#aaa;
@@ -10064,9 +10053,9 @@ botonesConfirmarEfectivo.forEach(
 
         &nbsp; | &nbsp;
 
-        ${escaparHtml1(
+        <span data-mass-ui>${escaparHtml1(
             etiquetaEstado
-        )}
+        )}</span>
     </summary>
 
 
@@ -10086,14 +10075,14 @@ botonesConfirmarEfectivo.forEach(
                                                     margin-bottom:12px;
                                                 "
                                             >
-                                                ${escaparHtml1(
+                                                <span data-mass-ui>${escaparHtml1(
                                                     etiquetaEstado
-                                                )}
+                                                )}</span>
                                             </div>
 
 
                                             <div>
-                                                <b>Folio:</b>
+                                                <b data-mass-ui>Folio:</b>
                                                 ${escaparHtml1(
                                                     entrega?.folio ||
                                                     "—"
@@ -10102,7 +10091,7 @@ botonesConfirmarEfectivo.forEach(
 
 
                                             <div>
-                                                <b>Monto:</b>
+                                                <b data-mass-ui>Monto:</b>
                                                 ${escaparHtml1(
                                                     String(
                                                         entrega?.monto ??
@@ -10118,7 +10107,7 @@ botonesConfirmarEfectivo.forEach(
 
 
                                             <div>
-                                                <b>Método:</b>
+                                                <b data-mass-ui>Método:</b>
                                                 ${escaparHtml1(
                                                     metodo?.nombre ||
                                                     metodo?.codigo ||
@@ -10128,7 +10117,7 @@ botonesConfirmarEfectivo.forEach(
 
 
                                             <div>
-                                                <b>Punto MASS:</b>
+                                                <b data-mass-ui>Punto MASS:</b>
                                                 ${escaparHtml1(
                                                     punto?.nombre ||
                                                     "—"
@@ -10137,7 +10126,7 @@ botonesConfirmarEfectivo.forEach(
 
 
                                             <div>
-                                                <b>Código:</b>
+                                                <b data-mass-ui>Código:</b>
                                                 ${escaparHtml1(
                                                     punto?.codigo ||
                                                     "—"
@@ -10150,7 +10139,7 @@ botonesConfirmarEfectivo.forEach(
                                                     margin-top:10px;
                                                 "
                                             >
-                                                <b>Entregado:</b><br>
+                                                <b data-mass-ui>Entregado:</b><br>
 
                                                 ${escaparHtml1(
                                                     formatearFechaHistorial(
@@ -10167,11 +10156,11 @@ botonesConfirmarEfectivo.forEach(
                                                 "
                                             >
                                                 <b>
-                                                    ${
+                                                    <span data-mass-ui>${
                                                         esConfirmada
                                                             ? "Confirmado:"
                                                             : "Cancelado:"
-                                                    }
+                                                    }</span>
                                                 </b><br>
 
                                                 ${escaparHtml1(
@@ -10194,7 +10183,7 @@ botonesConfirmarEfectivo.forEach(
                                                                 color:#ff8a8a;
                                                             "
                                                         >
-                                                            <b>
+                                                            <b data-mass-ui>
                                                                 Motivo de cancelación:
                                                             </b><br>
 
@@ -10246,10 +10235,10 @@ ${
                     text-align:center;
                 "
             >
-                💵 Entrega física de efectivo
+                <span data-mass-ui>💵 Entrega física de efectivo</span>
                 <br>
 
-                <span
+                <span data-mass-ui
                     style="
                         color:#fff;
                         font-size:12px;
@@ -10277,13 +10266,13 @@ ${
                     font-weight:bold;
                 "
             >
-                ${
+                <span data-mass-ui>${
                     comprobante
                         ?.objeto_existe ===
                         true
                             ? "✅ Comprobante privado archivado"
                             : "Comprobante privado no disponible"
-                }
+                }</span>
             </div>
 
 
@@ -10378,7 +10367,7 @@ ${
 
                         &nbsp; | &nbsp;
 
-                        Confirmadas:
+                        <span data-mass-ui>Confirmadas:</span>
                         <b>
                             ${escaparHtml1(
                                 String(
@@ -10391,7 +10380,7 @@ ${
 
                         &nbsp; | &nbsp;
 
-                        Canceladas:
+                        <span data-mass-ui>Canceladas:</span>
                         <b>
                             ${escaparHtml1(
                                 String(
@@ -10760,7 +10749,7 @@ ${
                     </h3>
 
 
-                    <div
+                    <div data-mass-ui
                         style="
                             text-align:center;
                             color:#ff8a8a;
@@ -10865,6 +10854,8 @@ botonesOperadoresPuntoMass.forEach(
                         return `
                             <option
                                 value="${escaparHtml(codigo)}"
+                                data-mass-country="${escaparHtml(codigo)}"
+                                data-mass-country-name="${escaparHtml(nombre)}" data-mass-country-code
                             >
                                 ${escaparHtml(nombre)}
                                 (${escaparHtml(codigo)})
@@ -10904,7 +10895,7 @@ botonesOperadoresPuntoMass.forEach(
                     </h2>
 
 
-                    <div
+                    <div data-mass-ui
                         style="
                             text-align:center;
                             color:#ccc;
@@ -10968,7 +10959,7 @@ botonesOperadoresPuntoMass.forEach(
                                 Nombre del Punto MASS *
                             </label>
 
-                            <input
+                            <input data-mass-placeholder
                                 id="puntoMassNombre"
                                 type="text"
                                 required
@@ -11086,7 +11077,7 @@ botonesOperadoresPuntoMass.forEach(
                                 Estado / Región
                             </label>
 
-                            <input
+                            <input data-mass-placeholder
                                 id="puntoMassEstado"
                                 type="text"
                                 placeholder="Ej. Nuevo León"
@@ -11143,7 +11134,7 @@ botonesOperadoresPuntoMass.forEach(
                                 Zona horaria *
                             </label>
 
-                            <input
+                            <input data-mass-placeholder
                                 id="puntoMassZonaHoraria"
                                 type="text"
                                 required
@@ -11160,7 +11151,7 @@ botonesOperadoresPuntoMass.forEach(
                                 "
                             >
 
-                            <div
+                            <div data-mass-ui
                                 style="
                                     margin-top:6px;
                                     font-size:13px;
@@ -11266,7 +11257,7 @@ botonesOperadoresPuntoMass.forEach(
                     </form>
 
 
-                    <div
+                    <div data-mass-ui
                         style="
                             margin-top:14px;
                             text-align:center;
@@ -44037,7 +44028,7 @@ async function mostrarConvertidorMassAdmin() {
   }
 
   contenedor.innerHTML = `
-    <div style="padding:18px;text-align:center;">
+    <div data-mass-ui style="padding:18px;text-align:center;">
       ⏳ Cargando configuración del Convertidor MASS...
     </div>
   `;
@@ -44152,7 +44143,7 @@ async function mostrarConvertidorMassAdmin() {
       );
 
       contenedor.innerHTML = `
-        <div style="
+        <div data-mass-ui style="
           padding:16px;
           border:1px solid #ff4d4f;
           border-radius:12px;
@@ -44208,7 +44199,7 @@ async function mostrarConvertidorMassAdmin() {
         </h2>
 
         <p>
-          <b>Organizador:</b><br>
+          <b data-mass-ui>Organizador:</b><br>
           ${escaparHtml(
             organizador.nombre ||
             "Organizador"
@@ -44225,8 +44216,8 @@ async function mostrarConvertidorMassAdmin() {
             font-weight:bold;
           "
         >
-          Estado:<br><br>
-          ${estadoTexto}
+          <span data-mass-ui>Estado:</span><br><br>
+          <span data-mass-ui>${estadoTexto}</span>
         </div>
 
         <p
@@ -44235,11 +44226,11 @@ async function mostrarConvertidorMassAdmin() {
             line-height:1.5;
           "
         >
-          ${
+          <span data-mass-ui>${
             activo
               ? "Tus usuarios pueden ver y utilizar actualmente el Convertidor MASS."
               : "El Convertidor MASS está oculto para tus usuarios."
-          }
+          }</span>
         </p>
 
         <button
@@ -44256,7 +44247,7 @@ async function mostrarConvertidorMassAdmin() {
             font-weight:bold;
           "
         >
-          ${textoBoton}
+          <span data-mass-ui>${textoBoton}</span>
         </button>
 
       </div>
@@ -44339,7 +44330,7 @@ async function cambiarEstadoConvertidorMassAdmin(
     nuevoEstado === true;
 
   const confirmar =
-    confirm(
+    confirm(massTexto(
       activar
         ? "🌐 ACTIVAR CONVERTIDOR MASS\n\n" +
           "El Convertidor MASS será visible " +
@@ -44349,7 +44340,7 @@ async function cambiarEstadoConvertidorMassAdmin(
           "El Convertidor MASS dejará de mostrarse " +
           "a los usuarios de este organizador.\n\n" +
           "¿Deseas continuar?"
-    );
+    ));
 
   if (!confirmar) {
     return;
@@ -44424,11 +44415,11 @@ async function cambiarEstadoConvertidorMassAdmin(
       aplicarVisibilidadConvertidorMass();
     }
 
-    alert(
+    alert(massTexto(
       data.convertidor_mass_activo === true
         ? "✅ Convertidor MASS activado."
         : "✅ Convertidor MASS desactivado."
-    );
+    ));
 
     await mostrarConvertidorMassAdmin();
 
@@ -49397,7 +49388,7 @@ async function mostrarMiEquipoOrganizador() {
 
 
   contenedor.innerHTML =
-    "<p>⏳ Cargando tu equipo...</p>";
+    "<p data-mass-ui>⏳ Cargando tu equipo...</p>";
 
 
   const {
@@ -49421,7 +49412,7 @@ async function mostrarMiEquipoOrganizador() {
     );
 
     contenedor.innerHTML =
-      "<p>❌ No fue posible cargar Mi equipo.</p>";
+      "<p data-mass-ui>❌ No fue posible cargar Mi equipo.</p>";
 
     return;
   }
@@ -49516,7 +49507,7 @@ async function mostrarMiEquipoOrganizador() {
       return `
         <div class="card">
 
-          <h3>
+          <h3 data-mass-ui>
             ${
               esPropietario
                 ? "👑 Propietario"
@@ -49538,7 +49529,7 @@ async function mostrarMiEquipoOrganizador() {
             )}
           </p>
 
-          <p>
+          <p data-mass-ui>
             ${
               activo
                 ? "🟢 Activo"
@@ -49548,7 +49539,7 @@ async function mostrarMiEquipoOrganizador() {
 
           ${
             miembro.es_sesion_actual
-              ? "<p>✅ Sesión actual</p>"
+              ? "<p data-mass-ui>✅ Sesión actual</p>"
               : ""
           }
 
@@ -49568,7 +49559,7 @@ async function mostrarMiEquipoOrganizador() {
 
       <h3 data-mass-ui=➕&#32;Agregar&#32;colaborador>➕ Agregar colaborador</h3>
 
-      <p class="small">
+      <p data-mass-ui class="small">
         Busca únicamente por MASS ID.
         No se utiliza correo ni teléfono.
       </p>
@@ -49605,7 +49596,7 @@ async function mostrarMiEquipoOrganizador() {
 
     ${
       tarjetas ||
-      "<p>No hay integrantes registrados.</p>"
+      "<p data-mass-ui>No hay integrantes registrados.</p>"
     }
   `;
 }
@@ -49643,14 +49634,14 @@ async function buscarCuentaMiEquipoOrganizador() {
 
   if (!massId) {
 
-    alert("Ingresa el MASS ID.");
+    alert(massTexto("Ingresa el MASS ID."));
 
     return;
   }
 
 
   resultado.innerHTML =
-    "⏳ Buscando...";
+    "<span data-mass-ui>⏳ Buscando...</span>";
 
 
   const {
@@ -49677,7 +49668,7 @@ async function buscarCuentaMiEquipoOrganizador() {
     );
 
     resultado.innerHTML =
-      "❌ No fue posible realizar la búsqueda.";
+      "<span data-mass-ui>❌ No fue posible realizar la búsqueda.</span>";
 
     return;
   }
@@ -49686,7 +49677,7 @@ async function buscarCuentaMiEquipoOrganizador() {
   if (data?.encontrada !== true) {
 
     resultado.innerHTML =
-      "No se encontró una cuenta MASS activa con ese MASS ID.";
+      "<span data-mass-ui>No se encontró una cuenta MASS activa con ese MASS ID.</span>";
 
     return;
   }
@@ -49714,10 +49705,10 @@ async function buscarCuentaMiEquipoOrganizador() {
       </p>
 
       <p>
-        Estado:
-        ${escaparHtmlMiEquipo(
+        <span data-mass-ui>Estado:</span>
+        <span data-mass-ui>${escaparHtmlMiEquipo(
           data.estado_vinculo
-        )}
+        )}</span>
       </p>
 
       ${
@@ -49731,7 +49722,7 @@ async function buscarCuentaMiEquipoOrganizador() {
             </button>
           `
           : `
-            <p>
+            <p data-mass-ui>
               ⛔ Esta cuenta no está disponible para agregar.
             </p>
           `
@@ -119629,7 +119620,7 @@ window.abrirPerfilLegalMASS = async function () {
     const cont = document.getElementById("adminContenido");
 
     if (!cont || !orgId) {
-        alert("❌ No se identificó el organizador.");
+        alert(massTexto("❌ No se identificó el organizador."));
         return;
     }
 
@@ -119641,12 +119632,12 @@ window.abrirPerfilLegalMASS = async function () {
                 ⚖️ Mi Perfil Legal
             </h2>
 
-            <p style="color:#bbb;">
+            <p data-mass-ui style="color:#bbb;">
                 Información privada para identificar
                 legalmente al responsable del organizador.
             </p>
 
-            <div id="massPerfilLegalEstado">
+            <div data-mass-ui id="massPerfilLegalEstado">
                 Consultando Supabase...
             </div>
 
@@ -119675,8 +119666,7 @@ window.abrirPerfilLegalMASS = async function () {
     if (!estado || !estado.isConnected) return;
 
     if (error || data?.ok !== true) {
-        estado.textContent =
-            "❌ No fue posible consultar el perfil legal.";
+        window.MassIdioma.rotulo(estado, "❌ No fue posible consultar el perfil legal.");
         return;
     }
 
@@ -119686,7 +119676,7 @@ window.abrirPerfilLegalMASS = async function () {
     }
 
     estado.innerHTML = `
-        <p>
+        <p data-mass-ui>
             Aún no tienes un perfil legal registrado.
         </p>
 
@@ -119721,14 +119711,14 @@ window.abrirPerfilLegalMASS = async function () {
     <option data-mass-ui=Cargando&#32;países... value="">Cargando países...</option>
 </select>
 
-        <p style="font-size:13px;color:#aaa;">
+        <p data-mass-ui style="font-size:13px;color:#aaa;">
             Este registro no verifica automáticamente
             tu identidad ni autoriza sorteos.
             Los demás datos legales se completarán
             en el siguiente formulario.
         </p>
 
-        <button data-mass-ui=💾&#32;Registrar&#32;perfil&#32;legal
+        <button data-mass-ui
             id="btnRegistrarPerfilLegalMass"
             type="button"
             onclick="registrarPerfilLegalInicialMass()"
@@ -119788,6 +119778,7 @@ async function cargarPaisesPerfilLegalMass() {
             document.createElement("option");
 
         inicial.value = "";
+        inicial.dataset.massUi = "";
         inicial.textContent = "Seleccionar país";
         inicial.disabled = true;
         inicial.selected = true;
@@ -119821,6 +119812,8 @@ async function cargarPaisesPerfilLegalMass() {
                 document.createElement("option");
 
             opcion.value = iso2;
+            opcion.dataset.massCountry = iso2;
+            opcion.dataset.massCountryName = nombre;
             opcion.textContent = nombre;
 
             fragmento.appendChild(opcion);
@@ -119906,7 +119899,7 @@ async function () {
                 !/^[A-Z]{2}$/.test(pais) ||
         !paisDisponible
     ) {
-        alert("❌ Completa correctamente los campos.");
+        alert(massTexto("❌ Completa correctamente los campos."));
         return;
     }
 
@@ -119931,24 +119924,24 @@ async function () {
         );
 
         if (error || data?.ok !== true) {
-            alert(
+            alert(massTexto(
                 "❌ Supabase no confirmó el registro legal."
-            );
+            ));
             return;
         }
 
-        alert(
+        alert(massTexto(
             data.creado === true
                 ? "✅ Perfil legal registrado como pendiente."
                 : "ℹ️ Ya existe un perfil legal para este organizador."
-        );
+        ));
 
         await abrirPerfilLegalMASS();
 
     } finally {
         if (boton && boton.isConnected) {
             boton.disabled = false;
-            boton.textContent = massTexto("💾 Registrar perfil legal");
+            boton.textContent = "💾 Registrar perfil legal";
         }
     }
 };
@@ -120011,9 +120004,14 @@ async function mostrarEditorPerfilLegalMass(resultado) {
     const panel = document.createElement("div");
     const estado = document.createElement("p");
     estado.style.color = "#a5ffa5";
-    estado.textContent = "Estado de verificación: " + String(resultado.estado_verificacion || "pendiente");
+    window.MassIdioma.rotulo(estado, "Estado de verificación:");
+    const verificacion = document.createElement("span");
+    verificacion.dataset.massUi = "";
+    verificacion.textContent = String(resultado.estado_verificacion || "pendiente");
+    estado.append(" ", verificacion);
     panel.appendChild(estado);
     const nota = document.createElement("p");
+    nota.dataset.massUi = "";
     nota.style.cssText = "color:#bbb;font-size:13px;line-height:1.5";
     nota.textContent = "Completa tu información real. Guardar no verifica automáticamente tu identidad ni autoriza sorteos. Los datos complementarios serán necesarios para la revisión.";
     panel.appendChild(nota);
@@ -120024,6 +120022,7 @@ async function mostrarEditorPerfilLegalMass(resultado) {
         bloque.open = titulo === "Identidad legal";
         bloque.style.cssText = "border:1px solid #3b6c3b;border-radius:12px;padding:12px;margin:12px 0;background:#101810";
         const cabecera = document.createElement("summary");
+        cabecera.dataset.massUi = "";
         cabecera.textContent = titulo;
         cabecera.style.cssText = "cursor:pointer;color:#80ff80;font-weight:bold";
         bloque.appendChild(cabecera);
@@ -120032,13 +120031,14 @@ async function mostrarEditorPerfilLegalMass(resultado) {
         for (const clave of claves) {
             const envoltura = document.createElement("label");
             envoltura.style.cssText = "display:block;margin:12px 0;color:#eee";
-            envoltura.textContent = nombres[clave];
+            window.MassIdioma.rotulo(envoltura, nombres[clave]);
             const control = document.createElement(opciones[clave] ? "select" : "input");
             control.id = clave === "pais_codigo_iso2" ? "massLegalPais" : "massLegalEditar_" + clave;
             control.style.cssText = "display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:9px;font-size:16px";
             if (opciones[clave]) {
                 for (const [valor, texto] of opciones[clave]) {
                     const opcion = document.createElement("option");
+                    opcion.dataset.massUi = "";
                     opcion.value = valor;
                     opcion.textContent = texto;
                     control.appendChild(opcion);
@@ -120058,10 +120058,12 @@ async function mostrarEditorPerfilLegalMass(resultado) {
     }
 
     const mensaje = document.createElement("p");
+    mensaje.dataset.massUi = "";
     mensaje.style.cssText = "color:#bbb;font-size:13px";
     mensaje.textContent = "Los datos se guardan de forma privada en Supabase. Las modificaciones importantes de una identidad verificada requieren nueva revisión.";
     panel.appendChild(mensaje);
     const guardar = document.createElement("button");
+    guardar.dataset.massUi = "";
     guardar.type = "button";
     guardar.disabled = true;
     guardar.textContent = "💾 Guardar Perfil Legal";
@@ -120083,15 +120085,17 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
         "overflow-wrap:anywhere";
 
     const tituloCorrecciones = document.createElement("h3");
+    tituloCorrecciones.dataset.massUi = "";
     tituloCorrecciones.textContent = "⚠️ Correcciones solicitadas";
     tituloCorrecciones.style.cssText = "color:#ffcc66;margin:0 0 8px";
 
     const textoCorrecciones = document.createElement("p");
     textoCorrecciones.style.cssText =
         "color:#eee;white-space:pre-wrap;line-height:1.6;margin:0";
-    textoCorrecciones.textContent = "Consultando indicaciones oficiales...";
+    window.MassIdioma.rotulo(textoCorrecciones, "Consultando indicaciones oficiales...");
 
     const notaCorrecciones = document.createElement("p");
+    notaCorrecciones.dataset.massUi = "";
     notaCorrecciones.style.cssText =
         "color:#bbb;font-size:13px;line-height:1.5;margin:12px 0 0";
     notaCorrecciones.textContent =
@@ -120113,6 +120117,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
         "Después utiliza el botón de reenvío; la identidad no se verifica automáticamente.";
 
     const botonReenviarLegal = document.createElement("button");
+    botonReenviarLegal.dataset.massUi = "";
     botonReenviarLegal.type = "button";
     botonReenviarLegal.id = "massLegalReenviarRevision";
     botonReenviarLegal.textContent = "📤 Reenviar a revisión";
@@ -120122,6 +120127,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
         "max-width:100%;white-space:normal;";
 
     const resultadoReenvioLegal = document.createElement("p");
+    resultadoReenvioLegal.dataset.massUi = "";
     resultadoReenvioLegal.setAttribute("role", "status");
     resultadoReenvioLegal.style.cssText =
         "color:#ffdf95;white-space:pre-wrap;overflow-wrap:anywhere;" +
@@ -120157,10 +120163,10 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
             return;
         }
 
-        if (!confirm(
+        if (!confirm(massTexto(
             "¿Reenviar las correcciones guardadas a revisión? " +
             "El Súper Admin deberá revisar nuevamente tu identidad."
-        )) return;
+        ))) return;
 
         botonReenviarLegal.disabled = true;
         botonReenviarLegal.textContent = "⏳ Reenviando...";
@@ -120235,8 +120241,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
             }
 
             if (errorIndicaciones || instrucciones?.ok !== true) {
-                textoCorrecciones.textContent =
-                    "❌ No fue posible consultar las indicaciones. Vuelve a abrir Mi Perfil Legal.";
+                window.MassIdioma.rotulo(textoCorrecciones, "❌ No fue posible consultar las indicaciones. Vuelve a abrir Mi Perfil Legal.");
                 return;
             }
 
@@ -120244,8 +120249,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
                 instrucciones.perfil_legal_id !== resultado.perfil_legal_id ||
                 instrucciones.estado_verificacion !== "requiere_actualizacion" ||
                 instrucciones.actualizado_en !== actualizadoEn) {
-                textoCorrecciones.textContent =
-                    "ℹ️ El expediente cambió. Vuelve a abrir Mi Perfil Legal para ver la información actualizada.";
+                window.MassIdioma.rotulo(textoCorrecciones, "ℹ️ El expediente cambió. Vuelve a abrir Mi Perfil Legal para ver la información actualizada.");
                 return;
             }
 
@@ -120257,13 +120261,11 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
                 // Solo texto: evita inyectar HTML desde datos externos.
                 textoCorrecciones.textContent = indicacionesPublicadas;
             } else {
-                textoCorrecciones.textContent =
-                    "ℹ️ Este perfil requiere correcciones, pero todavía no tiene indicaciones publicadas. Comunícate con soporte de TE-TO-KA.";
+                window.MassIdioma.rotulo(textoCorrecciones, "ℹ️ Este perfil requiere correcciones, pero todavía no tiene indicaciones publicadas. Comunícate con soporte de TE-TO-KA.");
             }
         } catch (_error) {
             if (avisoCorrecciones.isConnected) {
-                textoCorrecciones.textContent =
-                    "❌ Error al consultar indicaciones. Vuelve a abrir Mi Perfil Legal.";
+                window.MassIdioma.rotulo(textoCorrecciones, "❌ Error al consultar indicaciones. Vuelve a abrir Mi Perfil Legal.");
             }
         }
     })();
@@ -120289,13 +120291,17 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
     const constitucion = document.getElementById("massLegalEditar_pais_constitucion_codigo");
     for (const opcion of Array.from(pais.options)) {
         if (opcion.value) {
-            constitucion.appendChild(new Option(opcion.textContent, opcion.value));
+            constitucion.appendChild(opcion.cloneNode(true));
         }
     }
     const asignarCodigo = (select, codigo) => {
         const iso = String(codigo || "").trim().toUpperCase();
         if (iso && !Array.from(select.options).some(op => op.value === iso)) {
-            select.add(new Option("País previamente registrado (" + iso + ")", iso));
+            const anterior = new Option("", iso);
+            anterior.dataset.massFormato = "País previamente registrado ({0})";
+            anterior.dataset.massValores = JSON.stringify([iso]);
+            window.MassIdioma.aplicar(anterior);
+            select.add(anterior);
         }
         select.value = iso;
     };
@@ -120306,7 +120312,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
 
     guardar.addEventListener("click", async () => {
         if (organizadorId !== obtenerOrganizadorPerfilLegalMass() || !actualizadoEn) {
-            alert("❌ La sesión o versión del perfil ha cambiado. Vuelve a abrir Mi Perfil Legal.");
+            alert(massTexto("❌ La sesión o versión del perfil ha cambiado. Vuelve a abrir Mi Perfil Legal."));
             return;
         }
         const cambios = {};
@@ -120314,7 +120320,7 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
             const id = clave === "pais_codigo_iso2" ? "massLegalPais" : "massLegalEditar_" + clave;
             const campo = document.getElementById(id);
             if (!campo || !panel.contains(campo)) {
-                alert("❌ El formulario está incompleto. Vuelve a abrir Mi Perfil Legal.");
+                alert(massTexto("❌ El formulario está incompleto. Vuelve a abrir Mi Perfil Legal."));
                 return;
             }
             cambios[clave] = String(campo.value || "").trim() || null;
@@ -120325,21 +120331,21 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
         if (!(["persona", "empresa"].includes(cambios.tipo_responsable)) ||
             (cambios.nombre_legal || "").length < 3 ||
             !/^[A-Z]{2}$/.test(cambios.pais_codigo_iso2 || "")) {
-            alert("❌ Verifica tipo de responsable, nombre legal y país.");
+            alert(massTexto("❌ Verifica tipo de responsable, nombre legal y país."));
             return;
         }
         for (const par of [["soporte_tipo", "soporte_valor"], ["privacidad_tipo", "privacidad_valor"]]) {
             if (Boolean(cambios[par[0]]) !== Boolean(cambios[par[1]])) {
-                alert("❌ Completa ambos campos de " + (par[0] === "soporte_tipo" ? "atención" : "privacidad") + ".");
+                alert(massTexto(par[0] === "soporte_tipo" ? "❌ Completa ambos campos de atención." : "❌ Completa ambos campos de privacidad."));
                 return;
             }
         }
         if (original.tipo_responsable === "empresa" && cambios.tipo_responsable !== "empresa" &&
-            !confirm("Cambiar de Empresa a Persona borrará los datos empresariales del perfil. ¿Continuar?")) return;
+            !confirm(massTexto("Cambiar de Empresa a Persona borrará los datos empresariales del perfil. ¿Continuar?"))) return;
         const materiales = ["tipo_responsable", "nombre_legal", "pais_constitucion_codigo", "empresa_registro_tipo", "empresa_registro_referencia", "representante_nombre", "representante_cargo", "pais_codigo_iso2"];
         if (resultado.estado_verificacion === "verificado" &&
             materiales.some(k => (cambios[k] || null) !== (original[k] || null)) &&
-            !confirm("Estos cambios de identidad requerirán una nueva verificación. ¿Guardar?")) return;
+            !confirm(massTexto("Estos cambios de identidad requerirán una nueva verificación. ¿Guardar?"))) return;
 
         guardar.disabled = true;
         guardar.textContent = "⏳ Guardando...";
@@ -120354,15 +120360,15 @@ if (resultado.estado_verificacion === "requiere_actualizacion") {
             if (error || data?.ok !== true) {
                 console.error("ERROR GUARDANDO PERFIL LEGAL:", error || data);
                 alert(data?.codigo === "VERSION_DESACTUALIZADA"
-                    ? "ℹ️ Tu perfil cambió en otra sesión. Vuelve a abrirlo antes de guardar."
-                    : "❌ Supabase no confirmó el guardado. " + (error?.message || data?.codigo || ""));
+                    ? massTexto("ℹ️ Tu perfil cambió en otra sesión. Vuelve a abrirlo antes de guardar.")
+                    : massTexto("❌ Supabase no confirmó el guardado.") + " " + (error?.message || data?.codigo || ""));
                 return;
             }
-            alert(data.sin_cambios === true ? "ℹ️ Sin cambios." : "✅ Perfil legal actualizado.");
+            alert(massTexto(data.sin_cambios === true ? "ℹ️ Sin cambios." : "✅ Perfil legal actualizado."));
             await abrirPerfilLegalMASS();
         } catch (error) {
             console.error("ERROR INESPERADO PERFIL LEGAL:", error);
-            alert("❌ No fue posible guardar el perfil legal.");
+            alert(massTexto("❌ No fue posible guardar el perfil legal."));
         } finally {
             if (guardar.isConnected) {
                 guardar.disabled = false;
