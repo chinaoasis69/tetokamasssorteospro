@@ -34278,7 +34278,7 @@ function crearTarjetaCanalSoporteAdmin(
     if (modoValor === "ninguno") {
 
         campoValor = `
-            <div style="
+            <div data-mass-ui style="
                 padding:12px;
                 margin:12px 0;
                 border:1px solid #333;
@@ -34300,10 +34300,10 @@ function crearTarjetaCanalSoporteAdmin(
 
         campoValor = `
             <label>
-                <b>${etiquetaValor}</b>
+                <b data-mass-ui>${etiquetaValor}</b>
             </label>
 
-            <input
+            <input data-mass-placeholder
                 id="cfgSoporte${prefijo}Valor"
                 type="text"
                 placeholder="${placeholderValor}"
@@ -34318,7 +34318,7 @@ function crearTarjetaCanalSoporteAdmin(
             >
 
             ${soloLectura ? `
-                <div style="
+                <div data-mass-ui style="
                     color:#888;
                     font-size:12px;
                     line-height:1.4;
@@ -34344,7 +34344,7 @@ function crearTarjetaCanalSoporteAdmin(
             "
         >
 
-            <summary
+            <summary data-mass-ui
                 style="
                     cursor:pointer;
                     font-weight:bold;
@@ -34362,7 +34362,7 @@ function crearTarjetaCanalSoporteAdmin(
                 font-size:13px;
                 line-height:1.45;
             ">
-                ${descripcion}
+                <span data-mass-ui>${descripcion}</span>
             </div>
 
 
@@ -34386,7 +34386,7 @@ function crearTarjetaCanalSoporteAdmin(
                             margin:0;
                         "
                     >
-                    Canal activo
+                    <span data-mass-ui>Canal activo</span>
                 </label>
 
 
@@ -34403,7 +34403,7 @@ function crearTarjetaCanalSoporteAdmin(
                             margin:0;
                         "
                     >
-                    Mostrar públicamente
+                    <span data-mass-ui>Mostrar públicamente</span>
                 </label>
 
             </div>
@@ -34413,10 +34413,10 @@ function crearTarjetaCanalSoporteAdmin(
 
 
             <label>
-                <b>🏷️ Etiqueta pública</b>
+                <b data-mass-ui>🏷️ Etiqueta pública</b>
             </label>
 
-            <input
+            <input data-mass-placeholder
                 id="cfgSoporte${prefijo}Etiqueta"
                 type="text"
                 maxlength="80"
@@ -34429,10 +34429,10 @@ function crearTarjetaCanalSoporteAdmin(
 
 
             <label>
-                <b>🕒 Horario de atención</b>
+                <b data-mass-ui>🕒 Horario de atención</b>
             </label>
 
-            <textarea
+            <textarea data-mass-placeholder
                 id="cfgSoporte${prefijo}Horario"
                 maxlength="300"
                 placeholder="Ej. Lun–Vie 8:00 AM–6:00 PM"
@@ -34448,10 +34448,10 @@ function crearTarjetaCanalSoporteAdmin(
 
 
             <label>
-                <b>💬 Texto de atención</b>
+                <b data-mass-ui>💬 Texto de atención</b>
             </label>
 
-            <textarea
+            <textarea data-mass-placeholder
                 id="cfgSoporte${prefijo}Texto"
                 maxlength="500"
                 placeholder="Ej. Escríbenos y con gusto te ayudamos."
@@ -34467,7 +34467,7 @@ function crearTarjetaCanalSoporteAdmin(
 
 
             <label>
-                <b>↕️ Orden / prioridad</b>
+                <b data-mass-ui>↕️ Orden / prioridad</b>
             </label>
 
             <input
@@ -34483,7 +34483,7 @@ function crearTarjetaCanalSoporteAdmin(
                 "
             >
 
-            <div style="
+            <div data-mass-ui style="
                 color:#888;
                 font-size:12px;
             ">
@@ -34812,7 +34812,7 @@ function crearTarjetaRedSocialAdmin(
             "
         >
 
-            <summary
+            <summary data-mass-ui
                 style="
                     cursor:pointer;
                     font-weight:bold;
@@ -34849,7 +34849,7 @@ function crearTarjetaRedSocialAdmin(
                             margin:0;
                         "
                     >
-                    Red activa
+                    <span data-mass-ui>Red activa</span>
                 </label>
 
 
@@ -34868,14 +34868,14 @@ function crearTarjetaRedSocialAdmin(
                             margin:0;
                         "
                     >
-                    Mostrar públicamente
+                    <span data-mass-ui>Mostrar públicamente</span>
                 </label>
 
             </div>
 
 
             <label>
-                <b>🔗 URL oficial</b>
+                <b data-mass-ui>🔗 URL oficial</b>
             </label>
 
             <input
@@ -34891,7 +34891,7 @@ function crearTarjetaRedSocialAdmin(
 
 
             <label>
-                <b>↕️ Orden / prioridad</b>
+                <b data-mass-ui>↕️ Orden / prioridad</b>
             </label>
 
             <input
@@ -34907,7 +34907,7 @@ function crearTarjetaRedSocialAdmin(
                 "
             >
 
-            <div
+            <div data-mass-ui
                 style="
                     color:#888;
                     font-size:12px;
@@ -35012,7 +35012,7 @@ async function guardarRedesSocialesOrganizadorV2() {
     if (!adminActual) {
 
         alert(
-            "❌ No hay una sesión administrativa válida."
+            massTexto("❌ No hay una sesión administrativa válida.")
         );
 
         return;
@@ -35052,7 +35052,7 @@ async function guardarRedesSocialesOrganizadorV2() {
     if (!organizadorId) {
 
         alert(
-            "❌ No se encontró el Organizador autorizado."
+            massTexto("❌ No se encontró el Organizador autorizado.")
         );
 
         return;
@@ -35135,7 +35135,7 @@ async function guardarRedesSocialesOrganizadorV2() {
         ) {
 
             alert(
-                `❌ El orden de ${definicion.titulo} debe estar entre 0 y 999.`
+                window.MassIdioma.formato("❌ El orden de {0} debe estar entre 0 y 999.", massTexto(definicion.titulo))
             );
 
             return;
@@ -35148,7 +35148,7 @@ async function guardarRedesSocialesOrganizadorV2() {
         ) {
 
             alert(
-                `❌ Para mostrar ${definicion.titulo} públicamente primero debes marcarla como activa.`
+                window.MassIdioma.formato("❌ Para mostrar {0} públicamente primero debes marcarla como activa.", massTexto(definicion.titulo))
             );
 
             return;
@@ -35158,7 +35158,7 @@ async function guardarRedesSocialesOrganizadorV2() {
         if (!url) {
 
             alert(
-                `❌ Completa la URL de ${definicion.titulo}.`
+                window.MassIdioma.formato("❌ Completa la URL de {0}.", massTexto(definicion.titulo))
             );
 
             return;
@@ -35173,7 +35173,7 @@ async function guardarRedesSocialesOrganizadorV2() {
         ) {
 
             alert(
-                `❌ La URL de ${definicion.titulo} debe comenzar con http:// o https://.`
+                window.MassIdioma.formato("❌ La URL de {0} debe comenzar con http:// o https://.", massTexto(definicion.titulo))
             );
 
             return;
@@ -35254,10 +35254,10 @@ async function guardarRedesSocialesOrganizadorV2() {
             );
 
             alert(
-                "❌ No fue posible guardar Redes Sociales.\n\n" +
+                massTexto("❌ No fue posible guardar Redes Sociales.") + "\n\n" +
                 (
                     errorGuardado.message ||
-                    "Error desconocido."
+                    massTexto("Error desconocido.")
                 )
             );
 
@@ -35267,7 +35267,7 @@ async function guardarRedesSocialesOrganizadorV2() {
 
 
     alert(
-        "✅ Redes Sociales guardadas correctamente."
+        massTexto("✅ Redes Sociales guardadas correctamente.")
     );
 
 
@@ -37889,7 +37889,7 @@ document.getElementById("adminContenido").innerHTML = `
     ⚙️ Mi Perfil
 </h2>
 
-<p style="
+<p data-mass-ui style="
     color:#bbb;
     margin-top:0;
     margin-bottom:22px;
@@ -37943,7 +37943,7 @@ document.getElementById("adminContenido").innerHTML = `
         🏢 Información pública
     </h3>
 
-    <p style="
+    <p data-mass-ui style="
         color:#aaa;
         text-align:center;
         line-height:1.5;
@@ -37972,7 +37972,7 @@ document.getElementById("adminContenido").innerHTML = `
         <b>✨ Slogan</b>
     </label>
 
-    <input
+    <input data-mass-placeholder
         id="cfgSlogan"
         placeholder="Ej. Las mejores herramientas para tu trabajo"
         style="
@@ -37983,7 +37983,7 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>📝 Acerca de nosotros</b>
+        <b data-mass-ui>📝 Acerca de nosotros</b>
     </label>
 
     <textarea data-mass-placeholder
@@ -38002,10 +38002,10 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>🏷️ Categoría del negocio</b>
+        <b data-mass-ui>🏷️ Categoría del negocio</b>
     </label>
 
-    <input
+    <input data-mass-placeholder
         id="cfgCategoriaNegocio"
         placeholder="Ej. Ferretería, herramientas, servicios..."
         maxlength="100"
@@ -38017,10 +38017,10 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>📍 Ubicación pública</b>
+        <b data-mass-ui>📍 Ubicación pública</b>
     </label>
 
-    <input
+    <input data-mass-placeholder
         id="cfgUbicacionPublica"
         placeholder="Ej. Brownsville, Texas"
         maxlength="180"
@@ -38030,7 +38030,7 @@ document.getElementById("adminContenido").innerHTML = `
         "
     >
 
-    <div style="
+    <div data-mass-ui style="
         color:#888;
         font-size:13px;
         margin-bottom:16px;
@@ -38042,10 +38042,10 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>🕒 Horario comercial</b>
+        <b data-mass-ui>🕒 Horario comercial</b>
     </label>
 
-    <textarea
+    <textarea data-mass-placeholder
         id="cfgHorarioComercial"
         placeholder="Ej. Lun–Vie 8:00 AM–6:00 PM"
         maxlength="500"
@@ -38061,7 +38061,7 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>📷 Logo del Organizador</b>
+        <b data-mass-ui>📷 Logo del Organizador</b>
     </label>
 
     <input
@@ -38077,7 +38077,7 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>🖼️ Banner del Organizador</b>
+        <b data-mass-ui>🖼️ Banner del Organizador</b>
     </label>
 
     <input
@@ -38104,10 +38104,10 @@ document.getElementById("adminContenido").innerHTML = `
 
 
    <label>
-    <b>🎨 Color de tu marca</b>
+    <b data-mass-ui>🎨 Color de tu marca</b>
 </label>
 
-<div style="
+<div data-mass-ui style="
     color:#888;
     font-size:13px;
     line-height:1.45;
@@ -38126,7 +38126,7 @@ document.getElementById("adminContenido").innerHTML = `
 ">
 
     <input
-        type="color"
+        data-mass-aria type="color"
         id="cfgColorPrincipal"
         value="#7CFF00"
         aria-label="Seleccionar color de tu marca"
@@ -38217,7 +38217,7 @@ document.getElementById("adminContenido").innerHTML = `
     "
 >
 
-    <div
+    <div data-mass-ui
         id="cfgColorMarcaPreviewTitulo"
         style="
             color:#7CFF00;
@@ -38229,7 +38229,7 @@ document.getElementById("adminContenido").innerHTML = `
         ✨ Vista previa de tu marca
     </div>
 
-    <div style="
+    <div data-mass-ui style="
         color:#bbb;
         font-size:13px;
         line-height:1.4;
@@ -38252,10 +38252,10 @@ document.getElementById("adminContenido").innerHTML = `
 
 
     <label>
-        <b>📱 WhatsApp del negocio</b>
+        <b data-mass-ui>📱 WhatsApp del negocio</b>
     </label>
 
-    <input
+    <input data-mass-placeholder
         id="cfgWhatsapp"
         placeholder="Ej. 19561234567"
         style="
@@ -38264,7 +38264,7 @@ document.getElementById("adminContenido").innerHTML = `
         "
     >
 
-    <div style="
+    <div data-mass-ui style="
         color:#888;
         font-size:13px;
         margin-bottom:18px;
@@ -38314,7 +38314,7 @@ document.getElementById("adminContenido").innerHTML = `
     </h3>
 
 
-    <p style="
+    <p data-mass-ui style="
         color:#aaa;
         text-align:center;
         line-height:1.5;
@@ -38490,9 +38490,9 @@ document.getElementById("adminContenido").innerHTML = `
         line-height:1.5;
         text-align:center;
     ">
-        📞 <b>Soporte TE-TO-KA</b> permanece separado.
+        📞 <b data-mass-ui>Soporte TE-TO-KA</b> <span data-mass-ui>permanece separado.
         Estos datos corresponden exclusivamente
-        al soporte ofrecido por tu negocio.
+        al soporte ofrecido por tu negocio.</span>
     </div>
 
 </div>
@@ -38522,7 +38522,7 @@ document.getElementById("adminContenido").innerHTML = `
     </h3>
 
 
-    <p style="
+    <p data-mass-ui style="
         color:#aaa;
         text-align:center;
         line-height:1.5;
@@ -38586,7 +38586,7 @@ ${[
     </h3>
 
 
-    <p
+    <p data-mass-ui
         style="
             color:#aaa;
             text-align:center;
@@ -38621,9 +38621,9 @@ ${[
                 font-weight:bold;
             "
         >
-            💱 Divisas
+            <span data-mass-ui>💱 Divisas</span>
             <br>
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38645,9 +38645,9 @@ ${[
                 font-weight:bold;
             "
         >
-            💳 Métodos de pago
+            <span data-mass-ui>💳 Métodos de pago</span>
             <br>
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38669,9 +38669,9 @@ ${[
                 font-weight:bold;
             "
         >
-            🏪 Puntos MASS
+            <span data-mass-ui>🏪 Puntos MASS</span>
             <br>
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38693,9 +38693,9 @@ ${[
                 font-weight:bold;
             "
         >
-            🌐 Convertidor MASS
+            <span data-mass-ui>🌐 Convertidor MASS</span>
             <br>
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38709,7 +38709,7 @@ ${[
     </div>
 
 
-    <div
+    <div data-mass-ui
         style="
             margin-top:16px;
             padding:11px;
@@ -38765,7 +38765,7 @@ ${[
     </h3>
 
 
-    <p
+    <p data-mass-ui
         style="
             color:#aaa;
             text-align:center;
@@ -38804,11 +38804,11 @@ ${[
                 font-weight:bold;
             "
         >
-            📜 Reglas Oficiales
+            <span data-mass-ui>📜 Reglas Oficiales</span>
 
             <br>
 
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38834,11 +38834,11 @@ ${[
                 font-weight:bold;
             "
         >
-            📊 Resumen de operación
+            <span data-mass-ui>📊 Resumen de operación</span>
 
             <br>
 
-            <span
+            <span data-mass-ui
                 style="
                     font-size:12px;
                     font-weight:normal;
@@ -38864,11 +38864,11 @@ ${[
         font-weight:bold;
     "
 >
-    🛡️ Moderación de comentarios
+    <span data-mass-ui>🛡️ Moderación de comentarios</span>
 
     <br>
 
-    <span
+    <span data-mass-ui
         style="
             font-size:12px;
             font-weight:normal;
@@ -38892,7 +38892,7 @@ ${[
         "
     >
 
-        <div
+        <div data-mass-ui
             style="
                 color:white;
                 font-weight:bold;
@@ -38913,16 +38913,16 @@ ${[
             ${
                 adminRol === "super_admin"
                     ? `
-                        La asignación, suspensión,
+                        <span data-mass-ui>La asignación, suspensión,
                         reactivación y retiro de accesos
-                        se administra desde
+                        se administra desde</span>
                         <b data-mass-ui=Accesos&#32;de&#32;Organizadores>Accesos de Organizadores</b>
-                        en el Panel Súper Admin.
+                        <span data-mass-ui>en el Panel Súper Admin.</span>
                     `
                     : `
-                        Los accesos administrativos
+                        <span data-mass-ui>Los accesos administrativos
                         del Organizador son gestionados
-                        exclusivamente por el
+                        exclusivamente por el</span>
                         <b data-mass-ui=Súper&#32;Admin>Súper Admin</b>.
                     `
             }
@@ -38931,7 +38931,7 @@ ${[
     </div>
 
 
-    <div
+    <div data-mass-ui
         style="
             margin-top:16px;
             padding:11px;
@@ -38985,14 +38985,14 @@ ${adminRol === "organizador" ? `
       margin-bottom:14px;
     "
   >
-    Iniciar el cierre
-    <b>no elimina inmediatamente tu cuenta</b>.
+    <span data-mass-ui>Iniciar el cierre</span>
+    <b data-mass-ui>no elimina inmediatamente tu cuenta</b><span data-mass-ui>.
     Primero comenzará una etapa de saneamiento
     para proteger y resolver las obligaciones
-    existentes con tus usuarios.
+    existentes con tus usuarios.</span>
   </p>
 
-  <p
+  <p data-mass-ui
     style="
       color:#bbb;
       line-height:1.5;
@@ -39010,7 +39010,7 @@ ${adminRol === "organizador" ? `
     style="margin-top:14px;"
   ></div>
 
-  <button data-mass-ui=⚠️&#32;Iniciar&#32;cierre&#32;de&#32;cuenta
+  <button data-mass-ui
     id="btnIniciarCierreOrganizadorPerfil"
     type="button"
     onclick="solicitarCierreCuentaOrganizadorDesdePerfil()"
@@ -39224,8 +39224,8 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             background:#240b0b;
           "
         >
-          ❌ No fue posible identificar
-          tu cuenta de Organizador.
+          <span data-mass-ui>❌ No fue posible identificar
+          tu cuenta de Organizador.</span>
         </div>
       `;
 
@@ -39290,8 +39290,8 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             background:#240b0b;
           "
         >
-          ❌ No fue posible consultar
-          el estado del cierre.
+          <span data-mass-ui>❌ No fue posible consultar
+          el estado del cierre.</span>
         </div>
       `;
 
@@ -39310,8 +39310,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
       boton.style.display = "";
       boton.disabled = false;
 
-      boton.textContent =
-        massTexto("⚠️ Iniciar cierre de cuenta");
+      window.MassIdioma.rotulo(boton, "⚠️ Iniciar cierre de cuenta");
 
       boton.style.opacity = "1";
       boton.style.cursor = "pointer";
@@ -40261,8 +40260,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
 
     boton.disabled = true;
 
-        boton.textContent =
-      estado === "saneamiento"
+        window.MassIdioma.rotulo(boton, estado === "saneamiento"
         ? "🔒 Cierre en saneamiento"
         : estado === "liquidacion"
           ? "💰 Cierre en liquidación"
@@ -40270,7 +40268,7 @@ async function cargarEstadoCierreOrganizadorPerfil() {
             ? "✅ Cierre listo para finalizar"
             : estado === "cerrado"
               ? "🔒 Cuenta de Organizador cerrada"
-              : "🔒 Proceso de cierre activo";
+              : "🔒 Proceso de cierre activo");
 
     boton.style.opacity = "0.65";
     boton.style.cursor = "not-allowed";
@@ -43066,7 +43064,7 @@ async function solicitarCierreCuentaOrganizadorDesdePerfil() {
 
     const confirmarInicio =
       confirm(
-`⚠️ INICIAR CIERRE DE CUENTA DE ORGANIZADOR
+massTexto(`⚠️ INICIAR CIERRE DE CUENTA DE ORGANIZADOR
 
 Esta acción NO elimina inmediatamente tu cuenta.
 
@@ -43082,7 +43080,7 @@ Durante este proceso:
 
 Mientras el expediente permanezca en SANEAMIENTO podrás cancelar el proceso conforme a las reglas del sistema.
 
-¿Deseas continuar?`
+¿Deseas continuar?`)
       );
 
 
@@ -43097,11 +43095,11 @@ Mientras el expediente permanezca en SANEAMIENTO podrás cancelar el proceso con
 
     const motivoIngresado =
       prompt(
-`Motivo del cierre (opcional)
+massTexto(`Motivo del cierre (opcional)
 
 Puedes dejar este campo vacío.
 
-Máximo: 1000 caracteres.`
+Máximo: 1000 caracteres.`)
       );
 
 
@@ -43133,11 +43131,11 @@ Máximo: 1000 caracteres.`
 
     const palabra =
       prompt(
-`⚠️ CONFIRMACIÓN FINAL
+massTexto(`⚠️ CONFIRMACIÓN FINAL
 
 Para iniciar el proceso de cierre escribe exactamente:
 
-INICIAR CIERRE`
+INICIAR CIERRE`)
       );
 
 
@@ -43167,8 +43165,7 @@ INICIAR CIERRE`
 
       boton.disabled = true;
 
-      boton.textContent =
-        "⏳ Iniciando cierre...";
+      window.MassIdioma.rotulo(boton, "⏳ Iniciando cierre...");
 
       boton.style.opacity =
         "0.65";
@@ -43330,10 +43327,9 @@ INICIAR CIERRE`
 
       boton.disabled = true;
 
-      boton.textContent =
-        estado === "saneamiento"
+      window.MassIdioma.rotulo(boton, estado === "saneamiento"
           ? "🔒 Cierre en saneamiento"
-          : "🔒 Proceso de cierre activo";
+          : "🔒 Proceso de cierre activo");
 
       boton.style.opacity =
         "0.7";
@@ -43396,8 +43392,7 @@ INICIAR CIERRE`
 
       boton.disabled = false;
 
-      boton.textContent =
-        massTexto("⚠️ Iniciar cierre de cuenta");
+      window.MassIdioma.rotulo(boton, "⚠️ Iniciar cierre de cuenta");
 
       boton.style.opacity =
         "1";
@@ -46417,7 +46412,7 @@ async function guardarConfigCliente() {
     if (!adminActual) {
 
         alert(
-            "❌ No hay una sesión administrativa válida."
+            massTexto("❌ No hay una sesión administrativa válida.")
         );
 
         return;
@@ -46458,7 +46453,7 @@ async function guardarConfigCliente() {
     if (!idPermitido) {
 
         alert(
-            "❌ No se encontró el Organizador autorizado."
+            massTexto("❌ No se encontró el Organizador autorizado.")
         );
 
         return;
@@ -46563,8 +46558,7 @@ async function guardarConfigCliente() {
     ) {
 
         alert(
-            "❌ El nombre público debe tener " +
-            "entre 2 y 200 caracteres."
+            massTexto("❌ El nombre público debe tener entre 2 y 200 caracteres.")
         );
 
         return;
@@ -46578,7 +46572,7 @@ async function guardarConfigCliente() {
     ) {
 
         alert(
-            "❌ El color de tu marca no es válido."
+            massTexto("❌ El color de tu marca no es válido.")
         );
 
         return;
@@ -46639,10 +46633,10 @@ async function guardarConfigCliente() {
         );
 
         alert(
-            "❌ No fue posible guardar tu perfil.\n\n" +
+            massTexto("❌ No fue posible guardar tu perfil.") + "\n\n" +
             (
                 error.message ||
-                "Error desconocido."
+                massTexto("Error desconocido.")
             )
         );
 
@@ -46665,8 +46659,7 @@ async function guardarConfigCliente() {
         );
 
         alert(
-            "❌ El servidor no confirmó " +
-            "el guardado del perfil."
+            massTexto("❌ El servidor no confirmó el guardado del perfil.")
         );
 
         return;
@@ -46681,7 +46674,7 @@ async function guardarConfigCliente() {
 
 
     alert(
-        "✅ Información pública guardada correctamente."
+        massTexto("✅ Información pública guardada correctamente.")
     );
 
 
@@ -46708,7 +46701,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
     if (!adminActual) {
 
         alert(
-            "❌ No hay una sesión administrativa válida."
+            massTexto("❌ No hay una sesión administrativa válida.")
         );
 
         return;
@@ -46748,7 +46741,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
     if (!organizadorId) {
 
         alert(
-            "❌ No se encontró el Organizador autorizado."
+            massTexto("❌ No se encontró el Organizador autorizado.")
         );
 
         return;
@@ -46949,7 +46942,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ El orden de los canales debe estar entre 0 y 999."
+                massTexto("❌ El orden de los canales debe estar entre 0 y 999.")
             );
 
             return;
@@ -46962,7 +46955,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ Para mostrar un canal públicamente primero debes marcarlo como activo."
+                massTexto("❌ Para mostrar un canal públicamente primero debes marcarlo como activo.")
             );
 
             return;
@@ -46978,7 +46971,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ La etiqueta pública debe tener entre 2 y 80 caracteres."
+                massTexto("❌ La etiqueta pública debe tener entre 2 y 80 caracteres.")
             );
 
             return;
@@ -46994,7 +46987,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ El horario de atención debe tener entre 2 y 300 caracteres."
+                massTexto("❌ El horario de atención debe tener entre 2 y 300 caracteres.")
             );
 
             return;
@@ -47010,7 +47003,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ El texto de atención debe tener entre 2 y 500 caracteres."
+                massTexto("❌ El texto de atención debe tener entre 2 y 500 caracteres.")
             );
 
             return;
@@ -47046,7 +47039,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
             ) {
 
                 alert(
-                    "❌ Completa el dato de contacto del canal antes de guardarlo."
+                    massTexto("❌ Completa el dato de contacto del canal antes de guardarlo.")
                 );
 
                 return;
@@ -47064,7 +47057,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ El email de soporte no tiene un formato válido."
+                massTexto("❌ El email de soporte no tiene un formato válido.")
             );
 
             return;
@@ -47081,7 +47074,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
         ) {
 
             alert(
-                "❌ El sitio web de ayuda debe comenzar con http:// o https://."
+                massTexto("❌ El sitio web de ayuda debe comenzar con http:// o https://.")
             );
 
             return;
@@ -47104,7 +47097,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
             if (!whatsappPrincipal) {
 
                 alert(
-                    "❌ Primero guarda el WhatsApp del negocio en Información pública."
+                    massTexto("❌ Primero guarda el WhatsApp del negocio en Información pública.")
                 );
 
                 return;
@@ -47150,7 +47143,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
     ) {
 
         alert(
-            "ℹ️ No hay canales configurados para guardar."
+            massTexto("ℹ️ No hay canales configurados para guardar.")
         );
 
         return;
@@ -47188,10 +47181,10 @@ async function guardarCanalesSoporteOrganizadorV2() {
         );
 
         alert(
-            "❌ No fue posible guardar Contacto y Soporte.\n\n" +
+            massTexto("❌ No fue posible guardar Contacto y Soporte.") + "\n\n" +
             (
                 error.message ||
-                "Error desconocido."
+                massTexto("Error desconocido.")
             )
         );
 
@@ -47206,7 +47199,7 @@ async function guardarCanalesSoporteOrganizadorV2() {
 
 
     alert(
-        "✅ Contacto y Soporte guardado correctamente."
+        massTexto("✅ Contacto y Soporte guardado correctamente.")
     );
 
 
@@ -100769,7 +100762,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
 
   cont.innerHTML = `
     <h2 data-mass-ui=↩️&#32;Reembolsos&#32;MASS id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
-    <p>⏳ Cargando expedientes...</p>
+    <p data-mass-ui>⏳ Cargando expedientes...</p>
   `;
 
 
@@ -100794,7 +100787,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
 
     cont.innerHTML = `
       <h2 data-mass-ui=↩️&#32;Reembolsos&#32;MASS id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
-      <p style="color:#ff6b6b;">
+      <p data-mass-ui style="color:#ff6b6b;">
         ❌ No fue posible identificar al Organizador.
       </p>
     `;
@@ -100810,7 +100803,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
 
     cont.innerHTML = `
       <h2 data-mass-ui=↩️&#32;Reembolsos&#32;MASS id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
-      <p style="color:#ff6b6b;">
+      <p data-mass-ui style="color:#ff6b6b;">
         ❌ No existe una sesión administrativa autorizada.
       </p>
     `;
@@ -100850,7 +100843,7 @@ async function mostrarReembolsosRecargaMassAdmin() {
 
     cont.innerHTML = `
       <h2 data-mass-ui=↩️&#32;Reembolsos&#32;MASS id="vistaReembolsosMassAdminActiva">↩️ Reembolsos MASS</h2>
-      <p style="color:#ff6b6b;">
+      <p data-mass-ui style="color:#ff6b6b;">
         ❌ No fue posible cargar los reembolsos.
       </p>
     `;
@@ -100875,21 +100868,13 @@ async function mostrarReembolsosRecargaMassAdmin() {
         .replace(/'/g, "&#039;");
 
 
-  const fecha =
-    valor => {
-
-      if (!valor) {
-        return "Sin fecha";
-      }
-
-      const d =
-        new Date(valor);
-
-      return Number.isNaN(d.getTime())
-        ? "Sin fecha"
-        : d.toLocaleString();
-    };
-
+  const fecha = valor => {
+    const instante = valor && new Date(valor);
+    if (!instante || Number.isNaN(instante.getTime())) {
+      return '<span data-mass-ui>Sin fecha</span>';
+    }
+    return `<time data-mass-fecha-publica="instante" datetime="${instante.toISOString()}">${escapar(instante.toLocaleString())}</time>`;
+  };
 
   const nombreEstado =
     estado => {
@@ -100939,13 +100924,13 @@ let html = `
         text-align:left;
       "
     >
-      El Organizador y el usuario resuelven normalmente
-      el reembolso entre ellos.
+      <span data-mass-ui>El Organizador y el usuario resuelven normalmente
+      el reembolso entre ellos.</span>
 
       <br><br>
 
-      La revisión administrativa queda reservada
-      para casos extraordinarios.
+      <span data-mass-ui>La revisión administrativa queda reservada
+      para casos extraordinarios.</span>
     </div>
   `;
 
@@ -100953,7 +100938,7 @@ let html = `
   if (expedientes.length === 0) {
 
     html += `
-      <div class="card">
+      <div data-mass-ui class="card">
         ✅ No hay expedientes de reembolso.
       </div>
     `;
@@ -101043,10 +101028,10 @@ let html = `
             "
           >
             <p>
-              <b>💵 Devuelve primero el dinero real al usuario.</b>
+              <b data-mass-ui>💵 Devuelve primero el dinero real al usuario.</b>
             </p>
 
-            <p>
+            <p data-mass-ui>
               Después adjunta el comprobante para que
               el usuario pueda revisarlo.
             </p>
@@ -101098,7 +101083,7 @@ let html = `
       if (estado === "pago_reportado") {
 
         acciones = `
-          <p
+          <p data-mass-ui
             style="
               margin-top:12px;
               color:#facc15;
@@ -101127,13 +101112,13 @@ let html = `
               border-radius:10px;
             "
           >
-            ⚠️ El usuario indicó que no recibió el dinero.
+            <span data-mass-ui>⚠️ El usuario indicó que no recibió el dinero.</span>
 
             <br><br>
 
-            Contacta al usuario y resuelvan el pago.
+            <span data-mass-ui>Contacta al usuario y resuelvan el pago.
             Si finalmente lo recibe, el propio usuario
-            puede confirmar y cerrar el expediente.
+            puede confirmar y cerrar el expediente.</span>
           </div>
         `;
       }
@@ -101145,7 +101130,7 @@ let html = `
       ) {
 
         acciones = `
-          <p
+          <p data-mass-ui
             style="
               margin-top:12px;
               color:#facc15;
@@ -101163,7 +101148,7 @@ let html = `
 
           ? `
               <p>
-                <b>Detalle del usuario:</b><br>
+                <b data-mass-ui>Detalle del usuario:</b><br>
                 ${escapar(r.detalle_usuario)}
               </p>
             `
@@ -101176,7 +101161,7 @@ let html = `
 
           ? `
               <p>
-                <b>Respuesta del Organizador:</b><br>
+                <b data-mass-ui>Respuesta del Organizador:</b><br>
                 ${escapar(
                   r.respuesta_organizador
                 )}
@@ -101191,10 +101176,10 @@ let html = `
 
           ? `
               <p style="color:#ffb000;">
-                <b>Motivo de disputa:</b><br>
-                ${escapar(
-                  r.motivo_disputa
-                )}
+                <b data-mass-ui>Motivo de disputa:</b><br>
+                ${r.motivo_disputa === "El usuario indicó que no recibió el reembolso reportado."
+                  ? '<span data-mass-ui>El usuario indicó que no recibió el reembolso reportado.</span>'
+                  : escapar(r.motivo_disputa)}
               </p>
             `
 
@@ -101206,7 +101191,7 @@ let html = `
 
           ? `
               <p>
-                <b>Referencia:</b>
+                <b data-mass-ui>Referencia:</b>
                 ${escapar(
                   r.referencia_pago
                 )}
@@ -101227,14 +101212,11 @@ let html = `
 
           <p>
             <b>👤 MASS ID:</b>
-            ${escapar(
-              r.mass_id ||
-              "MASS ID no disponible"
-            )}
+            ${r.mass_id ? escapar(r.mass_id) : '<span data-mass-ui>MASS ID no disponible</span>'}
           </p>
 
           <p>
-            <b>💰 Reembolso:</b>
+            <b data-mass-ui>💰 Reembolso:</b>
             ${Number(
               r.monto_mass || 0
             )}
@@ -101245,23 +101227,18 @@ let html = `
           </p>
 
           <p>
-            <b>Estado:</b>
-            ${nombreEstado(estado)}
+            <b data-mass-ui>Estado:</b>
+            <span data-mass-ui>${nombreEstado(estado)}</span>
           </p>
 
           <p>
-            <b>Retención MASS:</b>
-            ${escapar(
-              r.retencion_estado ||
-              "Sin estado"
-            )}
+            <b data-mass-ui>Retención MASS:</b>
+            <span data-mass-ui>${escapar(r.retencion_estado || "Sin estado")}</span>
           </p>
 
           <p>
-            <b>Solicitud:</b>
-            ${escapar(
-              fecha(r.creado_at)
-            )}
+            <b data-mass-ui>Solicitud:</b>
+            ${fecha(r.creado_at)}
           </p>
 
           ${detalle}
@@ -101305,7 +101282,7 @@ async function resolverReembolsoRecargaMassAdmin(
 
     respuesta =
       prompt(
-        "Escribe el motivo por el que rechazas esta solicitud:"
+        massTexto("Escribe el motivo por el que rechazas esta solicitud:")
       );
 
 
@@ -101321,7 +101298,7 @@ async function resolverReembolsoRecargaMassAdmin(
     if (!respuesta) {
 
       alert(
-        "❌ Debes escribir un motivo para rechazar."
+        massTexto("❌ Debes escribir un motivo para rechazar.")
       );
 
       return;
@@ -101331,8 +101308,7 @@ async function resolverReembolsoRecargaMassAdmin(
 
     if (
       !confirm(
-        "¿Aprobar esta solicitud de reembolso?\n\n" +
-        "Después deberás devolver el dinero real al usuario y subir el comprobante."
+        massTexto("¿Aprobar esta solicitud de reembolso?") + "\n\n" + massTexto("Después deberás devolver el dinero real al usuario y subir el comprobante.")
       )
     ) {
       return;
@@ -101370,10 +101346,10 @@ async function resolverReembolsoRecargaMassAdmin(
     );
 
     alert(
-      "❌ No fue posible procesar la solicitud.\n\n" +
+      massTexto("❌ No fue posible procesar la solicitud.") + "\n\n" +
       (
         error.message ||
-        "Intenta nuevamente."
+        massTexto("Intenta nuevamente.")
       )
     );
 
@@ -101383,8 +101359,8 @@ async function resolverReembolsoRecargaMassAdmin(
 
   alert(
     accionNormalizada === "APROBAR"
-      ? "✅ Reembolso aprobado."
-      : "✅ Solicitud rechazada."
+      ? massTexto("✅ Reembolso aprobado.")
+      : massTexto("✅ Solicitud rechazada.")
   );
 
 
@@ -101420,7 +101396,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
   if (!archivo) {
 
     alert(
-      "❌ Selecciona el comprobante del reembolso."
+      massTexto("❌ Selecciona el comprobante del reembolso.")
     );
 
     return;
@@ -101433,7 +101409,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
   ) {
 
     alert(
-      "❌ El comprobante debe pesar como máximo 10 MB."
+      massTexto("❌ El comprobante debe pesar como máximo 10 MB.")
     );
 
     return;
@@ -101485,7 +101461,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
   if (!mimesPermitidos.has(mime)) {
 
     alert(
-      "❌ Tipo de comprobante no permitido."
+      massTexto("❌ Tipo de comprobante no permitido.")
     );
 
     return;
@@ -101494,7 +101470,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
 
   if (
     !confirm(
-      "Confirma que ya devolviste el dinero real al usuario y que este archivo es el comprobante correcto."
+      massTexto("Confirma que ya devolviste el dinero real al usuario y que este archivo es el comprobante correcto.")
     )
   ) {
     return;
@@ -101535,7 +101511,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
     );
 
     alert(
-      "❌ No fue posible preparar el comprobante."
+      massTexto("❌ No fue posible preparar el comprobante.")
     );
 
     return;
@@ -101579,8 +101555,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
       );
 
       alert(
-        "❌ No fue posible subir el comprobante.\n\n" +
-        "Puedes intentarlo nuevamente."
+        massTexto("❌ No fue posible subir el comprobante.") + "\n\n" + massTexto("Puedes intentarlo nuevamente.")
       );
 
       return;
@@ -101623,10 +101598,7 @@ async function reportarPagoReembolsoRecargaMassAdmin(
     );
 
     alert(
-      "❌ El comprobante pudo haberse cargado, " +
-      "pero no fue posible finalizar el reporte.\n\n" +
-      "No vuelvas a realizar el pago real. " +
-      "Intenta nuevamente desde este expediente."
+      massTexto("❌ El comprobante pudo haberse cargado, pero no fue posible finalizar el reporte.") + "\n\n" + massTexto("No vuelvas a realizar el pago real. Intenta nuevamente desde este expediente.")
     );
 
     return;
@@ -101635,8 +101607,8 @@ async function reportarPagoReembolsoRecargaMassAdmin(
 
   alert(
     resultado?.ya_reportado
-      ? "ℹ️ Este pago ya estaba reportado."
-      : "✅ Pago reportado. El usuario ya puede revisar el comprobante."
+      ? massTexto("ℹ️ Este pago ya estaba reportado.")
+      : massTexto("✅ Pago reportado. El usuario ya puede revisar el comprobante.")
   );
 
 
