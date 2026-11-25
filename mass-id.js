@@ -1,3 +1,16 @@
+// Only interface labels use the language dictionary. Account values remain plain text.
+function textoMassId(texto) {
+  return window.MassIdioma?.texto(texto) ?? texto;
+}
+
+function rotuloMassId(texto) {
+  const rotulo = document.createElement("span");
+  rotulo.dataset.massUi = "";
+  rotulo.textContent = texto;
+  window.MassIdioma?.aplicar?.(rotulo);
+  return rotulo;
+}
+
 async function cargarModuloMassId() {
   try {
     const respuesta = await fetch("mass-id-panel.html");
@@ -12,6 +25,7 @@ async function cargarModuloMassId() {
     contenedor.id = "massIdModuleContainer";
     contenedor.innerHTML = html;
 
+    window.MassIdioma?.aplicar?.(contenedor);
     document.body.appendChild(contenedor);
 
     console.log("✅ Módulo MASS ID cargado correctamente.");
@@ -29,7 +43,7 @@ async function abrirMiMassId() {
   }
 
   if (!panel) {
-    alert("❌ No fue posible abrir Mi MASS ID.");
+    alert(textoMassId("❌ No fue posible abrir Mi MASS ID."));
     return;
   }
 
@@ -86,7 +100,7 @@ if (btnCancelarCierreCuentaActual) {
 
   if (mensajeRecuperarCuenta) {
     let textoRecuperacion =
-      "Tu cuenta MASS ID se encuentra dentro del periodo de recuperación.";
+      textoMassId("Tu cuenta MASS ID se encuentra dentro del periodo de recuperación.");
 
     if (fechaEliminacionCierre) {
       const fechaEliminacion =
@@ -107,8 +121,9 @@ if (btnCancelarCierreCuentaActual) {
       );
 
       textoRecuperacion =
-        `La cuenta ${emailCierre || "MASS ID"} está programada para cierre. ` +
-        `Tienes aproximadamente ${diasRestantes} día(s) para recuperarla.`;
+        textoMassId("La cuenta {cuenta} está programada para cierre. Tienes aproximadamente {dias} día(s) para recuperarla.")
+          .replace("{dias}", () => String(diasRestantes))
+          .replace("{cuenta}", () => emailCierre || "MASS ID");
     }
 
     mensajeRecuperarCuenta.textContent =
@@ -164,7 +179,7 @@ const { data: perfil, error: perfilError } = await supabaseClient
 
 if (perfilError || !perfil) {
   console.error("ERROR CARGANDO PERFIL MASS ID:", perfilError);
-  alert("❌ No se pudo cargar tu perfil MASS ID.");
+  alert(textoMassId("❌ No se pudo cargar tu perfil MASS ID."));
   return;
 }
 
@@ -252,37 +267,22 @@ const nombrePerfil = document.getElementById("massIdNombre");
 const numeroPerfil = document.getElementById("massIdNumero");
 
 if (nombrePerfil) {
-  nombrePerfil.textContent = perfil.nombre || "Usuario MASS";
+  nombrePerfil.replaceChildren(perfil.nombre || rotuloMassId("Usuario MASS"));
 }
 
 if (numeroPerfil) {
-  numeroPerfil.innerHTML = `
-    <div style="
-      color:#39ff14;
-      font-size:22px;
-      font-weight:bold;
-      margin-bottom:12px;
-    ">
-      🆔 ${perfil.mass_id || "MASS ID pendiente"}
-    </div>
-
-    <div style="
-      color:#39ff14;
-      font-size:18px;
-      font-weight:bold;
-      margin-bottom:6px;
-    ">
-      📱 ${perfil.telefono || "Teléfono no disponible"}
-    </div>
-
-    <div style="
-      color:#bbb;
-      font-size:15px;
-      overflow-wrap:anywhere;
-    ">
-      📧 ${perfil.email || user.email || "Correo no disponible"}
-    </div>
-  `;
+  const datos = [
+    ["🆔", perfil.mass_id, "MASS ID pendiente", "color:#39ff14;font-size:22px;font-weight:bold;margin-bottom:12px"],
+    ["📱", perfil.telefono, "Teléfono no disponible", "color:#39ff14;font-size:18px;font-weight:bold;margin-bottom:6px"],
+    ["📧", perfil.email || user.email, "Correo no disponible", "color:#bbb;font-size:15px;overflow-wrap:anywhere"]
+  ];
+  numeroPerfil.replaceChildren();
+  for (const [icono, valor, etiqueta, estilo] of datos) {
+    const linea = document.createElement("div");
+    linea.style.cssText = estilo;
+    linea.append(icono + " ", valor || rotuloMassId(etiqueta));
+    numeroPerfil.append(linea);
+  }
 }
 
   const menuPrincipal = document.getElementById("massIdMenuPrincipal");
@@ -1425,667 +1425,7 @@ FIN DEL DOCUMENTO MASS-LC-001
   version: "1.0",
   vigencia: "Pendiente de publicación",
   estado: "En revisión",
-  contenido: `
-MASS-LC-002
-ACUERDO DE USUARIO MASS ID
-
-Versión: 1.0
-Estado: En revisión
-Administrado por: TE-TO-KA SOLUTIONS® LLC
-
-AVISO IMPORTANTE
-
-Este Acuerdo constituye un contrato legal entre la persona que utiliza MASS ID y TE-TO-KA SOLUTIONS® LLC.
-
-Antes de registrarte, acceder o utilizar MASS ID, debes leer este documento completo junto con el Aviso de privacidad y las demás políticas aplicables.
-
-1. OBJETO DEL ACUERDO
-
-El presente Acuerdo establece las condiciones generales aplicables al registro, acceso y uso de MASS ID.
-
-MASS ID funciona como una identidad digital y cuenta central para permitir el acceso a productos, plataformas, aplicaciones, módulos, sitios web y servicios autorizados del ecosistema MASS.
-
-Este Acuerdo podrá complementarse mediante políticas, avisos y condiciones específicas para cada servicio.
-
-2. ACEPTACIÓN DEL ACUERDO
-
-Aceptas este Acuerdo cuando realizas cualquiera de las siguientes acciones:
-
-a. Creas una cuenta MASS ID.
-b. Presionas un botón que indique aceptar, continuar, registrarse, confirmar o una expresión equivalente.
-c. Utilizas una firma electrónica, código, PIN o mecanismo de confirmación.
-d. Accedes o continúas utilizando MASS ID después de que este Acuerdo esté disponible.
-e. Utilizas cualquier servicio que requiera una cuenta MASS ID.
-
-Si no estás de acuerdo con estas condiciones, no debes crear una cuenta ni utilizar MASS ID.
-
-3. CONSENTIMIENTO ELECTRÓNICO
-
-Aceptas que los contratos, autorizaciones, avisos, comprobantes, consentimientos y demás registros relacionados con MASS ID puedan proporcionarse y conservarse electrónicamente.
-
-Las acciones realizadas mediante tu cuenta, contraseña, PIN, código de seguridad, enlace de acceso, autenticación multifactor u otro mecanismo autorizado podrán utilizarse para atribuir una aceptación o instrucción a tu cuenta, sujeto a la legislación aplicable.
-
-Podrás conservar una copia electrónica o impresa de este Acuerdo.
-
-4. DEFINICIONES
-
-Los términos utilizados en este Acuerdo tendrán el significado establecido en MASS-LC-001, Definiciones legales, salvo que este documento establezca expresamente una definición diferente.
-
-5. ELEGIBILIDAD
-
-Para crear y administrar una cuenta por cuenta propia debes:
-
-a. Tener al menos dieciocho años de edad o la mayoría de edad legal aplicable.
-b. Tener capacidad jurídica para celebrar este Acuerdo.
-c. Proporcionar información veraz y actualizada.
-d. No tener prohibido legalmente utilizar el servicio.
-e. Cumplir las condiciones particulares de cada producto MASS.
-
-Una empresa, organización o entidad solamente podrá registrar una cuenta mediante una persona con autoridad suficiente para representarla.
-
-6. MENORES DE EDAD
-
-MASS ID de uso general no está dirigido a menores de trece años.
-
-Una persona menor de edad solamente podrá utilizar funciones específicamente autorizadas para menores cuando exista un proceso válido de consentimiento, autorización o supervisión de su padre, madre o tutor legal.
-
-Los servicios dirigidos a menores podrán tener condiciones, controles y avisos de privacidad adicionales.
-
-Si MASS determina que una cuenta fue creada por un menor sin la autorización legal requerida, podrá restringirla, suspenderla o eliminarla conforme a la legislación aplicable.
-
-7. REGISTRO DE LA CUENTA
-
-Para crear una cuenta podrás tener que proporcionar información como:
-
-a. Nombre.
-b. Correo electrónico.
-c. Número telefónico.
-d. Contraseña o PIN.
-e. Fecha de nacimiento o confirmación de edad.
-f. Dirección.
-g. Fotografía de perfil.
-h. Información necesaria para verificaciones o servicios específicos.
-
-Debes proporcionar información completa, correcta y actualizada.
-
-No puedes crear una cuenta utilizando la identidad de otra persona sin autorización legal.
-
-8. NATURALEZA DE MASS ID
-
-MASS ID es una identidad digital privada del ecosistema MASS.
-
-MASS ID no es:
-
-a. Una identificación gubernamental.
-b. Una licencia profesional.
-c. Un pasaporte.
-d. Una cuenta bancaria.
-e. Una garantía de solvencia.
-f. Una garantía absoluta de identidad.
-g. Una certificación de buena conducta.
-h. Una autorización para realizar actividades reguladas.
-
-Cada usuario conserva la responsabilidad de presentar licencias, permisos, seguros, identificaciones o documentos oficiales cuando sean requeridos.
-
-9. NÚMERO MASS ID
-
-La Empresa podrá asignar a cada cuenta un número MASS ID único.
-
-El número MASS ID podrá utilizarse para identificar la cuenta dentro de servicios autorizados.
-
-No debes vender, transferir, alterar, duplicar ni permitir el uso no autorizado de tu número MASS ID.
-
-La asignación de un número MASS ID no transfiere al usuario propiedad sobre el sistema, formato, marca o tecnología relacionada.
-
-10. CREDENCIALES Y SEGURIDAD
-
-Eres responsable de proteger:
-
-a. Tu contraseña.
-b. Tu PIN.
-c. Tus códigos de seguridad.
-d. Tu aplicación de autenticación.
-e. Tus dispositivos.
-f. Tus enlaces de acceso.
-g. Tus métodos de recuperación.
-h. Las sesiones abiertas en tu cuenta.
-
-No debes compartir tus credenciales con personas no autorizadas.
-
-Debes notificarnos sin demora cuando sospeches pérdida, robo, acceso no autorizado, suplantación o compromiso de seguridad.
-
-11. AUTENTICACIÓN MULTIFACTOR
-
-La Empresa podrá exigir autenticación multifactor para:
-
-a. Iniciar sesión.
-b. Cambiar información personal.
-c. Cambiar correo o teléfono.
-d. Cambiar contraseña.
-e. Aprobar pagos o movimientos.
-f. Recuperar una cuenta.
-g. Acceder a funciones administrativas.
-h. Confirmar operaciones sensibles.
-
-La autenticación multifactor reduce riesgos, pero no garantiza que una cuenta nunca será comprometida.
-
-12. VERIFICACIÓN DE CUENTA
-
-MASS podrá verificar información mediante uno o más de los siguientes mecanismos:
-
-a. Confirmación de correo.
-b. Confirmación telefónica.
-c. SMS.
-d. Aplicación de autenticación.
-e. Documentos oficiales.
-f. Fotografía.
-g. Reconocimiento o comparación autorizada.
-h. Preguntas o información adicional.
-i. Proveedores externos de verificación.
-
-La verificación no constituye una garantía absoluta sobre la identidad, antecedentes, solvencia, capacidad o conducta futura de una persona.
-
-13. ACTUALIZACIÓN DE INFORMACIÓN
-
-Debes mantener actualizados tu nombre, teléfono, correo, dirección y demás datos necesarios.
-
-MASS podrá solicitar una nueva verificación cuando:
-
-a. Cambies información importante.
-b. Se detecte actividad inusual.
-c. Exista una disputa sobre la cuenta.
-d. Sea necesario cumplir una obligación legal.
-e. Cambien los requisitos de un servicio.
-
-14. LICENCIA LIMITADA DE USO
-
-Mientras cumplas este Acuerdo, TE-TO-KA SOLUTIONS® LLC te concede una licencia personal, limitada, revocable, no exclusiva, no transferible y no sublicenciable para utilizar MASS ID conforme a sus funciones autorizadas.
-
-Esta licencia no permite:
-
-a. Copiar el sistema.
-b. Revender el acceso.
-c. Crear servicios derivados no autorizados.
-d. Extraer bases de datos.
-e. Eludir medidas de seguridad.
-f. Utilizar marcas o propiedad intelectual sin permiso.
-
-15. USOS PERMITIDOS
-
-Puedes utilizar MASS ID para:
-
-a. Administrar tu perfil.
-b. Acceder a servicios autorizados.
-c. Gestionar preferencias de privacidad.
-d. Consultar actividad de la cuenta.
-e. Administrar direcciones.
-f. Confirmar operaciones.
-g. Recibir comunicaciones.
-h. Utilizar funciones comerciales o personales permitidas.
-i. Interactuar con otros usuarios dentro de las funciones autorizadas.
-
-16. CONDUCTAS PROHIBIDAS
-
-No puedes utilizar MASS ID para:
-
-a. Violar leyes o derechos de terceros.
-b. Suplantar una identidad.
-c. Crear cuentas falsas o duplicadas con intención engañosa.
-d. Proporcionar información materialmente falsa.
-e. Acceder a cuentas ajenas.
-f. Compartir credenciales para evadir restricciones.
-g. Manipular pagos, saldos, promociones, boletos, beneficios o resultados.
-h. Realizar fraude, lavado de dinero o actividad sospechosa.
-i. Introducir malware, código dañino o herramientas de ataque.
-j. Interferir con servidores, redes o sistemas.
-k. Realizar extracción automatizada no autorizada.
-l. Descompilar, modificar o aplicar ingeniería inversa al sistema.
-m. Hostigar, amenazar, discriminar o perjudicar a otras personas.
-n. Publicar contenido ilegal o prohibido.
-o. Evadir suspensiones, verificaciones o límites.
-p. Utilizar MASS para una actividad que requiera licencia sin contar con ella.
-q. Utilizar información obtenida mediante MASS para vigilancia, acoso o explotación.
-r. Comercializar datos personales sin autorización legal.
-
-17. CUENTAS COMERCIALES Y ADMINISTRATIVAS
-
-Los organizadores, operadores, proveedores, comercios y administradores podrán estar sujetos a verificaciones y obligaciones adicionales.
-
-Una cuenta con funciones administrativas deberá utilizarse únicamente por personas autorizadas.
-
-El titular de una cuenta comercial será responsable de:
-
-a. Sus representantes.
-b. Sus empleados y colaboradores.
-c. La legalidad de sus actividades.
-d. Sus licencias, permisos y seguros.
-e. La información publicada.
-f. Las obligaciones frente a sus clientes.
-g. Los impuestos y registros que le correspondan.
-
-18. CONTENIDO DEL USUARIO
-
-Conservas los derechos que legítimamente poseas sobre el contenido que proporciones.
-
-Al cargar contenido, otorgas a la Empresa una licencia limitada para almacenar, reproducir, mostrar, adaptar técnicamente y transmitir ese contenido cuando sea necesario para:
-
-a. Proporcionar el servicio.
-b. Mostrarlo conforme a tus preferencias.
-c. Procesar una solicitud.
-d. Proteger la plataforma.
-e. Cumplir obligaciones legales.
-f. Investigar abuso o fraude.
-
-Declaras que tienes derecho a proporcionar el contenido y que su uso autorizado no viola derechos de terceros.
-
-19. MODERACIÓN Y RETIRO DE CONTENIDO
-
-MASS podrá revisar, restringir, bloquear o retirar contenido cuando razonablemente considere que:
-
-a. Viola este Acuerdo.
-b. Viola las Normas de la comunidad.
-c. Infringe derechos de terceros.
-d. Representa un riesgo de seguridad.
-e. Puede causar daño.
-f. Es requerido por una autoridad competente.
-g. Es necesario para proteger a usuarios o servicios.
-
-La Empresa no está obligada a supervisar previamente todo el contenido.
-
-20. PROPIEDAD INTELECTUAL
-
-MASS ID, TE-TO-KA MASS, los nombres, marcas, diseños, interfaces, software, código, documentación, bases de datos, sistemas, logotipos y materiales oficiales pertenecen a TE-TO-KA SOLUTIONS® LLC o a sus licenciantes.
-
-Nada en este Acuerdo transfiere al usuario derechos de propiedad sobre dichos activos.
-
-No puedes utilizar las marcas MASS para crear confusión sobre patrocinio, afiliación, certificación o autorización.
-
-21. PRIVACIDAD
-
-El tratamiento de datos personales se regirá por MASS-LC-003, Aviso de privacidad, y por las preferencias de privacidad disponibles en MASS ID.
-
-Tus preferencias podrán controlar determinadas formas de visualización, comunicación y personalización.
-
-Las alertas esenciales relacionadas con seguridad, acceso, pagos, cumplimiento o funcionamiento de la cuenta podrán permanecer activas cuando sean necesarias.
-
-22. SEGURIDAD
-
-Las medidas de protección de cuentas, sistemas y datos se describirán en MASS-LC-004, Política de seguridad.
-
-La Empresa utilizará medidas razonables de carácter administrativo, técnico y organizacional.
-
-Ningún sistema puede garantizar seguridad absoluta o disponibilidad ininterrumpida.
-
-23. COOKIES Y ALMACENAMIENTO LOCAL
-
-MASS podrá utilizar cookies, almacenamiento local y tecnologías relacionadas para:
-
-a. Mantener sesiones.
-b. Recordar preferencias.
-c. Proteger cuentas.
-d. Prevenir fraude.
-e. Analizar funcionamiento.
-f. Mejorar la experiencia.
-g. Proporcionar funciones autorizadas.
-
-El uso de estas tecnologías se regirá por MASS-LC-005, Política de cookies.
-
-24. INTELIGENCIA ARTIFICIAL Y AUTOMATIZACIÓN
-
-MASS podrá utilizar sistemas automatizados o inteligencia artificial para apoyar funciones como:
-
-a. Atención al usuario.
-b. Seguridad.
-c. Detección de fraude.
-d. Clasificación.
-e. Personalización.
-f. Recomendaciones.
-g. Moderación.
-h. Procesamiento de solicitudes.
-
-Los resultados automatizados pueden contener errores y no deben considerarse asesoría profesional, legal, médica o financiera.
-
-El uso de inteligencia artificial se regirá por MASS-LC-006.
-
-25. COMUNICACIONES ELECTRÓNICAS
-
-Aceptas recibir comunicaciones relacionadas con:
-
-a. Seguridad.
-b. Inicio de sesión.
-c. Verificación.
-d. Cambios de cuenta.
-e. Pagos.
-f. Actualizaciones de políticas.
-g. Soporte.
-h. Operaciones solicitadas.
-i. Servicios contratados.
-
-Las comunicaciones promocionales se enviarán conforme a tus preferencias y a la legislación aplicable.
-
-Podrás retirar el consentimiento para promociones sin desactivar necesariamente las comunicaciones esenciales de la cuenta.
-
-26. SERVICIOS DE TERCEROS
-
-MASS podrá integrarse con servicios proporcionados por terceros, incluyendo:
-
-a. Procesadores de pagos.
-b. Proveedores de autenticación.
-c. Servicios de correo o SMS.
-d. Servicios de almacenamiento.
-e. Mapas y ubicación.
-f. Proveedores de infraestructura.
-g. Herramientas de seguridad.
-h. Servicios comerciales independientes.
-
-Los terceros podrán tener sus propios términos y políticas.
-
-La Empresa no controla todas las decisiones, interrupciones o prácticas independientes de dichos proveedores.
-
-27. PAGOS
-
-Los cargos, métodos de pago, autorizaciones, recargas y demás operaciones financieras se regirán por MASS-LC-007, Política de pagos, y por las condiciones específicas del servicio correspondiente.
-
-Debes revisar el precio, moneda, frecuencia y descripción antes de confirmar un pago.
-
-La Empresa podrá utilizar proveedores externos para procesar las transacciones.
-
-28. REEMBOLSOS
-
-Los reembolsos estarán sujetos a MASS-LC-008, Política de reembolsos, a las condiciones particulares del servicio y a los derechos obligatorios establecidos por la legislación aplicable.
-
-La presentación de una solicitud no garantiza automáticamente su aprobación.
-
-29. MASS CASH, CRÉDITOS Y BENEFICIOS
-
-MASS Cash, los saldos, créditos, puntos, beneficios, promociones o tokens internos solamente podrán utilizarse dentro de los servicios y condiciones donde sean autorizados.
-
-Salvo que se indique legal y expresamente lo contrario:
-
-a. No son moneda de curso legal.
-b. No son depósitos bancarios.
-c. No generan intereses.
-d. No están asegurados por una institución gubernamental.
-e. No son libremente transferibles.
-f. No pueden utilizarse fuera del servicio autorizado.
-g. Pueden estar vinculados a un organizador o producto específico.
-
-30. PREVENCIÓN DE FRAUDE
-
-MASS podrá utilizar controles para detectar:
-
-a. Accesos inusuales.
-b. Cuentas duplicadas.
-c. Identidades falsas.
-d. Pagos disputados.
-e. Manipulación de promociones.
-f. Abuso de beneficios.
-g. Uso automatizado no autorizado.
-h. Conductas sospechosas.
-
-La Empresa podrá solicitar información adicional, limitar operaciones, retener temporalmente una función o suspender una cuenta mientras investiga.
-
-Estas acciones se regirán por MASS-LC-009, Política antifraude.
-
-31. NORMAS DE LA COMUNIDAD
-
-La conducta dentro de MASS deberá cumplir MASS-LC-010, Normas de la comunidad.
-
-Las normas podrán aplicarse a perfiles, mensajes, imágenes, publicaciones, actividades, transacciones y comunicaciones entre usuarios.
-
-32. DISPONIBILIDAD DEL SERVICIO
-
-MASS procurará mantener sus servicios disponibles, pero no garantiza funcionamiento continuo, libre de errores o compatible con todos los dispositivos.
-
-El servicio podrá verse afectado por:
-
-a. Mantenimiento.
-b. Actualizaciones.
-c. Fallas de internet.
-d. Proveedores externos.
-e. Ataques o incidentes.
-f. Fuerza mayor.
-g. Requisitos legales.
-h. Cambios tecnológicos.
-
-33. CAMBIOS EN FUNCIONES
-
-La Empresa podrá agregar, modificar, suspender o retirar funciones cuando sea necesario para:
-
-a. Mejorar el servicio.
-b. Proteger la seguridad.
-c. Cumplir la ley.
-d. Adaptarse a nuevas tecnologías.
-e. Corregir errores.
-f. Administrar riesgos.
-g. Cambiar modelos comerciales.
-
-Cuando un cambio afecte materialmente derechos u obligaciones, se proporcionará el aviso requerido por la legislación aplicable.
-
-34. SUSPENSIÓN
-
-La Empresa podrá suspender temporalmente una cuenta o función cuando exista una razón legítima, incluyendo:
-
-a. Incumplimiento de este Acuerdo.
-b. Riesgo de seguridad.
-c. Actividad sospechosa.
-d. Información falsa.
-e. Pago no autorizado.
-f. Requerimiento legal.
-g. Riesgo para otros usuarios.
-h. Investigación de fraude.
-i. Inactividad prolongada cuando así lo permitan las políticas aplicables.
-
-La suspensión no elimina automáticamente obligaciones pendientes.
-
-35. TERMINACIÓN POR EL USUARIO
-
-Puedes dejar de utilizar MASS ID o solicitar el cierre de tu cuenta.
-
-Antes de cerrar una cuenta podrán requerirse:
-
-a. Verificación de identidad.
-b. Resolución de pagos pendientes.
-c. Cumplimiento de obligaciones.
-d. Conservación legal de ciertos registros.
-e. Transferencia o cierre de funciones administrativas.
-f. Protección contra fraude o suplantación.
-
-La eliminación de datos estará sujeta al Aviso de privacidad y a las obligaciones legales de conservación.
-
-36. TERMINACIÓN POR LA EMPRESA
-
-La Empresa podrá terminar una cuenta por incumplimiento grave, fraude, abuso, riesgo, actividad ilegal o imposibilidad legal de continuar proporcionando el servicio.
-
-Cuando sea razonablemente posible y legalmente permitido, se proporcionará aviso de la medida.
-
-37. EFECTOS DE LA TERMINACIÓN
-
-Al terminar una cuenta:
-
-a. Podrá finalizar el acceso a servicios.
-b. Podrán cerrarse sesiones.
-c. Podrán revocarse permisos.
-d. Podrá retirarse contenido público.
-e. Los saldos y beneficios se administrarán conforme a sus políticas.
-f. Podrán conservarse registros legalmente necesarios.
-g. Continuarán vigentes las obligaciones que por su naturaleza deban sobrevivir.
-
-38. RESPONSABILIDAD DEL USUARIO
-
-Eres responsable de:
-
-a. Tus acciones dentro de la cuenta.
-b. La información que proporciones.
-c. El contenido que publiques.
-d. Las operaciones que autorices.
-e. Los dispositivos que utilices.
-f. Cumplir la legislación aplicable.
-g. Revisar las condiciones particulares de cada servicio.
-h. Informar oportunamente accesos no autorizados.
-
-39. RELACIONES ENTRE USUARIOS
-
-Salvo que un servicio indique expresamente lo contrario, los usuarios, organizadores, operadores, proveedores y prestadores independientes no son empleados, socios, representantes ni agentes de TE-TO-KA SOLUTIONS® LLC.
-
-Cada parte será responsable de sus propios actos, declaraciones, servicios, licencias, impuestos y obligaciones.
-
-MASS podrá facilitar una conexión tecnológica sin convertirse automáticamente en parte de una relación o transacción independiente.
-
-40. AUSENCIA DE ASESORÍA PROFESIONAL
-
-La información proporcionada mediante MASS no constituye automáticamente asesoría:
-
-a. Legal.
-b. Financiera.
-c. Fiscal.
-d. Médica.
-e. De seguros.
-f. De inversión.
-g. Profesional especializada.
-
-Debes consultar a un profesional calificado cuando una decisión requiera asesoría específica.
-
-41. DECLARACIONES Y GARANTÍAS
-
-El servicio se proporciona en la condición disponible, sujeto a las garantías y derechos que no puedan excluirse legalmente.
-
-En la mayor medida permitida por la legislación aplicable, la Empresa no garantiza que:
-
-a. El servicio sea ininterrumpido.
-b. Toda información de terceros sea exacta.
-c. Todos los usuarios actúen correctamente.
-d. Cada servicio satisfaga todas las necesidades.
-e. Todo error sea corregido inmediatamente.
-f. Una verificación elimine todos los riesgos.
-g. Todo dispositivo sea compatible.
-
-42. LIMITACIÓN DE RESPONSABILIDAD
-
-En la mayor medida permitida por la legislación aplicable, TE-TO-KA SOLUTIONS® LLC no será responsable por daños indirectos, incidentales, especiales, punitivos o consecuentes derivados de:
-
-a. Pérdida de acceso.
-b. Fallas de terceros.
-c. Conducta de otros usuarios.
-d. Pérdida de oportunidades.
-e. Interrupciones tecnológicas.
-f. Uso no autorizado causado por incumplimiento del usuario.
-g. Contenido proporcionado por terceros.
-
-Esta cláusula no limitará responsabilidades que legalmente no puedan excluirse o limitarse.
-
-43. DERECHOS DEL CONSUMIDOR
-
-Nada en este Acuerdo elimina derechos obligatorios otorgados al usuario por las leyes de protección al consumidor.
-
-Cuando una disposición entre en conflicto con un derecho que no pueda renunciarse, prevalecerá la legislación aplicable.
-
-44. INDEMNIZACIÓN
-
-En la medida permitida por la ley, aceptas defender, indemnizar y mantener libre de responsabilidad a TE-TO-KA SOLUTIONS® LLC frente a reclamaciones causadas directamente por:
-
-a. Tu incumplimiento de este Acuerdo.
-b. Tu actividad ilegal.
-c. Tu contenido.
-d. Tu infracción de derechos de terceros.
-e. Tu uso no autorizado de una cuenta.
-f. Tus actividades comerciales independientes.
-
-Esta obligación no se aplicará cuando la reclamación haya sido causada por conducta de la Empresa que legalmente no pueda trasladarse al usuario.
-
-45. NOTIFICACIÓN DE INFRACCIONES
-
-Podrás informar:
-
-a. Suplantación de identidad.
-b. Fraude.
-c. Contenido ilegal.
-d. Violaciones de propiedad intelectual.
-e. Accesos no autorizados.
-f. Problemas de seguridad.
-g. Incumplimientos de las Normas de la comunidad.
-
-La Empresa podrá solicitar información suficiente para investigar y responder.
-
-46. RESOLUCIÓN INFORMAL DE CONTROVERSIAS
-
-Antes de iniciar una reclamación judicial, las partes procurarán resolver la controversia mediante una notificación escrita que incluya:
-
-a. Nombre del reclamante.
-b. Información de la cuenta.
-c. Descripción de los hechos.
-d. Solución solicitada.
-e. Documentos relevantes.
-
-Las partes dispondrán de un periodo razonable para intentar una solución, salvo que la ley permita o requiera una actuación inmediata.
-
-47. LEY APLICABLE Y JURISDICCIÓN
-
-Este Acuerdo se interpretará conforme a las leyes aplicables de Estados Unidos y del Estado de Texas, sin excluir derechos obligatorios que correspondan al usuario en otra jurisdicción.
-
-Salvo que una ley obligatoria disponga otra cosa, cualquier procedimiento judicial relacionado con este Acuerdo podrá presentarse ante los tribunales competentes del Condado de Cameron, Texas.
-
-Esta cláusula no impide utilizar un tribunal de reclamos menores cuando tenga jurisdicción.
-
-48. CAMBIOS AL ACUERDO
-
-La Empresa podrá actualizar este Acuerdo para reflejar:
-
-a. Nuevas funciones.
-b. Cambios legales.
-c. Requisitos de seguridad.
-d. Nuevas tecnologías.
-e. Cambios comerciales.
-f. Correcciones o aclaraciones.
-
-Cada versión deberá mostrar su identificación, versión y fecha de vigencia.
-
-Cuando un cambio sea material, se proporcionará el aviso y consentimiento requeridos por la legislación aplicable.
-
-49. CESIÓN
-
-El usuario no podrá transferir este Acuerdo ni su cuenta sin autorización escrita.
-
-La Empresa podrá transferir sus derechos y obligaciones como parte de una reorganización, fusión, adquisición, venta de activos o cambio de operador, sujeto a la legislación y avisos aplicables.
-
-50. DIVISIBILIDAD
-
-Si una disposición fuera declarada inválida o inaplicable, las demás disposiciones continuarán vigentes.
-
-La disposición afectada se interpretará o limitará en la medida necesaria para aproximarse legalmente a su propósito original.
-
-51. AUSENCIA DE RENUNCIA
-
-La falta de aplicación inmediata de una disposición no significa que la Empresa renuncie a ejercer posteriormente sus derechos.
-
-52. ORDEN DE PRIORIDAD
-
-En caso de conflicto se aplicará el siguiente orden, salvo que la ley establezca otro:
-
-a. Legislación obligatoria.
-b. Condiciones específicas del servicio.
-c. Políticas específicas aplicables.
-d. Este Acuerdo de usuario.
-e. MASS-LC-001, Definiciones legales.
-
-53. ACUERDO COMPLETO
-
-Este Acuerdo, junto con las políticas y condiciones incorporadas, constituye el acuerdo general entre el usuario y TE-TO-KA SOLUTIONS® LLC respecto de MASS ID.
-
-54. CONTACTO Y AVISOS LEGALES
-
-Las solicitudes, preguntas o avisos legales deberán enviarse mediante los canales oficiales publicados por TE-TO-KA SOLUTIONS® LLC.
-
-El usuario deberá conservar actualizados sus medios de contacto para recibir notificaciones relacionadas con su cuenta.
-
-55. ADMINISTRACIÓN CONTINUA
-
-MASS-LC-002 será administrado como un documento evolutivo del MASS ID Legal Center.
-
-Su contenido podrá adaptarse durante las distintas fases, servicios, territorios y modelos de operación del ecosistema MASS.
-
-FIN DEL DOCUMENTO MASS-LC-002
-`
+  contenido: window.MassLecturaLegal?.ficha("MASS-LC-002")?.es
 },
     {
   codigo: "MASS-LC-003",
@@ -2095,783 +1435,7 @@ FIN DEL DOCUMENTO MASS-LC-002
   version: "1.0",
   vigencia: "Pendiente de publicación",
   estado: "En revisión",
-  contenido: `
-MASS-LC-003
-AVISO DE PRIVACIDAD DE MASS ID
-
-Versión: 1.0
-Estado: En revisión
-Fecha de vigencia: Pendiente de publicación
-Administrado por: TE-TO-KA SOLUTIONS® LLC
-
-AVISO IMPORTANTE
-
-Este Aviso de privacidad explica cómo TE-TO-KA SOLUTIONS® LLC recopila, utiliza, conserva, comparte, protege y administra datos personales relacionados con MASS ID y el ecosistema MASS.
-
-Debes leer este Aviso junto con el Acuerdo de usuario MASS ID y las políticas particulares de cada producto o servicio.
-
-1. RESPONSABLE DE LOS DATOS
-
-TE-TO-KA SOLUTIONS® LLC administra MASS ID y determina los propósitos principales para los cuales se tratan los datos personales dentro del ecosistema MASS, salvo cuando un tercero independiente actúe como responsable de sus propias operaciones.
-
-En este documento, las expresiones “MASS”, “Empresa”, “nosotros” o “nuestro” se refieren a TE-TO-KA SOLUTIONS® LLC y a los servicios que esta administre directamente.
-
-2. ALCANCE
-
-Este Aviso se aplica a los datos tratados mediante:
-
-a. MASS ID.
-b. TE-TO-KA MASS.
-c. MASS Sorteos Pro.
-d. MASS Ruta.
-e. MASS Cash.
-f. MASS VPN.
-g. MASS Learn.
-h. MASS TV.
-i. Sitios web y aplicaciones MASS.
-j. Paneles administrativos.
-k. Servicios de atención al usuario.
-l. Sistemas de autenticación y seguridad.
-m. Productos, módulos y servicios futuros integrados con MASS ID.
-
-Un producto específico podrá tener un aviso complementario cuando sus operaciones requieran información o tratamientos adicionales.
-
-3. DATOS QUE EL USUARIO PROPORCIONA
-
-Podemos recopilar información proporcionada directamente por el usuario, incluyendo:
-
-a. Nombre y apellidos.
-b. Correo electrónico.
-c. Número telefónico.
-d. Contraseña cifrada o credenciales administradas por proveedores de autenticación.
-e. PIN y códigos de verificación.
-f. Dirección residencial, comercial o de entrega.
-g. Fotografía de perfil.
-h. Fecha de nacimiento o confirmación de edad.
-i. Idioma y preferencias.
-j. Información de soporte.
-k. Mensajes y comunicaciones.
-l. Contenido publicado o cargado.
-m. Información de una organización o negocio.
-n. Documentos proporcionados para verificaciones.
-o. Información necesaria para contratar, comprar o utilizar un servicio.
-
-4. INFORMACIÓN DE CUENTA Y MASS ID
-
-Podemos mantener datos relacionados con la cuenta, incluyendo:
-
-a. Número MASS ID.
-b. Identificador interno de autenticación.
-c. Estado de la cuenta.
-d. Fecha de registro.
-e. Fecha de verificación.
-f. Roles y permisos.
-g. Organizaciones asociadas.
-h. Historial de cambios importantes.
-i. Preferencias de privacidad.
-j. Configuración de seguridad.
-k. Direcciones registradas.
-l. Sesiones y dispositivos autorizados.
-
-5. DATOS RECOPILADOS AUTOMÁTICAMENTE
-
-Cuando se utiliza MASS podemos recibir automáticamente:
-
-a. Dirección IP.
-b. Tipo de navegador.
-c. Sistema operativo.
-d. Tipo de dispositivo.
-e. Identificadores técnicos.
-f. Fecha y hora de acceso.
-g. Páginas o funciones utilizadas.
-h. Errores técnicos.
-i. Registros de seguridad.
-j. Información de sesión.
-k. Interacciones con notificaciones.
-l. Datos aproximados de ubicación derivados de la red.
-m. Información almacenada mediante cookies o almacenamiento local.
-
-6. UBICACIÓN
-
-Algunos servicios pueden requerir datos de ubicación para:
-
-a. Mostrar rutas.
-b. Coordinar entregas.
-c. Asignar servicios.
-d. Confirmar puntos de origen o destino.
-e. Mostrar operadores cercanos.
-f. Prevenir fraude.
-g. Proteger cuentas.
-h. Proporcionar funciones solicitadas.
-
-La ubicación precisa solamente deberá utilizarse cuando sea necesaria para una función autorizada y cuando exista el permiso requerido.
-
-El usuario podrá administrar los permisos de ubicación mediante su dispositivo, aunque desactivarlos puede impedir que determinadas funciones trabajen correctamente.
-
-7. INFORMACIÓN DE PAGOS
-
-Cuando se realizan pagos, recargas, compras o transacciones, podemos tratar:
-
-a. Nombre del pagador.
-b. Monto.
-c. Moneda.
-d. Fecha.
-e. Descripción.
-f. Estado de la transacción.
-g. Identificador del procesador de pagos.
-h. Últimos dígitos o descripción limitada del método de pago.
-i. Historial de reembolsos o disputas.
-j. Señales de prevención de fraude.
-
-Los números completos de tarjetas y credenciales financieras sensibles podrán ser procesados directamente por proveedores de pagos independientes.
-
-MASS no deberá almacenar información financiera completa cuando no sea necesaria para operar el servicio.
-
-8. MASS CASH, SALDOS Y BENEFICIOS
-
-Podemos mantener registros relacionados con:
-
-a. Saldo MASS.
-b. Recargas.
-c. Compras.
-d. Créditos.
-e. Beneficios.
-f. Premios.
-g. Cupones.
-h. Canjes.
-i. Movimientos.
-j. Organizador asociado.
-k. Estado de aprobación.
-l. Historial de transacciones.
-
-Estos datos se utilizarán para administrar las funciones correspondientes, resolver disputas, prevenir fraude y cumplir obligaciones legales.
-
-9. DATOS DE SERVICIOS DE TRANSPORTE Y LOGÍSTICA
-
-Cuando se utilicen servicios como MASS Ruta, podremos tratar:
-
-a. Dirección de origen.
-b. Dirección de destino.
-c. Información del paquete.
-d. Peso o dimensiones.
-e. Fotografías.
-f. Datos del remitente.
-g. Datos del destinatario.
-h. Ubicación del operador.
-i. Estado de la entrega.
-j. Comprobantes.
-k. Comunicaciones relacionadas.
-l. Incidentes o reclamaciones.
-
-10. DATOS DE ORGANIZADORES Y OPERADORES
-
-Para funciones comerciales, administrativas o profesionales podremos solicitar:
-
-a. Nombre legal.
-b. Nombre comercial.
-c. Identificación.
-d. Información de contacto.
-e. Licencias.
-f. Seguros.
-g. Fotografías.
-h. Información del vehículo.
-i. Datos fiscales.
-j. Información bancaria para pagos autorizados.
-k. Historial de servicios.
-l. Evaluaciones.
-m. Documentos de cumplimiento.
-n. Roles y permisos administrativos.
-
-11. DATOS SENSIBLES
-
-Dependiendo del servicio, MASS podría tratar datos considerados sensibles, incluyendo:
-
-a. Ubicación precisa.
-b. Identificaciones oficiales.
-c. Información financiera.
-d. Datos de menores.
-e. Información biométrica.
-f. Información médica cuando una función autorizada lo requiera.
-g. Credenciales y códigos de seguridad.
-h. Información relacionada con seguros.
-i. Datos protegidos por leyes especiales.
-
-Los datos sensibles solamente deberán tratarse cuando exista una necesidad legítima, medidas de protección reforzadas y el consentimiento o autorización exigidos por la legislación aplicable.
-
-12. FOTOGRAFÍAS Y VERIFICACIÓN FACIAL
-
-Las fotografías podrán utilizarse para:
-
-a. Mostrar una imagen de perfil.
-b. Verificar una cuenta.
-c. Comparar un documento con una persona.
-d. Prevenir suplantación.
-e. Confirmar identidad en operaciones sensibles.
-f. Proteger a usuarios y servicios.
-
-Una fotografía no deberá considerarse automáticamente un dato biométrico procesado.
-
-Cuando MASS genere, utilice o conserve una plantilla, geometría facial u otro identificador biométrico para reconocer a una persona, deberá proporcionar los avisos y obtener los consentimientos que correspondan antes de dicho tratamiento.
-
-13. BIOMETRÍA
-
-MASS no venderá ni comercializará datos biométricos.
-
-Antes de recopilar o utilizar un identificador biométrico, MASS deberá informar, según resulte aplicable:
-
-a. Qué información se recopilará.
-b. El propósito.
-c. El tiempo de conservación.
-d. Los proveedores participantes.
-e. El método para retirar el consentimiento.
-f. El proceso de eliminación.
-
-La utilización de funciones biométricas podrá estar sujeta a una política y consentimiento separados.
-
-14. MENORES DE EDAD
-
-MASS ID de uso general no está dirigido a menores de trece años.
-
-No recopilaremos conscientemente datos personales de un menor de trece años mediante un servicio general sin el consentimiento parental verificable requerido.
-
-Los productos específicamente diseñados para menores deberán contar con:
-
-a. Aviso directo para padres o tutores.
-b. Consentimiento parental verificable.
-c. Controles de acceso.
-d. Recopilación limitada.
-e. Medidas de seguridad apropiadas.
-f. Derechos de revisión y eliminación.
-g. Restricciones de publicidad y perfilamiento aplicables.
-
-Si identificamos una cuenta creada por un menor sin la autorización necesaria, podremos restringirla y eliminar la información conforme a la ley.
-
-15. FUENTES DE INFORMACIÓN
-
-Podemos obtener datos de:
-
-a. El propio usuario.
-b. Padres o tutores autorizados.
-c. Representantes de una organización.
-d. Otros usuarios participantes en una operación.
-e. Proveedores tecnológicos.
-f. Procesadores de pagos.
-g. Proveedores de verificación.
-h. Sistemas de seguridad.
-i. Fuentes públicas legalmente accesibles.
-j. Dispositivos y navegadores.
-k. Servicios integrados autorizados por el usuario.
-
-16. PROPÓSITOS DEL TRATAMIENTO
-
-Podemos utilizar los datos para:
-
-a. Crear y administrar MASS ID.
-b. Autenticar usuarios.
-c. Verificar información.
-d. Proporcionar servicios.
-e. Procesar solicitudes.
-f. Administrar pagos.
-g. Mostrar saldos e historiales.
-h. Coordinar operaciones.
-i. Enviar comunicaciones esenciales.
-j. Proporcionar soporte.
-k. Personalizar funciones autorizadas.
-l. Mantener preferencias.
-m. Prevenir fraude.
-n. Proteger cuentas.
-o. Investigar incidentes.
-p. Cumplir obligaciones legales.
-q. Mantener registros.
-r. Mejorar rendimiento y accesibilidad.
-s. Desarrollar nuevas funciones.
-t. Resolver disputas.
-u. Aplicar acuerdos y políticas.
-v. Generar análisis estadísticos.
-w. Proteger los derechos de MASS y de terceros.
-
-17. BASES Y AUTORIZACIONES
-
-Cuando una legislación requiera identificar una base para el tratamiento, MASS podrá apoyarse en:
-
-a. La ejecución de un contrato.
-b. El consentimiento.
-c. El cumplimiento de una obligación legal.
-d. La protección de una persona.
-e. Un interés legítimo que no prevalezca sobre los derechos del usuario.
-f. El establecimiento, defensa o ejercicio de reclamaciones.
-g. La prestación de un servicio solicitado.
-
-El usuario podrá retirar un consentimiento cuando la legislación lo permita, sin afectar el tratamiento realizado previamente de manera válida.
-
-18. PERFIL PÚBLICO Y VISIBILIDAD
-
-El usuario podrá controlar determinadas preferencias, como:
-
-a. Perfil visible.
-b. Mostrar teléfono.
-c. Mostrar correo.
-d. Recibir promociones.
-e. Permitir personalización.
-
-El usuario siempre podrá consultar sus propios datos autenticados.
-
-Activar un perfil visible no autoriza a otros usuarios a utilizar la información para acoso, fraude, vigilancia, comercialización no solicitada o actividades prohibidas.
-
-19. COMUNICACIONES ESENCIALES
-
-Podemos enviar comunicaciones necesarias sobre:
-
-a. Seguridad.
-b. Inicio de sesión.
-c. Verificación.
-d. Cambios de contraseña.
-e. Cambios de correo o teléfono.
-f. Pagos.
-g. Operaciones solicitadas.
-h. Actualizaciones legales.
-i. Incidentes.
-j. Soporte.
-k. Suspensión o cierre de cuenta.
-
-Estas comunicaciones podrán permanecer activas aunque el usuario no acepte mensajes promocionales.
-
-20. PROMOCIONES
-
-Solamente enviaremos comunicaciones promocionales conforme a las preferencias del usuario y la legislación aplicable.
-
-El usuario podrá desactivar promociones mediante:
-
-a. Las preferencias de MASS ID.
-b. Un enlace para cancelar suscripción.
-c. Los ajustes de notificaciones.
-d. Una solicitud enviada por un canal oficial.
-
-Desactivar promociones no desactiva alertas esenciales.
-
-21. PERSONALIZACIÓN
-
-Cuando el usuario lo autorice, podremos utilizar actividad e intereses para:
-
-a. Organizar contenido.
-b. Recomendar funciones.
-c. Mostrar servicios relevantes.
-d. Mejorar la experiencia.
-e. Recordar preferencias.
-f. Adaptar comunicaciones.
-
-El usuario podrá desactivar la personalización desde sus preferencias cuando la función esté disponible.
-
-22. INTELIGENCIA ARTIFICIAL
-
-MASS podrá utilizar sistemas automatizados o de inteligencia artificial para:
-
-a. Atención al usuario.
-b. Detección de fraude.
-c. Seguridad.
-d. Clasificación.
-e. Moderación.
-f. Recomendaciones.
-g. Traducción.
-h. Resúmenes.
-i. Procesamiento de solicitudes.
-j. Mejora de servicios.
-
-Los sistemas automatizados pueden producir resultados incorrectos.
-
-Cuando una decisión automatizada produzca efectos importantes sobre una persona, MASS aplicará los derechos de revisión, información u oposición requeridos por la legislación aplicable.
-
-23. DATOS DESIDENTIFICADOS Y AGREGADOS
-
-Podemos transformar información para crear datos desidentificados o agregados.
-
-Estos datos podrán utilizarse para:
-
-a. Estadísticas.
-b. Seguridad.
-c. Investigación.
-d. Mejora del servicio.
-e. Planeación.
-f. Análisis de desempeño.
-
-MASS deberá mantener medidas razonables para evitar que los datos desidentificados se utilicen para volver a identificar a una persona.
-
-24. PROVEEDORES DE SERVICIOS
-
-Podemos compartir información necesaria con proveedores que apoyen:
-
-a. Alojamiento.
-b. Bases de datos.
-c. Autenticación.
-d. Correo electrónico.
-e. SMS.
-f. Notificaciones.
-g. Pagos.
-h. Mapas.
-i. Seguridad.
-j. Almacenamiento.
-k. Verificación.
-l. Análisis técnico.
-m. Soporte.
-n. Servicios jurídicos y contables.
-
-Estos proveedores solamente deberán recibir los datos necesarios para realizar sus funciones y estarán sujetos a obligaciones contractuales o legales de protección.
-
-25. OTROS USUARIOS
-
-Cierta información podrá compartirse con otros usuarios cuando sea necesaria para completar una operación, por ejemplo:
-
-a. Nombre.
-b. Información de contacto autorizada.
-c. Dirección de entrega.
-d. Estado de un servicio.
-e. Fotografía de perfil.
-f. Información del organizador.
-g. Información del operador.
-h. Datos necesarios para una transacción.
-
-La información compartida dependerá de las preferencias, funciones y necesidades del servicio.
-
-26. TERCEROS INDEPENDIENTES
-
-Algunos servicios integrados pueden ser operados por terceros independientes que determinan sus propias prácticas de privacidad.
-
-Estos terceros podrán incluir:
-
-a. Instituciones financieras.
-b. Procesadores de pagos.
-c. Aseguradoras.
-d. Comercios.
-e. Operadores.
-f. Organizadores.
-g. Servicios profesionales.
-h. Proveedores de telecomunicaciones.
-i. Autoridades públicas.
-
-El usuario deberá revisar los avisos de privacidad de dichos terceros.
-
-27. VENTA DE DATOS
-
-Conforme al diseño y prácticas actuales de MASS, no vendemos datos personales, datos sensibles ni datos biométricos.
-
-Tampoco intercambiamos datos personales por dinero con empresas de publicidad.
-
-Si estas prácticas fueran a cambiar, MASS deberá actualizar este Aviso, proporcionar las divulgaciones requeridas y habilitar los mecanismos de consentimiento u oposición antes de implementar el cambio.
-
-28. PUBLICIDAD DIRIGIDA
-
-MASS no deberá utilizar datos sensibles para publicidad dirigida sin la autorización legal correspondiente.
-
-Cuando una función utilice datos personales para publicidad dirigida, el usuario recibirá un aviso y un mecanismo para oponerse cuando la legislación lo requiera.
-
-29. DIVULGACIONES LEGALES
-
-Podemos divulgar información cuando resulte razonablemente necesario para:
-
-a. Cumplir una ley.
-b. Responder a una orden válida.
-c. Cooperar con autoridades competentes.
-d. Proteger la seguridad de una persona.
-e. Investigar fraude.
-f. Defender derechos legales.
-g. Aplicar contratos.
-h. Responder a una emergencia.
-i. Prevenir daños.
-j. Cumplir obligaciones regulatorias.
-
-Cuando sea legalmente permitido, intentaremos limitar la divulgación a la información razonablemente necesaria.
-
-30. TRANSACCIONES EMPRESARIALES
-
-La información podrá transferirse como parte de:
-
-a. Una fusión.
-b. Una adquisición.
-c. Una reorganización.
-d. Una financiación.
-e. Una venta de activos.
-f. Un cambio de operador.
-g. Un procedimiento de insolvencia.
-
-El nuevo responsable deberá respetar las obligaciones legales aplicables y proporcionar avisos sobre cambios materiales.
-
-31. CONSERVACIÓN
-
-Conservaremos datos solamente durante el tiempo razonablemente necesario para:
-
-a. Proporcionar servicios.
-b. Mantener una cuenta.
-c. Cumplir contratos.
-d. Cumplir obligaciones legales.
-e. Prevenir fraude.
-f. Resolver disputas.
-g. Proteger la seguridad.
-h. Mantener registros financieros.
-i. Defender reclamaciones.
-j. Cumplir solicitudes válidas.
-
-Los periodos podrán variar según el tipo de información, servicio, riesgo y obligación legal.
-
-32. ELIMINACIÓN
-
-Cuando los datos ya no sean necesarios, podrán:
-
-a. Eliminarse.
-b. Anonimizarse.
-c. Desidentificarse.
-d. Mantenerse bloqueados durante un periodo legal.
-e. Conservarse en respaldos hasta su eliminación programada.
-
-Una solicitud de eliminación no exige borrar información que deba conservarse legalmente o que sea necesaria para prevenir fraude, completar una transacción o defender derechos.
-
-33. SEGURIDAD
-
-MASS utilizará medidas administrativas, técnicas y organizacionales razonables, incluyendo según corresponda:
-
-a. Controles de acceso.
-b. Autenticación.
-c. Autenticación multifactor.
-d. Cifrado en tránsito.
-e. Restricciones de permisos.
-f. Registro de actividad.
-g. Copias de seguridad.
-h. Actualizaciones.
-i. Evaluaciones de proveedores.
-j. Procedimientos de respuesta a incidentes.
-k. Separación de funciones administrativas.
-l. Verificación de operaciones sensibles.
-
-Ninguna medida garantiza seguridad absoluta.
-
-34. RESPONSABILIDADES DEL USUARIO
-
-El usuario debe:
-
-a. Proteger su contraseña.
-b. Proteger sus códigos.
-c. Mantener sus dispositivos seguros.
-d. Cerrar sesiones no reconocidas.
-e. Mantener actualizados sus datos.
-f. Informar accesos sospechosos.
-g. No compartir credenciales.
-h. Revisar sus preferencias.
-i. Proteger información descargada.
-j. Evitar publicar datos sensibles innecesarios.
-
-35. INCIDENTES DE SEGURIDAD
-
-Cuando ocurra un incidente, MASS podrá:
-
-a. Investigar.
-b. Contener la situación.
-c. Cambiar credenciales.
-d. Cerrar sesiones.
-e. Suspender funciones.
-f. Solicitar verificaciones.
-g. Notificar a usuarios.
-h. Notificar a autoridades.
-i. Restaurar sistemas.
-j. Mejorar controles.
-
-Las notificaciones se realizarán cuando lo requiera la legislación aplicable.
-
-36. DERECHOS DE PRIVACIDAD
-
-Dependiendo de la jurisdicción, el usuario podrá tener derecho a:
-
-a. Confirmar si tratamos sus datos.
-b. Acceder a sus datos.
-c. Obtener una copia.
-d. Corregir datos inexactos.
-e. Solicitar eliminación.
-f. Retirar consentimiento.
-g. Oponerse a determinados tratamientos.
-h. Limitar ciertos usos.
-i. Optar por no participar en publicidad dirigida.
-j. Optar por no participar en una venta de datos.
-k. Oponerse a determinados perfiles automatizados.
-l. Presentar una apelación.
-m. No sufrir discriminación por ejercer sus derechos.
-n. Presentar una queja ante una autoridad competente.
-
-Los derechos disponibles dependerán de la residencia del usuario y de la legislación aplicable.
-
-37. SOLICITUDES DE PRIVACIDAD
-
-Las solicitudes deberán enviarse mediante los canales oficiales publicados por MASS.
-
-La solicitud deberá proporcionar suficiente información para:
-
-a. Identificar la cuenta.
-b. Verificar la identidad.
-c. Comprender la solicitud.
-d. Localizar los datos.
-e. Proteger la información contra accesos no autorizados.
-
-MASS podrá solicitar verificación adicional antes de revelar, corregir o eliminar información.
-
-38. REPRESENTANTES AUTORIZADOS
-
-Cuando la legislación lo permita, un representante autorizado podrá presentar una solicitud en nombre del usuario.
-
-Podremos solicitar:
-
-a. Prueba de autorización.
-b. Verificación directa del usuario.
-c. Identificación del representante.
-d. Documentación legal aplicable.
-
-39. APELACIONES
-
-Cuando MASS rechace total o parcialmente una solicitud de privacidad y la ley otorgue derecho de apelación, el usuario podrá solicitar una revisión mediante el canal indicado en la respuesta.
-
-La apelación deberá identificar la decisión impugnada y explicar por qué debe reconsiderarse.
-
-40. TIEMPOS DE RESPUESTA
-
-MASS responderá dentro del plazo establecido por la legislación aplicable.
-
-Cuando sea permitido, el plazo podrá ampliarse debido a la complejidad, cantidad de solicitudes o necesidad de verificación.
-
-El usuario será informado cuando una ampliación resulte necesaria.
-
-41. NO DISCRIMINACIÓN
-
-MASS no discriminará ilegalmente contra una persona por ejercer un derecho de privacidad.
-
-El ejercicio de derechos no impide que MASS:
-
-a. Requiera datos necesarios para un servicio.
-b. Limite una función que no pueda operar sin esos datos.
-c. Mantenga información legalmente necesaria.
-d. Proteja cuentas y operaciones.
-e. Cumpla obligaciones contractuales o legales.
-
-42. TEXAS
-
-Los residentes de Texas podrán tener derechos relacionados con:
-
-a. Confirmación del tratamiento.
-b. Acceso.
-c. Corrección.
-d. Eliminación.
-e. Portabilidad.
-f. Exclusión de publicidad dirigida.
-g. Exclusión de venta de datos.
-h. Exclusión de ciertos perfiles automatizados.
-i. Apelación.
-j. No discriminación.
-
-MASS proporcionará métodos seguros para presentar solicitudes conforme a los requisitos aplicables.
-
-43. OTROS ESTADOS DE ESTADOS UNIDOS
-
-Los residentes de otros estados podrán tener derechos adicionales conforme a las leyes aplicables en su lugar de residencia.
-
-MASS evaluará cada solicitud conforme a:
-
-a. La residencia verificada.
-b. La ley correspondiente.
-c. Las excepciones aplicables.
-d. La naturaleza del servicio.
-e. El tipo de datos involucrados.
-
-44. USUARIOS INTERNACIONALES
-
-MASS está administrado desde Estados Unidos.
-
-Cuando se ofrezcan servicios en otros países, los datos podrán transferirse y tratarse en Estados Unidos u otros lugares donde operen proveedores autorizados.
-
-MASS implementará los avisos, contratos, consentimientos y mecanismos de transferencia exigidos por la legislación aplicable.
-
-45. COOKIES Y ALMACENAMIENTO LOCAL
-
-MASS podrá utilizar:
-
-a. Cookies esenciales.
-b. Almacenamiento local.
-c. Identificadores de sesión.
-d. Preferencias.
-e. tecnologías de seguridad.
-f. Herramientas de rendimiento.
-g. Notificaciones.
-
-La información detallada se encontrará en MASS-LC-005, Política de cookies.
-
-46. SEÑALES DE PREFERENCIA
-
-Cuando la legislación aplicable requiera reconocer una señal tecnológica válida de exclusión, MASS deberá evaluar y aplicar dicha señal conforme a los requisitos correspondientes.
-
-Las preferencias vinculadas a una cuenta podrán prevalecer dentro de las funciones autenticadas cuando reflejen una elección verificable del usuario.
-
-47. ENLACES EXTERNOS
-
-Los servicios MASS pueden incluir enlaces a sitios o aplicaciones externas.
-
-MASS no controla las prácticas independientes de esos terceros.
-
-El usuario debe revisar sus políticas antes de proporcionar información.
-
-48. CAMBIOS AL AVISO
-
-Podremos actualizar este Aviso para reflejar:
-
-a. Cambios legales.
-b. Nuevos servicios.
-c. Nuevas categorías de datos.
-d. Nuevos proveedores.
-e. Cambios de seguridad.
-f. Nuevas tecnologías.
-g. Cambios empresariales.
-h. Correcciones o aclaraciones.
-
-Cada versión mostrará su número y fecha de vigencia.
-
-Cuando un cambio sea material, proporcionaremos el aviso o consentimiento exigido.
-
-49. VERSIONES ANTERIORES
-
-MASS podrá conservar copias de versiones anteriores para:
-
-a. Cumplimiento.
-b. Auditoría.
-c. Resolución de disputas.
-d. Historial de consentimiento.
-e. Administración legal.
-
-La versión publicada más reciente será la aplicable a partir de su fecha de vigencia, salvo que la ley establezca otra cosa.
-
-50. CONFLICTOS
-
-En caso de conflicto se aplicará el siguiente orden:
-
-a. Legislación obligatoria.
-b. Aviso específico de un servicio.
-c. Este Aviso de privacidad.
-d. Acuerdo de usuario MASS ID.
-e. Definiciones generales del MASS ID Legal Center.
-
-51. CONTACTO
-
-Las preguntas, solicitudes y avisos de privacidad deberán enviarse mediante los canales oficiales publicados por TE-TO-KA SOLUTIONS® LLC.
-
-Antes de la publicación definitiva deberán incorporarse como mínimo:
-
-a. Correo electrónico oficial de privacidad.
-b. Dirección postal oficial.
-c. Método para ejercer derechos.
-d. Método para presentar apelaciones.
-e. Canal para reportar incidentes.
-f. Información de contacto adicional exigida por la ley.
-
-52. ADMINISTRACIÓN CONTINUA
-
-MASS-LC-003 será administrado como un documento evolutivo del MASS ID Legal Center.
-
-Su contenido deberá actualizarse cuando cambien las prácticas reales de recopilación, uso, conservación, intercambio, seguridad o derechos de privacidad.
-
-FIN DEL DOCUMENTO MASS-LC-003
-`
+  contenido: window.MassLecturaLegal?.ficha("MASS-LC-003")?.es
 },
     {
   codigo: "MASS-LC-004",
@@ -10985,12 +9549,12 @@ async function cerrarPanelConfiguracionMfa() {
   }
 
   if (qrMfaPendiente) {
-    qrMfaPendiente.textContent = "QR pendiente";
+    qrMfaPendiente.replaceChildren(rotuloMassId("QR pendiente"));
     qrMfaPendiente.style.display = "inline";
   }
 
   if (claveMfaManual) {
-    claveMfaManual.textContent = "Clave pendiente";
+    claveMfaManual.replaceChildren(rotuloMassId("Clave pendiente"));
   }
 
   if (inputCodigoMfa) {
@@ -11042,7 +9606,7 @@ function actualizarBotonGuardarFoto(
   }
 
   btnGuardarFoto.disabled = !habilitado;
-  btnGuardarFoto.textContent = texto;
+  btnGuardarFoto.replaceChildren(rotuloMassId(texto));
 
   btnGuardarFoto.style.borderColor =
     habilitado ? "#39ff14" : "#555";
@@ -11174,11 +9738,9 @@ async function cargarDireccionesMass() {
   panelDireccionesGuardadas.style.display =
     "block";
 
-  contadorDirecciones.textContent =
-    "Consultando...";
+  contadorDirecciones.replaceChildren(rotuloMassId("Consultando..."));
 
-  mensajeDirecciones.textContent =
-    "Cargando direcciones...";
+  mensajeDirecciones.replaceChildren(rotuloMassId("Cargando direcciones..."));
 
   mensajeDirecciones.style.color =
     "#bbb";
@@ -11234,10 +9796,11 @@ async function cargarDireccionesMass() {
     const cantidad =
       direccionesActivas.length;
 
-    contadorDirecciones.textContent =
-      cantidad === 1
-        ? "1 ubicación"
-        : cantidad + " ubicaciones";
+    if (cantidad === 1) {
+      contadorDirecciones.replaceChildren(rotuloMassId("1 ubicación"));
+    } else {
+      contadorDirecciones.replaceChildren(String(cantidad) + " ", rotuloMassId("ubicaciones"));
+    }
 
     /*
       Si todavía no hay direcciones,
@@ -11256,8 +9819,7 @@ async function cargarDireccionesMass() {
       }
 
       if (btnAgregarDireccion) {
-        btnAgregarDireccion.textContent =
-          "📍 Agregar dirección opcional";
+        btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar dirección opcional"));
       }
 
       return;
@@ -11267,16 +9829,14 @@ async function cargarDireccionesMass() {
       "none";
 
     if (direccionEstado) {
-      direccionEstado.textContent =
-        "✅ Dirección preparada para servicios MASS";
+      direccionEstado.replaceChildren(rotuloMassId("✅ Dirección preparada para servicios MASS"));
 
       direccionEstado.style.display =
         "block";
     }
 
     if (btnAgregarDireccion) {
-      btnAgregarDireccion.textContent =
-        "📍 Agregar otra dirección";
+      btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar otra dirección"));
     }
 
     direccionesActivas.forEach(
@@ -11310,12 +9870,9 @@ async function cargarDireccionesMass() {
         const titulo =
           document.createElement("strong");
 
-        titulo.textContent =
-          "📍 " +
-          (
-            direccion.nombre_ubicacion ||
-            "Ubicación"
-          );
+        const etiquetaUbicacion = direccion.nombre_ubicacion || "Ubicación";
+        const nombrePredefinido = ["Casa", "Trabajo", "Otra", "Ubicación"].includes(etiquetaUbicacion);
+        titulo.replaceChildren("📍 ", nombrePredefinido ? rotuloMassId(etiquetaUbicacion) : etiquetaUbicacion);
 
         titulo.style.cssText =
           "color:#fff;" +
@@ -11327,8 +9884,7 @@ async function cargarDireccionesMass() {
           const distintivo =
             document.createElement("span");
 
-          distintivo.textContent =
-            "Principal";
+          distintivo.replaceChildren(rotuloMassId("Principal"));
 
           distintivo.style.cssText =
             "padding:5px 8px;" +
@@ -11350,9 +9906,7 @@ async function cargarDireccionesMass() {
         const lineaPrincipal =
           document.createElement("p");
 
-        lineaPrincipal.textContent =
-          direccion.direccion_linea_1 ||
-          "Dirección no disponible";
+        lineaPrincipal.replaceChildren(direccion.direccion_linea_1 || rotuloMassId("Dirección no disponible"));
 
         lineaPrincipal.style.cssText =
           "margin:0;" +
@@ -11422,8 +9976,7 @@ async function cargarDireccionesMass() {
           const textoPais =
             document.createElement("p");
 
-          textoPais.textContent =
-            direccion.pais;
+          textoPais.replaceChildren(direccion.pais === "Estados Unidos" ? rotuloMassId("Estados Unidos") : direccion.pais);
 
           textoPais.style.cssText =
             "margin:4px 0 0;" +
@@ -11477,8 +10030,7 @@ async function cargarDireccionesMass() {
         btnEditarDireccion.type =
           "button";
 
-        btnEditarDireccion.textContent =
-          "✏️ Editar";
+        btnEditarDireccion.replaceChildren(rotuloMassId("✏️ Editar"));
 
         btnEditarDireccion.dataset.direccionId =
           direccion.id;
@@ -11504,8 +10056,7 @@ async function cargarDireccionesMass() {
       "Casa";
 
     inputDireccionPais.value =
-      direccion.pais ||
-      "Estados Unidos";
+      !direccion.pais || direccion.pais === "Estados Unidos" ? textoMassId("Estados Unidos") : direccion.pais;
 
     inputDireccionLinea1.value =
       direccion.direccion_linea_1 ||
@@ -11543,8 +10094,7 @@ async function cargarDireccionesMass() {
     }
 
     if (mensajeDireccionFormulario) {
-      mensajeDireccionFormulario.textContent =
-        "✏️ Editando esta dirección.";
+      mensajeDireccionFormulario.replaceChildren(rotuloMassId("✏️ Editando esta dirección."));
 
       mensajeDireccionFormulario.style.color =
         "#fff";
@@ -11559,8 +10109,7 @@ async function cargarDireccionesMass() {
     direccionFormulario.style.display =
       "block";
 
-    btnGuardarDireccion.textContent =
-      "💾 Actualizar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Actualizar dirección"));
 
     direccionFormulario.scrollIntoView({
       behavior: "smooth",
@@ -11574,8 +10123,7 @@ async function cargarDireccionesMass() {
         btnEliminarDireccion.type =
           "button";
 
-        btnEliminarDireccion.textContent =
-          "🗑️ Eliminar";
+        btnEliminarDireccion.replaceChildren(rotuloMassId("🗑️ Eliminar"));
 
         btnEliminarDireccion.dataset.direccionId =
           direccion.id;
@@ -11594,12 +10142,11 @@ async function cargarDireccionesMass() {
               btnEliminarDireccion.onclick =
           async function () {
             const nombreDireccion =
-              direccion.nombre_ubicacion ||
-              "esta ubicación";
+              nombrePredefinido ? textoMassId(etiquetaUbicacion) : etiquetaUbicacion;
 
             const confirmarEliminacion =
               window.confirm(
-                "¿Deseas eliminar la dirección " +
+                (textoMassId("¿Deseas eliminar la dirección") + " ") +
                 '"' +
                 nombreDireccion +
                 '"?'
@@ -11618,8 +10165,7 @@ async function cargarDireccionesMass() {
             btnEditarDireccion.disabled =
               true;
 
-            btnEliminarDireccion.textContent =
-              "⏳ Eliminando...";
+            btnEliminarDireccion.replaceChildren(rotuloMassId("⏳ Eliminando..."));
 
             btnEliminarDireccion.style.cursor =
               "not-allowed";
@@ -11770,7 +10316,7 @@ async function cargarDireccionesMass() {
               await cargarDireccionesMass();
 
               alert(
-                "✅ Dirección eliminada correctamente."
+                textoMassId("✅ Dirección eliminada correctamente.")
               );
             } catch (error) {
               console.error(
@@ -11779,7 +10325,7 @@ async function cargarDireccionesMass() {
               );
 
               alert(
-                "❌ No fue posible eliminar la dirección. Inténtalo nuevamente."
+                textoMassId("❌ No fue posible eliminar la dirección. Inténtalo nuevamente.")
               );
 
               btnEliminarDireccion.disabled =
@@ -11822,11 +10368,9 @@ async function cargarDireccionesMass() {
       error
     );
 
-    contadorDirecciones.textContent =
-      "No disponible";
+    contadorDirecciones.replaceChildren(rotuloMassId("No disponible"));
 
-    mensajeDirecciones.textContent =
-      "❌ No fue posible cargar tus direcciones.";
+    mensajeDirecciones.replaceChildren(rotuloMassId("❌ No fue posible cargar tus direcciones."));
 
     mensajeDirecciones.style.color =
       "#ff5b5b";
@@ -11844,25 +10388,20 @@ if (
 ) {
   btnInformacionPersonal.onclick = async function () {
     if (infoNombre) {
-      infoNombre.textContent =
-        perfil.nombre || "No disponible";
+      infoNombre.replaceChildren(perfil.nombre || rotuloMassId("No disponible"));
     }
 
     if (infoNumero) {
-      infoNumero.textContent =
-        perfil.mass_id || "No disponible";
+      infoNumero.replaceChildren(perfil.mass_id || rotuloMassId("No disponible"));
     }
 
     if (infoTelefono) {
-      infoTelefono.textContent =
-        perfil.telefono || "No disponible";
+      infoTelefono.replaceChildren(perfil.telefono || rotuloMassId("No disponible"));
     }
 
     if (infoCorreo) {
-      infoCorreo.textContent =
-        perfil.email ||
-        user.email ||
-        "No disponible";
+      infoCorreo.replaceChildren(perfil.email ||
+        user.email || rotuloMassId("No disponible"));
     }
 
     menuPrincipal.style.display = "none";
@@ -12071,8 +10610,7 @@ function mostrarMensajePrivacidad(
     return;
   }
 
-  mensajePrivacidad.textContent =
-    texto;
+  mensajePrivacidad.replaceChildren(rotuloMassId(texto));
 
   mensajePrivacidad.style.color =
     color;
@@ -12107,8 +10645,7 @@ function mostrarMensajeActividadCuenta(
     return;
   }
 
-  mensajeActividadCuenta.textContent =
-    texto;
+  mensajeActividadCuenta.replaceChildren(rotuloMassId(texto));
 
   mensajeActividadCuenta.style.color =
     color;
@@ -12190,8 +10727,7 @@ async function cargarPreferenciasPrivacidad() {
     btnGuardarPrivacidad.disabled =
       true;
 
-    btnGuardarPrivacidad.textContent =
-      "⏳ Cargando preferencias...";
+    btnGuardarPrivacidad.replaceChildren(rotuloMassId("⏳ Cargando preferencias..."));
 
     btnGuardarPrivacidad.style.cursor =
       "not-allowed";
@@ -12293,8 +10829,7 @@ async function cargarPreferenciasPrivacidad() {
       btnGuardarPrivacidad.disabled =
         false;
 
-      btnGuardarPrivacidad.textContent =
-        "💾 Guardar preferencias";
+      btnGuardarPrivacidad.replaceChildren(rotuloMassId("💾 Guardar preferencias"));
 
       btnGuardarPrivacidad.style.cursor =
         "pointer";
@@ -12415,8 +10950,7 @@ if (btnGuardarPrivacidad) {
       btnGuardarPrivacidad.disabled =
         true;
 
-      btnGuardarPrivacidad.textContent =
-        "⏳ Guardando preferencias...";
+      btnGuardarPrivacidad.replaceChildren(rotuloMassId("⏳ Guardando preferencias..."));
 
       btnGuardarPrivacidad.style.cursor =
         "not-allowed";
@@ -12521,8 +11055,7 @@ if (errorRegistrarActividadPrivacidad) {
           "#39ff14"
         );
 
-        btnGuardarPrivacidad.textContent =
-          "✅ Preferencias guardadas";
+        btnGuardarPrivacidad.replaceChildren(rotuloMassId("✅ Preferencias guardadas"));
 
         btnGuardarPrivacidad.style.opacity =
           "1";
@@ -12561,7 +11094,7 @@ if (errorRegistrarActividadPrivacidad) {
 /* Formatear fecha para Actividad de la cuenta */
 function formatearFechaActividadCuenta(fecha) {
   if (!fecha) {
-    return "Fecha no disponible";
+    return textoMassId("Fecha no disponible");
   }
 
   const fechaActividad =
@@ -12572,11 +11105,11 @@ function formatearFechaActividadCuenta(fecha) {
       fechaActividad.getTime()
     )
   ) {
-    return "Fecha no disponible";
+    return textoMassId("Fecha no disponible");
   }
 
   return fechaActividad.toLocaleString(
-    "es-US",
+    window.MassIdioma?.actual === "en" ? "en-US" : "es-US",
     {
       dateStyle: "medium",
       timeStyle: "short"
@@ -12616,8 +11149,7 @@ function renderizarActividadCuenta(eventos) {
     String(eventosSeguros.length);
 
   if (eventosSeguros.length === 0) {
-    ultimoEventoActividadCuenta.textContent =
-      "Sin actividad registrada";
+    ultimoEventoActividadCuenta.replaceChildren(rotuloMassId("Sin actividad registrada"));
 
     listaActividadCuenta.innerHTML = `
       <div style="
@@ -12629,8 +11161,8 @@ function renderizarActividadCuenta(eventos) {
         text-align:center;
         line-height:1.5;
       ">
-        🕘 Todavía no existen eventos registrados
-        para esta cuenta.
+        <span data-mass-ui>🕘 Todavía no existen eventos registrados
+        para esta cuenta.</span>
       </div>
     `;
 
@@ -12648,13 +11180,13 @@ function renderizarActividadCuenta(eventos) {
         escaparTextoActividadCuenta(
           evento.titulo ||
           evento.tipo_evento ||
-          "Actividad de la cuenta"
+          textoMassId("Actividad de la cuenta")
         );
 
       const descripcion =
         escaparTextoActividadCuenta(
           evento.descripcion ||
-          "Evento registrado correctamente."
+          textoMassId("Evento registrado correctamente.")
         );
 
       const fecha =
@@ -12726,14 +11258,13 @@ async function cargarActividadCuentaMassId() {
         color:#bbb;
         text-align:center;
       ">
-        ⏳ Cargando actividad de la cuenta...
+        <span data-mass-ui>⏳ Cargando actividad de la cuenta...</span>
       </div>
     `;
   }
 
   if (ultimoEventoActividadCuenta) {
-    ultimoEventoActividadCuenta.textContent =
-      "Cargando...";
+    ultimoEventoActividadCuenta.replaceChildren(rotuloMassId("Cargando..."));
   }
 
   if (totalEventosActividadCuenta) {
@@ -12745,8 +11276,7 @@ async function cargarActividadCuentaMassId() {
     btnActualizarActividadCuenta.disabled =
       true;
 
-    btnActualizarActividadCuenta.textContent =
-      "⏳ Actualizando...";
+    btnActualizarActividadCuenta.replaceChildren(rotuloMassId("⏳ Actualizando..."));
 
     btnActualizarActividadCuenta.style.cursor =
       "not-allowed";
@@ -12767,7 +11297,7 @@ async function cargarActividadCuentaMassId() {
       !user?.id
     ) {
       throw new Error(
-        "No fue posible identificar la cuenta activa."
+        textoMassId("No fue posible identificar la cuenta activa.")
       );
     }
 
@@ -12865,8 +11395,7 @@ const {
       btnActualizarActividadCuenta.disabled =
         false;
 
-      btnActualizarActividadCuenta.textContent =
-        "🔄 Actualizar actividad";
+      btnActualizarActividadCuenta.replaceChildren(rotuloMassId("🔄 Actualizar actividad"));
 
       btnActualizarActividadCuenta.style.cursor =
         "pointer";
@@ -12894,7 +11423,7 @@ const {
         text-align:center;
       "
     >
-      ⏳ Cargando dispositivos conectados...
+      <span data-mass-ui>⏳ Cargando dispositivos conectados...</span>
     </div>
   `;
 
@@ -12915,7 +11444,7 @@ const {
 
     if (!session?.user) {
       throw new Error(
-        "No fue posible identificar la sesión activa."
+        textoMassId("No fue posible identificar la sesión activa.")
       );
     }
 
@@ -13016,7 +11545,7 @@ if (dispositivosParaMostrar.length === 0) {
         text-align:center;
       "
     >
-      No hay dispositivos registrados.
+      <span data-mass-ui>No hay dispositivos registrados.</span>
     </div>
   `;
 } else {
@@ -13030,24 +11559,24 @@ if (dispositivosParaMostrar.length === 0) {
           dispositivo.ultimo_acceso
             ? new Date(
                 dispositivo.ultimo_acceso
-              ).toLocaleString("es-US", {
+              ).toLocaleString(window.MassIdioma?.actual === "en" ? "en-US" : "es-US", {
                 dateStyle: "medium",
                 timeStyle: "short"
               })
-            : "No disponible";
+            : textoMassId("No disponible");
 
         const nombreNavegador =
           dispositivo.navegador ||
-          "Navegador desconocido";
+          textoMassId("Navegador desconocido");
 
         const nombrePlataforma =
           dispositivo.plataforma ||
-          "No disponible";
+          textoMassId("No disponible");
 
         const estadoDispositivo =
           dispositivo.activo
-            ? "Sesión activa"
-            : "Sesión cerrada";
+            ? textoMassId("Sesión activa")
+            : textoMassId("Sesión cerrada");
 
         const colorEstado =
           dispositivo.activo
@@ -13072,7 +11601,7 @@ if (dispositivosParaMostrar.length === 0) {
                   font-weight:bold;
                 "
               >
-                Este dispositivo
+                <span data-mass-ui>Este dispositivo</span>
               </span>
             `
             : "";
@@ -13098,7 +11627,7 @@ if (dispositivosParaMostrar.length === 0) {
               "
             >
               <strong style="font-size:16px;">
-                💻 ${nombreNavegador}
+                💻 ${escaparTextoActividadCuenta(nombreNavegador === "Navegador desconocido" ? textoMassId(nombreNavegador) : nombreNavegador)}
               </strong>
 
               ${etiquetaEsteDispositivo}
@@ -13113,21 +11642,21 @@ if (dispositivosParaMostrar.length === 0) {
             >
               <div>
                 <strong style="color:#fff;">
-                  Sistema o plataforma:
+                  <span data-mass-ui>Sistema o plataforma:</span>
                 </strong>
-                ${nombrePlataforma}
+                ${escaparTextoActividadCuenta(nombrePlataforma === "No disponible" ? textoMassId(nombrePlataforma) : nombrePlataforma)}
               </div>
 
               <div>
                 <strong style="color:#fff;">
-                  Último acceso:
+                  <span data-mass-ui>Último acceso:</span>
                 </strong>
                 ${fechaUltimoAcceso}
               </div>
 
               <div>
                 <strong style="color:#fff;">
-                  Estado:
+                  <span data-mass-ui>Estado:</span>
                 </strong>
 
                 <span style="color:${colorEstado};">
@@ -13150,8 +11679,7 @@ if (dispositivosParaMostrar.length === 0) {
     listaDispositivosConectados.innerHTML = "";
 
     if (mensajeDispositivosConectados) {
-      mensajeDispositivosConectados.textContent =
-        "❌ No fue posible cargar los dispositivos conectados.";
+      mensajeDispositivosConectados.replaceChildren(rotuloMassId("❌ No fue posible cargar los dispositivos conectados."));
 
       mensajeDispositivosConectados.style.display =
         "block";
@@ -13162,7 +11690,7 @@ if (dispositivosParaMostrar.length === 0) {
 /* Cerrar todas las sesiones de MASS ID */
 async function cerrarTodasLasSesionesMassId() {
   const confirmarCierre = window.confirm(
-    "¿Seguro que deseas cerrar todas las sesiones de tu cuenta MASS ID?"
+    textoMassId("¿Seguro que deseas cerrar todas las sesiones de tu cuenta MASS ID?")
   );
 
   if (!confirmarCierre) {
@@ -13187,7 +11715,7 @@ async function cerrarTodasLasSesionesMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Todas las sesiones de tu cuenta MASS ID fueron cerradas correctamente."
+      textoMassId("Todas las sesiones de tu cuenta MASS ID fueron cerradas correctamente.")
     );
 
     window.location.reload();
@@ -13198,7 +11726,7 @@ async function cerrarTodasLasSesionesMassId() {
     );
 
     window.alert(
-      "No fue posible cerrar todas las sesiones. Intenta nuevamente."
+      textoMassId("No fue posible cerrar todas las sesiones. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdCerrarTodasSesiones) {
@@ -13212,8 +11740,8 @@ async function cerrarTodasLasSesionesMassId() {
 /* Desactivar cuenta MASS ID */
 async function desactivarCuentaMassId() {
   const confirmarDesactivacion = window.confirm(
-    "¿Seguro que deseas desactivar tu cuenta MASS ID?\n\n" +
-    "Tu cuenta quedará suspendida y no podrás iniciar sesión hasta solicitar su reactivación."
+    (textoMassId("¿Seguro que deseas desactivar tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tu cuenta quedará suspendida y no podrás iniciar sesión hasta solicitar su reactivación.")
   );
 
   if (!confirmarDesactivacion) {
@@ -13234,7 +11762,7 @@ async function desactivarCuentaMassId() {
 
     if (userError || !user) {
       throw userError || new Error(
-        "No fue posible identificar la cuenta MASS ID."
+        textoMassId("No fue posible identificar la cuenta MASS ID.")
       );
     }
 
@@ -13269,8 +11797,7 @@ async function desactivarCuentaMassId() {
     }
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "✅ Tu cuenta MASS ID fue desactivada correctamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("✅ Tu cuenta MASS ID fue desactivada correctamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#39ff14";
@@ -13290,7 +11817,7 @@ async function desactivarCuentaMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Tu cuenta MASS ID fue desactivada correctamente."
+      textoMassId("Tu cuenta MASS ID fue desactivada correctamente.")
     );
 
     window.location.reload();
@@ -13301,8 +11828,7 @@ async function desactivarCuentaMassId() {
     );
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "❌ No fue posible desactivar tu cuenta. Intenta nuevamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("❌ No fue posible desactivar tu cuenta. Intenta nuevamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
@@ -13312,7 +11838,7 @@ async function desactivarCuentaMassId() {
     }
 
     window.alert(
-      "No fue posible desactivar tu cuenta. Intenta nuevamente."
+      textoMassId("No fue posible desactivar tu cuenta. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdDesactivarCuenta) {
@@ -13333,7 +11859,7 @@ async function solicitarCierreCuentaMassId() {
 
   if (!motivoSeleccionado) {
     window.alert(
-      "Selecciona un motivo antes de solicitar el cierre de tu cuenta."
+      textoMassId("Selecciona un motivo antes de solicitar el cierre de tu cuenta.")
     );
 
     if (motivoCierreCuenta) {
@@ -13344,8 +11870,8 @@ async function solicitarCierreCuentaMassId() {
   }
 
   const primeraConfirmacion = window.confirm(
-    "¿Deseas solicitar el cierre de tu cuenta MASS ID?\n\n" +
-    "Tendrás 30 días para cambiar de opinión y recuperar tu cuenta."
+    (textoMassId("¿Deseas solicitar el cierre de tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tendrás 30 días para cambiar de opinión y recuperar tu cuenta.")
   );
 
   if (!primeraConfirmacion) {
@@ -13353,9 +11879,9 @@ async function solicitarCierreCuentaMassId() {
   }
 
   const segundaConfirmacion = window.confirm(
-    "Esta solicitud cerrará todas tus sesiones y bloqueará temporalmente el acceso.\n\n" +
-    "La eliminación definitiva quedará programada dentro de 30 días.\n\n" +
-    "¿Deseas continuar?"
+    (textoMassId("Esta solicitud cerrará todas tus sesiones y bloqueará temporalmente el acceso.") + "\n\n") +
+    (textoMassId("La eliminación definitiva quedará programada dentro de 30 días.") + "\n\n") +
+    textoMassId("¿Deseas continuar?")
   );
 
   if (!segundaConfirmacion) {
@@ -13376,7 +11902,7 @@ async function solicitarCierreCuentaMassId() {
 
     if (userError || !user) {
       throw userError || new Error(
-        "No fue posible identificar la cuenta MASS ID."
+        textoMassId("No fue posible identificar la cuenta MASS ID.")
       );
     }
 
@@ -13426,8 +11952,7 @@ async function solicitarCierreCuentaMassId() {
     }
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "✅ Tu solicitud de cierre fue registrada. Tendrás 30 días para recuperar tu cuenta.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("✅ Tu solicitud de cierre fue registrada. Tendrás 30 días para recuperar tu cuenta."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ffbf47";
@@ -13447,8 +11972,8 @@ async function solicitarCierreCuentaMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Tu solicitud de cierre fue registrada correctamente.\n\n" +
-      "Tendrás 30 días para recuperar tu cuenta antes del cierre definitivo."
+      (textoMassId("Tu solicitud de cierre fue registrada correctamente.") + "\n\n") +
+      textoMassId("Tendrás 30 días para recuperar tu cuenta antes del cierre definitivo.")
     );
 
     window.location.reload();
@@ -13459,8 +11984,7 @@ async function solicitarCierreCuentaMassId() {
     );
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "❌ No fue posible registrar la solicitud de cierre. Intenta nuevamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("❌ No fue posible registrar la solicitud de cierre. Intenta nuevamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
@@ -13470,7 +11994,7 @@ async function solicitarCierreCuentaMassId() {
     }
 
     window.alert(
-      "No fue posible registrar la solicitud de cierre. Intenta nuevamente."
+      textoMassId("No fue posible registrar la solicitud de cierre. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdSolicitarCierreCuenta) {
@@ -13484,8 +12008,8 @@ async function solicitarCierreCuentaMassId() {
 /* Cancelar cierre y recuperar cuenta MASS ID */
 async function cancelarCierreCuentaMassId() {
   const confirmarRecuperacion = window.confirm(
-    "¿Deseas cancelar el cierre y recuperar tu cuenta MASS ID?\n\n" +
-    "Tu cuenta volverá a quedar activa y podrás iniciar sesión normalmente."
+    (textoMassId("¿Deseas cancelar el cierre y recuperar tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tu cuenta volverá a quedar activa y podrás iniciar sesión normalmente.")
   );
 
   if (!confirmarRecuperacion) {
@@ -13502,7 +12026,7 @@ async function cancelarCierreCuentaMassId() {
 
 if (!authUserIdCierre) {
   window.alert(
-    "No fue posible identificar la cuenta que deseas recuperar. Inicia sesión nuevamente."
+    textoMassId("No fue posible identificar la cuenta que deseas recuperar. Inicia sesión nuevamente.")
   );
 
   return;
@@ -13587,8 +12111,8 @@ localStorage.setItem(
     );
 
     window.alert(
-      "✅ El cierre de tu cuenta fue cancelado correctamente.\n\n" +
-      "Tu cuenta MASS ID volvió a quedar activa."
+      (textoMassId("✅ El cierre de tu cuenta fue cancelado correctamente.") + "\n\n") +
+      textoMassId("Tu cuenta MASS ID volvió a quedar activa.")
     );
 
     if (typeof cerrarMiMassId === "function") {
@@ -13623,7 +12147,7 @@ setTimeout(async function () {
     );
 
     window.alert(
-      "No fue posible recuperar tu cuenta. Intenta nuevamente."
+      textoMassId("No fue posible recuperar tu cuenta. Intenta nuevamente.")
     );
   } finally {
     if (botonCancelarCierreActual) {
@@ -13643,8 +12167,7 @@ function mostrarMensajeDocumentosLegales(
     return;
   }
 
-  mensajeDocumentosLegales.textContent =
-    texto;
+  mensajeDocumentosLegales.replaceChildren(rotuloMassId(texto));
 
   mensajeDocumentosLegales.style.color =
     color;
@@ -13694,15 +12217,14 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
     (
       documentoLegal.descripcion +
       "\n\n" +
-      "El contenido jurídico completo de este documento se encuentra actualmente en preparación dentro del MASS ID Legal Center."
+      textoMassId("El contenido jurídico completo de este documento se encuentra actualmente en preparación dentro del MASS ID Legal Center.")
     );
 
   listaDocumentosLegales.style.display = "none";
   detalleDocumentoLegal.style.display = "block";
 
   if (estadoDocumentoLegal) {
-    estadoDocumentoLegal.textContent =
-      documentoLegal.estado || "En preparación";
+    estadoDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.estado || "En preparación"));
   }
 
   if (codigoDocumentoLegal) {
@@ -13711,8 +12233,7 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
   }
 
   if (tituloDocumentoLegal) {
-    tituloDocumentoLegal.textContent =
-      documentoLegal.titulo || "Documento legal";
+    tituloDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.titulo || "Documento legal"));
   }
 
   if (versionDocumentoLegal) {
@@ -13721,13 +12242,16 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
   }
 
   if (vigenciaDocumentoLegal) {
-    vigenciaDocumentoLegal.textContent =
-      documentoLegal.vigencia || "Pendiente";
+    vigenciaDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.vigencia || "Pendiente"));
   }
 
   if (contenidoDocumentoLegal) {
-    contenidoDocumentoLegal.textContent =
-      contenidoTemporal;
+    const idioma = document.getElementById("massIdIdiomaDocumento");
+    if (!idioma || !window.MassLecturaLegal?.mostrar(contenidoDocumentoLegal, idioma, contenidoTemporal)) {
+      contenidoDocumentoLegal.textContent = contenidoTemporal;
+      contenidoDocumentoLegal.lang = "es";
+      idioma?.replaceChildren(rotuloMassId("Texto original en español"));
+    }
   }
 
   detalleDocumentoLegal.scrollIntoView({
@@ -13772,7 +12296,7 @@ function renderizarDocumentosLegalesMassId() {
             data-documento-legal="${documentoLegal.codigo}"
             role="button"
             tabindex="0"
-            aria-label="Abrir ${documentoLegal.titulo}"
+            data-mass-aria aria-label="Abrir ${documentoLegal.titulo}"
             style="
               padding:16px;
               border:1px solid #333;
@@ -13818,7 +12342,7 @@ function renderizarDocumentosLegalesMassId() {
                   font-weight:bold;
                 "
               >
-                ${documentoLegal.estado}
+              <span data-mass-ui>${documentoLegal.estado}</span>
               </span>
             </div>
 
@@ -13830,7 +12354,7 @@ function renderizarDocumentosLegalesMassId() {
                 line-height:1.35;
               "
             >
-              ${documentoLegal.titulo}
+              <span data-mass-ui>${documentoLegal.titulo}</span>
             </h4>
 
             <p
@@ -13842,7 +12366,7 @@ function renderizarDocumentosLegalesMassId() {
                 flex:1;
               "
             >
-              ${documentoLegal.descripcion}
+              <span data-mass-ui>${documentoLegal.descripcion}</span>
             </p>
 
             <div
@@ -13858,11 +12382,11 @@ function renderizarDocumentosLegalesMassId() {
               "
             >
               <span>
-                Versión ${documentoLegal.version}
+                <span data-mass-ui>Versión</span> ${documentoLegal.version}
               </span>
 
               <span style="color:#39ff14;">
-                Consultar →
+                <span data-mass-ui>Consultar →</span>
               </span>
             </div>
           </article>
@@ -13930,7 +12454,7 @@ function renderizarDocumentosLegalesMassId() {
   );
 
   mostrarMensajeDocumentosLegales(
-    `✅ ${catalogoDocumentosLegalesMassId.length} documentos oficiales cargados.`,
+    textoMassId("✅ {n} documentos oficiales cargados.").replace("{n}", String(catalogoDocumentosLegalesMassId.length)),
     "#39ff14"
   );
 }
@@ -14338,8 +12862,7 @@ function limpiarFormularioCambioContrasena() {
     btnContinuarCambioContrasena.style.display =
       "block";
 
-    btnContinuarCambioContrasena.textContent =
-      "🔐 Continuar y verificar identidad";
+    btnContinuarCambioContrasena.replaceChildren(rotuloMassId("🔐 Continuar y verificar identidad"));
 
     btnContinuarCambioContrasena.style.cursor =
       "pointer";
@@ -14352,8 +12875,7 @@ function limpiarFormularioCambioContrasena() {
     btnConfirmarMfaCambioContrasena.disabled =
       false;
 
-    btnConfirmarMfaCambioContrasena.textContent =
-      "✅ Confirmar código y cambiar contraseña";
+    btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("✅ Confirmar código y cambiar contraseña"));
 
     btnConfirmarMfaCambioContrasena.style.cursor =
       "pointer";
@@ -14372,8 +12894,7 @@ function mostrarMensajeCambioContrasena(
     return;
   }
 
-  mensajeCambioContrasena.textContent =
-    texto;
+  mensajeCambioContrasena.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioContrasena.style.color =
     color;
@@ -14394,8 +12915,7 @@ function mostrarMensajeMfaCambioContrasena(
     return;
   }
 
-  mensajeMfaCambioContrasena.textContent =
-    texto;
+  mensajeMfaCambioContrasena.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioContrasena.style.color =
     color;
@@ -14622,8 +13142,7 @@ if (
       btnContinuarCambioContrasena.disabled =
         true;
 
-      btnContinuarCambioContrasena.textContent =
-        "⏳ Confirmando contraseña...";
+      btnContinuarCambioContrasena.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
       btnContinuarCambioContrasena.style.cursor =
         "not-allowed";
@@ -14652,7 +13171,7 @@ if (
           !supabaseClient.supabaseKey
         ) {
           throw new Error(
-            "No fue posible preparar la verificación segura."
+            textoMassId("No fue posible preparar la verificación segura.")
           );
         }
 
@@ -14710,7 +13229,7 @@ if (
           user.id
         ) {
           throw new Error(
-            "La identidad confirmada no coincide con la sesión activa."
+            textoMassId("La identidad confirmada no coincide con la sesión activa.")
           );
         }
 
@@ -14783,8 +13302,7 @@ if (
     "#ffffff"
   );
 
-  btnContinuarCambioContrasena.textContent =
-    "⏳ Actualizando contraseña...";
+  btnContinuarCambioContrasena.replaceChildren(rotuloMassId("⏳ Actualizando contraseña..."));
 
   const {
     data: datosContrasenaActualizada,
@@ -14838,14 +13356,13 @@ if (errorRegistrarActividadContrasena) {
     "#39ff14"
   );
 
-  btnContinuarCambioContrasena.textContent =
-    "✅ Contraseña actualizada";
+  btnContinuarCambioContrasena.replaceChildren(rotuloMassId("✅ Contraseña actualizada"));
 
   btnContinuarCambioContrasena.style.opacity =
     "1";
 
   alert(
-    "✅ Tu contraseña fue actualizada correctamente."
+    textoMassId("✅ Tu contraseña fue actualizada correctamente.")
   );
 
   regresarDesdeCambioContrasena();
@@ -15019,8 +13536,7 @@ if (
       btnConfirmarMfaCambioContrasena.disabled =
         true;
 
-      btnConfirmarMfaCambioContrasena.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioContrasena.style.cursor =
         "not-allowed";
@@ -15066,9 +13582,7 @@ if (
         inputCodigoMfaCambioContrasena
           .value = "";
 
-        btnConfirmarMfaCambioContrasena
-          .textContent =
-            "⏳ Actualizando contraseña...";
+        btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("⏳ Actualizando contraseña..."));
 
         mostrarMensajeMfaCambioContrasena(
           "⏳ Identidad confirmada. Actualizando tu contraseña...",
@@ -15134,15 +13648,13 @@ if (errorRegistrarActividadContrasenaMfa) {
           "#39ff14"
         );
 
-        btnConfirmarMfaCambioContrasena
-          .textContent =
-            "✅ Contraseña actualizada";
+        btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("✅ Contraseña actualizada"));
 
         btnConfirmarMfaCambioContrasena
           .style.opacity = "1";
 
         alert(
-          "✅ Tu contraseña fue actualizada correctamente."
+          textoMassId("✅ Tu contraseña fue actualizada correctamente.")
         );
 
         regresarDesdeCambioContrasena();
@@ -15235,8 +13747,7 @@ if (btnConfirmarMfaCambioTelefono) {
   btnConfirmarMfaCambioTelefono.disabled =
     false;
 
-  btnConfirmarMfaCambioTelefono.textContent =
-    "✅ Confirmar identidad y enviar SMS";
+  btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("✅ Confirmar identidad y enviar SMS"));
 
   btnConfirmarMfaCambioTelefono.style.cursor =
     "pointer";
@@ -15252,8 +13763,7 @@ if (panelSmsCambioTelefono) {
 }
 
 if (telefonoSmsDestino) {
-  telefonoSmsDestino.textContent =
-    "Nuevo teléfono";
+  telefonoSmsDestino.replaceChildren(rotuloMassId("Nuevo teléfono"));
 }
 
 if (inputCodigoSmsCambioTelefono) {
@@ -15273,8 +13783,7 @@ if (btnConfirmarSmsCambioTelefono) {
   btnConfirmarSmsCambioTelefono.disabled =
     false;
 
-  btnConfirmarSmsCambioTelefono.textContent =
-    "✅ Confirmar código SMS y cambiar teléfono";
+  btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("✅ Confirmar código SMS y cambiar teléfono"));
 
   btnConfirmarSmsCambioTelefono.style.cursor =
     "pointer";
@@ -15287,8 +13796,7 @@ if (btnReenviarSmsCambioTelefono) {
   btnReenviarSmsCambioTelefono.disabled =
     false;
 
-  btnReenviarSmsCambioTelefono.textContent =
-    "🔄 Reenviar código SMS";
+  btnReenviarSmsCambioTelefono.replaceChildren(rotuloMassId("🔄 Reenviar código SMS"));
 
   btnReenviarSmsCambioTelefono.style.cursor =
     "pointer";
@@ -15304,8 +13812,7 @@ if (btnContinuarCambioTelefono) {
 
   if (btnContinuarCambioTelefono) {
     btnContinuarCambioTelefono.disabled = false;
-    btnContinuarCambioTelefono.textContent =
-      "🔐 Continuar y verificar identidad";
+    btnContinuarCambioTelefono.replaceChildren(rotuloMassId("🔐 Continuar y verificar identidad"));
     btnContinuarCambioTelefono.style.cursor =
       "pointer";
     btnContinuarCambioTelefono.style.opacity =
@@ -15322,8 +13829,7 @@ function mostrarMensajeCambioTelefono(
     return;
   }
 
-  mensajeCambioTelefono.textContent =
-    texto;
+  mensajeCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioTelefono.style.color =
     color;
@@ -15366,7 +13872,7 @@ if (
       const telefonoActual =
         perfil.telefono ||
         user.phone ||
-        "No disponible";
+        textoMassId("No disponible");
 
       if (telefonoActualCambio) {
         telefonoActualCambio.textContent =
@@ -15556,8 +14062,7 @@ let clienteVerificacionPasswordTelefono =
 btnContinuarCambioTelefono.disabled =
   true;
 
-btnContinuarCambioTelefono.textContent =
-  "⏳ Confirmando contraseña...";
+btnContinuarCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
 btnContinuarCambioTelefono.style.cursor =
   "not-allowed";
@@ -15586,7 +14091,7 @@ try {
     !supabaseClient.supabaseKey
   ) {
     throw new Error(
-      "No fue posible preparar la verificación segura."
+      textoMassId("No fue posible preparar la verificación segura.")
     );
   }
 
@@ -15644,7 +14149,7 @@ try {
     user.id
   ) {
     throw new Error(
-      "La identidad confirmada no coincide con la sesión activa."
+      textoMassId("La identidad confirmada no coincide con la sesión activa.")
     );
   }
 
@@ -15819,8 +14324,7 @@ function mostrarMensajeMfaCambioTelefono(
     return;
   }
 
-  mensajeMfaCambioTelefono.textContent =
-    texto;
+  mensajeMfaCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioTelefono.style.color =
     color;
@@ -15851,8 +14355,7 @@ function mostrarMensajeSmsCambioTelefono(
     return;
   }
 
-  mensajeSmsCambioTelefono.textContent =
-    texto;
+  mensajeSmsCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeSmsCambioTelefono.style.color =
     color;
@@ -15958,8 +14461,7 @@ if (
       btnConfirmarMfaCambioTelefono.disabled =
         true;
 
-      btnConfirmarMfaCambioTelefono.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioTelefono.style.cursor =
         "not-allowed";
@@ -16015,8 +14517,7 @@ if (!telefonoE164PendienteCambio) {
   return;
 }
 
-btnConfirmarMfaCambioTelefono.textContent =
-  "⏳ Enviando código SMS...";
+btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("⏳ Enviando código SMS..."));
 
 mostrarMensajeMfaCambioTelefono(
   "⏳ Identidad confirmada. Enviando el código al nuevo teléfono...",
@@ -16091,8 +14592,7 @@ if (panelSmsCambioTelefono) {
   });
 }
 
-btnConfirmarMfaCambioTelefono.textContent =
-  "✅ SMS enviado";
+btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("✅ SMS enviado"));
 
 btnConfirmarMfaCambioTelefono.style.opacity =
   "1";
@@ -16184,8 +14684,7 @@ if (
       btnConfirmarSmsCambioTelefono.disabled =
         true;
 
-      btnConfirmarSmsCambioTelefono.textContent =
-        "⏳ Confirmando código SMS...";
+      btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando código SMS..."));
 
       btnConfirmarSmsCambioTelefono.style.cursor =
         "not-allowed";
@@ -16221,7 +14720,7 @@ if (
           throw (
             errorUsuarioAntesSms ||
             new Error(
-              "La sesión activa no coincide con la cuenta."
+              textoMassId("La sesión activa no coincide con la cuenta.")
             )
           );
         }
@@ -16287,7 +14786,7 @@ if (
           throw (
             errorUsuarioConfirmado ||
             new Error(
-              "No fue posible confirmar la identidad después del SMS."
+              textoMassId("No fue posible confirmar la identidad después del SMS.")
             )
           );
         }
@@ -16304,7 +14803,7 @@ if (
           telefonoPendienteDigitos
         ) {
           throw new Error(
-            "El teléfono confirmado no coincide con el teléfono solicitado."
+            textoMassId("El teléfono confirmado no coincide con el teléfono solicitado.")
           );
         }
 
@@ -16320,8 +14819,7 @@ if (
           )
             .replace(/\D/g, "");
 
-        btnConfirmarSmsCambioTelefono.textContent =
-          "⏳ Sincronizando teléfono...";
+        btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Sincronizando teléfono..."));
 
         mostrarMensajeSmsCambioTelefono(
           "⏳ Teléfono verificado. Sincronizando tu cuenta MASS...",
@@ -16411,7 +14909,7 @@ if (
           throw (
             errorActualizarPerfilTelefono ||
             new Error(
-              "No se encontró el perfil MASS ID para actualizar."
+              textoMassId("No se encontró el perfil MASS ID para actualizar.")
             )
           );
         }
@@ -16454,8 +14952,7 @@ if (
           "#39ff14"
         );
 
-        btnConfirmarSmsCambioTelefono.textContent =
-          "✅ Teléfono actualizado";
+        btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("✅ Teléfono actualizado"));
 
         btnConfirmarSmsCambioTelefono.style.opacity =
           "1";
@@ -16483,7 +14980,7 @@ if (errorRegistrarActividadTelefono) {
         await abrirMiMassId();
 
         alert(
-          "✅ Tu nuevo teléfono fue verificado por SMS y actualizado correctamente."
+          textoMassId("✅ Tu nuevo teléfono fue verificado por SMS y actualizado correctamente.")
         );
       } catch (error) {
         console.error(
@@ -16496,8 +14993,8 @@ if (errorRegistrarActividadTelefono) {
 
         const mensajeErrorTelefono =
           error?.code === "23505"
-            ? "❌ Ese teléfono ya está registrado en otra cuenta MASS."
-            : "❌ No fue posible completar el cambio de teléfono. Inténtalo nuevamente.";
+            ? textoMassId("❌ Ese teléfono ya está registrado en otra cuenta MASS.")
+            : textoMassId("❌ No fue posible completar el cambio de teléfono. Inténtalo nuevamente.");
 
         mostrarMensajeSmsCambioTelefono(
           mensajeErrorTelefono,
@@ -16542,13 +15039,12 @@ if (btnReenviarSmsCambioTelefono) {
       }
 
       const textoOriginalBotonReenvio =
-        "🔄 Reenviar código SMS";
+        textoMassId("🔄 Reenviar código SMS");
 
       btnReenviarSmsCambioTelefono.disabled =
         true;
 
-      btnReenviarSmsCambioTelefono.textContent =
-        "⏳ Reenviando código...";
+      btnReenviarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Reenviando código..."));
 
       btnReenviarSmsCambioTelefono.style.cursor =
         "not-allowed";
@@ -16593,7 +15089,7 @@ if (btnReenviarSmsCambioTelefono) {
         let segundosRestantes = 60;
 
         btnReenviarSmsCambioTelefono.textContent =
-          "⏳ Reenviar en " +
+          (textoMassId("⏳ Reenviar en") + " ") +
           segundosRestantes +
           " s";
 
@@ -16633,7 +15129,7 @@ if (btnReenviarSmsCambioTelefono) {
             }
 
             btnReenviarSmsCambioTelefono.textContent =
-              "⏳ Reenviar en " +
+              (textoMassId("⏳ Reenviar en") + " ") +
               segundosRestantes +
               " s";
           }, 1000);
@@ -16674,7 +15170,7 @@ if (
       const correoActual =
         perfil.email ||
         user.email ||
-        "No disponible";
+        textoMassId("No disponible");
 
       if (correoActualCambio) {
         correoActualCambio.textContent =
@@ -16771,8 +15267,7 @@ function mostrarMensajeCambioCorreo(
     return;
   }
 
-  mensajeCambioCorreo.textContent =
-    texto;
+  mensajeCambioCorreo.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioCorreo.style.color =
     color;
@@ -16896,8 +15391,7 @@ if (
       btnContinuarCambioCorreo.disabled =
         true;
 
-      btnContinuarCambioCorreo.textContent =
-        "⏳ Confirmando contraseña...";
+      btnContinuarCambioCorreo.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
       btnContinuarCambioCorreo.style.cursor =
         "not-allowed";
@@ -16926,7 +15420,7 @@ if (
           !supabaseClient.supabaseKey
         ) {
           throw new Error(
-            "No fue posible preparar la verificación segura."
+            textoMassId("No fue posible preparar la verificación segura.")
           );
         }
 
@@ -16988,7 +15482,7 @@ if (
           user.id
         ) {
           throw new Error(
-            "La identidad confirmada no coincide con la sesión activa."
+            textoMassId("La identidad confirmada no coincide con la sesión activa.")
           );
         }
 
@@ -17164,8 +15658,7 @@ function mostrarMensajeMfaCambioCorreo(
     return;
   }
 
-  mensajeMfaCambioCorreo.textContent =
-    texto;
+  mensajeMfaCambioCorreo.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioCorreo.style.color =
     color;
@@ -17231,8 +15724,7 @@ if (
       btnConfirmarMfaCambioCorreo.disabled =
         true;
 
-      btnConfirmarMfaCambioCorreo.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioCorreo.style.cursor =
         "not-allowed";
@@ -17275,8 +15767,7 @@ if (
         inputCodigoMfaCambioCorreo.value =
           "";
 
-        btnConfirmarMfaCambioCorreo.textContent =
-          "⏳ Solicitando cambio...";
+        btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("⏳ Solicitando cambio..."));
 
         mostrarMensajeMfaCambioCorreo(
           "⏳ Código confirmado. Enviando la solicitud de cambio de correo...",
@@ -17323,9 +15814,9 @@ if (
 );
 
         mostrarMensajeMfaCambioCorreo(
-          "✅ Solicitud enviada. Revisa " +
+          (textoMassId("✅ Solicitud enviada. Revisa") + " ") +
             correoPendienteConfirmacion +
-            " y abre el enlace de verificación. Si también recibes un mensaje en tu correo actual, confirma ambos enlaces.",
+            (" " + textoMassId("y abre el enlace de verificación. Si también recibes un mensaje en tu correo actual, confirma ambos enlaces.")),
           "#39ff14"
         );
 
@@ -17352,8 +15843,7 @@ if (errorRegistrarSolicitudCambioCorreo) {
           "#39ff14"
         );
 
-        btnConfirmarMfaCambioCorreo.textContent =
-          "✅ Revisa tu nuevo correo";
+        btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("✅ Revisa tu nuevo correo"));
 
         btnConfirmarMfaCambioCorreo.style.opacity =
           "1";
@@ -17424,14 +15914,13 @@ if (
 
       direccionEditandoId = null;
 
-    btnGuardarDireccion.textContent =
-      "💾 Guardar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Guardar dirección"));
 
     inputDireccionNombre.value =
       "Casa";
 
     inputDireccionPais.value =
-      "Estados Unidos";
+      textoMassId("Estados Unidos");
 
     inputDireccionLinea1.value =
       "";
@@ -17483,8 +15972,7 @@ if (
 
       direccionEditandoId = null;
 
-    btnGuardarDireccion.textContent =
-      "💾 Guardar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Guardar dirección"));
     
     direccionFormulario.style.display = "none";
     direccionInvitacion.style.display = "block";
@@ -17519,8 +16007,8 @@ if (
         inputDireccionNombre.value.trim() ||
         "Casa";
 
-      const pais =
-        inputDireccionPais.value.trim();
+      const paisIngresado = inputDireccionPais.value.trim();
+      const pais = paisIngresado === "United States" ? "Estados Unidos" : paisIngresado;
 
       const direccionLinea1 =
         inputDireccionLinea1.value.trim();
@@ -17563,8 +16051,7 @@ if (
           return;
         }
 
-        mensajeDireccionFormulario.textContent =
-          texto;
+        mensajeDireccionFormulario.replaceChildren(rotuloMassId(texto));
 
         mensajeDireccionFormulario.style.color =
           color;
@@ -17625,10 +16112,9 @@ if (
 
       btnGuardarDireccion.disabled = true;
 
-            btnGuardarDireccion.textContent =
-        esEdicion
+            btnGuardarDireccion.replaceChildren(rotuloMassId(esEdicion
           ? "⏳ Actualizando dirección..."
-          : "⏳ Guardando dirección...";
+          : "⏳ Guardando dirección..."));
 
       btnGuardarDireccion.style.cursor =
         "not-allowed";
@@ -17638,8 +16124,8 @@ if (
 
             mostrarMensajeDireccion(
         esEdicion
-          ? "Actualizando tu dirección privada..."
-          : "Guardando tu dirección privada...",
+          ? textoMassId("Actualizando tu dirección privada...")
+          : textoMassId("Guardando tu dirección privada..."),
         "#fff"
       );
 
@@ -17732,8 +16218,7 @@ if (
         }
 
         if (direccionEstado) {
-          direccionEstado.textContent =
-            "✅ Dirección preparada para servicios MASS";
+          direccionEstado.replaceChildren(rotuloMassId("✅ Dirección preparada para servicios MASS"));
 
           direccionEstado.style.display =
             "block";
@@ -17741,8 +16226,8 @@ if (
 
                 mostrarMensajeDireccion(
           esEdicion
-            ? "✅ Dirección actualizada correctamente."
-            : "✅ Dirección guardada correctamente.",
+            ? textoMassId("✅ Dirección actualizada correctamente.")
+            : textoMassId("✅ Dirección guardada correctamente."),
           "#39ff14"
         );
 
@@ -17767,8 +16252,7 @@ if (
             true;
         }
 
-        btnAgregarDireccion.textContent =
-          "📍 Agregar otra dirección";
+        btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar otra dirección"));
 
         direccionFormulario.style.display =
           "none";
@@ -17795,10 +16279,9 @@ if (
       } finally {
         btnGuardarDireccion.disabled = false;
 
-                btnGuardarDireccion.textContent =
-          direccionEditandoId
+                btnGuardarDireccion.replaceChildren(rotuloMassId(direccionEditandoId
             ? "💾 Actualizar dirección"
-            : "💾 Guardar dirección";
+            : "💾 Guardar dirección"));
 
         btnGuardarDireccion.style.cursor =
           "pointer";
@@ -17867,10 +16350,9 @@ if (
     user.email_confirmed_at
   );
 
-  seguridadCorreoEstado.textContent =
-    correoConfirmado
+  seguridadCorreoEstado.replaceChildren(rotuloMassId(correoConfirmado
       ? "Correo verificado ✅"
-      : "Correo pendiente de verificar";
+      : "Correo pendiente de verificar"));
 
   seguridadCorreoEstado.style.color =
     correoConfirmado
@@ -17879,8 +16361,7 @@ if (
 }
 
 if (seguridadMfaEstado) {
-  seguridadMfaEstado.textContent =
-    "Verificando...";
+  seguridadMfaEstado.replaceChildren(rotuloMassId("Verificando..."));
 
   seguridadMfaEstado.style.color =
     "#fff";
@@ -17898,8 +16379,7 @@ if (seguridadMfaEstado) {
       errorMfa
     );
 
-    seguridadMfaEstado.textContent =
-      "No disponible";
+    seguridadMfaEstado.replaceChildren(rotuloMassId("No disponible"));
 
     seguridadMfaEstado.style.color =
       "#ff5b5b";
@@ -17920,10 +16400,9 @@ if (seguridadMfaEstado) {
 if (btnConfigurarMfa) {
   btnConfigurarMfa.disabled = false;
 
-  btnConfigurarMfa.textContent =
-    mfaConfigurada
+  btnConfigurarMfa.replaceChildren(rotuloMassId(mfaConfigurada
       ? "🗑️ Desactivar verificación"
-      : "🔐 Configurar verificación";
+      : "🔐 Configurar verificación"));
 
   btnConfigurarMfa.style.borderColor =
     mfaConfigurada
@@ -17942,12 +16421,11 @@ if (btnConfigurarMfa) {
     "1";
 } 
 
-    seguridadMfaEstado.textContent =
-      nivelActual === "aal2"
+    seguridadMfaEstado.replaceChildren(rotuloMassId(nivelActual === "aal2"
         ? "Configurada y activa ✅"
         : mfaConfigurada
           ? "Configurada ✅"
-          : "No configurada";
+          : "No configurada"));
 
     seguridadMfaEstado.style.color =
       mfaConfigurada
@@ -17984,7 +16462,7 @@ if (
    if (mfaConfiguradaActualmente) {
   const confirmarDesactivacion =
     window.confirm(
-      "¿Deseas desactivar la verificación en dos pasos?"
+      textoMassId("¿Deseas desactivar la verificación en dos pasos?")
     );
 
   if (!confirmarDesactivacion) {
@@ -17992,8 +16470,7 @@ if (
   }
 
   btnConfigurarMfa.disabled = true;
-  btnConfigurarMfa.textContent =
-    "⏳ Desactivando...";
+  btnConfigurarMfa.replaceChildren(rotuloMassId("⏳ Desactivando..."));
 
   try {
     const {
@@ -18039,8 +16516,8 @@ if (
     if (factoresTotpVerificados.length !== 1) {
       throw new Error(
         factoresTotpVerificados.length === 0
-          ? "No se encontró un factor verificado."
-          : "Existe más de un factor verificado."
+          ? textoMassId("No se encontró un factor verificado.")
+          : textoMassId("Existe más de un factor verificado.")
       );
     }
 
@@ -18065,7 +16542,7 @@ if (errorNivelSesion) {
 if (nivelSesion?.currentLevel !== "aal2") {
   const codigoDesactivacion =
     window.prompt(
-      "Escribe el código actual de seis dígitos de tu aplicación de autenticación."
+      textoMassId("Escribe el código actual de seis dígitos de tu aplicación de autenticación.")
     );
 
   if (codigoDesactivacion === null) {
@@ -18079,7 +16556,7 @@ if (nivelSesion?.currentLevel !== "aal2") {
 
   if (!/^\d{6}$/.test(codigoLimpio)) {
     throw new Error(
-      "Debes escribir exactamente seis dígitos."
+      textoMassId("Debes escribir exactamente seis dígitos.")
     );
   }
 
@@ -18094,7 +16571,7 @@ if (nivelSesion?.currentLevel !== "aal2") {
 
   if (errorConfirmarIdentidad) {
     throw new Error(
-      "El código de autenticación es incorrecto o venció."
+      textoMassId("El código de autenticación es incorrecto o venció.")
     );
   }
 }
@@ -18132,15 +16609,13 @@ if (errorRegistrarActividadMfaDesactivado) {
     mfaConfiguradaActualmente = false;
 
     if (seguridadMfaEstado) {
-      seguridadMfaEstado.textContent =
-        "No configurada";
+      seguridadMfaEstado.replaceChildren(rotuloMassId("No configurada"));
 
       seguridadMfaEstado.style.color =
         "#ffbf47";
     }
 
-    btnConfigurarMfa.textContent =
-      "🔐 Configurar verificación";
+    btnConfigurarMfa.replaceChildren(rotuloMassId("🔐 Configurar verificación"));
 
     btnConfigurarMfa.style.borderColor =
       "#39ff14";
@@ -18149,7 +16624,7 @@ if (errorRegistrarActividadMfaDesactivado) {
       "#fff";
 
     alert(
-      "✅ La verificación en dos pasos fue desactivada."
+      textoMassId("✅ La verificación en dos pasos fue desactivada.")
     );
   } catch (error) {
     console.error(
@@ -18158,17 +16633,16 @@ if (errorRegistrarActividadMfaDesactivado) {
     );
 
     alert(
-      `❌ No fue posible desactivar la verificación: ${
-        error.message || "Error desconocido"
+      `${textoMassId("❌ No fue posible desactivar la verificación:")} ${
+        error.message || textoMassId("Error desconocido")
       }`
     );
   } finally {
   btnConfigurarMfa.disabled = false;
 
-  btnConfigurarMfa.textContent =
-    mfaConfiguradaActualmente
+  btnConfigurarMfa.replaceChildren(rotuloMassId(mfaConfiguradaActualmente
       ? "🗑️ Desactivar verificación"
-      : "🔐 Configurar verificación";
+      : "🔐 Configurar verificación"));
 
   btnConfigurarMfa.style.borderColor =
     mfaConfiguradaActualmente
@@ -18219,8 +16693,7 @@ if (errorRegistrarActividadMfaDesactivado) {
     }
 
     btnConfigurarMfa.disabled = true;
-    btnConfigurarMfa.textContent =
-      "⏳ Generando código...";
+    btnConfigurarMfa.replaceChildren(rotuloMassId("⏳ Generando código..."));
 
     try {
       if (qrMfaImagen) {
@@ -18229,16 +16702,14 @@ if (errorRegistrarActividadMfaDesactivado) {
       }
 
       if (qrMfaPendiente) {
-        qrMfaPendiente.textContent =
-          "Generando QR...";
+        qrMfaPendiente.replaceChildren(rotuloMassId("Generando QR..."));
 
         qrMfaPendiente.style.display =
           "inline";
       }
 
       if (claveMfaManual) {
-        claveMfaManual.textContent =
-          "Generando clave...";
+        claveMfaManual.replaceChildren(rotuloMassId("Generando clave..."));
       }
 
      factorMfaId = null;
@@ -18272,7 +16743,7 @@ await eliminarFactoresMfaPendientes();
         !claveSecreta
       ) {
         throw new Error(
-          "Supabase no devolvió los datos completos de configuración."
+          textoMassId("Supabase no devolvió los datos completos de configuración.")
         );
       }
 
@@ -18293,8 +16764,7 @@ await eliminarFactoresMfaPendientes();
       }
 
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Escanea el QR y escribe el código generado por tu aplicación.";
+        mensajeMfa.replaceChildren(rotuloMassId("Escanea el QR y escribe el código generado por tu aplicación."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#39ff14";
@@ -18313,22 +16783,20 @@ await eliminarFactoresMfaPendientes();
       }
 
       if (qrMfaPendiente) {
-        qrMfaPendiente.textContent =
-          "QR no disponible";
+        qrMfaPendiente.replaceChildren(rotuloMassId("QR no disponible"));
 
         qrMfaPendiente.style.display =
           "inline";
       }
 
       if (claveMfaManual) {
-        claveMfaManual.textContent =
-          "Clave no disponible";
+        claveMfaManual.replaceChildren(rotuloMassId("Clave no disponible"));
       }
 
       if (mensajeMfa) {
         mensajeMfa.textContent =
-          `No fue posible generar la configuración: ${
-            error.message || "Error desconocido"
+          `${textoMassId("No fue posible generar la configuración:")} ${
+            error.message || textoMassId("Error desconocido")
           }`;
 
         mensajeMfa.style.display = "block";
@@ -18336,8 +16804,7 @@ await eliminarFactoresMfaPendientes();
       }
     } finally {
       btnConfigurarMfa.disabled = false;
-      btnConfigurarMfa.textContent =
-        "🔐 Configurar verificación";
+      btnConfigurarMfa.replaceChildren(rotuloMassId("🔐 Configurar verificación"));
     }
   };
 }
@@ -18358,8 +16825,7 @@ if (
 
     if (!factorMfaId) {
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Primero genera y escanea un código QR.";
+        mensajeMfa.replaceChildren(rotuloMassId("Primero genera y escanea un código QR."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ffbf47";
@@ -18370,8 +16836,7 @@ if (
 
     if (!/^\d{6}$/.test(codigoMfa)) {
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Escribe exactamente los seis dígitos de tu aplicación.";
+        mensajeMfa.replaceChildren(rotuloMassId("Escribe exactamente los seis dígitos de tu aplicación."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ffbf47";
@@ -18382,14 +16847,12 @@ if (
     }
 
     btnConfirmarMfa.disabled = true;
-    btnConfirmarMfa.textContent =
-      "⏳ Verificando código...";
+    btnConfirmarMfa.replaceChildren(rotuloMassId("⏳ Verificando código..."));
 
     inputCodigoMfa.disabled = true;
 
     if (mensajeMfa) {
-      mensajeMfa.textContent =
-        "Verificando el código de seguridad...";
+      mensajeMfa.replaceChildren(rotuloMassId("Verificando el código de seguridad..."));
 
       mensajeMfa.style.display = "block";
       mensajeMfa.style.color = "#fff";
@@ -18434,8 +16897,7 @@ if (errorRegistrarActividadMfa) {
       factorMfaId = null;
 
       if (seguridadMfaEstado) {
-        seguridadMfaEstado.textContent =
-          "Configurada y activa ✅";
+        seguridadMfaEstado.replaceChildren(rotuloMassId("Configurada y activa ✅"));
 
         seguridadMfaEstado.style.color =
           "#39ff14";
@@ -18444,8 +16906,7 @@ if (errorRegistrarActividadMfa) {
       if (btnConfigurarMfa) {
         btnConfigurarMfa.disabled = true;
 
-        btnConfigurarMfa.textContent =
-          "✅ Verificación configurada";
+        btnConfigurarMfa.replaceChildren(rotuloMassId("✅ Verificación configurada"));
 
         btnConfigurarMfa.style.cursor =
           "not-allowed";
@@ -18464,7 +16925,7 @@ if (errorRegistrarActividadMfa) {
       }
 
       alert(
-        "✅ La verificación en dos pasos fue activada correctamente."
+        textoMassId("✅ La verificación en dos pasos fue activada correctamente.")
       );
     } catch (error) {
       console.error(
@@ -18473,8 +16934,7 @@ if (errorRegistrarActividadMfa) {
       );
 
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "El código es incorrecto o venció. Genera uno nuevo en tu aplicación e inténtalo otra vez.";
+        mensajeMfa.replaceChildren(rotuloMassId("El código es incorrecto o venció. Genera uno nuevo en tu aplicación e inténtalo otra vez."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ff5b5b";
@@ -18485,8 +16945,7 @@ if (errorRegistrarActividadMfa) {
     } finally {
       btnConfirmarMfa.disabled = false;
 
-      btnConfirmarMfa.textContent =
-        "✅ Confirmar y activar";
+      btnConfirmarMfa.replaceChildren(rotuloMassId("✅ Confirmar y activar"));
 
       inputCodigoMfa.disabled = false;
     }
@@ -18569,7 +17028,7 @@ actualizarBotonGuardarFoto(false);
     ];
 
     if (!formatosPermitidos.includes(archivo.type)) {
-      alert("❌ Selecciona una imagen JPG, PNG o WEBP.");
+      alert(textoMassId("❌ Selecciona una imagen JPG, PNG o WEBP."));
       fotoInput.value = "";
       return;
     }
@@ -18577,7 +17036,7 @@ actualizarBotonGuardarFoto(false);
     const limiteBytes = 5 * 1024 * 1024;
 
     if (archivo.size > limiteBytes) {
-      alert("❌ La imagen no puede superar los 5 MB.");
+      alert(textoMassId("❌ La imagen no puede superar los 5 MB."));
       fotoInput.value = "";
       return;
     }
@@ -18594,7 +17053,7 @@ actualizarBotonGuardarFoto(false);
 };
 
     lector.onerror = function () {
-      alert("❌ No fue posible leer la imagen seleccionada.");
+      alert(textoMassId("❌ No fue posible leer la imagen seleccionada."));
       fotoInput.value = "";
     
  archivoFotoSeleccionado = null;
@@ -18614,7 +17073,7 @@ if (
 ) {
   btnGuardarFoto.onclick = async function () {
     if (!archivoFotoSeleccionado) {
-      alert("❌ Primero selecciona una fotografía.");
+      alert(textoMassId("❌ Primero selecciona una fotografía."));
       return;
     }
 
@@ -18638,7 +17097,7 @@ if (
 
       if (!extension) {
         throw new Error(
-          "El formato de la fotografía no es válido."
+          textoMassId("El formato de la fotografía no es válido.")
         );
       }
 
@@ -18676,7 +17135,7 @@ if (
 
       if (!fotoPublicaUrl) {
         throw new Error(
-          "No se pudo obtener la URL pública."
+          textoMassId("No se pudo obtener la URL pública.")
         );
       }
 
@@ -18777,7 +17236,7 @@ if (errorRegistrarActividadFoto) {
       );
 
       alert(
-        "✅ Tu foto de perfil fue guardada correctamente."
+        textoMassId("✅ Tu foto de perfil fue guardada correctamente.")
       );
     } catch (error) {
       console.error(
@@ -18786,8 +17245,8 @@ if (errorRegistrarActividadFoto) {
       );
 
       alert(
-        `❌ No fue posible guardar la foto: ${
-          error.message || "Error desconocido"
+        `${textoMassId("❌ No fue posible guardar la foto:")} ${
+          error.message || textoMassId("Error desconocido")
         }`
       );
 
@@ -18851,7 +17310,7 @@ async function registrarPasskeyMassId() {
 
   if (!window.PublicKeyCredential) {
     alert(
-      "❌ Este dispositivo o navegador no admite Face ID o Passkeys."
+      textoMassId("❌ Este dispositivo o navegador no admite Face ID o Passkeys.")
     );
     return;
   }
@@ -18859,7 +17318,7 @@ async function registrarPasskeyMassId() {
   try {
     if (botonPasskey) {
       botonPasskey.disabled = true;
-      botonPasskey.textContent = "Registrando dispositivo...";
+      botonPasskey.replaceChildren(rotuloMassId("Registrando dispositivo..."));
       botonPasskey.style.opacity = "0.6";
       botonPasskey.style.cursor = "not-allowed";
     }
@@ -18879,7 +17338,7 @@ async function registrarPasskeyMassId() {
       !sessionData?.session?.user
     ) {
       throw new Error(
-        "Debes iniciar sesión antes de registrar Face ID o una Passkey."
+        textoMassId("Debes iniciar sesión antes de registrar Face ID o una Passkey.")
       );
     }
 
@@ -18898,16 +17357,15 @@ async function registrarPasskeyMassId() {
     );
 
     if (mensajePasskey) {
-      mensajePasskey.textContent =
-        "✅ Face ID o Passkey fue registrado correctamente.";
+      mensajePasskey.replaceChildren(rotuloMassId("✅ Face ID o Passkey fue registrado correctamente."));
 
       mensajePasskey.style.color = "#39ff14";
       mensajePasskey.style.display = "block";
     }
 
     alert(
-      "✅ Face ID o Passkey fue registrado correctamente.\n\n" +
-      "Ya puedes utilizarlo para iniciar sesión en MASS ID."
+      (textoMassId("✅ Face ID o Passkey fue registrado correctamente.") + "\n\n") +
+      textoMassId("Ya puedes utilizarlo para iniciar sesión en MASS ID.")
     );
   } catch (errorPasskey) {
     console.error(
@@ -18917,13 +17375,13 @@ async function registrarPasskeyMassId() {
 
     let mensajeError =
       errorPasskey?.message ||
-      "No fue posible registrar Face ID o Passkey.";
+      textoMassId("No fue posible registrar Face ID o Passkey.");
 
     if (
       errorPasskey?.name === "NotAllowedError"
     ) {
       mensajeError =
-        "El registro fue cancelado o el dispositivo no permitió crear la Passkey.";
+        textoMassId("El registro fue cancelado o el dispositivo no permitió crear la Passkey.");
     }
 
     if (
@@ -18932,7 +17390,7 @@ async function registrarPasskeyMassId() {
       )
     ) {
       mensajeError =
-        "Este dispositivo ya tiene una Passkey registrada para tu cuenta MASS ID.";
+        textoMassId("Este dispositivo ya tiene una Passkey registrada para tu cuenta MASS ID.");
     }
 
     if (
@@ -18941,7 +17399,7 @@ async function registrarPasskeyMassId() {
       )
     ) {
       mensajeError =
-        "Tu cuenta alcanzó el número máximo de Passkeys permitidas.";
+        textoMassId("Tu cuenta alcanzó el número máximo de Passkeys permitidas.");
     }
 
     if (mensajePasskey) {
@@ -18956,8 +17414,7 @@ async function registrarPasskeyMassId() {
   } finally {
     if (botonPasskey) {
       botonPasskey.disabled = false;
-      botonPasskey.textContent =
-        "🔐 Registrar Face ID o Passkey";
+      botonPasskey.replaceChildren(rotuloMassId("🔐 Registrar Face ID o Passkey"));
       botonPasskey.style.opacity = "1";
       botonPasskey.style.cursor = "pointer";
     }
