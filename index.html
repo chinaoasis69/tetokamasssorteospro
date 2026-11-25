@@ -35441,37 +35441,20 @@ function resolverOrganizadorModeracionComentariosPerfil() {
 }
 
 
-function formatearFechaModeracionComentariosPerfil(
-    valor
-) {
+function fechaModeracionHtml(valor) {
+    const fecha = valor ? new Date(valor) : null;
+    if (!fecha || !Number.isFinite(fecha.getTime())) return "—";
 
-    if (!valor) {
-        return "—";
-    }
-
-
-    const fecha =
-        new Date(valor);
-
-
-    if (
-        Number.isNaN(
-            fecha.getTime()
-        )
-    ) {
-        return "—";
-    }
-
-
-    return new Intl.DateTimeFormat(
-        "es-MX",
-        {
-            dateStyle: "medium",
-            timeStyle: "short"
-        }
-    ).format(fecha);
+    const texto = fecha.toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" });
+    return `<time data-mass-fecha-publica="breve" datetime="${fecha.toISOString()}">${texto}</time>`;
 }
 
+function contadorReportesHtml(valor) {
+    const numero = Number(valor);
+    const total = Number.isSafeInteger(numero) && numero >= 0 ? numero : 0;
+    const plantilla = total === 1 ? "{0} reporte" : "{0} reportes";
+    return `🚩 <span data-mass-formato="${plantilla}" data-mass-valores="[${total}]">${plantilla.replace("{0}", total)}</span>`;
+}
 
 function etiquetaMotivoReporteComentarioPerfil(
     motivo
@@ -35527,7 +35510,7 @@ async function mostrarModeracionComentariosOrganizador() {
     if (!organizadorId) {
 
         alert(
-            "❌ No fue posible identificar el Organizador."
+            massTexto("❌ No fue posible identificar el Organizador.")
         );
 
         return;
@@ -35557,7 +35540,7 @@ async function mostrarModeracionComentariosOrganizador() {
             </h2>
 
 
-            <p
+            <p data-mass-ui
                 style="
                     color:#aaa;
                     text-align:center;
@@ -35631,7 +35614,7 @@ async function mostrarModeracionComentariosOrganizador() {
                 id="seccionModeracionComentariosPerfil"
             >
 
-                <div
+                <div data-mass-ui
                     id="contenidoModeracionComentariosOrganizadorPerfil"
                     style="
                         color:#bbb;
@@ -35652,7 +35635,7 @@ async function mostrarModeracionComentariosOrganizador() {
                 "
             >
 
-                <div
+                <div data-mass-ui
                     id="contenidoModeracionComentariosDinamicasOrganizadorPerfil"
                     style="
                         color:#bbb;
@@ -35715,7 +35698,7 @@ async function mostrarModeracionComentariosOrganizador() {
 
 
         contenido.innerHTML = `
-            <div
+            <div data-mass-ui
                 style="
                     padding:18px;
                     border:1px solid #ff5252;
@@ -35810,13 +35793,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                                 font-weight:bold;
                                             "
                                         >
-                                            🚩 ${
-                                                massEscaparHTML(
-                                                    etiquetaMotivoReporteComentarioPerfil(
-                                                        reporte.motivo
-                                                    )
-                                                )
-                                            }
+                                            🚩 <span data-mass-ui>${massEscaparHTML(etiquetaMotivoReporteComentarioPerfil(reporte.motivo))}</span>
                                         </div>
 
                                         ${
@@ -35848,13 +35825,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                                 font-size:11px;
                                             "
                                         >
-                                            ${
-                                                massEscaparHTML(
-                                                    formatearFechaModeracionComentariosPerfil(
-                                                        reporte.creado_at
-                                                    )
-                                                )
-                                            }
+                                            ${fechaModeracionHtml(reporte.creado_at)}
                                         </div>
                                     </div>
                                 `;
@@ -35891,12 +35862,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                             font-weight:bold;
                                         "
                                     >
-                                        ${
-                                            massEscaparHTML(
-                                                comentario.autor_mass_id ||
-                                                "Usuario MASS"
-                                            )
-                                        }
+                                        ${comentario.autor_mass_id ? massEscaparHTML(comentario.autor_mass_id) : '<span data-mass-ui>Usuario MASS</span>'}
                                     </div>
 
 
@@ -35907,13 +35873,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                             font-size:12px;
                                         "
                                     >
-                                        ${
-                                            massEscaparHTML(
-                                                formatearFechaModeracionComentariosPerfil(
-                                                    comentario.comentario_creado_at
-                                                )
-                                            )
-                                        }
+                                        ${fechaModeracionHtml(comentario.comentario_creado_at)}
                                     </div>
 
                                 </div>
@@ -35929,12 +35889,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                         font-weight:bold;
                                     "
                                 >
-                                    🚩 ${
-                                        Number(
-                                            comentario.total_reportes ||
-                                            0
-                                        )
-                                    } reporte(s)
+                                    ${contadorReportesHtml(comentario.total_reportes)}
                                 </div>
 
                             </div>
@@ -36039,7 +35994,7 @@ async function mostrarModeracionComentariosOrganizador() {
             ).join("")
 
             : `
-                <div
+                <div data-mass-ui
                     style="
                         padding:18px;
                         border:1px solid #333;
@@ -36077,12 +36032,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                     font-weight:bold;
                                 "
                             >
-                                ${
-                                    massEscaparHTML(
-                                        comentario.autor_mass_id ||
-                                        "Usuario MASS"
-                                    )
-                                }
+                                ${comentario.autor_mass_id ? massEscaparHTML(comentario.autor_mass_id) : '<span data-mass-ui>Usuario MASS</span>'}
                             </div>
 
 
@@ -36109,14 +36059,8 @@ async function mostrarModeracionComentariosOrganizador() {
                                     font-size:12px;
                                 "
                             >
-                                Ocultado:
-                                ${
-                                    massEscaparHTML(
-                                        formatearFechaModeracionComentariosPerfil(
-                                            comentario.ocultado_at
-                                        )
-                                    )
-                                }
+                                <span data-mass-ui>Ocultado:</span>
+                                ${fechaModeracionHtml(comentario.ocultado_at)}
                             </div>
 
 
@@ -36130,7 +36074,7 @@ async function mostrarModeracionComentariosOrganizador() {
                                                 font-size:12px;
                                             "
                                         >
-                                            Motivo:
+                                            <span data-mass-ui>Motivo:</span>
                                             ${
                                                 massEscaparHTML(
                                                     comentario.motivo_ocultamiento
@@ -36183,7 +36127,7 @@ async function mostrarModeracionComentariosOrganizador() {
             ).join("")
 
             : `
-                <div
+                <div data-mass-ui
                     style="
                         padding:18px;
                         border:1px solid #333;
@@ -36363,9 +36307,7 @@ async function (
 
     const motivo =
         prompt(
-            mensajes[
-                accionLimpia
-            ],
+            massTexto(mensajes[accionLimpia]),
             ""
         );
 
@@ -36387,7 +36329,7 @@ async function (
     ) {
 
         alert(
-            "🛡️ El motivo debe tener entre 1 y 500 caracteres."
+            massTexto("🛡️ El motivo debe tener entre 1 y 500 caracteres.")
         );
 
         return;
@@ -36409,9 +36351,7 @@ async function (
 
     if (
         !confirm(
-            confirmaciones[
-                accionLimpia
-            ]
+            massTexto(confirmaciones[accionLimpia])
         )
     ) {
         return;
@@ -36455,7 +36395,7 @@ async function (
 
 
             alert(
-                "❌ No fue posible completar la moderación."
+                massTexto("❌ No fue posible completar la moderación.")
             );
 
 
@@ -36477,9 +36417,7 @@ async function (
 
 
         alert(
-            mensajesExito[
-                accionLimpia
-            ]
+            massTexto(mensajesExito[accionLimpia])
         );
 
 
@@ -36497,7 +36435,7 @@ async function (
 
 
         alert(
-            "❌ Ocurrió un error inesperado."
+            massTexto("❌ Ocurrió un error inesperado.")
         );
 
 
@@ -36625,7 +36563,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
     if (!organizadorIdLimpio) {
 
         contenido.innerHTML = `
-            <div
+            <div data-mass-ui
                 style="
                     padding:18px;
                     border:1px solid #ff5252;
@@ -36642,7 +36580,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
 
 
     contenido.innerHTML = `
-        <div
+        <div data-mass-ui
             style="
                 padding:20px;
                 color:#aaa;
@@ -36687,7 +36625,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
 
 
             contenido.innerHTML = `
-                <div
+                <div data-mass-ui
                     style="
                         padding:18px;
                         border:1px solid #ff5252;
@@ -36773,7 +36711,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                     foto
                                                 )
                                             }"
-                                            alt="Foto de perfil"
+                                            data-mass-alt alt="Foto de perfil"
                                             style="
                                                 width:100%;
                                                 height:100%;
@@ -36827,12 +36765,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                         overflow-wrap:anywhere;
                                     "
                                 >
-                                    🎟️ ${
-                                        massEscaparHTML(
-                                            comentario.rifa_titulo ||
-                                            "Dinámica"
-                                        )
-                                    }
+                                    🎟️ ${comentario.rifa_titulo ? massEscaparHTML(comentario.rifa_titulo) : '<span data-mass-ui>Dinámica</span>'}
                                 </div>
 
 
@@ -36859,12 +36792,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                 font-weight:bold;
                                             "
                                         >
-                                            ${
-                                                massEscaparHTML(
-                                                    comentario.autor_mass_id ||
-                                                    "Usuario MASS"
-                                                )
-                                            }
+                                            ${comentario.autor_mass_id ? massEscaparHTML(comentario.autor_mass_id) : '<span data-mass-ui>Usuario MASS</span>'}
                                         </div>
 
                                         <div
@@ -36874,13 +36802,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                 font-size:12px;
                                             "
                                         >
-                                            ${
-                                                massEscaparHTML(
-                                                    formatearFechaModeracionComentariosPerfil(
-                                                        comentario.comentario_creado_at
-                                                    )
-                                                )
-                                            }
+                                            ${fechaModeracionHtml(comentario.comentario_creado_at)}
                                         </div>
 
                                     </div>
@@ -36896,12 +36818,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                             font-weight:bold;
                                         "
                                     >
-                                        🚩 ${
-                                            Number(
-                                                comentario.total_reportes ||
-                                                0
-                                            )
-                                        } reporte(s)
+                                        ${contadorReportesHtml(comentario.total_reportes)}
                                     </div>
 
                                 </div>
@@ -36942,13 +36859,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                             font-weight:bold;
                                         "
                                     >
-                                        🚩 ${
-                                            massEscaparHTML(
-                                                etiquetaMotivoReporteComentarioPerfil(
-                                                    comentario.motivo
-                                                )
-                                            )
-                                        }
+                                        🚩 <span data-mass-ui>${massEscaparHTML(etiquetaMotivoReporteComentarioPerfil(comentario.motivo))}</span>
                                     </div>
 
 
@@ -36980,13 +36891,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                             font-size:11px;
                                         "
                                     >
-                                        ${
-                                            massEscaparHTML(
-                                                formatearFechaModeracionComentariosPerfil(
-                                                    comentario.reporte_creado_at
-                                                )
-                                            )
-                                        }
+                                        ${fechaModeracionHtml(comentario.reporte_creado_at)}
                                     </div>
 
                                 </div>
@@ -37063,7 +36968,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                 ).join("")
 
                 : `
-                    <div
+                    <div data-mass-ui
                         style="
                             padding:18px;
                             border:1px solid #333;
@@ -37111,7 +37016,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                     foto
                                                 )
                                             }"
-                                            alt="Foto de perfil"
+                                            data-mass-alt alt="Foto de perfil"
                                             style="
                                                 width:100%;
                                                 height:100%;
@@ -37158,12 +37063,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                         overflow-wrap:anywhere;
                                     "
                                 >
-                                    🎟️ ${
-                                        massEscaparHTML(
-                                            comentario.rifa_titulo ||
-                                            "Dinámica"
-                                        )
-                                    }
+                                    🎟️ ${comentario.rifa_titulo ? massEscaparHTML(comentario.rifa_titulo) : '<span data-mass-ui>Dinámica</span>'}
                                 </div>
 
 
@@ -37190,12 +37090,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                 font-weight:bold;
                                             "
                                         >
-                                            ${
-                                                massEscaparHTML(
-                                                    comentario.autor_mass_id ||
-                                                    "Usuario MASS"
-                                                )
-                                            }
+                                            ${comentario.autor_mass_id ? massEscaparHTML(comentario.autor_mass_id) : '<span data-mass-ui>Usuario MASS</span>'}
                                         </div>
 
 
@@ -37206,13 +37101,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                 font-size:12px;
                                             "
                                         >
-                                            ${
-                                                massEscaparHTML(
-                                                    formatearFechaModeracionComentariosPerfil(
-                                                        comentario.comentario_creado_at
-                                                    )
-                                                )
-                                            }
+                                            ${fechaModeracionHtml(comentario.comentario_creado_at)}
                                         </div>
 
                                     </div>
@@ -37246,14 +37135,8 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                         font-size:12px;
                                     "
                                 >
-                                    Ocultado:
-                                    ${
-                                        massEscaparHTML(
-                                            formatearFechaModeracionComentariosPerfil(
-                                                comentario.ocultado_at
-                                            )
-                                        )
-                                    }
+                                    <span data-mass-ui>Ocultado:</span>
+                                    ${fechaModeracionHtml(comentario.ocultado_at)}
                                 </div>
 
 
@@ -37268,7 +37151,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                                                     overflow-wrap:anywhere;
                                                 "
                                             >
-                                                Motivo:
+                                                <span data-mass-ui>Motivo:</span>
                                                 ${
                                                     massEscaparHTML(
                                                         comentario.motivo_moderacion
@@ -37321,7 +37204,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
                 ).join("")
 
                 : `
-                    <div
+                    <div data-mass-ui
                         style="
                             padding:18px;
                             border:1px solid #333;
@@ -37450,7 +37333,7 @@ async function cargarModeracionComentariosDinamicasOrganizador(
 
 
         contenido.innerHTML = `
-            <div
+            <div data-mass-ui
                 style="
                     padding:18px;
                     border:1px solid #ff5252;
@@ -37529,9 +37412,7 @@ async function (
 
     const motivo =
         prompt(
-            mensajes[
-                accionLimpia
-            ],
+            massTexto(mensajes[accionLimpia]),
             ""
         );
 
@@ -37553,7 +37434,7 @@ async function (
     ) {
 
         alert(
-            "🛡️ El motivo debe tener entre 1 y 500 caracteres."
+            massTexto("🛡️ El motivo debe tener entre 1 y 500 caracteres.")
         );
 
         return;
@@ -37575,9 +37456,7 @@ async function (
 
     if (
         !confirm(
-            confirmaciones[
-                accionLimpia
-            ]
+            massTexto(confirmaciones[accionLimpia])
         )
     ) {
         return;
@@ -37621,7 +37500,7 @@ async function (
 
 
             alert(
-                "❌ No fue posible completar la moderación."
+                massTexto("❌ No fue posible completar la moderación.")
             );
 
             return;
@@ -37642,9 +37521,7 @@ async function (
 
 
         alert(
-            mensajesExito[
-                accionLimpia
-            ]
+            massTexto(mensajesExito[accionLimpia])
         );
 
 
@@ -37684,7 +37561,7 @@ async function (
 
 
         alert(
-            "❌ Ocurrió un error inesperado."
+            massTexto("❌ Ocurrió un error inesperado.")
         );
 
 
@@ -108372,7 +108249,7 @@ if(idsRifas.length > 0){
 
         <div class="card">
             <h3 data-mass-ui=👋&#32;Bienvenido>👋 Bienvenido</h3>
-            <p>Resumen rápido de tu organización</p>
+            <p data-mass-ui>Resumen rápido de tu organización</p>
         </div>
 
         <div class="card">
@@ -108390,8 +108267,9 @@ if(idsRifas.length > 0){
     <div style="font-size:32px;font-weight:bold;color:#39ff14;">
         ${porcentajeVendidoDash}%
     </div>
-    <p style="color:#ddd;">
-        ${boletosVendidosDash} de ${totalBoletosDash} boletos vendidos
+    <p style="color:#ddd;" data-mass-formato="${totalBoletosDash === 1 ? "{0} de {1} boleto vendido" : "{0} de {1} boletos vendidos"}"
+       data-mass-numeros data-mass-valores="[${boletosVendidosDash},${totalBoletosDash}]">
+        ${boletosVendidosDash} de ${totalBoletosDash} ${totalBoletosDash === 1 ? "boleto vendido" : "boletos vendidos"}
     </p>
 </div>
 
@@ -108400,8 +108278,8 @@ if(idsRifas.length > 0){
     <div style="font-size:32px;font-weight:bold;color:#39ff14;">
         $${ventasGeneradasDash.toLocaleString()}
     </div>
-    <p style="color:#ddd;">
-        Total vendido por tus rifas activas
+    <p data-mass-ui style="color:#ddd;">
+        Ventas estimadas a partir de los boletos vendidos
     </p>
 </div>
 

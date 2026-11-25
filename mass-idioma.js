@@ -1867,7 +1867,47 @@
   "Iniciando cierre...": "Starting account closure…",
   "⚠️ INICIAR CIERRE DE CUENTA DE ORGANIZADOR Esta acción NO elimina inmediatamente tu cuenta. Se iniciará la etapa de SANEAMIENTO. Durante este proceso: • se protegerán las obligaciones existentes; • no podrán generarse nuevas obligaciones incompatibles con el cierre; • compras, premios y Wallet MASS pendientes deberán resolverse; • las dinámicas comprometidas deberán respetarse; • los usuarios relacionados recibirán un aviso del inicio del proceso. Mientras el expediente permanezca en SANEAMIENTO podrás cancelar el proceso conforme a las reglas del sistema. ¿Deseas continuar?": "⚠️ START ORGANIZER ACCOUNT CLOSURE\n\nStarting this process does not immediately delete your account. It begins a period for settling outstanding obligations.\n\nDuring this period:\n\n• Existing obligations are protected.\n• You cannot take on new obligations that conflict with closure.\n• Pending purchases, prizes, and MASS Wallet obligations must be settled.\n• You must honor commitments for existing raffles.\n• Affected users will be notified that closure has started.\n\nWhile the case is in this stage, you can cancel the process under the system rules.\n\nDo you want to continue?",
   "Motivo del cierre (opcional) Puedes dejar este campo vacío. Máximo: 1000 caracteres.": "Reason for closure (optional)\n\nYou can leave this blank.\n\nMaximum: 1,000 characters.",
-  "⚠️ CONFIRMACIÓN FINAL Para iniciar el proceso de cierre escribe exactamente: INICIAR CIERRE": "⚠️ FINAL CONFIRMATION\n\nTo start account closure, enter this exact phrase:\n\nINICIAR CIERRE"
+  "⚠️ CONFIRMACIÓN FINAL Para iniciar el proceso de cierre escribe exactamente: INICIAR CIERRE": "⚠️ FINAL CONFIRMATION\n\nTo start account closure, enter this exact phrase:\n\nINICIAR CIERRE",
+  "Revisa reportes de usuarios, decide si un comentario permanece público y restaura comentarios ocultos cuando corresponda.": "Review user reports, decide which comments should stay public, and restore hidden comments when appropriate.",
+  "Cargando moderación...": "Loading comment moderation…",
+  "Cargando moderación de dinámicas...": "Loading draw comment moderation…",
+  "No fue posible identificar el Organizador.": "Couldn’t identify the organizer.",
+  "No fue posible cargar la bandeja de moderación.": "Couldn’t load the moderation queue.",
+  "No fue posible cargar la moderación de comentarios de las dinámicas.": "Couldn’t load comment moderation for draws.",
+  "Ocurrió un error inesperado al cargar la moderación de las dinámicas.": "An unexpected error occurred while loading comment moderation for draws.",
+  "No hay reportes pendientes.": "There are no pending reports.",
+  "No hay comentarios ocultos.": "There are no hidden comments.",
+  "No hay reportes pendientes en las dinámicas.": "There are no pending reports for draws.",
+  "No hay comentarios ocultos en las dinámicas.": "There are no hidden comments on draws.",
+  "Ocultado:": "Hidden on:",
+  "Motivo:": "Reason:",
+  "Reporte": "Report",
+  "{0} reporte": "{0} report",
+  "{0} reportes": "{0} reports",
+  "Foto de perfil": "Profile photo",
+  "Escribe el motivo para ocultar este comentario:": "Enter your reason for hiding this comment:",
+  "Escribe el motivo para mantener público este comentario:": "Enter your reason for keeping this comment public:",
+  "Escribe el motivo para restaurar este comentario:": "Enter your reason for restoring this comment:",
+  "Escribe el motivo para ocultar este comentario de la dinámica:": "Enter your reason for hiding this draw comment:",
+  "Escribe el motivo para mantener público este comentario de la dinámica:": "Enter your reason for keeping this draw comment public:",
+  "Escribe el motivo para restaurar este comentario en la dinámica:": "Enter your reason for restoring this draw comment:",
+  "El motivo debe tener entre 1 y 500 caracteres.": "Enter a reason between 1 and 500 characters long.",
+  "¿Confirmas que quieres ocultar este comentario del Perfil Público?": "Hide this comment from the public profile?",
+  "¿Confirmas que el comentario permanecerá público y los reportes serán descartados?": "Keep this comment public and dismiss its reports?",
+  "¿Confirmas que quieres restaurar este comentario al Perfil Público?": "Restore this comment to the public profile?",
+  "¿Confirmas que quieres ocultar este comentario de la dinámica?": "Hide this comment from the draw?",
+  "¿Confirmas que el comentario permanecerá público y sus reportes serán resueltos?": "Keep this comment public and mark its reports as resolved?",
+  "¿Confirmas que quieres restaurar este comentario en la dinámica?": "Restore this comment to the draw?",
+  "No fue posible completar la moderación.": "Couldn’t complete the moderation action.",
+  "Ocurrió un error inesperado.": "An unexpected error occurred.",
+  "Comentario ocultado.": "Comment hidden.",
+  "Comentario mantenido público.": "Comment kept public.",
+  "Comentario restaurado.": "Comment restored.",
+  "Comentario de la dinámica ocultado.": "Draw comment hidden.",
+  "Resumen rápido de tu organización": "Your organization at a glance",
+  "{0} de {1} boleto vendido": "{0} of {1} ticket sold",
+  "{0} de {1} boletos vendidos": "{0} of {1} tickets sold",
+  "Ventas estimadas a partir de los boletos vendidos": "Estimated sales based on tickets sold"
 });
   const publicCopy = Object.freeze({
   "PRUEBA QA COMPRAS + RESERVAS + LUCKY SPIN P35 — NO COMPRAR": "P35 QA TEST: PURCHASES + RESERVATIONS + LUCKY SPIN — DO NOT BUY",
@@ -2017,7 +2057,10 @@
       const args = JSON.parse(node.dataset.massValores);
       let template = node.dataset.massFormato;
       if (language === "en" && template === "{0} Me gusta" && Number(args[0]) === 1) template += " singular";
-      const next = formato(template, ...args);
+      const values = node.hasAttribute("data-mass-numeros")
+        ? args.map(number => number.toLocaleString(language === "en" ? "en-US" : "es-MX"))
+        : args;
+      const next = formato(template, ...values);
       if (node.textContent !== next) node.textContent = next;
     }
     if (node.hasAttribute("data-mass-fecha-publica")) {
@@ -2026,7 +2069,8 @@
       const date = new Date(soloDia ? value.slice(0, 10) + "T12:00:00Z" : value);
       if (value && !Number.isNaN(date.getTime())) {
         const locale = language === "en" ? "en-US" : "es-MX";
-        const next = soloDia ? date.toLocaleDateString(locale, {timeZone:"UTC", day:"numeric", month:"short", year:"numeric"}) : date.toLocaleString(locale);
+        const options = node.dataset.massFechaPublica === "breve" ? {dateStyle:"medium", timeStyle:"short"} : undefined;
+        const next = soloDia ? date.toLocaleDateString(locale, {timeZone:"UTC", day:"numeric", month:"short", year:"numeric"}) : date.toLocaleString(locale, options);
         if (node.textContent !== next) node.textContent = next;
       }
     }
