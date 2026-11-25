@@ -204,7 +204,7 @@
   "Aleatorio automático": "Automatic random draw",
   "Cantidad de premios automáticos": "Number of automatic prizes",
   "Cantidad de premios": "Number of prizes",
-  "Últimas cifras: 2, 3, 4, 5 o 6": "Ending digits: 2, 3, 4, 5 or 6",
+  "Últimas cifras: 2, 3, 4, 5 o 6": "Last digits: 2, 3, 4, 5 or 6",
   "URL imagen premio": "Prize image URL",
   "Mínimo para sortear %": "Minimum sales for the draw (%)",
   "Crear mensaje masivo": "Compose group message",
@@ -1398,7 +1398,122 @@
   "Mostrando {0}–{1} de {2} organizadores": "Showing {0}–{1} of {2} organizers",
   "Página {0} de {1}": "Page {0} of {1}",
   "📊 Vendidos: {0} | Reservados: {1} | Disponibles: {2} | {3}%": "📊 Sold: {0} | Reserved: {1} | Available: {2} | {3}%",
-  "📊 Vendidos: 0 / 0 · 0%": "📊 Sold: 0 / 0 · 0%"
+  "📊 Vendidos: 0 / 0 · 0%": "📊 Sold: 0 / 0 · 0%",
+  "Ejemplo: Chevy Silverado": "Example: Chevy Silverado",
+  "Premio principal": "Main prize",
+  "Divisas del sorteo": "Draw currencies",
+  "Divisas adicionales opcionales": "Optional additional currencies",
+  "Estas divisas solo muestran otras formas de pago aceptadas.": "These currencies show the other payment options accepted for this draw.",
+  "La divisa principal controla el precio y la Wallet MASS. Las divisas adicionales son únicamente informativas.": "The primary currency determines the ticket price and is used by MASS Wallet. Additional currencies are shown for reference only.",
+  "Este organizador no tiene otras divisas activas disponibles.": "This organizer has no other active currencies available.",
+  "Precio informativo en {0}": "Reference price in {0}",
+  "Debes registrar la misma cantidad de premios antes de activar la dinámica.": "Enter a prize for each place before activating the draw.",
+  "Últimas cifras: 2 o 3": "Last digits: 2 or 3",
+  "Últimas cifras: 2, 3, 4 o 5": "Last digits: 2, 3, 4 or 5",
+  "Escribe el {0}.º premio": "Enter prize {0}",
+  "Editar rifa": "Edit draw",
+  "2 o 3": "2 or 3",
+  "2, 3, 4 o 5": "2, 3, 4 or 5",
+  "2, 3, 4, 5 o 6": "2, 3, 4, 5 or 6",
+  "Para este método selecciona {0} cifras.": "Select {0} digits for this method.",
+  "La cantidad de premios automáticos debe ser un número entero entre 1 y 20.": "Enter a whole number from 1 to 20 for automatic prizes.",
+  "Escribe el {0}.º premio antes de guardar la dinámica.": "Enter prize {0} before saving the draw.",
+  "La modalidad seleccionada no es válida para esa cantidad.": "The selected ticket format is not valid for that number of entries.",
+  "El precio de la divisa principal debe ser mayor que cero.": "The price in the primary currency must be greater than zero.",
+  "Escribe un precio válido para {0}.": "Enter a valid price in {0}.",
+  "Usa una cantidad entre 100 y 1,000,000, en múltiplos de 100. Ejemplos: 500, 1,000, 5,000, 50,000, 100,000 o 1,000,000.": "Enter a multiple of 100 from 100 to 1,000,000. Examples: 500, 1,000, 5,000, 50,000, 100,000 or 1,000,000.",
+  "Dinámicas activas / en curso ({0})": "Active / ongoing draws ({0})",
+  "Dinámicas finalizadas / cerradas ({0})": "Completed / closed draws ({0})",
+  "No hay dinámicas activas o en curso.": "There are no active or ongoing draws.",
+  "No hay dinámicas finalizadas o cerradas.": "There are no completed or closed draws.",
+  "No hay sorteos creados todavía.": "No draws have been created yet.",
+  "Cargando sorteos...": "Loading draws…",
+  "Error cargando sorteos.": "Couldn’t load the draws.",
+  "Últimas {0} cifras": "Last {0} digits",
+  "Últimas cifras:": "Last digits:",
+  "Título:": "Title:",
+  "Fecha:": "Date:",
+  "Método:": "Draw method:",
+  "Aviso:": "Announcement:",
+  "Total números:": "Total numbers:",
+  "Divisa aceptada:": "Accepted currency:",
+  "cerrada — mínimo no alcanzado": "closed — minimum not reached",
+  "Sin fecha": "No date",
+  "Sin hora": "No time",
+  "Sin método": "No method",
+  "Sin zona horaria": "No time zone",
+  "prueba manual": "Manual result",
+  "pick 3 texas": "Pick 3 Texas",
+  "programada": "scheduled",
+  "activa": "active",
+  "finalizada": "completed",
+  "pausada": "paused",
+  "sin estado": "no status",
+  "Registra y publica los ganadores del sorteo": "Record and publish draw winners",
+  "Ejemplo: 0099": "Example: 0099",
+  "Resultado generado por el sistema": "System-generated result",
+  "El estado de entrega es informativo. Solo cambia mediante el flujo seguro de entrega y confirmación del premio.": "Delivery status is read-only. It updates through the secure prize delivery and confirmation process.",
+  "El Organizador reporta la entrega y adjunta evidencia privada. El premio solamente cambia a Entregado cuando el ganador confirma la recepción o cuando existe resolución extraordinaria válida.": "The organizer reports the delivery and attaches private proof. The prize is marked as delivered only when the winner confirms receipt or a valid exceptional ruling is issued.",
+  "Premios encontrados:": "Prizes found:",
+  "Cargando premios y expedientes de entrega...": "Loading prizes and delivery records…",
+  "No fue posible identificar al Organizador.": "Couldn’t identify the organizer.",
+  "No fue posible cargar los premios principales.": "Couldn’t load the main prizes.",
+  "El servidor no devolvió una respuesta válida.": "The server returned an invalid response.",
+  "No hay premios principales de dinámicas finalizadas pendientes de gestión.": "No main prizes from completed draws are awaiting action.",
+  "Pendiente de reportar entrega": "Delivery has not been reported",
+  "Premio entregado y certificado": "Prize delivered and certified",
+  "Entrega disputada por el ganador": "Delivery disputed by the winner",
+  "Entrega reportada — esperando confirmación del ganador": "Delivery reported — awaiting confirmation from the winner",
+  "Comprobante privado registrado": "Private proof of delivery on file",
+  "Motivo de la disputa:": "Reason for the dispute:",
+  "Reportado:": "Reported:",
+  "Selecciona JPG, PNG, WEBP, HEIC, HEIF o PDF. Máximo 10 MB.": "Choose a JPG, PNG, WEBP, HEIC, HEIF or PDF file. Maximum size: 10 MB.",
+  "Este premio todavía no reúne los requisitos server-side para reportar la entrega.": "This prize is not yet eligible for delivery reporting.",
+  "Cerrar tarjeta": "Close card",
+  "ocultar / mostrar": "hide / show",
+  "Módulo administrativo": "Admin module",
+  "ACTIVAS": "ACTIVE",
+  "PRINCIPALES": "PRIMARY",
+  "ACTIVA": "ACTIVE",
+  "INACTIVA": "INACTIVE",
+  "SÍ": "YES",
+  "NO": "NO",
+  "Divisa": "Currency",
+  "Estado": "Status",
+  "Integridad correcta: existe exactamente una divisa principal.": "Currency setup is valid. Exactly one currency is set as primary.",
+  "Se detectaron {0} divisas principales. No realices cambios todavía.": "Primary currencies found: {0}. Wait before making changes.",
+  "Consulta realizada mediante la RPC segura de Supabase. Las operaciones de divisas se realizan mediante RPC seguras de Supabase y quedan registradas en auditoría.": "Currency data is retrieved through a secure Supabase RPC. Currency operations use secure Supabase RPCs and are recorded in the audit log.",
+  "Validando autorización y cargando divisas...": "Checking permissions and loading currencies…",
+  "No existe una sesión administrativa autorizada.": "An authorized admin session is required.",
+  "Primero selecciona el organizador cuyas divisas deseas administrar.": "First select the organizer whose currencies you want to manage.",
+  "No se pudieron cargar las divisas.": "Couldn’t load the currencies.",
+  "Código:": "Code:",
+  "Mensaje:": "Message:",
+  "Este organizador todavía no tiene divisas configuradas.": "This organizer has no currencies set up yet.",
+  "No se pudo abrir el módulo de divisas.": "Couldn’t open currency management.",
+  "Selecciona una divisa disponible para este organizador.": "Select an available currency for this organizer.",
+  "Selecciona una divisa": "Select a currency",
+  "{0}.º Premio": "Prize {0}",
+  "RESULTADO OFICIAL AUTOMÁTICO 🏆 {0} 🎟️ Número ganador: {1} 🪪 MASS ID ganador: {2} 🎁 Premio: {3} Este resultado fue generado automáticamente y no puede modificarse.": "OFFICIAL AUTOMATIC RESULT\n\n🏆 {0}\n🎟️ Winning number: {1}\n🪪 Winner’s MASS ID: {2}\n🎁 Prize: {3}\n\nThe system generated this result. It is read-only.",
+  "{0}° Premio - {1}": "Prize {0} - {1}",
+  "Dinámica cerrada No se seleccionó ganador porque no se alcanzó el porcentaje mínimo.": "Draw closed\nNo winner was selected because the minimum sales percentage was not reached.",
+  "Resultado automático pendiente El sistema seleccionará al ganador cuando llegue la fecha y hora oficial.": "Automatic result pending\nThe system will select the winner on the official draw date and time.",
+  "No fue posible cargar el resultado automático.": "Couldn’t load the automatic result.",
+  "La dinámica está finalizada, pero no se encontraron los registros de los ganadores oficiales.": "The draw is complete, but no official winner records were found.",
+  "Escribe el número ganador": "Enter the winning number",
+  "Modificación estructural bloqueada. No puedes cambiar la cantidad de boletos, modalidad, método o premios desde esta edición.": "Structural changes are locked. You cannot change the ticket count, ticket format, method or prizes in this edit.",
+  "No fue posible guardar la dinámica.": "Couldn’t save the draw.",
+  "Operación no autorizada.": "Operation not authorized.",
+  "Sin cambios. La dinámica ya está actualizada.": "No changes to save. The draw is up to date.",
+  "Dinámica actualizada correctamente.": "Draw updated.",
+  "Dinámica creada correctamente.": "Draw created.",
+  "No fue posible consultar el ganador": "Couldn’t look up the winner",
+  "No fue posible identificar al organizador.": "Couldn’t identify the organizer.",
+  "Error al subir imagen": "Image upload failed",
+  "No fue posible obtener la URL de la imagen": "Couldn’t get the image URL",
+  "Error al publicar ganador": "Couldn’t publish the winner",
+  "Ganador publicado correctamente": "Winner published",
+  "Selecciona una opción.": "Select an option."
 });
   const publicCopy = Object.freeze({
   "PRUEBA QA COMPRAS + RESERVAS + LUCKY SPIN P35 — NO COMPRAR": "P35 QA TEST: PURCHASES + RESERVATIONS + LUCKY SPIN — DO NOT BUY",
@@ -1478,6 +1593,10 @@
     return language === "en" ? englishText(source) ?? source : source;
   }
 
+  function formato(plantilla, ...valores) {
+    return text(plantilla).replace(/\{(\d+)\}/g, (_, index) => String(valores[index]));
+  }
+
   function each(root, selector, apply) {
     if (root.matches?.(selector)) apply(root);
     root.querySelectorAll(selector).forEach(apply);
@@ -1513,14 +1632,18 @@
     topic.dataset.massTopic = language;
   }
 
-  const selector = "[data-mass-ui],[data-mass-placeholder],[data-mass-aria],[data-mass-title],[data-mass-topic],[data-mass-language],[data-mass-language-status],[data-mass-alt],[data-mass-result-date],[data-mass-result-number],[data-mass-place],[data-mass-formato],[data-mass-public-copy],[data-mass-fecha-publica]";
+  const selector = "[data-mass-ui],[data-mass-placeholder],[data-mass-aria],[data-mass-title],[data-mass-topic],[data-mass-language],[data-mass-language-status],[data-mass-alt],[data-mass-result-date],[data-mass-result-number],[data-mass-place],[data-mass-formato],[data-mass-public-copy],[data-mass-fecha-publica],[data-mass-placeholder-formato]";
   function paint(node) {
+    if (node.hasAttribute("data-mass-placeholder-formato")) {
+      const placeholder = formato(node.dataset.massPlaceholderFormato, node.dataset.massValor);
+      if (node.getAttribute("placeholder") !== placeholder) node.setAttribute("placeholder", placeholder);
+    }
     if (node.hasAttribute("data-mass-public-copy")) paintPublicCopy(node);
     if (node.hasAttribute("data-mass-formato")) {
       const args = JSON.parse(node.dataset.massValores);
       let template = node.dataset.massFormato;
       if (language === "en" && template === "{0} Me gusta" && Number(args[0]) === 1) template += " singular";
-      const next = text(template).replace(/\{(\d+)\}/g, (_, index) => String(args[index]));
+      const next = formato(template, ...args);
       if (node.textContent !== next) node.textContent = next;
     }
     if (node.hasAttribute("data-mass-fecha-publica")) {
@@ -1639,7 +1762,7 @@
     if (!persisted && !account) message(text("El idioma se aplicó solo a esta pestaña."));
     if (account) schedule(account, value);
   });
-  window.MassIdioma = { get actual() { return language; }, texto: text, rotulo, aplicar: render, conectar: attach };
+  window.MassIdioma = { get actual() { return language; }, texto: text, formato, rotulo, aplicar: render, conectar: attach };
   function start() {
     apply(language);
     new MutationObserver(records => {

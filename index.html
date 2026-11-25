@@ -4826,13 +4826,11 @@ function aplicarAcordeonModuloAdminMass(
   `;
 
 
-  resumen.textContent =
-    "🗂️ " +
-    String(
-      titulo ||
-      "Módulo administrativo"
-    ) +
-    " · ocultar / mostrar";
+  window.MassIdioma.rotulo(resumen, titulo || "Módulo administrativo");
+  resumen.prepend("🗂️ ");
+  const indicacion = document.createElement("span");
+  window.MassIdioma.rotulo(indicacion, "ocultar / mostrar");
+  resumen.append(" · ", indicacion);
 
 
   const cuerpo =
@@ -4881,8 +4879,7 @@ function aplicarAcordeonModuloAdminMass(
   botonCerrar.type =
     "button";
 
-  botonCerrar.textContent =
-    "✖ Cerrar tarjeta";
+  window.MassIdioma.rotulo(botonCerrar, "✖ Cerrar tarjeta");
 
 
   botonCerrar.style.cssText = `
@@ -19563,11 +19560,7 @@ function agruparDinamicasAdminEnAcordeones() {
       );
 
 
-    resumen.textContent =
-      titulo +
-      " (" +
-      lista.length +
-      ")";
+    window.MassIdioma.rotulo(resumen, titulo + " ({0})", lista.length);
 
 
     resumen.style.cssText = `
@@ -19611,8 +19604,7 @@ function agruparDinamicasAdminEnAcordeones() {
         );
 
 
-      vacio.textContent =
-        mensajeVacio;
+      window.MassIdioma.rotulo(vacio, mensajeVacio);
 
 
       vacio.style.cssText = `
@@ -19679,7 +19671,7 @@ function agruparDinamicasAdminEnAcordeones() {
 async function mostrarSorteosAdmin(){
 
     document.getElementById("adminContenido").innerHTML =
-    "<p>Cargando sorteos...</p>";
+    "<p><span data-mass-ui>Cargando sorteos...</span></p>";
 
     let query = supabaseClient
   .from("rifas")
@@ -19728,7 +19720,7 @@ const { data, error } = await query;
   alert("ERROR SORTEOS ADMIN:\n" + JSON.stringify(error));
 
   document.getElementById("adminContenido").innerHTML =
-  "<p>❌ Error cargando sorteos.</p>";
+  "<p><span data-mass-ui>❌ Error cargando sorteos.</span></p>";
   return;
 }
 
@@ -19822,7 +19814,7 @@ const puedeAdministrarPatrocinadores =
 
         <br><br>
 
-        <p>No hay sorteos creados todavía.</p>
+        <p><span data-mass-ui>No hay sorteos creados todavía.</span></p>
     `;
     return;
 }
@@ -19879,9 +19871,9 @@ border:1px solid #39ff14;
 ">
 ` : ""}
 
-                <b>🎯 Título:</b> ${r.titulo || "Sin título"}<br>
-<b>🎁 Premio:</b> ${r.premio || "Sin premio"}<br>
-<b>🎟️ Precio por boleto:</b> ${
+                <b><span data-mass-ui>🎯 Título:</span></b> ${r.titulo || "Sin título"}<br>
+<b><span data-mass-ui>🎁 Premio:</span></b> ${r.premio || "Sin premio"}<br>
+<b><span data-mass-ui>🎟️ Precio por boleto:</span></b> ${
   Array.isArray(r.divisas_aceptadas) &&
   r.divisas_aceptadas.length
     ? r.divisas_aceptadas
@@ -19897,11 +19889,11 @@ border:1px solid #39ff14;
             ? `${precioDivisa} MASS ${codigo}`
             : codigo;
         })
-        .join(" o ")
+        .join(' <span data-mass-ui>o</span> ')
     : `${r.precio_boleto || 0}`
 }<br>
 
-<b>🌎 ${
+<b data-mass-ui>🌎 ${
   Array.isArray(r.divisas_aceptadas) &&
   r.divisas_aceptadas.length === 1
     ? "Divisa aceptada"
@@ -19909,21 +19901,17 @@ border:1px solid #39ff14;
 }:</b> ${
   Array.isArray(r.divisas_aceptadas) &&
   r.divisas_aceptadas.length
-    ? r.divisas_aceptadas.join(" y ")
-    : "Sin configurar"
+    ? r.divisas_aceptadas.map(massEscaparHTML).join(' <span data-mass-ui>y</span> ')
+    : '<span data-mass-ui>Sin configurar</span>'
 }<br>
-<b>🎟️ Total números:</b> ${r.total_numeros || 0}<br>
-<b>📅 Fecha:</b> ${
+<b><span data-mass-ui>🎟️ Total números:</span></b> ${r.total_numeros || 0}<br>
+<b><span data-mass-ui>📅 Fecha:</span></b> ${
 r.fecha_sorteo
-? new Date(r.fecha_sorteo + "T00:00:00").toLocaleDateString("es-MX", {
-day: "numeric",
-month: "long",
-year: "numeric"
-})
-: "Sin fecha"
+? `<time data-mass-fecha-publica="dia" datetime="${massEscaparHTML(r.fecha_sorteo)}">${massEscaparHTML(r.fecha_sorteo)}</time>`
+: '<span data-mass-ui>Sin fecha</span>'
 }<br>
 
-<b>🕗 Hora:</b> ${
+<b><span data-mass-ui>🕗 Hora:</span></b> ${
   r.hora_sorteo
     ? (() => {
         const [horaTexto, minutoTexto] =
@@ -19941,21 +19929,21 @@ year: "numeric"
           horaNumero >= 12 ? "PM" : "AM"
         }`;
       })()
-    : "Sin hora"
+    : '<span data-mass-ui>Sin hora</span>'
 }<br>
 
-<b>🌎 Zona horaria:</b> ${
+<b><span data-mass-ui>🌎 Zona horaria:</span></b> <span data-mass-ui>${
   Array.from(
     document.getElementById("formZonaHoraria")?.options || []
   ).find(
     opcion =>
       opcion.value === r.zona_horaria
-  )?.textContent ||
-  r.zona_horaria ||
+  )?.dataset.massUi ||
+  massEscaparHTML(r.zona_horaria || "") ||
   "Sin zona horaria"
-}<br>
+}</span><br>
 
-<b>🎰 Método:</b> ${r.metodo_sorteo || "Sin método"}<br>
+<b><span data-mass-ui>🎰 Método:</span></b> <span data-mass-ui>${massEscaparHTML(r.metodo_sorteo || "Sin método")}</span><br>
 ${
   (() => {
 
@@ -19977,29 +19965,29 @@ ${
 
     if (
       Number.isInteger(cifras) &&
-      [2, 3, 4].includes(cifras)
+      [2, 3, 4, 5, 6].includes(cifras)
     ) {
       return `
-        <b>🔢 Últimas ${cifras} cifras</b><br>
+        <b data-mass-formato="🔢 Últimas {0} cifras" data-mass-valores="[${cifras}]">🔢 Últimas ${cifras} cifras</b><br>
       `;
     }
 
     return `
-      <b>🔢 Últimas cifras:</b>
-      Sin configurar<br>
+      <b><span data-mass-ui>🔢 Últimas cifras:</span></b>
+      <span data-mass-ui>Sin configurar</span><br>
     `;
 
   })()
 }
-${r.aviso ? `<b>📢 Aviso:</b> ${r.aviso}<br>` : ""}
-<b>📌 Estado:</b> ${
+${r.aviso ? `<b><span data-mass-ui>📢 Aviso:</span></b> ${r.aviso}<br>` : ""}
+<b><span data-mass-ui>📌 Estado:</span></b> <span data-mass-ui>${
   String(r.estado || "")
     .trim()
     .toLowerCase() === "minimo_no_alcanzado"
     ? "cerrada — mínimo no alcanzado"
-    : r.estado || "sin estado"
-}<br>
-<b>📊 Mínimo para sortear:</b> ${r.porcentaje_minimo ?? 80}%<br>
+    : massEscaparHTML(r.estado || "sin estado")
+}</span><br>
+<b><span data-mass-ui>📊 Mínimo para sortear:</span></b> ${r.porcentaje_minimo ?? 80}%<br>
 				<br>
 ${(
   (
@@ -28084,7 +28072,7 @@ async function mostrarGanadoresAdmin() {
    cont.innerHTML = `
   <div class="card ganador-form">
     <h2 data-mass-ui=🏆&#32;Publicar&#32;ganador>🏆 Publicar ganador</h2>
-    <p style="color:#aaa;margin-top:-5px;">Registra y publica los ganadores del sorteo</p>
+    <p style="color:#aaa;margin-top:-5px;"><span data-mass-ui>Registra y publica los ganadores del sorteo</span></p>
 
     <div class="form-section">
       <label data-mass-ui=🎯&#32;Sorteo>🎯 Sorteo</label>
@@ -28104,7 +28092,7 @@ async function mostrarGanadoresAdmin() {
       <h3 data-mass-ui=🎟️&#32;Información&#32;del&#32;ganador>🎟️ Información del ganador</h3>
 
       <label data-mass-ui=🎫&#32;Número&#32;ganador>🎫 Número ganador</label>
-      <input id="ganadorNumero" placeholder="Ejemplo: 0099">
+      <input data-mass-placeholder id="ganadorNumero" placeholder="Ejemplo: 0099">
 
 	  <div
   id="resultadoAutomaticoGanador"
@@ -28144,9 +28132,9 @@ async function mostrarGanadoresAdmin() {
           line-height:1.45;
         "
       >
-        🔒 El estado de entrega es informativo.
+        <span data-mass-ui>🔒 El estado de entrega es informativo.
         Solo cambia mediante el flujo seguro de
-        entrega y confirmación del premio.
+        entrega y confirmación del premio.</span>
       </div>
 	  
     </div>
@@ -28349,7 +28337,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
     panel.innerHTML = `
         <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
         <p style="color:#aaa;">
-            Cargando premios y expedientes de entrega...
+            <span data-mass-ui>Cargando premios y expedientes de entrega...</span>
         </p>
     `;
 
@@ -28363,7 +28351,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
         panel.innerHTML = `
             <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
             <p style="color:#ff8a8a;">
-                ❌ No fue posible identificar al Organizador.
+                <span data-mass-ui>❌ No fue posible identificar al Organizador.</span>
             </p>
         `;
         return;
@@ -28390,7 +28378,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
         panel.innerHTML = `
             <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
             <p style="color:#ff8a8a;">
-                ❌ No fue posible cargar los premios principales.
+                <span data-mass-ui>❌ No fue posible cargar los premios principales.</span>
             </p>
         `;
         return;
@@ -28400,7 +28388,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
         panel.innerHTML = `
             <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
             <p style="color:#ff8a8a;">
-                ❌ El servidor no devolvió una respuesta válida.
+                <span data-mass-ui>❌ El servidor no devolvió una respuesta válida.</span>
             </p>
         `;
         return;
@@ -28417,7 +28405,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
         panel.innerHTML = `
             <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
             <p style="color:#aaa;">
-                No hay premios principales de dinámicas finalizadas pendientes de gestión.
+                <span data-mass-ui>No hay premios principales de dinámicas finalizadas pendientes de gestión.</span>
             </p>
         `;
         return;
@@ -28509,7 +28497,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                 premio?.comprobante_disponible === true
                     ? `
                         <div style="margin-top:8px;color:#7dd3fc;">
-                            🧾 Comprobante privado registrado
+                            <span data-mass-ui>🧾 Comprobante privado registrado</span>
                         </div>
                     `
                     : "";
@@ -28526,7 +28514,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                                 color:#ffb4b4;
                             "
                         >
-                            <strong>Motivo de la disputa:</strong><br>
+                            <strong><span data-mass-ui>Motivo de la disputa:</span></strong><br>
                             ${
                                 escaparHtmlEntregaPremioPrincipalAdmin(
                                     premio?.motivo_disputa ||
@@ -28541,7 +28529,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                 premio?.reportado_at
                     ? `
                         <div style="margin-top:6px;color:#aaa;">
-                            Reportado: ${
+                            <span data-mass-ui>Reportado:</span> ${
                                 escaparHtmlEntregaPremioPrincipalAdmin(
                                     formatearFechaEntregaPremioPrincipalAdmin(
                                         premio.reportado_at
@@ -28592,7 +28580,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                                 line-height:1.45;
                             "
                         >
-                            Selecciona JPG, PNG, WEBP, HEIC, HEIF o PDF. Máximo 10 MB.
+                            <span data-mass-ui>Selecciona JPG, PNG, WEBP, HEIC, HEIF o PDF. Máximo 10 MB.</span>
                         </div>
 
                         <button data-mass-ui=📦&#32;Reportar&#32;entrega
@@ -28627,7 +28615,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                             font-size:13px;
                         "
                     >
-                        🔒 Este premio todavía no reúne los requisitos server-side para reportar la entrega.
+                        <span data-mass-ui>🔒 Este premio todavía no reúne los requisitos server-side para reportar la entrega.</span>
                     </div>
                 `;
             }
@@ -28653,7 +28641,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                     </div>
 
                     <div style="margin-top:6px;">
-                        🎟️ Número ganador: ${numero}
+                        <span data-mass-ui>🎟️ Número ganador:</span> ${numero}
                     </div>
 
                     <div style="margin-top:6px;">
@@ -28667,7 +28655,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                             font-weight:700;
                         "
                     >
-                        ${estadoTexto}
+                        <span data-mass-ui>${estadoTexto}</span>
                     </div>
 
                     ${evidenciaTexto}
@@ -28683,9 +28671,9 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
         <h2 data-mass-ui=📦&#32;Entrega&#32;de&#32;premios&#32;principales>📦 Entrega de premios principales</h2>
 
         <p style="color:#aaa;margin-top:-5px;">
-            El Organizador reporta la entrega y adjunta evidencia privada.
+            <span data-mass-ui>El Organizador reporta la entrega y adjunta evidencia privada.
             El premio solamente cambia a Entregado cuando el ganador confirma
-            la recepción o cuando existe resolución extraordinaria válida.
+            la recepción o cuando existe resolución extraordinaria válida.</span>
         </p>
 
         <div
@@ -28695,7 +28683,7 @@ async function cargarEntregasPremiosPrincipalesAdmin() {
                 font-size:13px;
             "
         >
-            Premios encontrados: ${
+            <span data-mass-ui>Premios encontrados:</span> ${
                 escaparHtmlEntregaPremioPrincipalAdmin(
                     total
                 )
@@ -29212,6 +29200,7 @@ async function manejarCambioSorteoGanador(){
     numeroInput.value = "";
     numeroInput.readOnly = false;
     numeroInput.placeholder = "Ejemplo: 0099";
+    window.MassIdioma.aplicar(numeroInput);
 
         premioSelect.disabled = false;
 
@@ -29257,6 +29246,7 @@ async function manejarCambioSorteoGanador(){
     numeroInput.readOnly = true;
     numeroInput.placeholder =
         "Resultado generado por el sistema";
+    window.MassIdioma.aplicar(numeroInput);
 
     /*
   Mientras el resultado automático no esté
@@ -29281,10 +29271,9 @@ btnPublicar.style.cursor = "not-allowed";
         estadoRifa ===
         "minimo_no_alcanzado"
     ){
-        resultadoBox.textContent =
-            "⚠️ Dinámica cerrada\n" +
+        window.MassIdioma.rotulo(resultadoBox, "⚠️ Dinámica cerrada\n" +
             "No se seleccionó ganador porque " +
-            "no se alcanzó el porcentaje mínimo.";
+            "no se alcanzó el porcentaje mínimo.");
 
         return;
     }
@@ -29293,10 +29282,9 @@ btnPublicar.style.cursor = "not-allowed";
       Todavía no ha llegado el resultado.
     */
     if(estadoRifa !== "finalizada"){
-        resultadoBox.textContent =
-            "🎲 Resultado automático pendiente\n" +
+        window.MassIdioma.rotulo(resultadoBox, "🎲 Resultado automático pendiente\n" +
             "El sistema seleccionará al ganador " +
-            "cuando llegue la fecha y hora oficial.";
+            "cuando llegue la fecha y hora oficial.");
 
         return;
     }
@@ -29334,9 +29322,8 @@ btnPublicar.style.cursor = "not-allowed";
             error
         );
 
-        resultadoBox.textContent =
-            "❌ No fue posible cargar " +
-            "el resultado automático.";
+        window.MassIdioma.rotulo(resultadoBox, "❌ No fue posible cargar " +
+            "el resultado automático.");
 
         return;
     }
@@ -29346,10 +29333,9 @@ btnPublicar.style.cursor = "not-allowed";
   ganadores.length === 0
 ) {
 
-  resultadoBox.textContent =
-    "⚠️ La dinámica está finalizada, " +
+  window.MassIdioma.rotulo(resultadoBox, "⚠️ La dinámica está finalizada, " +
     "pero no se encontraron los registros " +
-    "de los ganadores oficiales.";
+    "de los ganadores oficiales.");
 
   return;
 }
@@ -29440,7 +29426,7 @@ const opcionPrimerPremio =
     const lugarOpcion =
       Number.parseInt(
         String(
-          opcion.textContent || ""
+          opcion.dataset.lugar || ""
         ),
         10
       );
@@ -29500,7 +29486,7 @@ const resultadoBox =
   const lugarSeleccionado =
     Number.parseInt(
       String(
-        opcionSeleccionada?.textContent || ""
+        opcionSeleccionada?.dataset.lugar || ""
       ),
       10
     );
@@ -29586,14 +29572,7 @@ const premio =
 resultadoBox.style.display = "block";
 resultadoBox.style.whiteSpace = "pre-line";
 
-resultadoBox.textContent =
-  "🔒 RESULTADO OFICIAL AUTOMÁTICO\n\n" +
-  `🏆 ${lugar}\n` +
-  `🎟️ Número ganador: ${numero}\n` +
-  `🪪 MASS ID ganador: ${massId}\n` +
-  `🎁 Premio: ${premio}\n\n` +
-  "Este resultado fue generado " +
-  "automáticamente y no puede modificarse.";	
+window.MassIdioma.rotulo(resultadoBox, "🔒 RESULTADO OFICIAL AUTOMÁTICO\n\n🏆 {0}\n🎟️ Número ganador: {1}\n🪪 MASS ID ganador: {2}\n🎁 Premio: {3}\n\nEste resultado fue generado automáticamente y no puede modificarse.", lugar, numero, massId, premio);	
 }	
 
 async function cargarPremiosParaGanador(){
@@ -29623,11 +29602,14 @@ async function cargarPremiosParaGanador(){
     select.innerHTML = `<option data-mass-ui=Selecciona&#32;un&#32;premio value="">Selecciona un premio</option>`;
 
     data.forEach(premio => {
-        select.innerHTML += `
-            <option value="${premio.id}">
-                ${premio.lugar}° Premio - ${premio.nombre}
-            </option>
-        `;
+        const opcion = document.createElement("option");
+        opcion.value = premio.id;
+        opcion.dataset.lugar = premio.lugar;
+        opcion.dataset.nombrePremio = premio.nombre;
+        opcion.dataset.massFormato = "{0}° Premio - {1}";
+        opcion.dataset.massValores = JSON.stringify([premio.lugar, premio.nombre]);
+        window.MassIdioma.aplicar(opcion);
+        select.appendChild(opcion);
     });
 }
 
@@ -29653,15 +29635,13 @@ async function publicarGanador(){
     }
 
     if(!numero){
-        alert("Escribe el número ganador");
+        alert(massTexto("Escribe el número ganador"));
         return;
     }
 
-    const premioTexto = premioSelect.options[premioSelect.selectedIndex].text;
-
-    const partes = premioTexto.split(" - ");
-    const lugarPremio = partes[0] || "";
-    const premioNombre = partes[1] || premioTexto;
+    const opcionPremio = premioSelect.options[premioSelect.selectedIndex];
+    const lugarPremio = opcionPremio.dataset.lugar + "° Premio";
+    const premioNombre = opcionPremio.dataset.nombrePremio;
 
 	const { data: premioInfo } = await supabaseClient
     .from("premios_rifa")
@@ -29686,7 +29666,7 @@ if (errorGanadorExistente) {
         errorGanadorExistente
     );
 
-    alert("No fue posible consultar el ganador ❌");
+    alert(massTexto("No fue posible consultar el ganador ❌"));
     return;
 }	
 
@@ -29696,7 +29676,7 @@ if (archivoImagen) {
 
     if (!organizadorId) {
         alert(
-            "No fue posible identificar al organizador."
+            massTexto("No fue posible identificar al organizador.")
         );
         return;
     }
@@ -29738,7 +29718,7 @@ if (archivoImagen) {
         );
 
         alert(
-            "Error al subir imagen ❌"
+            massTexto("Error al subir imagen ❌")
         );
 
         return;
@@ -29761,7 +29741,7 @@ if (archivoImagen) {
         );
 
         alert(
-            "No fue posible obtener la URL de la imagen ❌"
+            massTexto("No fue posible obtener la URL de la imagen ❌")
         );
 
         return;
@@ -29851,20 +29831,20 @@ if (archivoImagen) {
         errorPublicacion
     );
 
-    alert("Error al publicar ganador ❌");
+    alert(massTexto("Error al publicar ganador ❌"));
     return;
 }
 
     const noti = document.getElementById("massNotificacion");
 
-noti.innerHTML = "🏆 Ganador publicado correctamente";
+window.MassIdioma.rotulo(noti, "🏆 Ganador publicado correctamente");
 noti.style.display = "block";
 
 await cargarGanadores();
 
 setTimeout(() => {
     noti.style.display = "none";
-    document.getElementById("adminContenido").innerHTML = "Selecciona una opción.";
+    window.MassIdioma.rotulo(document.getElementById("adminContenido"), "Selecciona una opción.");
 }, 2500);
 
     document.getElementById("ganadorNumero").value = "";
@@ -31464,7 +31444,8 @@ function actualizarCampoCifrasRifa() {
     inputCantidadPremios.value = "1";
     inputCantidadPremios.required = false;
   }
-actualizarCamposPremiosAutomaticos();	
+window.MassIdioma.aplicar(inputCifras);
+  actualizarCamposPremiosAutomaticos();
 }
 
 function actualizarCamposPremiosAutomaticos() {
@@ -31624,8 +31605,7 @@ function actualizarCamposPremiosAutomaticos() {
     etiqueta.htmlFor =
       `formPremio${lugar}`;
 
-    etiqueta.textContent =
-      `🏆 ${lugar}.º Premio`;
+    window.MassIdioma.rotulo(etiqueta, "🏆 {0}.º Premio", lugar);
 
     etiqueta.style.display = "block";
     etiqueta.style.marginBottom = "7px";
@@ -31640,8 +31620,9 @@ function actualizarCamposPremiosAutomaticos() {
 
     input.type = "text";
 
-    input.placeholder =
-      `Escribe el ${lugar}.º premio`;
+    input.dataset.massPlaceholderFormato = "Escribe el {0}.º premio";
+    input.dataset.massValor = String(lugar);
+    window.MassIdioma.aplicar(input);
 
     input.dataset.lugarPremio =
       String(lugar);
@@ -31946,8 +31927,8 @@ async function cargarDivisasFormularioRifa(datos = null) {
           font-size:13px;
         "
       >
-        Este organizador no tiene otras
-        divisas activas disponibles.
+        <span data-mass-ui>Este organizador no tiene otras
+        divisas activas disponibles.</span>
       </div>
     `;
 
@@ -31968,7 +31949,7 @@ async function cargarDivisasFormularioRifa(datos = null) {
           margin-bottom:10px;
         "
       >
-        Divisas adicionales opcionales
+        <span data-mass-ui>Divisas adicionales opcionales</span>
       </div>
 
       ${adicionales.map(divisa => {
@@ -32019,7 +32000,8 @@ async function cargarDivisasFormularioRifa(datos = null) {
               step="0.01"
               data-precio-divisa-extra="${codigo}"
               value="${precioGuardado}"
-              placeholder="Precio informativo en ${codigo}"
+              data-mass-placeholder-formato="Precio informativo en {0}" data-mass-valor="${massEscaparHTML(codigo)}"
+              placeholder="Precio informativo en ${massEscaparHTML(codigo)}"
               style="
                 margin-top:8px;
                 ${seleccionada ? "" : "display:none;"}
@@ -32037,8 +32019,8 @@ async function cargarDivisasFormularioRifa(datos = null) {
           font-size:12px;
         "
       >
-        Estas divisas solo muestran otras
-        formas de pago aceptadas.
+        <span data-mass-ui>Estas divisas solo muestran otras
+        formas de pago aceptadas.</span>
       </div>
     </div>
   `;
@@ -32101,8 +32083,8 @@ function abrirModalRifa(datos = null) {
 
     document.getElementById("modalRifa").style.display = "block";
 
-    document.getElementById("tituloModalRifa").innerText =
-        datos ? "✏️ Editar rifa" : "🎯 Nueva rifa";
+    window.MassIdioma.rotulo(document.getElementById("tituloModalRifa"),
+        datos ? "✏️ Editar rifa" : "🎯 Nueva rifa");
 
     document.getElementById("formRifaId").value = datos?.id || "";
     document.getElementById("formTitulo").value = datos?.titulo || "";
@@ -32249,8 +32231,8 @@ if (esAleatorio) {
     cantidadPremiosIngresada > 20
   ) {
     alert(
-      "❌ La cantidad de premios automáticos " +
-      "debe ser un número entero entre 1 y 20."
+      massTexto("❌ La cantidad de premios automáticos " +
+      "debe ser un número entero entre 1 y 20.")
     );
 
     return;
@@ -32305,9 +32287,7 @@ if (!esAleatorio) {
   ) {
 
     alert(
-      "❌ Para este método selecciona " +
-      textoCifrasPermitidas +
-      " cifras."
+      window.MassIdioma.formato("❌ Para este método selecciona {0} cifras.", massTexto(textoCifrasPermitidas))
     );
 
     return;
@@ -32362,8 +32342,7 @@ if (
     if (!nombrePremio) {
 
       alert(
-        `❌ Escribe el ${lugar}.º premio ` +
-        `antes de guardar la dinámica.`
+        window.MassIdioma.formato("❌ Escribe el {0}.º premio antes de guardar la dinámica.", lugar)
       );
 
       return;
@@ -32389,10 +32368,10 @@ if (
 ) {
 
   alert(
-    "❌ Usa una cantidad entre 100 y 1,000,000, " +
+    massTexto("❌ Usa una cantidad entre 100 y 1,000,000, " +
     "en múltiplos de 100.\n\n" +
     "Ejemplos: 500, 1,000, 5,000, 50,000, " +
-    "100,000 o 1,000,000."
+    "100,000 o 1,000,000.")
   );
 
   return;
@@ -32403,7 +32382,7 @@ if (
   modalidad <= 0 ||
   totalNumeros % modalidad !== 0
 ) {
-  alert("❌ La modalidad seleccionada no es válida para esa cantidad.");
+  alert(massTexto("❌ La modalidad seleccionada no es válida para esa cantidad."));
   return;
 }
 
@@ -32415,7 +32394,7 @@ if (
   precioPrincipalNumero <= 0
 ) {
   alert(
-    "❌ El precio de la divisa principal debe ser mayor que cero."
+    massTexto("❌ El precio de la divisa principal debe ser mayor que cero.")
   );
   return;
 }
@@ -32471,7 +32450,7 @@ if (contenedorDivisasAdicionales) {
       precioExtra <= 0
     ) {
       alert(
-        `❌ Escribe un precio válido para ${codigo}.`
+        window.MassIdioma.formato("❌ Escribe un precio válido para {0}.", codigo)
       );
       return;
     }
@@ -32645,22 +32624,22 @@ precios_mass_unidad:
     );
 
     if (motivo.includes("ESTRUCTURA_INMUTABLE")) {
-      alert(
+      alert(massTexto(
         "🔒 Modificación estructural bloqueada.\n\n" +
         "No puedes cambiar la cantidad de boletos, " +
         "modalidad, método o premios desde esta edición."
-      );
+      ));
     } else {
       alert(
-        "❌ No fue posible guardar la dinámica.\n\n" +
-        (motivo || "Operación no autorizada.")
+        massTexto("❌ No fue posible guardar la dinámica.") + "\n\n" +
+        (motivo || massTexto("Operación no autorizada."))
       );
     }
 
     return;
   }
 
-    alert(
+    alert(massTexto(
     id
       ? (
           edicionSinCambios
@@ -32668,7 +32647,7 @@ precios_mass_unidad:
             : "✅ Dinámica actualizada correctamente."
         )
       : "✅ Dinámica creada correctamente."
-  );
+  ));
 
 cerrarModalRifa();
 mostrarSorteosAdmin();
@@ -44481,7 +44460,7 @@ async function mostrarDivisasAdmin() {
 
   contenedor.innerHTML = `
     <div style="padding:18px;text-align:center;">
-      ⏳ Validando autorización y cargando divisas...
+      <span data-mass-ui>⏳ Validando autorización y cargando divisas...</span>
     </div>
   `;
 
@@ -44567,7 +44546,7 @@ async function mostrarDivisasAdmin() {
             color:#ff8a8a;
           "
         >
-          ❌ No existe una sesión administrativa autorizada.
+          <span data-mass-ui>❌ No existe una sesión administrativa autorizada.</span>
         </div>
       `;
 
@@ -44607,7 +44586,7 @@ async function mostrarDivisasAdmin() {
             color:#facc15;
           "
         >
-          ⚠️ Primero selecciona el organizador cuyas divisas deseas administrar.
+          <span data-mass-ui>⚠️ Primero selecciona el organizador cuyas divisas deseas administrar.</span>
         </div>
       `;
 
@@ -44638,17 +44617,17 @@ async function mostrarDivisasAdmin() {
           "
         >
           <strong>
-            ❌ No se pudieron cargar las divisas.
+            <span data-mass-ui>❌ No se pudieron cargar las divisas.</span>
           </strong>
 
           <br><br>
 
-          Código:
+          <span data-mass-ui>Código:</span>
           ${escaparHtml(error.code || "SIN_CODIGO")}
 
           <br>
 
-          Mensaje:
+          <span data-mass-ui>Mensaje:</span>
           ${escaparHtml(error.message || "Error desconocido")}
         </div>
       `;
@@ -44952,7 +44931,7 @@ const botonPrincipal =
                   font-weight:700;
                 "
               >
-                <div>
+                <div data-mass-ui>
   ${
     activa
       ? "ACTIVA"
@@ -44967,10 +44946,10 @@ ${botonReactivar}
               <td style="padding:10px;">
   ${
     principal
-      ? "⭐ SÍ"
+      ? '<span data-mass-ui>⭐ SÍ</span>'
       : `
           <div>
-            NO
+            <span data-mass-ui>NO</span>
           </div>
 
           ${botonPrincipal}
@@ -44999,7 +44978,7 @@ ${botonReactivar}
                 color:#aaa;
               "
             >
-              Este organizador todavía no tiene divisas configuradas.
+              <span data-mass-ui>Este organizador todavía no tiene divisas configuradas.</span>
             </td>
           </tr>
         `;
@@ -45050,7 +45029,7 @@ ${botonReactivar}
                 color:#ddd;
               "
             >
-              Organizador:
+              <span data-mass-ui>Organizador:</span>
 
               <strong>
                 ${escaparHtml(nombreOrganizador)}
@@ -45126,7 +45105,7 @@ ${botonReactivar}
             "
           >
             <small style="color:#aaa;">
-              ACTIVAS
+              <span data-mass-ui>ACTIVAS</span>
             </small>
 
             <br>
@@ -45144,7 +45123,7 @@ ${botonReactivar}
             "
           >
             <small style="color:#aaa;">
-              PRINCIPALES
+              <span data-mass-ui>PRINCIPALES</span>
             </small>
 
             <br>
@@ -45181,16 +45160,16 @@ ${botonReactivar}
             totalPrincipales === 1
 
               ? `
-                  ✅ Integridad correcta:
+                  <span data-mass-ui>✅ Integridad correcta:
                   existe exactamente una
-                  divisa principal.
+                  divisa principal.</span>
                 `
 
               : `
-                  ⚠️ Se detectaron
+                  <span data-mass-formato="⚠️ Se detectaron {0} divisas principales. No realices cambios todavía." data-mass-valores="[${totalPrincipales}]">⚠️ Se detectaron
                   ${totalPrincipales}
                   divisas principales.
-                  No realices cambios todavía.
+                  No realices cambios todavía.</span>
                 `
           }
 
@@ -45216,19 +45195,19 @@ ${botonReactivar}
                 "
               >
                 <th style="padding:10px;">
-                  Divisa
+                  <span data-mass-ui>Divisa</span>
                 </th>
 
                 <th style="padding:10px;">
-                  Estado
+                  <span data-mass-ui>Estado</span>
                 </th>
 
                 <th style="padding:10px;">
-                  Principal
+                  <span data-mass-ui>Principal</span>
                 </th>
 
                 <th data-mass-ui=Versión style="padding:10px;">
-                  Versión
+                  <span data-mass-ui>Versión</span>
                 </th>
               </tr>
 
@@ -45250,9 +45229,9 @@ ${botonReactivar}
             text-align:left;
           "
         >
-          🔐 Consulta realizada mediante
+          <span data-mass-ui>🔐 Consulta realizada mediante
           la RPC segura de Supabase.
-          Las operaciones de divisas se realizan mediante RPC seguras de Supabase y quedan registradas en auditoría.
+          Las operaciones de divisas se realizan mediante RPC seguras de Supabase y quedan registradas en auditoría.</span>
         </div>
 
       </div>
@@ -45278,7 +45257,7 @@ ${botonReactivar}
           color:#ff8a8a;
         "
       >
-        ❌ No se pudo abrir el módulo de divisas.
+        <span data-mass-ui>❌ No se pudo abrir el módulo de divisas.</span>
 
         <br><br>
 
@@ -45345,8 +45324,8 @@ function seleccionarDivisaCatalogoAdmin(
     const titulo =
       document.createElement("div");
 
-    titulo.textContent =
-      massTexto("🌐 Agregar divisa");
+    titulo.dataset.massUi = "";
+    titulo.textContent = "🌐 Agregar divisa";
 
     titulo.style.cssText = `
       color:#39ff14;
@@ -45358,8 +45337,8 @@ function seleccionarDivisaCatalogoAdmin(
     const subtitulo =
       document.createElement("div");
 
-    subtitulo.textContent =
-      "Selecciona una divisa disponible para este organizador.";
+    subtitulo.dataset.massUi = "";
+    subtitulo.textContent = "Selecciona una divisa disponible para este organizador.";
 
     subtitulo.style.cssText = `
       color:#ccc;
@@ -45387,8 +45366,8 @@ function seleccionarDivisaCatalogoAdmin(
       document.createElement("option");
 
     opcionInicial.value = "";
-    opcionInicial.textContent =
-      "Selecciona una divisa";
+    opcionInicial.dataset.massUi = "";
+    opcionInicial.textContent = "Selecciona una divisa";
 
     select.appendChild(
       opcionInicial
@@ -45450,8 +45429,8 @@ function seleccionarDivisaCatalogoAdmin(
       document.createElement("button");
 
     btnAgregar.type = "button";
-    btnAgregar.textContent =
-      massTexto("✅ Agregar divisa");
+    btnAgregar.dataset.massUi = "";
+    btnAgregar.textContent = "✅ Agregar divisa";
 
     btnAgregar.style.cssText = `
       background:#39ff14;
@@ -45466,8 +45445,8 @@ function seleccionarDivisaCatalogoAdmin(
       document.createElement("button");
 
     btnCancelar.type = "button";
-    btnCancelar.textContent =
-      massTexto("❌ Cancelar");
+    btnCancelar.dataset.massUi = "";
+    btnCancelar.textContent = "❌ Cancelar";
 
     btnCancelar.style.cssText = `
       background:#222;
@@ -117963,7 +117942,7 @@ font-family:Arial, sans-serif;">
     resize:vertical;
 }
 </style>  
-    <h2 data-mass-ui=🎯&#32;Nueva&#32;rifa id="tituloModalRifa">🎯 Nueva rifa</h2>
+    <h2 data-mass-ui id="tituloModalRifa">🎯 Nueva rifa</h2>
 
     <input id="formRifaId" type="hidden">
 
@@ -117986,7 +117965,7 @@ font-family:Arial, sans-serif;">
     </label>
 
     <input
-      id="formPremio"
+      id="formPremio" data-mass-placeholder
       placeholder="Ejemplo: Chevy Silverado"
     >
 
@@ -117998,7 +117977,7 @@ font-family:Arial, sans-serif;">
         text-align:center;
       "
     >
-      Premio principal
+      <span data-mass-ui>Premio principal</span>
     </div>
 
   </div>
@@ -118023,7 +118002,7 @@ font-family:Arial, sans-serif;">
       margin-bottom:12px;
     "
   >
-    🌎 Divisas del sorteo
+    <span data-mass-ui>🌎 Divisas del sorteo</span>
   </div>
 
   <label data-mass-ui=Divisa&#32;principal
@@ -118074,8 +118053,8 @@ font-family:Arial, sans-serif;">
       line-height:1.4;
     "
   >
-    La divisa principal controla el precio y la Wallet MASS.
-    Las divisas adicionales son únicamente informativas.
+    <span data-mass-ui>La divisa principal controla el precio y la Wallet MASS.
+    Las divisas adicionales son únicamente informativas.</span>
   </div>
 </div>
     <input data-mass-placeholder id="formTotal" type="number" placeholder="Cantidad de números">
@@ -118197,8 +118176,8 @@ font-family:Arial, sans-serif;">
       text-align:center;
     "
   >
-    Debes registrar la misma cantidad de premios
-    antes de activar la dinámica.
+    <span data-mass-ui>Debes registrar la misma cantidad de premios
+    antes de activar la dinámica.</span>
   </div>
 
 <div
