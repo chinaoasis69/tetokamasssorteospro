@@ -1,3 +1,16 @@
+// Only interface labels use the language dictionary. Account values remain plain text.
+function textoMassId(texto) {
+  return window.MassIdioma?.texto(texto) ?? texto;
+}
+
+function rotuloMassId(texto) {
+  const rotulo = document.createElement("span");
+  rotulo.dataset.massUi = "";
+  rotulo.textContent = texto;
+  window.MassIdioma?.aplicar?.(rotulo);
+  return rotulo;
+}
+
 async function cargarModuloMassId() {
   try {
     const respuesta = await fetch("mass-id-panel.html");
@@ -12,6 +25,7 @@ async function cargarModuloMassId() {
     contenedor.id = "massIdModuleContainer";
     contenedor.innerHTML = html;
 
+    window.MassIdioma?.aplicar?.(contenedor);
     document.body.appendChild(contenedor);
 
     console.log("✅ Módulo MASS ID cargado correctamente.");
@@ -29,7 +43,7 @@ async function abrirMiMassId() {
   }
 
   if (!panel) {
-    alert("❌ No fue posible abrir Mi MASS ID.");
+    alert(textoMassId("❌ No fue posible abrir Mi MASS ID."));
     return;
   }
 
@@ -86,7 +100,7 @@ if (btnCancelarCierreCuentaActual) {
 
   if (mensajeRecuperarCuenta) {
     let textoRecuperacion =
-      "Tu cuenta MASS ID se encuentra dentro del periodo de recuperación.";
+      textoMassId("Tu cuenta MASS ID se encuentra dentro del periodo de recuperación.");
 
     if (fechaEliminacionCierre) {
       const fechaEliminacion =
@@ -107,8 +121,9 @@ if (btnCancelarCierreCuentaActual) {
       );
 
       textoRecuperacion =
-        `La cuenta ${emailCierre || "MASS ID"} está programada para cierre. ` +
-        `Tienes aproximadamente ${diasRestantes} día(s) para recuperarla.`;
+        textoMassId("La cuenta {cuenta} está programada para cierre. Tienes aproximadamente {dias} día(s) para recuperarla.")
+          .replace("{dias}", () => String(diasRestantes))
+          .replace("{cuenta}", () => emailCierre || "MASS ID");
     }
 
     mensajeRecuperarCuenta.textContent =
@@ -164,7 +179,7 @@ const { data: perfil, error: perfilError } = await supabaseClient
 
 if (perfilError || !perfil) {
   console.error("ERROR CARGANDO PERFIL MASS ID:", perfilError);
-  alert("❌ No se pudo cargar tu perfil MASS ID.");
+  alert(textoMassId("❌ No se pudo cargar tu perfil MASS ID."));
   return;
 }
 
@@ -252,37 +267,22 @@ const nombrePerfil = document.getElementById("massIdNombre");
 const numeroPerfil = document.getElementById("massIdNumero");
 
 if (nombrePerfil) {
-  nombrePerfil.textContent = perfil.nombre || "Usuario MASS";
+  nombrePerfil.replaceChildren(perfil.nombre || rotuloMassId("Usuario MASS"));
 }
 
 if (numeroPerfil) {
-  numeroPerfil.innerHTML = `
-    <div style="
-      color:#39ff14;
-      font-size:22px;
-      font-weight:bold;
-      margin-bottom:12px;
-    ">
-      🆔 ${perfil.mass_id || "MASS ID pendiente"}
-    </div>
-
-    <div style="
-      color:#39ff14;
-      font-size:18px;
-      font-weight:bold;
-      margin-bottom:6px;
-    ">
-      📱 ${perfil.telefono || "Teléfono no disponible"}
-    </div>
-
-    <div style="
-      color:#bbb;
-      font-size:15px;
-      overflow-wrap:anywhere;
-    ">
-      📧 ${perfil.email || user.email || "Correo no disponible"}
-    </div>
-  `;
+  const datos = [
+    ["🆔", perfil.mass_id, "MASS ID pendiente", "color:#39ff14;font-size:22px;font-weight:bold;margin-bottom:12px"],
+    ["📱", perfil.telefono, "Teléfono no disponible", "color:#39ff14;font-size:18px;font-weight:bold;margin-bottom:6px"],
+    ["📧", perfil.email || user.email, "Correo no disponible", "color:#bbb;font-size:15px;overflow-wrap:anywhere"]
+  ];
+  numeroPerfil.replaceChildren();
+  for (const [icono, valor, etiqueta, estilo] of datos) {
+    const linea = document.createElement("div");
+    linea.style.cssText = estilo;
+    linea.append(icono + " ", valor || rotuloMassId(etiqueta));
+    numeroPerfil.append(linea);
+  }
 }
 
   const menuPrincipal = document.getElementById("massIdMenuPrincipal");
@@ -10985,12 +10985,12 @@ async function cerrarPanelConfiguracionMfa() {
   }
 
   if (qrMfaPendiente) {
-    qrMfaPendiente.textContent = "QR pendiente";
+    qrMfaPendiente.replaceChildren(rotuloMassId("QR pendiente"));
     qrMfaPendiente.style.display = "inline";
   }
 
   if (claveMfaManual) {
-    claveMfaManual.textContent = "Clave pendiente";
+    claveMfaManual.replaceChildren(rotuloMassId("Clave pendiente"));
   }
 
   if (inputCodigoMfa) {
@@ -11042,7 +11042,7 @@ function actualizarBotonGuardarFoto(
   }
 
   btnGuardarFoto.disabled = !habilitado;
-  btnGuardarFoto.textContent = texto;
+  btnGuardarFoto.replaceChildren(rotuloMassId(texto));
 
   btnGuardarFoto.style.borderColor =
     habilitado ? "#39ff14" : "#555";
@@ -11174,11 +11174,9 @@ async function cargarDireccionesMass() {
   panelDireccionesGuardadas.style.display =
     "block";
 
-  contadorDirecciones.textContent =
-    "Consultando...";
+  contadorDirecciones.replaceChildren(rotuloMassId("Consultando..."));
 
-  mensajeDirecciones.textContent =
-    "Cargando direcciones...";
+  mensajeDirecciones.replaceChildren(rotuloMassId("Cargando direcciones..."));
 
   mensajeDirecciones.style.color =
     "#bbb";
@@ -11234,10 +11232,11 @@ async function cargarDireccionesMass() {
     const cantidad =
       direccionesActivas.length;
 
-    contadorDirecciones.textContent =
-      cantidad === 1
-        ? "1 ubicación"
-        : cantidad + " ubicaciones";
+    if (cantidad === 1) {
+      contadorDirecciones.replaceChildren(rotuloMassId("1 ubicación"));
+    } else {
+      contadorDirecciones.replaceChildren(String(cantidad) + " ", rotuloMassId("ubicaciones"));
+    }
 
     /*
       Si todavía no hay direcciones,
@@ -11256,8 +11255,7 @@ async function cargarDireccionesMass() {
       }
 
       if (btnAgregarDireccion) {
-        btnAgregarDireccion.textContent =
-          "📍 Agregar dirección opcional";
+        btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar dirección opcional"));
       }
 
       return;
@@ -11267,16 +11265,14 @@ async function cargarDireccionesMass() {
       "none";
 
     if (direccionEstado) {
-      direccionEstado.textContent =
-        "✅ Dirección preparada para servicios MASS";
+      direccionEstado.replaceChildren(rotuloMassId("✅ Dirección preparada para servicios MASS"));
 
       direccionEstado.style.display =
         "block";
     }
 
     if (btnAgregarDireccion) {
-      btnAgregarDireccion.textContent =
-        "📍 Agregar otra dirección";
+      btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar otra dirección"));
     }
 
     direccionesActivas.forEach(
@@ -11310,12 +11306,9 @@ async function cargarDireccionesMass() {
         const titulo =
           document.createElement("strong");
 
-        titulo.textContent =
-          "📍 " +
-          (
-            direccion.nombre_ubicacion ||
-            "Ubicación"
-          );
+        const etiquetaUbicacion = direccion.nombre_ubicacion || "Ubicación";
+        const nombrePredefinido = ["Casa", "Trabajo", "Otra", "Ubicación"].includes(etiquetaUbicacion);
+        titulo.replaceChildren("📍 ", nombrePredefinido ? rotuloMassId(etiquetaUbicacion) : etiquetaUbicacion);
 
         titulo.style.cssText =
           "color:#fff;" +
@@ -11327,8 +11320,7 @@ async function cargarDireccionesMass() {
           const distintivo =
             document.createElement("span");
 
-          distintivo.textContent =
-            "Principal";
+          distintivo.replaceChildren(rotuloMassId("Principal"));
 
           distintivo.style.cssText =
             "padding:5px 8px;" +
@@ -11350,9 +11342,7 @@ async function cargarDireccionesMass() {
         const lineaPrincipal =
           document.createElement("p");
 
-        lineaPrincipal.textContent =
-          direccion.direccion_linea_1 ||
-          "Dirección no disponible";
+        lineaPrincipal.replaceChildren(direccion.direccion_linea_1 || rotuloMassId("Dirección no disponible"));
 
         lineaPrincipal.style.cssText =
           "margin:0;" +
@@ -11422,8 +11412,7 @@ async function cargarDireccionesMass() {
           const textoPais =
             document.createElement("p");
 
-          textoPais.textContent =
-            direccion.pais;
+          textoPais.replaceChildren(direccion.pais === "Estados Unidos" ? rotuloMassId("Estados Unidos") : direccion.pais);
 
           textoPais.style.cssText =
             "margin:4px 0 0;" +
@@ -11477,8 +11466,7 @@ async function cargarDireccionesMass() {
         btnEditarDireccion.type =
           "button";
 
-        btnEditarDireccion.textContent =
-          "✏️ Editar";
+        btnEditarDireccion.replaceChildren(rotuloMassId("✏️ Editar"));
 
         btnEditarDireccion.dataset.direccionId =
           direccion.id;
@@ -11504,8 +11492,7 @@ async function cargarDireccionesMass() {
       "Casa";
 
     inputDireccionPais.value =
-      direccion.pais ||
-      "Estados Unidos";
+      !direccion.pais || direccion.pais === "Estados Unidos" ? textoMassId("Estados Unidos") : direccion.pais;
 
     inputDireccionLinea1.value =
       direccion.direccion_linea_1 ||
@@ -11543,8 +11530,7 @@ async function cargarDireccionesMass() {
     }
 
     if (mensajeDireccionFormulario) {
-      mensajeDireccionFormulario.textContent =
-        "✏️ Editando esta dirección.";
+      mensajeDireccionFormulario.replaceChildren(rotuloMassId("✏️ Editando esta dirección."));
 
       mensajeDireccionFormulario.style.color =
         "#fff";
@@ -11559,8 +11545,7 @@ async function cargarDireccionesMass() {
     direccionFormulario.style.display =
       "block";
 
-    btnGuardarDireccion.textContent =
-      "💾 Actualizar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Actualizar dirección"));
 
     direccionFormulario.scrollIntoView({
       behavior: "smooth",
@@ -11574,8 +11559,7 @@ async function cargarDireccionesMass() {
         btnEliminarDireccion.type =
           "button";
 
-        btnEliminarDireccion.textContent =
-          "🗑️ Eliminar";
+        btnEliminarDireccion.replaceChildren(rotuloMassId("🗑️ Eliminar"));
 
         btnEliminarDireccion.dataset.direccionId =
           direccion.id;
@@ -11594,12 +11578,11 @@ async function cargarDireccionesMass() {
               btnEliminarDireccion.onclick =
           async function () {
             const nombreDireccion =
-              direccion.nombre_ubicacion ||
-              "esta ubicación";
+              nombrePredefinido ? textoMassId(etiquetaUbicacion) : etiquetaUbicacion;
 
             const confirmarEliminacion =
               window.confirm(
-                "¿Deseas eliminar la dirección " +
+                (textoMassId("¿Deseas eliminar la dirección") + " ") +
                 '"' +
                 nombreDireccion +
                 '"?'
@@ -11618,8 +11601,7 @@ async function cargarDireccionesMass() {
             btnEditarDireccion.disabled =
               true;
 
-            btnEliminarDireccion.textContent =
-              "⏳ Eliminando...";
+            btnEliminarDireccion.replaceChildren(rotuloMassId("⏳ Eliminando..."));
 
             btnEliminarDireccion.style.cursor =
               "not-allowed";
@@ -11770,7 +11752,7 @@ async function cargarDireccionesMass() {
               await cargarDireccionesMass();
 
               alert(
-                "✅ Dirección eliminada correctamente."
+                textoMassId("✅ Dirección eliminada correctamente.")
               );
             } catch (error) {
               console.error(
@@ -11779,7 +11761,7 @@ async function cargarDireccionesMass() {
               );
 
               alert(
-                "❌ No fue posible eliminar la dirección. Inténtalo nuevamente."
+                textoMassId("❌ No fue posible eliminar la dirección. Inténtalo nuevamente.")
               );
 
               btnEliminarDireccion.disabled =
@@ -11822,11 +11804,9 @@ async function cargarDireccionesMass() {
       error
     );
 
-    contadorDirecciones.textContent =
-      "No disponible";
+    contadorDirecciones.replaceChildren(rotuloMassId("No disponible"));
 
-    mensajeDirecciones.textContent =
-      "❌ No fue posible cargar tus direcciones.";
+    mensajeDirecciones.replaceChildren(rotuloMassId("❌ No fue posible cargar tus direcciones."));
 
     mensajeDirecciones.style.color =
       "#ff5b5b";
@@ -11844,25 +11824,20 @@ if (
 ) {
   btnInformacionPersonal.onclick = async function () {
     if (infoNombre) {
-      infoNombre.textContent =
-        perfil.nombre || "No disponible";
+      infoNombre.replaceChildren(perfil.nombre || rotuloMassId("No disponible"));
     }
 
     if (infoNumero) {
-      infoNumero.textContent =
-        perfil.mass_id || "No disponible";
+      infoNumero.replaceChildren(perfil.mass_id || rotuloMassId("No disponible"));
     }
 
     if (infoTelefono) {
-      infoTelefono.textContent =
-        perfil.telefono || "No disponible";
+      infoTelefono.replaceChildren(perfil.telefono || rotuloMassId("No disponible"));
     }
 
     if (infoCorreo) {
-      infoCorreo.textContent =
-        perfil.email ||
-        user.email ||
-        "No disponible";
+      infoCorreo.replaceChildren(perfil.email ||
+        user.email || rotuloMassId("No disponible"));
     }
 
     menuPrincipal.style.display = "none";
@@ -12071,8 +12046,7 @@ function mostrarMensajePrivacidad(
     return;
   }
 
-  mensajePrivacidad.textContent =
-    texto;
+  mensajePrivacidad.replaceChildren(rotuloMassId(texto));
 
   mensajePrivacidad.style.color =
     color;
@@ -12107,8 +12081,7 @@ function mostrarMensajeActividadCuenta(
     return;
   }
 
-  mensajeActividadCuenta.textContent =
-    texto;
+  mensajeActividadCuenta.replaceChildren(rotuloMassId(texto));
 
   mensajeActividadCuenta.style.color =
     color;
@@ -12190,8 +12163,7 @@ async function cargarPreferenciasPrivacidad() {
     btnGuardarPrivacidad.disabled =
       true;
 
-    btnGuardarPrivacidad.textContent =
-      "⏳ Cargando preferencias...";
+    btnGuardarPrivacidad.replaceChildren(rotuloMassId("⏳ Cargando preferencias..."));
 
     btnGuardarPrivacidad.style.cursor =
       "not-allowed";
@@ -12293,8 +12265,7 @@ async function cargarPreferenciasPrivacidad() {
       btnGuardarPrivacidad.disabled =
         false;
 
-      btnGuardarPrivacidad.textContent =
-        "💾 Guardar preferencias";
+      btnGuardarPrivacidad.replaceChildren(rotuloMassId("💾 Guardar preferencias"));
 
       btnGuardarPrivacidad.style.cursor =
         "pointer";
@@ -12415,8 +12386,7 @@ if (btnGuardarPrivacidad) {
       btnGuardarPrivacidad.disabled =
         true;
 
-      btnGuardarPrivacidad.textContent =
-        "⏳ Guardando preferencias...";
+      btnGuardarPrivacidad.replaceChildren(rotuloMassId("⏳ Guardando preferencias..."));
 
       btnGuardarPrivacidad.style.cursor =
         "not-allowed";
@@ -12521,8 +12491,7 @@ if (errorRegistrarActividadPrivacidad) {
           "#39ff14"
         );
 
-        btnGuardarPrivacidad.textContent =
-          "✅ Preferencias guardadas";
+        btnGuardarPrivacidad.replaceChildren(rotuloMassId("✅ Preferencias guardadas"));
 
         btnGuardarPrivacidad.style.opacity =
           "1";
@@ -12561,7 +12530,7 @@ if (errorRegistrarActividadPrivacidad) {
 /* Formatear fecha para Actividad de la cuenta */
 function formatearFechaActividadCuenta(fecha) {
   if (!fecha) {
-    return "Fecha no disponible";
+    return textoMassId("Fecha no disponible");
   }
 
   const fechaActividad =
@@ -12572,11 +12541,11 @@ function formatearFechaActividadCuenta(fecha) {
       fechaActividad.getTime()
     )
   ) {
-    return "Fecha no disponible";
+    return textoMassId("Fecha no disponible");
   }
 
   return fechaActividad.toLocaleString(
-    "es-US",
+    window.MassIdioma?.actual === "en" ? "en-US" : "es-US",
     {
       dateStyle: "medium",
       timeStyle: "short"
@@ -12616,8 +12585,7 @@ function renderizarActividadCuenta(eventos) {
     String(eventosSeguros.length);
 
   if (eventosSeguros.length === 0) {
-    ultimoEventoActividadCuenta.textContent =
-      "Sin actividad registrada";
+    ultimoEventoActividadCuenta.replaceChildren(rotuloMassId("Sin actividad registrada"));
 
     listaActividadCuenta.innerHTML = `
       <div style="
@@ -12629,8 +12597,8 @@ function renderizarActividadCuenta(eventos) {
         text-align:center;
         line-height:1.5;
       ">
-        🕘 Todavía no existen eventos registrados
-        para esta cuenta.
+        <span data-mass-ui>🕘 Todavía no existen eventos registrados
+        para esta cuenta.</span>
       </div>
     `;
 
@@ -12648,13 +12616,13 @@ function renderizarActividadCuenta(eventos) {
         escaparTextoActividadCuenta(
           evento.titulo ||
           evento.tipo_evento ||
-          "Actividad de la cuenta"
+          textoMassId("Actividad de la cuenta")
         );
 
       const descripcion =
         escaparTextoActividadCuenta(
           evento.descripcion ||
-          "Evento registrado correctamente."
+          textoMassId("Evento registrado correctamente.")
         );
 
       const fecha =
@@ -12726,14 +12694,13 @@ async function cargarActividadCuentaMassId() {
         color:#bbb;
         text-align:center;
       ">
-        ⏳ Cargando actividad de la cuenta...
+        <span data-mass-ui>⏳ Cargando actividad de la cuenta...</span>
       </div>
     `;
   }
 
   if (ultimoEventoActividadCuenta) {
-    ultimoEventoActividadCuenta.textContent =
-      "Cargando...";
+    ultimoEventoActividadCuenta.replaceChildren(rotuloMassId("Cargando..."));
   }
 
   if (totalEventosActividadCuenta) {
@@ -12745,8 +12712,7 @@ async function cargarActividadCuentaMassId() {
     btnActualizarActividadCuenta.disabled =
       true;
 
-    btnActualizarActividadCuenta.textContent =
-      "⏳ Actualizando...";
+    btnActualizarActividadCuenta.replaceChildren(rotuloMassId("⏳ Actualizando..."));
 
     btnActualizarActividadCuenta.style.cursor =
       "not-allowed";
@@ -12767,7 +12733,7 @@ async function cargarActividadCuentaMassId() {
       !user?.id
     ) {
       throw new Error(
-        "No fue posible identificar la cuenta activa."
+        textoMassId("No fue posible identificar la cuenta activa.")
       );
     }
 
@@ -12865,8 +12831,7 @@ const {
       btnActualizarActividadCuenta.disabled =
         false;
 
-      btnActualizarActividadCuenta.textContent =
-        "🔄 Actualizar actividad";
+      btnActualizarActividadCuenta.replaceChildren(rotuloMassId("🔄 Actualizar actividad"));
 
       btnActualizarActividadCuenta.style.cursor =
         "pointer";
@@ -12894,7 +12859,7 @@ const {
         text-align:center;
       "
     >
-      ⏳ Cargando dispositivos conectados...
+      <span data-mass-ui>⏳ Cargando dispositivos conectados...</span>
     </div>
   `;
 
@@ -12915,7 +12880,7 @@ const {
 
     if (!session?.user) {
       throw new Error(
-        "No fue posible identificar la sesión activa."
+        textoMassId("No fue posible identificar la sesión activa.")
       );
     }
 
@@ -13016,7 +12981,7 @@ if (dispositivosParaMostrar.length === 0) {
         text-align:center;
       "
     >
-      No hay dispositivos registrados.
+      <span data-mass-ui>No hay dispositivos registrados.</span>
     </div>
   `;
 } else {
@@ -13030,24 +12995,24 @@ if (dispositivosParaMostrar.length === 0) {
           dispositivo.ultimo_acceso
             ? new Date(
                 dispositivo.ultimo_acceso
-              ).toLocaleString("es-US", {
+              ).toLocaleString(window.MassIdioma?.actual === "en" ? "en-US" : "es-US", {
                 dateStyle: "medium",
                 timeStyle: "short"
               })
-            : "No disponible";
+            : textoMassId("No disponible");
 
         const nombreNavegador =
           dispositivo.navegador ||
-          "Navegador desconocido";
+          textoMassId("Navegador desconocido");
 
         const nombrePlataforma =
           dispositivo.plataforma ||
-          "No disponible";
+          textoMassId("No disponible");
 
         const estadoDispositivo =
           dispositivo.activo
-            ? "Sesión activa"
-            : "Sesión cerrada";
+            ? textoMassId("Sesión activa")
+            : textoMassId("Sesión cerrada");
 
         const colorEstado =
           dispositivo.activo
@@ -13072,7 +13037,7 @@ if (dispositivosParaMostrar.length === 0) {
                   font-weight:bold;
                 "
               >
-                Este dispositivo
+                <span data-mass-ui>Este dispositivo</span>
               </span>
             `
             : "";
@@ -13098,7 +13063,7 @@ if (dispositivosParaMostrar.length === 0) {
               "
             >
               <strong style="font-size:16px;">
-                💻 ${nombreNavegador}
+                💻 ${escaparTextoActividadCuenta(nombreNavegador === "Navegador desconocido" ? textoMassId(nombreNavegador) : nombreNavegador)}
               </strong>
 
               ${etiquetaEsteDispositivo}
@@ -13113,21 +13078,21 @@ if (dispositivosParaMostrar.length === 0) {
             >
               <div>
                 <strong style="color:#fff;">
-                  Sistema o plataforma:
+                  <span data-mass-ui>Sistema o plataforma:</span>
                 </strong>
-                ${nombrePlataforma}
+                ${escaparTextoActividadCuenta(nombrePlataforma === "No disponible" ? textoMassId(nombrePlataforma) : nombrePlataforma)}
               </div>
 
               <div>
                 <strong style="color:#fff;">
-                  Último acceso:
+                  <span data-mass-ui>Último acceso:</span>
                 </strong>
                 ${fechaUltimoAcceso}
               </div>
 
               <div>
                 <strong style="color:#fff;">
-                  Estado:
+                  <span data-mass-ui>Estado:</span>
                 </strong>
 
                 <span style="color:${colorEstado};">
@@ -13150,8 +13115,7 @@ if (dispositivosParaMostrar.length === 0) {
     listaDispositivosConectados.innerHTML = "";
 
     if (mensajeDispositivosConectados) {
-      mensajeDispositivosConectados.textContent =
-        "❌ No fue posible cargar los dispositivos conectados.";
+      mensajeDispositivosConectados.replaceChildren(rotuloMassId("❌ No fue posible cargar los dispositivos conectados."));
 
       mensajeDispositivosConectados.style.display =
         "block";
@@ -13162,7 +13126,7 @@ if (dispositivosParaMostrar.length === 0) {
 /* Cerrar todas las sesiones de MASS ID */
 async function cerrarTodasLasSesionesMassId() {
   const confirmarCierre = window.confirm(
-    "¿Seguro que deseas cerrar todas las sesiones de tu cuenta MASS ID?"
+    textoMassId("¿Seguro que deseas cerrar todas las sesiones de tu cuenta MASS ID?")
   );
 
   if (!confirmarCierre) {
@@ -13187,7 +13151,7 @@ async function cerrarTodasLasSesionesMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Todas las sesiones de tu cuenta MASS ID fueron cerradas correctamente."
+      textoMassId("Todas las sesiones de tu cuenta MASS ID fueron cerradas correctamente.")
     );
 
     window.location.reload();
@@ -13198,7 +13162,7 @@ async function cerrarTodasLasSesionesMassId() {
     );
 
     window.alert(
-      "No fue posible cerrar todas las sesiones. Intenta nuevamente."
+      textoMassId("No fue posible cerrar todas las sesiones. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdCerrarTodasSesiones) {
@@ -13212,8 +13176,8 @@ async function cerrarTodasLasSesionesMassId() {
 /* Desactivar cuenta MASS ID */
 async function desactivarCuentaMassId() {
   const confirmarDesactivacion = window.confirm(
-    "¿Seguro que deseas desactivar tu cuenta MASS ID?\n\n" +
-    "Tu cuenta quedará suspendida y no podrás iniciar sesión hasta solicitar su reactivación."
+    (textoMassId("¿Seguro que deseas desactivar tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tu cuenta quedará suspendida y no podrás iniciar sesión hasta solicitar su reactivación.")
   );
 
   if (!confirmarDesactivacion) {
@@ -13234,7 +13198,7 @@ async function desactivarCuentaMassId() {
 
     if (userError || !user) {
       throw userError || new Error(
-        "No fue posible identificar la cuenta MASS ID."
+        textoMassId("No fue posible identificar la cuenta MASS ID.")
       );
     }
 
@@ -13269,8 +13233,7 @@ async function desactivarCuentaMassId() {
     }
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "✅ Tu cuenta MASS ID fue desactivada correctamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("✅ Tu cuenta MASS ID fue desactivada correctamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#39ff14";
@@ -13290,7 +13253,7 @@ async function desactivarCuentaMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Tu cuenta MASS ID fue desactivada correctamente."
+      textoMassId("Tu cuenta MASS ID fue desactivada correctamente.")
     );
 
     window.location.reload();
@@ -13301,8 +13264,7 @@ async function desactivarCuentaMassId() {
     );
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "❌ No fue posible desactivar tu cuenta. Intenta nuevamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("❌ No fue posible desactivar tu cuenta. Intenta nuevamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
@@ -13312,7 +13274,7 @@ async function desactivarCuentaMassId() {
     }
 
     window.alert(
-      "No fue posible desactivar tu cuenta. Intenta nuevamente."
+      textoMassId("No fue posible desactivar tu cuenta. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdDesactivarCuenta) {
@@ -13333,7 +13295,7 @@ async function solicitarCierreCuentaMassId() {
 
   if (!motivoSeleccionado) {
     window.alert(
-      "Selecciona un motivo antes de solicitar el cierre de tu cuenta."
+      textoMassId("Selecciona un motivo antes de solicitar el cierre de tu cuenta.")
     );
 
     if (motivoCierreCuenta) {
@@ -13344,8 +13306,8 @@ async function solicitarCierreCuentaMassId() {
   }
 
   const primeraConfirmacion = window.confirm(
-    "¿Deseas solicitar el cierre de tu cuenta MASS ID?\n\n" +
-    "Tendrás 30 días para cambiar de opinión y recuperar tu cuenta."
+    (textoMassId("¿Deseas solicitar el cierre de tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tendrás 30 días para cambiar de opinión y recuperar tu cuenta.")
   );
 
   if (!primeraConfirmacion) {
@@ -13353,9 +13315,9 @@ async function solicitarCierreCuentaMassId() {
   }
 
   const segundaConfirmacion = window.confirm(
-    "Esta solicitud cerrará todas tus sesiones y bloqueará temporalmente el acceso.\n\n" +
-    "La eliminación definitiva quedará programada dentro de 30 días.\n\n" +
-    "¿Deseas continuar?"
+    (textoMassId("Esta solicitud cerrará todas tus sesiones y bloqueará temporalmente el acceso.") + "\n\n") +
+    (textoMassId("La eliminación definitiva quedará programada dentro de 30 días.") + "\n\n") +
+    textoMassId("¿Deseas continuar?")
   );
 
   if (!segundaConfirmacion) {
@@ -13376,7 +13338,7 @@ async function solicitarCierreCuentaMassId() {
 
     if (userError || !user) {
       throw userError || new Error(
-        "No fue posible identificar la cuenta MASS ID."
+        textoMassId("No fue posible identificar la cuenta MASS ID.")
       );
     }
 
@@ -13426,8 +13388,7 @@ async function solicitarCierreCuentaMassId() {
     }
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "✅ Tu solicitud de cierre fue registrada. Tendrás 30 días para recuperar tu cuenta.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("✅ Tu solicitud de cierre fue registrada. Tendrás 30 días para recuperar tu cuenta."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ffbf47";
@@ -13447,8 +13408,8 @@ async function solicitarCierreCuentaMassId() {
     localStorage.removeItem("mass_dispositivo_id");
 
     window.alert(
-      "Tu solicitud de cierre fue registrada correctamente.\n\n" +
-      "Tendrás 30 días para recuperar tu cuenta antes del cierre definitivo."
+      (textoMassId("Tu solicitud de cierre fue registrada correctamente.") + "\n\n") +
+      textoMassId("Tendrás 30 días para recuperar tu cuenta antes del cierre definitivo.")
     );
 
     window.location.reload();
@@ -13459,8 +13420,7 @@ async function solicitarCierreCuentaMassId() {
     );
 
     if (mensajeCerrarDesactivarCuenta) {
-      mensajeCerrarDesactivarCuenta.textContent =
-        "❌ No fue posible registrar la solicitud de cierre. Intenta nuevamente.";
+      mensajeCerrarDesactivarCuenta.replaceChildren(rotuloMassId("❌ No fue posible registrar la solicitud de cierre. Intenta nuevamente."));
 
       mensajeCerrarDesactivarCuenta.style.display = "block";
       mensajeCerrarDesactivarCuenta.style.color = "#ff5a5a";
@@ -13470,7 +13430,7 @@ async function solicitarCierreCuentaMassId() {
     }
 
     window.alert(
-      "No fue posible registrar la solicitud de cierre. Intenta nuevamente."
+      textoMassId("No fue posible registrar la solicitud de cierre. Intenta nuevamente.")
     );
   } finally {
     if (btnMassIdSolicitarCierreCuenta) {
@@ -13484,8 +13444,8 @@ async function solicitarCierreCuentaMassId() {
 /* Cancelar cierre y recuperar cuenta MASS ID */
 async function cancelarCierreCuentaMassId() {
   const confirmarRecuperacion = window.confirm(
-    "¿Deseas cancelar el cierre y recuperar tu cuenta MASS ID?\n\n" +
-    "Tu cuenta volverá a quedar activa y podrás iniciar sesión normalmente."
+    (textoMassId("¿Deseas cancelar el cierre y recuperar tu cuenta MASS ID?") + "\n\n") +
+    textoMassId("Tu cuenta volverá a quedar activa y podrás iniciar sesión normalmente.")
   );
 
   if (!confirmarRecuperacion) {
@@ -13502,7 +13462,7 @@ async function cancelarCierreCuentaMassId() {
 
 if (!authUserIdCierre) {
   window.alert(
-    "No fue posible identificar la cuenta que deseas recuperar. Inicia sesión nuevamente."
+    textoMassId("No fue posible identificar la cuenta que deseas recuperar. Inicia sesión nuevamente.")
   );
 
   return;
@@ -13587,8 +13547,8 @@ localStorage.setItem(
     );
 
     window.alert(
-      "✅ El cierre de tu cuenta fue cancelado correctamente.\n\n" +
-      "Tu cuenta MASS ID volvió a quedar activa."
+      (textoMassId("✅ El cierre de tu cuenta fue cancelado correctamente.") + "\n\n") +
+      textoMassId("Tu cuenta MASS ID volvió a quedar activa.")
     );
 
     if (typeof cerrarMiMassId === "function") {
@@ -13623,7 +13583,7 @@ setTimeout(async function () {
     );
 
     window.alert(
-      "No fue posible recuperar tu cuenta. Intenta nuevamente."
+      textoMassId("No fue posible recuperar tu cuenta. Intenta nuevamente.")
     );
   } finally {
     if (botonCancelarCierreActual) {
@@ -13643,8 +13603,7 @@ function mostrarMensajeDocumentosLegales(
     return;
   }
 
-  mensajeDocumentosLegales.textContent =
-    texto;
+  mensajeDocumentosLegales.replaceChildren(rotuloMassId(texto));
 
   mensajeDocumentosLegales.style.color =
     color;
@@ -13694,15 +13653,14 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
     (
       documentoLegal.descripcion +
       "\n\n" +
-      "El contenido jurídico completo de este documento se encuentra actualmente en preparación dentro del MASS ID Legal Center."
+      textoMassId("El contenido jurídico completo de este documento se encuentra actualmente en preparación dentro del MASS ID Legal Center.")
     );
 
   listaDocumentosLegales.style.display = "none";
   detalleDocumentoLegal.style.display = "block";
 
   if (estadoDocumentoLegal) {
-    estadoDocumentoLegal.textContent =
-      documentoLegal.estado || "En preparación";
+    estadoDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.estado || "En preparación"));
   }
 
   if (codigoDocumentoLegal) {
@@ -13711,8 +13669,7 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
   }
 
   if (tituloDocumentoLegal) {
-    tituloDocumentoLegal.textContent =
-      documentoLegal.titulo || "Documento legal";
+    tituloDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.titulo || "Documento legal"));
   }
 
   if (versionDocumentoLegal) {
@@ -13721,8 +13678,7 @@ function abrirDocumentoLegalMassId(codigoDocumento) {
   }
 
   if (vigenciaDocumentoLegal) {
-    vigenciaDocumentoLegal.textContent =
-      documentoLegal.vigencia || "Pendiente";
+    vigenciaDocumentoLegal.replaceChildren(rotuloMassId(documentoLegal.vigencia || "Pendiente"));
   }
 
   if (contenidoDocumentoLegal) {
@@ -13772,7 +13728,7 @@ function renderizarDocumentosLegalesMassId() {
             data-documento-legal="${documentoLegal.codigo}"
             role="button"
             tabindex="0"
-            aria-label="Abrir ${documentoLegal.titulo}"
+            data-mass-aria aria-label="Abrir ${documentoLegal.titulo}"
             style="
               padding:16px;
               border:1px solid #333;
@@ -13818,7 +13774,7 @@ function renderizarDocumentosLegalesMassId() {
                   font-weight:bold;
                 "
               >
-                ${documentoLegal.estado}
+              <span data-mass-ui>${documentoLegal.estado}</span>
               </span>
             </div>
 
@@ -13830,7 +13786,7 @@ function renderizarDocumentosLegalesMassId() {
                 line-height:1.35;
               "
             >
-              ${documentoLegal.titulo}
+              <span data-mass-ui>${documentoLegal.titulo}</span>
             </h4>
 
             <p
@@ -13842,7 +13798,7 @@ function renderizarDocumentosLegalesMassId() {
                 flex:1;
               "
             >
-              ${documentoLegal.descripcion}
+              <span data-mass-ui>${documentoLegal.descripcion}</span>
             </p>
 
             <div
@@ -13858,11 +13814,11 @@ function renderizarDocumentosLegalesMassId() {
               "
             >
               <span>
-                Versión ${documentoLegal.version}
+                <span data-mass-ui>Versión</span> ${documentoLegal.version}
               </span>
 
               <span style="color:#39ff14;">
-                Consultar →
+                <span data-mass-ui>Consultar →</span>
               </span>
             </div>
           </article>
@@ -13930,7 +13886,7 @@ function renderizarDocumentosLegalesMassId() {
   );
 
   mostrarMensajeDocumentosLegales(
-    `✅ ${catalogoDocumentosLegalesMassId.length} documentos oficiales cargados.`,
+    textoMassId("✅ {n} documentos oficiales cargados.").replace("{n}", String(catalogoDocumentosLegalesMassId.length)),
     "#39ff14"
   );
 }
@@ -14338,8 +14294,7 @@ function limpiarFormularioCambioContrasena() {
     btnContinuarCambioContrasena.style.display =
       "block";
 
-    btnContinuarCambioContrasena.textContent =
-      "🔐 Continuar y verificar identidad";
+    btnContinuarCambioContrasena.replaceChildren(rotuloMassId("🔐 Continuar y verificar identidad"));
 
     btnContinuarCambioContrasena.style.cursor =
       "pointer";
@@ -14352,8 +14307,7 @@ function limpiarFormularioCambioContrasena() {
     btnConfirmarMfaCambioContrasena.disabled =
       false;
 
-    btnConfirmarMfaCambioContrasena.textContent =
-      "✅ Confirmar código y cambiar contraseña";
+    btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("✅ Confirmar código y cambiar contraseña"));
 
     btnConfirmarMfaCambioContrasena.style.cursor =
       "pointer";
@@ -14372,8 +14326,7 @@ function mostrarMensajeCambioContrasena(
     return;
   }
 
-  mensajeCambioContrasena.textContent =
-    texto;
+  mensajeCambioContrasena.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioContrasena.style.color =
     color;
@@ -14394,8 +14347,7 @@ function mostrarMensajeMfaCambioContrasena(
     return;
   }
 
-  mensajeMfaCambioContrasena.textContent =
-    texto;
+  mensajeMfaCambioContrasena.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioContrasena.style.color =
     color;
@@ -14622,8 +14574,7 @@ if (
       btnContinuarCambioContrasena.disabled =
         true;
 
-      btnContinuarCambioContrasena.textContent =
-        "⏳ Confirmando contraseña...";
+      btnContinuarCambioContrasena.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
       btnContinuarCambioContrasena.style.cursor =
         "not-allowed";
@@ -14652,7 +14603,7 @@ if (
           !supabaseClient.supabaseKey
         ) {
           throw new Error(
-            "No fue posible preparar la verificación segura."
+            textoMassId("No fue posible preparar la verificación segura.")
           );
         }
 
@@ -14710,7 +14661,7 @@ if (
           user.id
         ) {
           throw new Error(
-            "La identidad confirmada no coincide con la sesión activa."
+            textoMassId("La identidad confirmada no coincide con la sesión activa.")
           );
         }
 
@@ -14783,8 +14734,7 @@ if (
     "#ffffff"
   );
 
-  btnContinuarCambioContrasena.textContent =
-    "⏳ Actualizando contraseña...";
+  btnContinuarCambioContrasena.replaceChildren(rotuloMassId("⏳ Actualizando contraseña..."));
 
   const {
     data: datosContrasenaActualizada,
@@ -14838,14 +14788,13 @@ if (errorRegistrarActividadContrasena) {
     "#39ff14"
   );
 
-  btnContinuarCambioContrasena.textContent =
-    "✅ Contraseña actualizada";
+  btnContinuarCambioContrasena.replaceChildren(rotuloMassId("✅ Contraseña actualizada"));
 
   btnContinuarCambioContrasena.style.opacity =
     "1";
 
   alert(
-    "✅ Tu contraseña fue actualizada correctamente."
+    textoMassId("✅ Tu contraseña fue actualizada correctamente.")
   );
 
   regresarDesdeCambioContrasena();
@@ -15019,8 +14968,7 @@ if (
       btnConfirmarMfaCambioContrasena.disabled =
         true;
 
-      btnConfirmarMfaCambioContrasena.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioContrasena.style.cursor =
         "not-allowed";
@@ -15066,9 +15014,7 @@ if (
         inputCodigoMfaCambioContrasena
           .value = "";
 
-        btnConfirmarMfaCambioContrasena
-          .textContent =
-            "⏳ Actualizando contraseña...";
+        btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("⏳ Actualizando contraseña..."));
 
         mostrarMensajeMfaCambioContrasena(
           "⏳ Identidad confirmada. Actualizando tu contraseña...",
@@ -15134,15 +15080,13 @@ if (errorRegistrarActividadContrasenaMfa) {
           "#39ff14"
         );
 
-        btnConfirmarMfaCambioContrasena
-          .textContent =
-            "✅ Contraseña actualizada";
+        btnConfirmarMfaCambioContrasena.replaceChildren(rotuloMassId("✅ Contraseña actualizada"));
 
         btnConfirmarMfaCambioContrasena
           .style.opacity = "1";
 
         alert(
-          "✅ Tu contraseña fue actualizada correctamente."
+          textoMassId("✅ Tu contraseña fue actualizada correctamente.")
         );
 
         regresarDesdeCambioContrasena();
@@ -15235,8 +15179,7 @@ if (btnConfirmarMfaCambioTelefono) {
   btnConfirmarMfaCambioTelefono.disabled =
     false;
 
-  btnConfirmarMfaCambioTelefono.textContent =
-    "✅ Confirmar identidad y enviar SMS";
+  btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("✅ Confirmar identidad y enviar SMS"));
 
   btnConfirmarMfaCambioTelefono.style.cursor =
     "pointer";
@@ -15252,8 +15195,7 @@ if (panelSmsCambioTelefono) {
 }
 
 if (telefonoSmsDestino) {
-  telefonoSmsDestino.textContent =
-    "Nuevo teléfono";
+  telefonoSmsDestino.replaceChildren(rotuloMassId("Nuevo teléfono"));
 }
 
 if (inputCodigoSmsCambioTelefono) {
@@ -15273,8 +15215,7 @@ if (btnConfirmarSmsCambioTelefono) {
   btnConfirmarSmsCambioTelefono.disabled =
     false;
 
-  btnConfirmarSmsCambioTelefono.textContent =
-    "✅ Confirmar código SMS y cambiar teléfono";
+  btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("✅ Confirmar código SMS y cambiar teléfono"));
 
   btnConfirmarSmsCambioTelefono.style.cursor =
     "pointer";
@@ -15287,8 +15228,7 @@ if (btnReenviarSmsCambioTelefono) {
   btnReenviarSmsCambioTelefono.disabled =
     false;
 
-  btnReenviarSmsCambioTelefono.textContent =
-    "🔄 Reenviar código SMS";
+  btnReenviarSmsCambioTelefono.replaceChildren(rotuloMassId("🔄 Reenviar código SMS"));
 
   btnReenviarSmsCambioTelefono.style.cursor =
     "pointer";
@@ -15304,8 +15244,7 @@ if (btnContinuarCambioTelefono) {
 
   if (btnContinuarCambioTelefono) {
     btnContinuarCambioTelefono.disabled = false;
-    btnContinuarCambioTelefono.textContent =
-      "🔐 Continuar y verificar identidad";
+    btnContinuarCambioTelefono.replaceChildren(rotuloMassId("🔐 Continuar y verificar identidad"));
     btnContinuarCambioTelefono.style.cursor =
       "pointer";
     btnContinuarCambioTelefono.style.opacity =
@@ -15322,8 +15261,7 @@ function mostrarMensajeCambioTelefono(
     return;
   }
 
-  mensajeCambioTelefono.textContent =
-    texto;
+  mensajeCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioTelefono.style.color =
     color;
@@ -15366,7 +15304,7 @@ if (
       const telefonoActual =
         perfil.telefono ||
         user.phone ||
-        "No disponible";
+        textoMassId("No disponible");
 
       if (telefonoActualCambio) {
         telefonoActualCambio.textContent =
@@ -15556,8 +15494,7 @@ let clienteVerificacionPasswordTelefono =
 btnContinuarCambioTelefono.disabled =
   true;
 
-btnContinuarCambioTelefono.textContent =
-  "⏳ Confirmando contraseña...";
+btnContinuarCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
 btnContinuarCambioTelefono.style.cursor =
   "not-allowed";
@@ -15586,7 +15523,7 @@ try {
     !supabaseClient.supabaseKey
   ) {
     throw new Error(
-      "No fue posible preparar la verificación segura."
+      textoMassId("No fue posible preparar la verificación segura.")
     );
   }
 
@@ -15644,7 +15581,7 @@ try {
     user.id
   ) {
     throw new Error(
-      "La identidad confirmada no coincide con la sesión activa."
+      textoMassId("La identidad confirmada no coincide con la sesión activa.")
     );
   }
 
@@ -15819,8 +15756,7 @@ function mostrarMensajeMfaCambioTelefono(
     return;
   }
 
-  mensajeMfaCambioTelefono.textContent =
-    texto;
+  mensajeMfaCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioTelefono.style.color =
     color;
@@ -15851,8 +15787,7 @@ function mostrarMensajeSmsCambioTelefono(
     return;
   }
 
-  mensajeSmsCambioTelefono.textContent =
-    texto;
+  mensajeSmsCambioTelefono.replaceChildren(rotuloMassId(texto));
 
   mensajeSmsCambioTelefono.style.color =
     color;
@@ -15958,8 +15893,7 @@ if (
       btnConfirmarMfaCambioTelefono.disabled =
         true;
 
-      btnConfirmarMfaCambioTelefono.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioTelefono.style.cursor =
         "not-allowed";
@@ -16015,8 +15949,7 @@ if (!telefonoE164PendienteCambio) {
   return;
 }
 
-btnConfirmarMfaCambioTelefono.textContent =
-  "⏳ Enviando código SMS...";
+btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("⏳ Enviando código SMS..."));
 
 mostrarMensajeMfaCambioTelefono(
   "⏳ Identidad confirmada. Enviando el código al nuevo teléfono...",
@@ -16091,8 +16024,7 @@ if (panelSmsCambioTelefono) {
   });
 }
 
-btnConfirmarMfaCambioTelefono.textContent =
-  "✅ SMS enviado";
+btnConfirmarMfaCambioTelefono.replaceChildren(rotuloMassId("✅ SMS enviado"));
 
 btnConfirmarMfaCambioTelefono.style.opacity =
   "1";
@@ -16184,8 +16116,7 @@ if (
       btnConfirmarSmsCambioTelefono.disabled =
         true;
 
-      btnConfirmarSmsCambioTelefono.textContent =
-        "⏳ Confirmando código SMS...";
+      btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Confirmando código SMS..."));
 
       btnConfirmarSmsCambioTelefono.style.cursor =
         "not-allowed";
@@ -16221,7 +16152,7 @@ if (
           throw (
             errorUsuarioAntesSms ||
             new Error(
-              "La sesión activa no coincide con la cuenta."
+              textoMassId("La sesión activa no coincide con la cuenta.")
             )
           );
         }
@@ -16287,7 +16218,7 @@ if (
           throw (
             errorUsuarioConfirmado ||
             new Error(
-              "No fue posible confirmar la identidad después del SMS."
+              textoMassId("No fue posible confirmar la identidad después del SMS.")
             )
           );
         }
@@ -16304,7 +16235,7 @@ if (
           telefonoPendienteDigitos
         ) {
           throw new Error(
-            "El teléfono confirmado no coincide con el teléfono solicitado."
+            textoMassId("El teléfono confirmado no coincide con el teléfono solicitado.")
           );
         }
 
@@ -16320,8 +16251,7 @@ if (
           )
             .replace(/\D/g, "");
 
-        btnConfirmarSmsCambioTelefono.textContent =
-          "⏳ Sincronizando teléfono...";
+        btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Sincronizando teléfono..."));
 
         mostrarMensajeSmsCambioTelefono(
           "⏳ Teléfono verificado. Sincronizando tu cuenta MASS...",
@@ -16411,7 +16341,7 @@ if (
           throw (
             errorActualizarPerfilTelefono ||
             new Error(
-              "No se encontró el perfil MASS ID para actualizar."
+              textoMassId("No se encontró el perfil MASS ID para actualizar.")
             )
           );
         }
@@ -16454,8 +16384,7 @@ if (
           "#39ff14"
         );
 
-        btnConfirmarSmsCambioTelefono.textContent =
-          "✅ Teléfono actualizado";
+        btnConfirmarSmsCambioTelefono.replaceChildren(rotuloMassId("✅ Teléfono actualizado"));
 
         btnConfirmarSmsCambioTelefono.style.opacity =
           "1";
@@ -16483,7 +16412,7 @@ if (errorRegistrarActividadTelefono) {
         await abrirMiMassId();
 
         alert(
-          "✅ Tu nuevo teléfono fue verificado por SMS y actualizado correctamente."
+          textoMassId("✅ Tu nuevo teléfono fue verificado por SMS y actualizado correctamente.")
         );
       } catch (error) {
         console.error(
@@ -16496,8 +16425,8 @@ if (errorRegistrarActividadTelefono) {
 
         const mensajeErrorTelefono =
           error?.code === "23505"
-            ? "❌ Ese teléfono ya está registrado en otra cuenta MASS."
-            : "❌ No fue posible completar el cambio de teléfono. Inténtalo nuevamente.";
+            ? textoMassId("❌ Ese teléfono ya está registrado en otra cuenta MASS.")
+            : textoMassId("❌ No fue posible completar el cambio de teléfono. Inténtalo nuevamente.");
 
         mostrarMensajeSmsCambioTelefono(
           mensajeErrorTelefono,
@@ -16542,13 +16471,12 @@ if (btnReenviarSmsCambioTelefono) {
       }
 
       const textoOriginalBotonReenvio =
-        "🔄 Reenviar código SMS";
+        textoMassId("🔄 Reenviar código SMS");
 
       btnReenviarSmsCambioTelefono.disabled =
         true;
 
-      btnReenviarSmsCambioTelefono.textContent =
-        "⏳ Reenviando código...";
+      btnReenviarSmsCambioTelefono.replaceChildren(rotuloMassId("⏳ Reenviando código..."));
 
       btnReenviarSmsCambioTelefono.style.cursor =
         "not-allowed";
@@ -16593,7 +16521,7 @@ if (btnReenviarSmsCambioTelefono) {
         let segundosRestantes = 60;
 
         btnReenviarSmsCambioTelefono.textContent =
-          "⏳ Reenviar en " +
+          (textoMassId("⏳ Reenviar en") + " ") +
           segundosRestantes +
           " s";
 
@@ -16633,7 +16561,7 @@ if (btnReenviarSmsCambioTelefono) {
             }
 
             btnReenviarSmsCambioTelefono.textContent =
-              "⏳ Reenviar en " +
+              (textoMassId("⏳ Reenviar en") + " ") +
               segundosRestantes +
               " s";
           }, 1000);
@@ -16674,7 +16602,7 @@ if (
       const correoActual =
         perfil.email ||
         user.email ||
-        "No disponible";
+        textoMassId("No disponible");
 
       if (correoActualCambio) {
         correoActualCambio.textContent =
@@ -16771,8 +16699,7 @@ function mostrarMensajeCambioCorreo(
     return;
   }
 
-  mensajeCambioCorreo.textContent =
-    texto;
+  mensajeCambioCorreo.replaceChildren(rotuloMassId(texto));
 
   mensajeCambioCorreo.style.color =
     color;
@@ -16896,8 +16823,7 @@ if (
       btnContinuarCambioCorreo.disabled =
         true;
 
-      btnContinuarCambioCorreo.textContent =
-        "⏳ Confirmando contraseña...";
+      btnContinuarCambioCorreo.replaceChildren(rotuloMassId("⏳ Confirmando contraseña..."));
 
       btnContinuarCambioCorreo.style.cursor =
         "not-allowed";
@@ -16926,7 +16852,7 @@ if (
           !supabaseClient.supabaseKey
         ) {
           throw new Error(
-            "No fue posible preparar la verificación segura."
+            textoMassId("No fue posible preparar la verificación segura.")
           );
         }
 
@@ -16988,7 +16914,7 @@ if (
           user.id
         ) {
           throw new Error(
-            "La identidad confirmada no coincide con la sesión activa."
+            textoMassId("La identidad confirmada no coincide con la sesión activa.")
           );
         }
 
@@ -17164,8 +17090,7 @@ function mostrarMensajeMfaCambioCorreo(
     return;
   }
 
-  mensajeMfaCambioCorreo.textContent =
-    texto;
+  mensajeMfaCambioCorreo.replaceChildren(rotuloMassId(texto));
 
   mensajeMfaCambioCorreo.style.color =
     color;
@@ -17231,8 +17156,7 @@ if (
       btnConfirmarMfaCambioCorreo.disabled =
         true;
 
-      btnConfirmarMfaCambioCorreo.textContent =
-        "⏳ Confirmando código...";
+      btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("⏳ Confirmando código..."));
 
       btnConfirmarMfaCambioCorreo.style.cursor =
         "not-allowed";
@@ -17275,8 +17199,7 @@ if (
         inputCodigoMfaCambioCorreo.value =
           "";
 
-        btnConfirmarMfaCambioCorreo.textContent =
-          "⏳ Solicitando cambio...";
+        btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("⏳ Solicitando cambio..."));
 
         mostrarMensajeMfaCambioCorreo(
           "⏳ Código confirmado. Enviando la solicitud de cambio de correo...",
@@ -17323,9 +17246,9 @@ if (
 );
 
         mostrarMensajeMfaCambioCorreo(
-          "✅ Solicitud enviada. Revisa " +
+          (textoMassId("✅ Solicitud enviada. Revisa") + " ") +
             correoPendienteConfirmacion +
-            " y abre el enlace de verificación. Si también recibes un mensaje en tu correo actual, confirma ambos enlaces.",
+            (" " + textoMassId("y abre el enlace de verificación. Si también recibes un mensaje en tu correo actual, confirma ambos enlaces.")),
           "#39ff14"
         );
 
@@ -17352,8 +17275,7 @@ if (errorRegistrarSolicitudCambioCorreo) {
           "#39ff14"
         );
 
-        btnConfirmarMfaCambioCorreo.textContent =
-          "✅ Revisa tu nuevo correo";
+        btnConfirmarMfaCambioCorreo.replaceChildren(rotuloMassId("✅ Revisa tu nuevo correo"));
 
         btnConfirmarMfaCambioCorreo.style.opacity =
           "1";
@@ -17424,14 +17346,13 @@ if (
 
       direccionEditandoId = null;
 
-    btnGuardarDireccion.textContent =
-      "💾 Guardar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Guardar dirección"));
 
     inputDireccionNombre.value =
       "Casa";
 
     inputDireccionPais.value =
-      "Estados Unidos";
+      textoMassId("Estados Unidos");
 
     inputDireccionLinea1.value =
       "";
@@ -17483,8 +17404,7 @@ if (
 
       direccionEditandoId = null;
 
-    btnGuardarDireccion.textContent =
-      "💾 Guardar dirección";
+    btnGuardarDireccion.replaceChildren(rotuloMassId("💾 Guardar dirección"));
     
     direccionFormulario.style.display = "none";
     direccionInvitacion.style.display = "block";
@@ -17519,8 +17439,8 @@ if (
         inputDireccionNombre.value.trim() ||
         "Casa";
 
-      const pais =
-        inputDireccionPais.value.trim();
+      const paisIngresado = inputDireccionPais.value.trim();
+      const pais = paisIngresado === "United States" ? "Estados Unidos" : paisIngresado;
 
       const direccionLinea1 =
         inputDireccionLinea1.value.trim();
@@ -17563,8 +17483,7 @@ if (
           return;
         }
 
-        mensajeDireccionFormulario.textContent =
-          texto;
+        mensajeDireccionFormulario.replaceChildren(rotuloMassId(texto));
 
         mensajeDireccionFormulario.style.color =
           color;
@@ -17625,10 +17544,9 @@ if (
 
       btnGuardarDireccion.disabled = true;
 
-            btnGuardarDireccion.textContent =
-        esEdicion
+            btnGuardarDireccion.replaceChildren(rotuloMassId(esEdicion
           ? "⏳ Actualizando dirección..."
-          : "⏳ Guardando dirección...";
+          : "⏳ Guardando dirección..."));
 
       btnGuardarDireccion.style.cursor =
         "not-allowed";
@@ -17638,8 +17556,8 @@ if (
 
             mostrarMensajeDireccion(
         esEdicion
-          ? "Actualizando tu dirección privada..."
-          : "Guardando tu dirección privada...",
+          ? textoMassId("Actualizando tu dirección privada...")
+          : textoMassId("Guardando tu dirección privada..."),
         "#fff"
       );
 
@@ -17732,8 +17650,7 @@ if (
         }
 
         if (direccionEstado) {
-          direccionEstado.textContent =
-            "✅ Dirección preparada para servicios MASS";
+          direccionEstado.replaceChildren(rotuloMassId("✅ Dirección preparada para servicios MASS"));
 
           direccionEstado.style.display =
             "block";
@@ -17741,8 +17658,8 @@ if (
 
                 mostrarMensajeDireccion(
           esEdicion
-            ? "✅ Dirección actualizada correctamente."
-            : "✅ Dirección guardada correctamente.",
+            ? textoMassId("✅ Dirección actualizada correctamente.")
+            : textoMassId("✅ Dirección guardada correctamente."),
           "#39ff14"
         );
 
@@ -17767,8 +17684,7 @@ if (
             true;
         }
 
-        btnAgregarDireccion.textContent =
-          "📍 Agregar otra dirección";
+        btnAgregarDireccion.replaceChildren(rotuloMassId("📍 Agregar otra dirección"));
 
         direccionFormulario.style.display =
           "none";
@@ -17795,10 +17711,9 @@ if (
       } finally {
         btnGuardarDireccion.disabled = false;
 
-                btnGuardarDireccion.textContent =
-          direccionEditandoId
+                btnGuardarDireccion.replaceChildren(rotuloMassId(direccionEditandoId
             ? "💾 Actualizar dirección"
-            : "💾 Guardar dirección";
+            : "💾 Guardar dirección"));
 
         btnGuardarDireccion.style.cursor =
           "pointer";
@@ -17867,10 +17782,9 @@ if (
     user.email_confirmed_at
   );
 
-  seguridadCorreoEstado.textContent =
-    correoConfirmado
+  seguridadCorreoEstado.replaceChildren(rotuloMassId(correoConfirmado
       ? "Correo verificado ✅"
-      : "Correo pendiente de verificar";
+      : "Correo pendiente de verificar"));
 
   seguridadCorreoEstado.style.color =
     correoConfirmado
@@ -17879,8 +17793,7 @@ if (
 }
 
 if (seguridadMfaEstado) {
-  seguridadMfaEstado.textContent =
-    "Verificando...";
+  seguridadMfaEstado.replaceChildren(rotuloMassId("Verificando..."));
 
   seguridadMfaEstado.style.color =
     "#fff";
@@ -17898,8 +17811,7 @@ if (seguridadMfaEstado) {
       errorMfa
     );
 
-    seguridadMfaEstado.textContent =
-      "No disponible";
+    seguridadMfaEstado.replaceChildren(rotuloMassId("No disponible"));
 
     seguridadMfaEstado.style.color =
       "#ff5b5b";
@@ -17920,10 +17832,9 @@ if (seguridadMfaEstado) {
 if (btnConfigurarMfa) {
   btnConfigurarMfa.disabled = false;
 
-  btnConfigurarMfa.textContent =
-    mfaConfigurada
+  btnConfigurarMfa.replaceChildren(rotuloMassId(mfaConfigurada
       ? "🗑️ Desactivar verificación"
-      : "🔐 Configurar verificación";
+      : "🔐 Configurar verificación"));
 
   btnConfigurarMfa.style.borderColor =
     mfaConfigurada
@@ -17942,12 +17853,11 @@ if (btnConfigurarMfa) {
     "1";
 } 
 
-    seguridadMfaEstado.textContent =
-      nivelActual === "aal2"
+    seguridadMfaEstado.replaceChildren(rotuloMassId(nivelActual === "aal2"
         ? "Configurada y activa ✅"
         : mfaConfigurada
           ? "Configurada ✅"
-          : "No configurada";
+          : "No configurada"));
 
     seguridadMfaEstado.style.color =
       mfaConfigurada
@@ -17984,7 +17894,7 @@ if (
    if (mfaConfiguradaActualmente) {
   const confirmarDesactivacion =
     window.confirm(
-      "¿Deseas desactivar la verificación en dos pasos?"
+      textoMassId("¿Deseas desactivar la verificación en dos pasos?")
     );
 
   if (!confirmarDesactivacion) {
@@ -17992,8 +17902,7 @@ if (
   }
 
   btnConfigurarMfa.disabled = true;
-  btnConfigurarMfa.textContent =
-    "⏳ Desactivando...";
+  btnConfigurarMfa.replaceChildren(rotuloMassId("⏳ Desactivando..."));
 
   try {
     const {
@@ -18039,8 +17948,8 @@ if (
     if (factoresTotpVerificados.length !== 1) {
       throw new Error(
         factoresTotpVerificados.length === 0
-          ? "No se encontró un factor verificado."
-          : "Existe más de un factor verificado."
+          ? textoMassId("No se encontró un factor verificado.")
+          : textoMassId("Existe más de un factor verificado.")
       );
     }
 
@@ -18065,7 +17974,7 @@ if (errorNivelSesion) {
 if (nivelSesion?.currentLevel !== "aal2") {
   const codigoDesactivacion =
     window.prompt(
-      "Escribe el código actual de seis dígitos de tu aplicación de autenticación."
+      textoMassId("Escribe el código actual de seis dígitos de tu aplicación de autenticación.")
     );
 
   if (codigoDesactivacion === null) {
@@ -18079,7 +17988,7 @@ if (nivelSesion?.currentLevel !== "aal2") {
 
   if (!/^\d{6}$/.test(codigoLimpio)) {
     throw new Error(
-      "Debes escribir exactamente seis dígitos."
+      textoMassId("Debes escribir exactamente seis dígitos.")
     );
   }
 
@@ -18094,7 +18003,7 @@ if (nivelSesion?.currentLevel !== "aal2") {
 
   if (errorConfirmarIdentidad) {
     throw new Error(
-      "El código de autenticación es incorrecto o venció."
+      textoMassId("El código de autenticación es incorrecto o venció.")
     );
   }
 }
@@ -18132,15 +18041,13 @@ if (errorRegistrarActividadMfaDesactivado) {
     mfaConfiguradaActualmente = false;
 
     if (seguridadMfaEstado) {
-      seguridadMfaEstado.textContent =
-        "No configurada";
+      seguridadMfaEstado.replaceChildren(rotuloMassId("No configurada"));
 
       seguridadMfaEstado.style.color =
         "#ffbf47";
     }
 
-    btnConfigurarMfa.textContent =
-      "🔐 Configurar verificación";
+    btnConfigurarMfa.replaceChildren(rotuloMassId("🔐 Configurar verificación"));
 
     btnConfigurarMfa.style.borderColor =
       "#39ff14";
@@ -18149,7 +18056,7 @@ if (errorRegistrarActividadMfaDesactivado) {
       "#fff";
 
     alert(
-      "✅ La verificación en dos pasos fue desactivada."
+      textoMassId("✅ La verificación en dos pasos fue desactivada.")
     );
   } catch (error) {
     console.error(
@@ -18158,17 +18065,16 @@ if (errorRegistrarActividadMfaDesactivado) {
     );
 
     alert(
-      `❌ No fue posible desactivar la verificación: ${
-        error.message || "Error desconocido"
+      `${textoMassId("❌ No fue posible desactivar la verificación:")} ${
+        error.message || textoMassId("Error desconocido")
       }`
     );
   } finally {
   btnConfigurarMfa.disabled = false;
 
-  btnConfigurarMfa.textContent =
-    mfaConfiguradaActualmente
+  btnConfigurarMfa.replaceChildren(rotuloMassId(mfaConfiguradaActualmente
       ? "🗑️ Desactivar verificación"
-      : "🔐 Configurar verificación";
+      : "🔐 Configurar verificación"));
 
   btnConfigurarMfa.style.borderColor =
     mfaConfiguradaActualmente
@@ -18219,8 +18125,7 @@ if (errorRegistrarActividadMfaDesactivado) {
     }
 
     btnConfigurarMfa.disabled = true;
-    btnConfigurarMfa.textContent =
-      "⏳ Generando código...";
+    btnConfigurarMfa.replaceChildren(rotuloMassId("⏳ Generando código..."));
 
     try {
       if (qrMfaImagen) {
@@ -18229,16 +18134,14 @@ if (errorRegistrarActividadMfaDesactivado) {
       }
 
       if (qrMfaPendiente) {
-        qrMfaPendiente.textContent =
-          "Generando QR...";
+        qrMfaPendiente.replaceChildren(rotuloMassId("Generando QR..."));
 
         qrMfaPendiente.style.display =
           "inline";
       }
 
       if (claveMfaManual) {
-        claveMfaManual.textContent =
-          "Generando clave...";
+        claveMfaManual.replaceChildren(rotuloMassId("Generando clave..."));
       }
 
      factorMfaId = null;
@@ -18272,7 +18175,7 @@ await eliminarFactoresMfaPendientes();
         !claveSecreta
       ) {
         throw new Error(
-          "Supabase no devolvió los datos completos de configuración."
+          textoMassId("Supabase no devolvió los datos completos de configuración.")
         );
       }
 
@@ -18293,8 +18196,7 @@ await eliminarFactoresMfaPendientes();
       }
 
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Escanea el QR y escribe el código generado por tu aplicación.";
+        mensajeMfa.replaceChildren(rotuloMassId("Escanea el QR y escribe el código generado por tu aplicación."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#39ff14";
@@ -18313,22 +18215,20 @@ await eliminarFactoresMfaPendientes();
       }
 
       if (qrMfaPendiente) {
-        qrMfaPendiente.textContent =
-          "QR no disponible";
+        qrMfaPendiente.replaceChildren(rotuloMassId("QR no disponible"));
 
         qrMfaPendiente.style.display =
           "inline";
       }
 
       if (claveMfaManual) {
-        claveMfaManual.textContent =
-          "Clave no disponible";
+        claveMfaManual.replaceChildren(rotuloMassId("Clave no disponible"));
       }
 
       if (mensajeMfa) {
         mensajeMfa.textContent =
-          `No fue posible generar la configuración: ${
-            error.message || "Error desconocido"
+          `${textoMassId("No fue posible generar la configuración:")} ${
+            error.message || textoMassId("Error desconocido")
           }`;
 
         mensajeMfa.style.display = "block";
@@ -18336,8 +18236,7 @@ await eliminarFactoresMfaPendientes();
       }
     } finally {
       btnConfigurarMfa.disabled = false;
-      btnConfigurarMfa.textContent =
-        "🔐 Configurar verificación";
+      btnConfigurarMfa.replaceChildren(rotuloMassId("🔐 Configurar verificación"));
     }
   };
 }
@@ -18358,8 +18257,7 @@ if (
 
     if (!factorMfaId) {
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Primero genera y escanea un código QR.";
+        mensajeMfa.replaceChildren(rotuloMassId("Primero genera y escanea un código QR."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ffbf47";
@@ -18370,8 +18268,7 @@ if (
 
     if (!/^\d{6}$/.test(codigoMfa)) {
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "Escribe exactamente los seis dígitos de tu aplicación.";
+        mensajeMfa.replaceChildren(rotuloMassId("Escribe exactamente los seis dígitos de tu aplicación."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ffbf47";
@@ -18382,14 +18279,12 @@ if (
     }
 
     btnConfirmarMfa.disabled = true;
-    btnConfirmarMfa.textContent =
-      "⏳ Verificando código...";
+    btnConfirmarMfa.replaceChildren(rotuloMassId("⏳ Verificando código..."));
 
     inputCodigoMfa.disabled = true;
 
     if (mensajeMfa) {
-      mensajeMfa.textContent =
-        "Verificando el código de seguridad...";
+      mensajeMfa.replaceChildren(rotuloMassId("Verificando el código de seguridad..."));
 
       mensajeMfa.style.display = "block";
       mensajeMfa.style.color = "#fff";
@@ -18434,8 +18329,7 @@ if (errorRegistrarActividadMfa) {
       factorMfaId = null;
 
       if (seguridadMfaEstado) {
-        seguridadMfaEstado.textContent =
-          "Configurada y activa ✅";
+        seguridadMfaEstado.replaceChildren(rotuloMassId("Configurada y activa ✅"));
 
         seguridadMfaEstado.style.color =
           "#39ff14";
@@ -18444,8 +18338,7 @@ if (errorRegistrarActividadMfa) {
       if (btnConfigurarMfa) {
         btnConfigurarMfa.disabled = true;
 
-        btnConfigurarMfa.textContent =
-          "✅ Verificación configurada";
+        btnConfigurarMfa.replaceChildren(rotuloMassId("✅ Verificación configurada"));
 
         btnConfigurarMfa.style.cursor =
           "not-allowed";
@@ -18464,7 +18357,7 @@ if (errorRegistrarActividadMfa) {
       }
 
       alert(
-        "✅ La verificación en dos pasos fue activada correctamente."
+        textoMassId("✅ La verificación en dos pasos fue activada correctamente.")
       );
     } catch (error) {
       console.error(
@@ -18473,8 +18366,7 @@ if (errorRegistrarActividadMfa) {
       );
 
       if (mensajeMfa) {
-        mensajeMfa.textContent =
-          "El código es incorrecto o venció. Genera uno nuevo en tu aplicación e inténtalo otra vez.";
+        mensajeMfa.replaceChildren(rotuloMassId("El código es incorrecto o venció. Genera uno nuevo en tu aplicación e inténtalo otra vez."));
 
         mensajeMfa.style.display = "block";
         mensajeMfa.style.color = "#ff5b5b";
@@ -18485,8 +18377,7 @@ if (errorRegistrarActividadMfa) {
     } finally {
       btnConfirmarMfa.disabled = false;
 
-      btnConfirmarMfa.textContent =
-        "✅ Confirmar y activar";
+      btnConfirmarMfa.replaceChildren(rotuloMassId("✅ Confirmar y activar"));
 
       inputCodigoMfa.disabled = false;
     }
@@ -18569,7 +18460,7 @@ actualizarBotonGuardarFoto(false);
     ];
 
     if (!formatosPermitidos.includes(archivo.type)) {
-      alert("❌ Selecciona una imagen JPG, PNG o WEBP.");
+      alert(textoMassId("❌ Selecciona una imagen JPG, PNG o WEBP."));
       fotoInput.value = "";
       return;
     }
@@ -18577,7 +18468,7 @@ actualizarBotonGuardarFoto(false);
     const limiteBytes = 5 * 1024 * 1024;
 
     if (archivo.size > limiteBytes) {
-      alert("❌ La imagen no puede superar los 5 MB.");
+      alert(textoMassId("❌ La imagen no puede superar los 5 MB."));
       fotoInput.value = "";
       return;
     }
@@ -18594,7 +18485,7 @@ actualizarBotonGuardarFoto(false);
 };
 
     lector.onerror = function () {
-      alert("❌ No fue posible leer la imagen seleccionada.");
+      alert(textoMassId("❌ No fue posible leer la imagen seleccionada."));
       fotoInput.value = "";
     
  archivoFotoSeleccionado = null;
@@ -18614,7 +18505,7 @@ if (
 ) {
   btnGuardarFoto.onclick = async function () {
     if (!archivoFotoSeleccionado) {
-      alert("❌ Primero selecciona una fotografía.");
+      alert(textoMassId("❌ Primero selecciona una fotografía."));
       return;
     }
 
@@ -18638,7 +18529,7 @@ if (
 
       if (!extension) {
         throw new Error(
-          "El formato de la fotografía no es válido."
+          textoMassId("El formato de la fotografía no es válido.")
         );
       }
 
@@ -18676,7 +18567,7 @@ if (
 
       if (!fotoPublicaUrl) {
         throw new Error(
-          "No se pudo obtener la URL pública."
+          textoMassId("No se pudo obtener la URL pública.")
         );
       }
 
@@ -18777,7 +18668,7 @@ if (errorRegistrarActividadFoto) {
       );
 
       alert(
-        "✅ Tu foto de perfil fue guardada correctamente."
+        textoMassId("✅ Tu foto de perfil fue guardada correctamente.")
       );
     } catch (error) {
       console.error(
@@ -18786,8 +18677,8 @@ if (errorRegistrarActividadFoto) {
       );
 
       alert(
-        `❌ No fue posible guardar la foto: ${
-          error.message || "Error desconocido"
+        `${textoMassId("❌ No fue posible guardar la foto:")} ${
+          error.message || textoMassId("Error desconocido")
         }`
       );
 
@@ -18851,7 +18742,7 @@ async function registrarPasskeyMassId() {
 
   if (!window.PublicKeyCredential) {
     alert(
-      "❌ Este dispositivo o navegador no admite Face ID o Passkeys."
+      textoMassId("❌ Este dispositivo o navegador no admite Face ID o Passkeys.")
     );
     return;
   }
@@ -18859,7 +18750,7 @@ async function registrarPasskeyMassId() {
   try {
     if (botonPasskey) {
       botonPasskey.disabled = true;
-      botonPasskey.textContent = "Registrando dispositivo...";
+      botonPasskey.replaceChildren(rotuloMassId("Registrando dispositivo..."));
       botonPasskey.style.opacity = "0.6";
       botonPasskey.style.cursor = "not-allowed";
     }
@@ -18879,7 +18770,7 @@ async function registrarPasskeyMassId() {
       !sessionData?.session?.user
     ) {
       throw new Error(
-        "Debes iniciar sesión antes de registrar Face ID o una Passkey."
+        textoMassId("Debes iniciar sesión antes de registrar Face ID o una Passkey.")
       );
     }
 
@@ -18898,16 +18789,15 @@ async function registrarPasskeyMassId() {
     );
 
     if (mensajePasskey) {
-      mensajePasskey.textContent =
-        "✅ Face ID o Passkey fue registrado correctamente.";
+      mensajePasskey.replaceChildren(rotuloMassId("✅ Face ID o Passkey fue registrado correctamente."));
 
       mensajePasskey.style.color = "#39ff14";
       mensajePasskey.style.display = "block";
     }
 
     alert(
-      "✅ Face ID o Passkey fue registrado correctamente.\n\n" +
-      "Ya puedes utilizarlo para iniciar sesión en MASS ID."
+      (textoMassId("✅ Face ID o Passkey fue registrado correctamente.") + "\n\n") +
+      textoMassId("Ya puedes utilizarlo para iniciar sesión en MASS ID.")
     );
   } catch (errorPasskey) {
     console.error(
@@ -18917,13 +18807,13 @@ async function registrarPasskeyMassId() {
 
     let mensajeError =
       errorPasskey?.message ||
-      "No fue posible registrar Face ID o Passkey.";
+      textoMassId("No fue posible registrar Face ID o Passkey.");
 
     if (
       errorPasskey?.name === "NotAllowedError"
     ) {
       mensajeError =
-        "El registro fue cancelado o el dispositivo no permitió crear la Passkey.";
+        textoMassId("El registro fue cancelado o el dispositivo no permitió crear la Passkey.");
     }
 
     if (
@@ -18932,7 +18822,7 @@ async function registrarPasskeyMassId() {
       )
     ) {
       mensajeError =
-        "Este dispositivo ya tiene una Passkey registrada para tu cuenta MASS ID.";
+        textoMassId("Este dispositivo ya tiene una Passkey registrada para tu cuenta MASS ID.");
     }
 
     if (
@@ -18941,7 +18831,7 @@ async function registrarPasskeyMassId() {
       )
     ) {
       mensajeError =
-        "Tu cuenta alcanzó el número máximo de Passkeys permitidas.";
+        textoMassId("Tu cuenta alcanzó el número máximo de Passkeys permitidas.");
     }
 
     if (mensajePasskey) {
@@ -18956,8 +18846,7 @@ async function registrarPasskeyMassId() {
   } finally {
     if (botonPasskey) {
       botonPasskey.disabled = false;
-      botonPasskey.textContent =
-        "🔐 Registrar Face ID o Passkey";
+      botonPasskey.replaceChildren(rotuloMassId("🔐 Registrar Face ID o Passkey"));
       botonPasskey.style.opacity = "1";
       botonPasskey.style.cursor = "pointer";
     }
