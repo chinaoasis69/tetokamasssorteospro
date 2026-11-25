@@ -66370,6 +66370,20 @@ function () {
         "";
 };
 
+// Keep catalog quantities from the published plan when switching languages.
+function rotuloCatalogoPlanPublico(valor) {
+    const original = String(valor ?? "");
+    const cantidades = [];
+    const plantilla = original.replace(/\d+(?:[.,]\d+)*/g, cantidad => {
+        cantidades.push(cantidad);
+        return "{" + (cantidades.length - 1) + "}";
+    });
+    if (!cantidades.length || /[{}]/.test(original)) {
+        return `<span data-mass-ui>${massEscaparHTML(original)}</span>`;
+    }
+    return `<span data-mass-formato="${massEscaparHTML(plantilla)}" data-mass-valores="${massEscaparHTML(JSON.stringify(cantidades))}">${massEscaparHTML(original)}</span>`;
+}
+
 window.mostrarPlanesOrganizadorPublicos =
 async function () {
 
@@ -66389,7 +66403,7 @@ async function () {
 
 
     box.innerHTML = `
-        <div
+        <div data-mass-ui
             style="
                 padding:24px;
                 text-align:center;
@@ -66454,7 +66468,7 @@ async function () {
 
 
         box.innerHTML = `
-            <div class="card">
+            <div data-mass-ui class="card">
                 ❌ No fue posible cargar
                 los planes en este momento.
             </div>
@@ -66555,10 +66569,7 @@ async function () {
                             "
                         >
                             ${
-                                massEscaparHTML(
-                                    plan.descripcion ||
-                                    ""
-                                )
+                                rotuloCatalogoPlanPublico(plan.descripcion)
                             }
                         </div>
 
@@ -66594,7 +66605,7 @@ async function () {
                                     ${precioMxn} MXN
                                 </div>
 
-                                <div
+                                <div data-mass-ui
                                     style="
                                         color:#888;
                                         font-size:12px;
@@ -66627,7 +66638,7 @@ async function () {
                                     ${precioUsd} USD
                                 </div>
 
-                                <div
+                                <div data-mass-ui
                                     style="
                                         color:#888;
                                         font-size:12px;
@@ -66661,9 +66672,7 @@ async function () {
                                             "
                                         >
                                             ✅ ${
-                                                massEscaparHTML(
-                                                    item
-                                                )
+                                                rotuloCatalogoPlanPublico(item)
                                             }
                                         </div>
                                     `
@@ -66786,13 +66795,13 @@ async function () {
                 📦 Planes y precios
             </h2>
 
-            <p
+            <p data-mass-ui
                 style="
                     color:#bbb;
                     line-height:1.5;
                 "
             >
-                                Elige el plan que mejor se adapte
+                Elige el plan que mejor se adapte
                 a tus dinámicas en MASS SORTEOS PRO.
             </p>
 
@@ -66810,7 +66819,7 @@ async function () {
                 "
             >
 
-                <div
+                <div data-mass-ui
                     style="
                         color:#39ff14;
                         font-weight:900;
@@ -66818,18 +66827,13 @@ async function () {
                         margin-bottom:5px;
                     "
                 >
-                    ✅ Todas las funciones incluidas
+                    ✅ Funciones de la plataforma
                 </div>
 
 
-                <div>
-                    Todos los planes incluyen
-                    todas las funciones de
-                    MASS SORTEOS PRO.
-                    La diferencia entre planes
-                    es la capacidad,
-                    el número de dinámicas simultáneas
-                    y la modalidad de cobro.
+                <div data-mass-ui>
+                    Los planes se diferencian por la capacidad, el número de dinámicas simultáneas y la modalidad de cobro.
+                    Los complementos MI EQUIPO MASS y PUNTOS MASS PRO se contratan por separado.
                 </div>
 
             </div>
@@ -66850,7 +66854,7 @@ async function () {
                 ${
                     tarjetas ||
                     `
-                        <div
+                        <div data-mass-ui
                             style="
                                 color:#aaa;
                                 padding:20px;
@@ -114195,12 +114199,22 @@ async function cargarPaisesTelefoniaRegistroMassId() {
   selectPais.innerHTML = "";
 
 
+  if (ayudaTelefono) {
+    ayudaTelefono.textContent = "Selecciona tu país y escribe solamente tu número nacional.";
+    window.MassIdioma?.aplicar(ayudaTelefono);
+  }
+  if (inputTelefono) {
+    inputTelefono.placeholder = "Número de teléfono";
+    window.MassIdioma?.aplicar(inputTelefono);
+  }
+
   const opcionCargando =
     document.createElement("option");
 
+  opcionCargando.dataset.massUi = "";
   opcionCargando.value = "";
   opcionCargando.textContent =
-    massTexto("Cargando países...");
+    "Cargando países...";
   opcionCargando.disabled = true;
   opcionCargando.selected = true;
 
@@ -114247,6 +114261,7 @@ async function cargarPaisesTelefoniaRegistroMassId() {
     const opcionInicial =
       document.createElement("option");
 
+    opcionInicial.dataset.massUi = "";
     opcionInicial.value = "";
     opcionInicial.textContent =
       "Selecciona país / código";
@@ -114325,6 +114340,8 @@ async function cargarPaisesTelefoniaRegistroMassId() {
         `${nombrePais} (${prefijoTelefonico})`;
 
 
+      opcion.dataset.massCountry = codigoIso2;
+      opcion.dataset.massCountryName = nombrePais;
       opcion.dataset.prefijoTelefonico =
         prefijoTelefonico;
 
@@ -114369,57 +114386,24 @@ async function cargarPaisesTelefoniaRegistroMassId() {
           ];
 
 
-        const prefijo =
-          opcion?.dataset
-            ?.prefijoTelefonico || "";
-
-
-        const min =
-          Number(
-            opcion?.dataset
-              ?.minDigitos
-          );
-
-
-        const max =
-          Number(
-            opcion?.dataset
-              ?.maxDigitos
-          );
-
-
-        if (ayudaTelefono) {
-
-          const reglaLongitud =
-            min === max
-              ? `${min} dígitos`
-              : `${min} a ${max} dígitos`;
-
-
-const codigoIso2Ayuda =
-  String(
-    opcion?.value || ""
-  )
-    .trim()
-    .toUpperCase();
-
-
-if (
-  codigoIso2Ayuda === "AR"
-) {
-
-  ayudaTelefono.textContent =
-    `${opcion.textContent}: escribe tu número nacional (${reglaLongitud}), sin 0 de acceso y sin 15.`;
-
-} else {
-
-  ayudaTelefono.textContent =
-    `${opcion.textContent}: escribe solamente tu número nacional (${reglaLongitud}).`;
-
-}
-
+        if (ayudaTelefono && opcion?.value) {
+          const min = Number(opcion.dataset.minDigitos);
+          const max = Number(opcion.dataset.maxDigitos);
+          const plantilla = min === max
+            ? "Escribe solamente tu número nacional ({0} dígitos)."
+            : "Escribe solamente tu número nacional ({0} a {1} dígitos).";
+          const regla = document.createElement("span");
+          regla.dataset.massFormato = plantilla;
+          regla.dataset.massValores = JSON.stringify([min, max]);
+          regla.textContent = plantilla.replace("{0}", min).replace("{1}", max);
+          ayudaTelefono.replaceChildren(regla);
+          if (opcion.value === "AR") {
+            const nota = document.createElement("span");
+            nota.dataset.massUi = "";
+            nota.textContent = "Omite el 0 de acceso y el prefijo móvil 15.";
+            ayudaTelefono.append(" ", nota);
+          }
         }
-
 
         if (inputTelefono) {
 
@@ -114427,6 +114411,7 @@ if (
 
           inputTelefono.placeholder =
             "Número nacional";
+          window.MassIdioma?.aplicar(inputTelefono);
 
         }
 
@@ -114450,9 +114435,10 @@ if (
     const opcionError =
       document.createElement("option");
 
+    opcionError.dataset.massUi = "";
     opcionError.value = "";
     opcionError.textContent =
-      massTexto("No fue posible cargar países");
+      "No fue posible cargar países";
     opcionError.disabled = true;
     opcionError.selected = true;
 
@@ -114469,6 +114455,7 @@ if (
 
       ayudaTelefono.textContent =
         "No fue posible cargar los países disponibles. Intenta nuevamente.";
+      window.MassIdioma?.aplicar(ayudaTelefono);
 
     }
 
@@ -117064,7 +117051,7 @@ if (
 ) {  
 
   alert(
-    "❌ Completa todos los campos para continuar."
+    massTexto("❌ Completa todos los campos para continuar.")
   );
 
   return;
@@ -117073,7 +117060,7 @@ if (
 
   if (nombre.length < 3) {
     alert(
-      "❌ El nombre debe tener al menos 3 caracteres."
+      massTexto("❌ El nombre debe tener al menos 3 caracteres.")
     );
     return;
   }
@@ -117098,8 +117085,8 @@ if (
 ) {
 
   alert(
-    "❌ La configuración telefónica del país seleccionado no es válida.\n\n" +
-    "Selecciona nuevamente tu país."
+    massTexto("❌ La configuración telefónica del país seleccionado no es válida.") + "\n\n" +
+    massTexto("Selecciona nuevamente tu país.")
   );
 
   return;
@@ -117113,17 +117100,12 @@ if (
     telefonoMaxDigitos
 ) {
 
-  const reglaLongitud =
-    telefonoMinDigitos ===
-    telefonoMaxDigitos
-      ? `${telefonoMinDigitos}`
-      : `${telefonoMinDigitos} a ${telefonoMaxDigitos}`;
-
-
-  alert(
-    `❌ Para ${opcionPaisTelefono?.textContent || "el país seleccionado"}, ` +
-    `el número nacional debe tener ${reglaLongitud} dígitos.`
-  );
+  const plantilla = telefonoMinDigitos === telefonoMaxDigitos
+    ? "El número nacional debe tener {0} dígitos."
+    : "El número nacional debe tener entre {0} y {1} dígitos.";
+  alert("❌ " + massTexto(plantilla)
+    .replace("{0}", telefonoMinDigitos)
+    .replace("{1}", telefonoMaxDigitos));
 
   return;
 }  
@@ -117289,7 +117271,7 @@ if (
 
 
   alert(
-    mensajeTelefono
+    massTexto(mensajeTelefono)
   );
 
 
@@ -117367,7 +117349,7 @@ if (
       ) {
 
         alert(
-          "❌ Ese correo ya está registrado en MASS ID."
+          massTexto("❌ Ese correo ya está registrado en MASS ID.")
         );
 
         return;
@@ -117381,7 +117363,7 @@ if (
       ) {
 
         alert(
-          "❌ La contraseña no cumple con los requisitos de seguridad."
+          massTexto("❌ La contraseña no cumple con los requisitos de seguridad.")
         );
 
         return;
@@ -117389,10 +117371,10 @@ if (
 
 
       alert(
-        "❌ No se pudo crear la cuenta MASS ID.\n\n" +
+        massTexto("❌ No se pudo crear la cuenta MASS ID.") + "\n\n" +
         (
           authError.message ||
-          "Intenta nuevamente."
+          massTexto("Intenta nuevamente.")
         )
       );
 
@@ -117403,7 +117385,7 @@ if (
     if (!authData?.user) {
 
       alert(
-        "❌ Supabase no devolvió el usuario creado."
+        massTexto("❌ Supabase no devolvió el usuario creado.")
       );
 
       return;
@@ -117553,9 +117535,9 @@ if (
     if (!habiaSesionInicial) {
 
       alert(
-        "✅ Tu cuenta MASS ID fue creada.\n\n" +
-        "Revisa tu correo electrónico y confirma tu cuenta.\n\n" +
-        "Al iniciar sesión por primera vez revisarás los documentos legales vigentes de MASS ID."
+        massTexto("✅ Tu cuenta MASS ID fue creada.") + "\n\n" +
+        massTexto("Revisa tu correo electrónico y confirma tu cuenta.") + "\n\n" +
+        massTexto("Al iniciar sesión por primera vez revisarás los documentos legales vigentes de MASS ID.")
       );
 
       return;
@@ -117565,8 +117547,8 @@ if (
     if (onboardingCompletado) {
 
       alert(
-        "✅ Tu cuenta MASS ID fue creada y sus documentos legales fueron completados correctamente.\n\n" +
-        "Ya puedes iniciar sesión."
+        massTexto("✅ Tu cuenta MASS ID fue creada y sus documentos legales fueron completados correctamente.") + "\n\n" +
+        massTexto("Ya puedes iniciar sesión.")
       );
 
       return;
@@ -117576,9 +117558,9 @@ if (
     if (onboardingCancelado) {
 
       alert(
-        "✅ Tu cuenta MASS ID fue creada.\n\n" +
-        "Los documentos legales quedaron pendientes.\n\n" +
-        "Cuando inicies sesión nuevamente podrás continuar exactamente donde te quedaste."
+        massTexto("✅ Tu cuenta MASS ID fue creada.") + "\n\n" +
+        massTexto("Los documentos legales quedaron pendientes.") + "\n\n" +
+        massTexto("Cuando inicies sesión nuevamente podrás continuar exactamente donde te quedaste.")
       );
 
       return;
@@ -117588,9 +117570,9 @@ if (
     if (onboardingConError) {
 
       alert(
-        "✅ Tu cuenta MASS ID fue creada.\n\n" +
-        "No fue posible completar la verificación legal en este momento.\n\n" +
-        "Podrás intentarlo nuevamente al iniciar sesión."
+        massTexto("✅ Tu cuenta MASS ID fue creada.") + "\n\n" +
+        massTexto("No fue posible completar la verificación legal en este momento.") + "\n\n" +
+        massTexto("Podrás intentarlo nuevamente al iniciar sesión.")
       );
 
       return;
@@ -117606,8 +117588,8 @@ if (
 
 
     alert(
-      "❌ Ocurrió un error inesperado al crear la cuenta.\n\n" +
-      "Intenta nuevamente."
+      massTexto("❌ Ocurrió un error inesperado al crear la cuenta.") + "\n\n" +
+      massTexto("Intenta nuevamente.")
     );
 
   } finally {
@@ -117619,7 +117601,7 @@ if (
 
 
       botonCrear.textContent =
-        massTexto("📝 Crear cuenta");
+        "📝 Crear cuenta";
     }
   }
 }
@@ -118409,7 +118391,7 @@ font-family:Arial, sans-serif;">
     autocomplete="tel-national"
   >
 
-  <div data-mass-ui=Selecciona&#32;tu&#32;país&#32;y&#32;escribe&#32;solamente&#32;tu&#32;número&#32;nacional.
+  <div data-mass-ui
     id="massIdTelefonoRegistroAyuda"
     style="
       max-width:420px;
@@ -118551,7 +118533,7 @@ font-family:Arial, sans-serif;">
     box-sizing:border-box;
   "
 >
-  <div
+  <div data-mass-ui
     style="
       color:#39ff14;
       font-weight:bold;
@@ -118561,7 +118543,7 @@ font-family:Arial, sans-serif;">
     📄 Documentos legales de MASS ID
   </div>
 
-  <div>
+  <div data-mass-ui>
     Durante la creación y activación de tu cuenta
     deberás revisar los documentos legales vigentes
     de MASS ID:
@@ -118573,12 +118555,12 @@ font-family:Arial, sans-serif;">
       color:#fff;
     "
   >
-    • MASS-LC-002 — Acuerdo de usuario MASS ID
+    • MASS-LC-002 — <span data-mass-ui>Acuerdo de usuario MASS ID</span>
     <br>
-    • MASS-LC-003 — Aviso de privacidad MASS ID
+    • MASS-LC-003 — <span data-mass-ui>Aviso de privacidad MASS ID</span>
   </div>
 
-  <div
+  <div data-mass-ui
     style="
       margin-top:10px;
       color:#aaa;
@@ -118591,7 +118573,7 @@ font-family:Arial, sans-serif;">
   </div>
 </div>
 
-<button data-mass-ui=📝&#32;Crear&#32;cuenta
+<button data-mass-ui
   type="button"
   onclick="crearCuentaMassId()"
   style="margin-top:16px;"
