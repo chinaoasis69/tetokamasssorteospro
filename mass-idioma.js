@@ -1262,8 +1262,212 @@
   "Política antifraude": "Anti-fraud policy",
   "Establece medidas para prevenir abuso, suplantación de identidad, fraude y actividades sospechosas.": "Measures to prevent abuse, impersonation, fraud, and suspicious activity.",
   "Normas de la comunidad": "Community guidelines",
-  "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.": "Permitted and prohibited conduct across MASS services."
+  "Define las conductas permitidas y prohibidas dentro de los servicios del ecosistema MASS.": "Permitted and prohibited conduct across MASS services.",
+  "Términos de uso de MASS ID": "MASS ID terms of use",
+  "Aviso de privacidad de MASS ID": "MASS ID privacy notice",
+  "Política de uso aceptable": "Acceptable use policy",
+  "Esperando movimientos...": "Waiting for activity…",
+  "Giro promocional sin valor en efectivo": "Promotional spin with no cash value",
+  "Aquí aparecerán únicamente tus boletos con giro disponible.": "Only tickets with an available spin appear here.",
+  "No tienes giros activos disponibles.": "You have no active spins available.",
+  "No hay sorteos activos con giros disponibles.": "There are no active draws with available spins.",
+  "No tienes giros disponibles.": "You have no spins available.",
+  "No tienes boletos listos para girar.": "You have no tickets ready to spin.",
+  "Inicia sesión para consultar tus giros.": "Sign in to see your spins.",
+  "Necesitas una sesión activa para participar.": "Sign in to participate.",
+  "Buscando tus boletos disponibles...": "Looking for your available tickets…",
+  "Buscando tus boletos con giro disponible...": "Looking for tickets with an available spin…",
+  "Los boletos que ya utilizaron su giro permanecen visibles únicamente en": "Tickets whose spin has been used are still listed under",
+  "Los boletos de sorteos finalizados continúan en": "Tickets from completed draws are still listed under",
+  "pero ya no participan en MASS Lucky Spin.": "but are no longer eligible for MASS Lucky Spin.",
+  "Giro disponible": "Spin available",
+  "Giros disponibles: {0}": "Available spins: {0}",
+  "Tienes {0} boleto listo para girar": "You have {0} ticket ready to spin",
+  "Tienes {0} boletos listos para girar": "You have {0} tickets ready to spin",
+  "Mínimo para sortear:": "Minimum sales to hold the draw:",
+  "Se jugará con:": "Draw method:",
+  "Modalidad:": "Ticket format:",
+  "aleatorio automático": "Automatic random draw",
+  "aleatorio automatico": "Automatic random draw",
+  "número por boleto": "number per ticket",
+  "números por boleto": "numbers per ticket",
+  "Últimas": "Last",
+  "cifras": "digits",
+  "Precio por boleto:": "Ticket price:",
+  "Divisas aceptadas:": "Accepted currencies:",
+  "Sorteo:": "Draw date:",
+  "Hora:": "Time:",
+  "Zona horaria:": "Time zone:",
+  "Sin configurar": "Not configured",
+  "por número": "per number",
+  "números": "numbers",
+  "o": "or",
+  "y": "and",
+  "Vendidos:": "Sold:",
+  "Reservados:": "Reserved:",
+  "Disponibles:": "Available:",
+  "Contactar directamente": "Contact directly",
+  "Comunícate con": "Contact",
+  "Comunícate directamente con": "Contact",
+  "Abrir Chat MASS": "Open MASS Chat",
+  "Chat MASS": "MASS Chat",
+  "WhatsApp del negocio": "Business WhatsApp",
+  "Whats App de soporte": "WhatsApp support",
+  "WhatsApp de soporte": "WhatsApp support",
+  "Email de soporte": "Support email",
+  "Teléfono de soporte": "Support phone",
+  "Telefono de soporte": "Support phone",
+  "Sitio web / ayuda": "Website and help",
+  "Enviar email": "Send email",
+  "Llamar": "Call",
+  "Abrir sitio": "Open website",
+  "Abrir WhatsApp": "Open WhatsApp",
+  "Escríbenos por Chat MASS y con gusto te ayudamos.": "Message us in MASS Chat and we’ll help you.",
+  "¿Necesitas ayuda? Escríbenos por WhatsApp de soporte y con gusto te atendemos.": "Need help? Send us a message on WhatsApp.",
+  "Durante nuestro horario comercial": "During our business hours",
+  "Durante nuestro horario de atención": "During our support hours",
+  "Respondemos durante nuestro horario de atención": "We reply during support hours",
+  "Envíanos un correo con tu consulta y nuestro equipo te responderá lo antes posible.": "Email us your question and our team will reply as soon as possible.",
+  "Llámanos si necesitas asistencia directa con nuestro negocio o tus participaciones.": "Call us if you need help with our business or your entries.",
+  "Visita nuestro sitio web para conocer más información, novedades y formas de contacto.": "Visit our website for more information, updates, and ways to contact us.",
+  "Disponible en línea": "Available online",
+  "Estos canales pertenecen al Organizador. El soporte de TE-TO-KA es independiente.": "These channels belong to the organizer. TE-TO-KA provides support separately.",
+  "Síguenos en nuestras redes": "Follow us on social media",
+  "Conoce más y visita nuestros canales oficiales.": "Visit our official channels to learn more.",
+  "Sitio web": "Website",
+  "Organizador MASS": "MASS organizer",
+  "✓ Organizador MASS": "✓ MASS organizer",
+  "Horario comercial": "Business hours",
+  "Convertidor MASS disponible": "MASS converter available",
+  "Patrocinadores del Organizador": "Organizer sponsors",
+  "Patrocinadores exclusivos de este sorteo": "Exclusive sponsors for this draw",
+  "Promociones especiales válidas únicamente para esta dinámica.": "Special promotions are valid only for this draw.",
+  "Conoce los negocios y promociones disponibles con este Organizador.": "Explore businesses and promotions available through this organizer.",
+  "Beneficios generales disponibles en las dinámicas de este Organizador.": "Benefits available across this organizer’s draws.",
+  "Este sorteo todavía no tiene patrocinadores.": "This draw has no sponsors yet.",
+  "Cargando patrocinadores...": "Loading sponsors…",
+  "No se pudieron cargar los patrocinadores.": "Couldn’t load sponsors.",
+  "Patrocinador anterior": "Previous sponsor",
+  "Patrocinador siguiente": "Next sponsor",
+  "Patrocinador oficial": "Official sponsor",
+  "Promoción": "Promotion",
+  "Cargando seguidores...": "Loading followers…",
+  "Cargando Me gusta...": "Loading likes…",
+  "Seguidores no disponibles": "Follower count unavailable",
+  "Cargando comentarios...": "Loading comments…",
+  "0 comentarios": "0 comments",
+  "{0} seguidor": "{0} follower",
+  "{0} seguidores": "{0} followers",
+  "{0} comentario": "{0} comment",
+  "{0} comentarios": "{0} comments",
+  "{0} Me gusta": "{0} likes",
+  "{0} Me gusta singular": "{0} like",
+  "Siguiendo": "Following",
+  "Te gusta": "Liked",
+  "Quitar Me gusta": "Remove like",
+  "Indicar que te gusta este Organizador": "Like this organizer",
+  "Inicia sesión con tu MASS ID para indicar Me gusta": "Sign in with your MASS ID to like this organizer",
+  "Dejar de seguir a este Organizador": "Unfollow this organizer",
+  "Seguir a este Organizador": "Follow this organizer",
+  "Inicia sesión con tu MASS ID para seguir": "Sign in with your MASS ID to follow",
+  "Sé el primero en comentar.": "Be the first to comment.",
+  "Sé el primero en comentar esta dinámica.": "Be the first to comment on this draw.",
+  "Volver a la dinámica": "Back to the draw",
+  "Volver a Organizadores": "Back to organizers",
+  "Organizador:": "Organizer:",
+  "Publicada:": "Published:",
+  "Las versiones publicadas son oficiales, quedan protegidas contra modificaciones y se muestran en modo solo lectura para preservar su integridad.": "Published versions are official and protected from changes. They are displayed as read-only to preserve their integrity.",
+  "Expediente protegido": "Protected record",
+  "Esta dinámica no tiene Reglas Oficiales publicadas dentro del nuevo sistema de versionado legal.": "This draw has no Official Rules published in the new versioning system.",
+  "Cargando Reglas Oficiales...": "Loading Official Rules…",
+  "No fue posible consultar las Reglas Oficiales.": "Couldn’t load the Official Rules.",
+  "Texto publicado por el organizador": "Text published by the organizer",
+  "compró el boleto": "bought ticket",
+  "reservó el boleto": "reserved ticket",
+  "compró el paquete": "bought ticket package",
+  "reservó el paquete": "reserved ticket package",
+  "Incluye": "Includes",
+  "números oficiales": "official numbers",
+  "ganó": "won",
+  "con el boleto": "with ticket",
+  "Copiar texto publicado": "Copy published text",
+  "Texto seleccionado. Usa la opción Copiar de tu dispositivo.": "Text selected. Use your device’s Copy command.",
+  "Texto copiado.": "Text copied.",
+  "dinámica activa": "active draw",
+  "dinámicas activas": "active draws",
+  "Mostrando {0}–{1} de {2} organizadores": "Showing {0}–{1} of {2} organizers",
+  "Página {0} de {1}": "Page {0} of {1}",
+  "📊 Vendidos: {0} | Reservados: {1} | Disponibles: {2} | {3}%": "📊 Sold: {0} | Reserved: {1} | Available: {2} | {3}%",
+  "📊 Vendidos: 0 / 0 · 0%": "📊 Sold: 0 / 0 · 0%"
 });
+  const publicCopy = Object.freeze({
+  "PRUEBA QA COMPRAS + RESERVAS + LUCKY SPIN P35 — NO COMPRAR": "P35 QA TEST: PURCHASES + RESERVATIONS + LUCKY SPIN — DO NOT BUY",
+  "PREMIO FICTICIO QA — SIN VALOR COMERCIAL": "SIMULATED QA PRIZE — NO COMMERCIAL VALUE",
+  "PRUEBA TÉCNICA CONTROLADA — TE-TO-KA MASS SORTEOS PRO.": "CONTROLLED TECHNICAL TEST — TE-TO-KA MASS SORTEOS PRO.",
+  "Dinámica destinada a verificar reservas, compras con Wallet MASS, aceptación de Reglas Oficiales, Lucky Spin, boletos gratis, inventario y continuidad de reprogramaciones.": "This draw tests reservations, MASS Wallet purchases, acceptance of the Official Rules, Lucky Spin, free tickets, inventory, and continuity when draws are rescheduled.",
+  "SOLO PRUEBAS AUTORIZADAS.": "AUTHORIZED TESTING ONLY.",
+  "NO COMPRAR NI PARTICIPAR SIN AUTORIZACIÓN.": "DO NOT BUY OR PARTICIPATE WITHOUT AUTHORIZATION.",
+  "El premio principal es ficticio y carece de valor comercial.": "The main prize is simulated and has no commercial value.",
+  "No se realizarán pagos externos ni entregas de premios comerciales.": "No external payments will be made and no commercial prizes will be delivered.",
+  "Las operaciones de prueba serán verificadas para comprobar la integridad jurídica, económica y transaccional de la plataforma.": "Test transactions will be checked to verify the platform’s legal, economic, and transactional integrity.",
+  "PATROCINADOR FICTICIO QA P35": "P35 QA TEST SPONSOR",
+  "PATROCINADOR FICTICIO — PRUEBA TÉCNICA MASS P35. Entidad simulada exclusivamente para verificar el registro, la asociación con una dinámica específica, los premios Lucky Spin aportados por patrocinadores y la conservación de su identidad durante las reprogramaciones. No representa un negocio comercial real ni ofrece productos o servicios.": "SIMULATED SPONSOR — MASS P35 TECHNICAL TEST. This simulated entity is used only to test registration, association with a specific draw, sponsor-provided Lucky Spin prizes, and preservation of sponsor identity when a draw is rescheduled. It does not represent a real business or offer products or services.",
+  "CUPÓN FICTICIO QA P35 — SIN VALOR COMERCIAL. Premio de prueba destinado a verificar la asignación Lucky Spin, el inventario, el historial, los códigos QR y la continuidad de los premios aportados por patrocinadores. No es canjeable por dinero, descuentos, productos ni servicios reales.": "P35 QA TEST COUPON — NO COMMERCIAL VALUE. This test prize verifies Lucky Spin assignments, inventory, history, QR codes, and continuity of sponsor-provided prizes. It cannot be redeemed for money, discounts, real products, or services.",
+  "Las mejores herramientas en tus manos": "The best tools in your hands",
+  "En Olgas Power Tools nos dedicamos a ofrecer herramientas y equipos para trabajo, taller y proyectos. Nuestro objetivo es brindar a nuestros clientes opciones prácticas, confiables y una atención cercana para ayudarles a encontrar la herramienta adecuada para cada necesidad.": "At Olgas Power Tools, we offer tools and equipment for the job, the workshop, and your projects. We offer practical, reliable options and personal service to help you find the right tool for each task.",
+  "Herramientas y equipos / Power Tools": "Tools and equipment / Power Tools",
+  "Lunes a sábado: 8:00 AM – 6:00 PM": "Monday through Saturday: 8:00 AM – 6:00 PM",
+  "Domingo: Cerrado": "Sunday: Closed",
+  "Lunes a sábado: 8:00 AM — 6:00 PM": "Monday through Saturday: 8:00 AM – 6:00 PM",
+  "Lunes a sábado: 8:00 AM - 6:00 PM": "Monday through Saturday: 8:00 AM – 6:00 PM",
+  "Abrir Chat MASS": "Open MASS Chat",
+  "Chat MASS": "MASS Chat",
+  "WhatsApp del negocio": "Business WhatsApp",
+  "Whats App de soporte": "WhatsApp support",
+  "WhatsApp de soporte": "WhatsApp support",
+  "Email de soporte": "Support email",
+  "Teléfono de soporte": "Support phone",
+  "Telefono de soporte": "Support phone",
+  "Sitio web / ayuda": "Website and help",
+  "Enviar email": "Send email",
+  "Llamar": "Call",
+  "Abrir sitio": "Open website",
+  "Abrir WhatsApp": "Open WhatsApp",
+  "Escríbenos por Chat MASS y con gusto te ayudamos.": "Message us in MASS Chat and we’ll help you.",
+  "¿Necesitas ayuda? Escríbenos por WhatsApp de soporte y con gusto te atendemos.": "Need help? Send us a message on WhatsApp.",
+  "Durante nuestro horario comercial": "During our business hours",
+  "Durante nuestro horario de atención": "During our support hours",
+  "Respondemos durante nuestro horario de atención": "We reply during support hours",
+  "Envíanos un correo con tu consulta y nuestro equipo te responderá lo antes posible.": "Email us your question and our team will reply as soon as possible.",
+  "Llámanos si necesitas asistencia directa con nuestro negocio o tus participaciones.": "Call us if you need help with our business or your entries.",
+  "Visita nuestro sitio web para conocer más información, novedades y formas de contacto.": "Visit our website for more information, updates, and ways to contact us.",
+  "Disponible en línea": "Available online"
+});
+
+  const publicOriginals = new WeakMap();
+  function paintPublicCopy(node) {
+    const current = node.textContent;
+    if (!publicOriginals.has(node)) publicOriginals.set(node, current);
+    const source = publicOriginals.get(node);
+    const normalized = source.trim().replace(/\s+/g, " ");
+    let translated = publicCopy[normalized];
+    if (!Object.hasOwn(publicCopy, normalized)) {
+      translated = source.split(/(\n+|(?<=[.!?])\s+)/).map(part => {
+        const key = part.trim().replace(/\s+/g, " ");
+        return Object.hasOwn(publicCopy, key) ? publicCopy[key] : part;
+      }).join("");
+    }
+    const next = language === "en" ? translated : source;
+    if (current !== next) node.textContent = next;
+  }
+
+  function rotulo(nodo, plantilla, ...valores) {
+    const label = document.createElement("span");
+    label.dataset.massFormato = plantilla;
+    label.dataset.massValores = JSON.stringify(valores);
+    nodo.replaceChildren(label);
+    paint(label);
+  }
   function englishText(source) {
     const original = source.trim().replace(/\s+/g, " ");
     if (Object.hasOwn(english, original)) return english[original];
@@ -1309,8 +1513,26 @@
     topic.dataset.massTopic = language;
   }
 
-  const selector = "[data-mass-ui],[data-mass-placeholder],[data-mass-aria],[data-mass-title],[data-mass-topic],[data-mass-language],[data-mass-language-status],[data-mass-alt],[data-mass-result-date],[data-mass-result-number],[data-mass-place]";
+  const selector = "[data-mass-ui],[data-mass-placeholder],[data-mass-aria],[data-mass-title],[data-mass-topic],[data-mass-language],[data-mass-language-status],[data-mass-alt],[data-mass-result-date],[data-mass-result-number],[data-mass-place],[data-mass-formato],[data-mass-public-copy],[data-mass-fecha-publica]";
   function paint(node) {
+    if (node.hasAttribute("data-mass-public-copy")) paintPublicCopy(node);
+    if (node.hasAttribute("data-mass-formato")) {
+      const args = JSON.parse(node.dataset.massValores);
+      let template = node.dataset.massFormato;
+      if (language === "en" && template === "{0} Me gusta" && Number(args[0]) === 1) template += " singular";
+      const next = text(template).replace(/\{(\d+)\}/g, (_, index) => String(args[index]));
+      if (node.textContent !== next) node.textContent = next;
+    }
+    if (node.hasAttribute("data-mass-fecha-publica")) {
+      const value = node.getAttribute("datetime");
+      const soloDia = node.dataset.massFechaPublica === "dia";
+      const date = new Date(soloDia ? value.slice(0, 10) + "T12:00:00Z" : value);
+      if (value && !Number.isNaN(date.getTime())) {
+        const locale = language === "en" ? "en-US" : "es-MX";
+        const next = soloDia ? date.toLocaleDateString(locale, {timeZone:"UTC", day:"numeric", month:"short", year:"numeric"}) : date.toLocaleString(locale);
+        if (node.textContent !== next) node.textContent = next;
+      }
+    }
     if (node.hasAttribute("data-mass-result-date")) {
       const isOption = node.tagName === "OPTION";
       const date = new Date(isOption ? node.dataset.massResultDate : node.getAttribute("datetime"));
@@ -1417,7 +1639,7 @@
     if (!persisted && !account) message(text("El idioma se aplicó solo a esta pestaña."));
     if (account) schedule(account, value);
   });
-  window.MassIdioma = { get actual() { return language; }, texto: text, aplicar: render, conectar: attach };
+  window.MassIdioma = { get actual() { return language; }, texto: text, rotulo, aplicar: render, conectar: attach };
   function start() {
     apply(language);
     new MutationObserver(records => {

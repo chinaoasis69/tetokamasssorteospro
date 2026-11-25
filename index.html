@@ -911,6 +911,12 @@ button{cursor:pointer}
     }
 }	
 
+.mass-enlace-documento { background:transparent; border:0; box-shadow:none; padding:.3em; color:inherit; text-decoration:underline; font:inherit; cursor:pointer; }
+#lecturaPublicaMassId { width:min(46rem,90vw); max-height:88vh; box-sizing:border-box; background:#111; color:#fff; border:1px solid #63a839; border-radius:12px; padding:1.25rem; text-align:left; }
+#lecturaPublicaMassId::backdrop { background:rgba(0,0,0,.8); }
+#lecturaPublicaMassId form { float:right; }
+#lecturaPublicaMassId h2 { margin-top:0; }
+#lecturaPublicaMassId article { margin-top:1rem; max-height:58vh; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.5; }
 </style>
 
 <style id="massEstiloInfoDinamica">
@@ -1147,6 +1153,7 @@ button{cursor:pointer}
 .mass-language-control small:not(:empty) { display: block; margin: .4rem auto; }
 </style>
 <script src="/mass-idioma.js"></script>
+<script defer src="/mass-lectura-legal.js"></script>
 <script>function massTexto(texto) { return window.MassIdioma?.texto(texto) ?? texto; }</script>
 <script defer src="/tokayo.js"></script>
 </head>
@@ -1452,7 +1459,7 @@ Selecciona una rifa
 	 <div data-mass-ui=Cargando&#32;números... class="stats" id="stats">Cargando números...</div>
 
   <div id="porcentajeRifa" class="stats">
-  📊 Vendidos: 0 / 0 · 0%
+  <span data-mass-ui>📊 Vendidos: 0 / 0 · 0%</span>
   </div>
 
 	<div style="width:100%; background:#222; border:1px solid #39ff14; border-radius:10px; overflow:hidden; margin:10px 0;">
@@ -1578,7 +1585,7 @@ Selecciona una rifa
 ">
   <h3 data-mass-ui=🔥&#32;Actividad&#32;en&#32;vivo style="color:#39ff14;margin:0 0 8px 0;">🔥 Actividad en vivo</h3>
   <div id="actividadLive" style="font-size:15px;">
-    Esperando movimientos...
+    <span data-mass-ui>Esperando movimientos...</span>
   </div>
 </div>
 
@@ -1642,7 +1649,7 @@ Selecciona una rifa
     </h2>
 
     <p style="color:#ddd;">
-      Giro promocional sin valor en efectivo
+      <span data-mass-ui>Giro promocional sin valor en efectivo</span>
     </p>
 
     <div
@@ -1658,7 +1665,7 @@ Selecciona una rifa
         line-height:1.5;
       "
     >
-      🎟️ Aquí aparecerán únicamente tus boletos con giro disponible.
+      <span data-mass-ui>🎟️ Aquí aparecerán únicamente tus boletos con giro disponible.</span>
     </div>
 
     <button data-mass-ui=🎟️&#32;ELEGIR&#32;BOLETO
@@ -2675,7 +2682,7 @@ Cargando historial...
       Esta dinámica es organizada por un tercero independiente.
       TE-TO-KA SOLUTIONS, LLC únicamente proporciona la plataforma tecnológica.
     </p>
-    <p data-mass-ui=Términos&#32;y&#32;condiciones&#32;·&#32;Aviso&#32;de&#32;privacidad&#32;·&#32;Política&#32;de&#32;uso&#32;aceptable>Términos y condiciones · Aviso de privacidad · Política de uso aceptable</p>
+    <p><button class="mass-enlace-documento" type="button" data-documento-mass-id="MASS-LC-002" data-mass-ui>Términos de uso de MASS ID</button> · <button class="mass-enlace-documento" type="button" data-documento-mass-id="MASS-LC-003" data-mass-ui>Aviso de privacidad de MASS ID</button> · <span data-mass-ui>Política de uso aceptable</span></p>
   </div>
 
   </div>
@@ -20936,7 +20943,7 @@ if (soloLectura === true) {
         <h3 data-mass-ui=⚖️&#32;Reglas&#32;Oficiales>⚖️ Reglas Oficiales</h3>
 
         <p>
-            Cargando Reglas Oficiales...
+            <span data-mass-ui>Cargando Reglas Oficiales...</span>
         </p>
     `;
 
@@ -20978,8 +20985,8 @@ if (soloLectura === true) {
                     </h3>
 
                     <p>
-                        ❌ No fue posible consultar
-                        las Reglas Oficiales.
+                        <span data-mass-ui>❌ No fue posible consultar
+                        las Reglas Oficiales.</span>
                     </p>
 
                     <button data-mass-ui=⬅️&#32;Volver&#32;a&#32;sorteos
@@ -21025,15 +21032,15 @@ if (soloLectura === true) {
                     >
                         🔒
                         <strong>
-                            Expediente protegido
+                            <span data-mass-ui>Expediente protegido</span>
                         </strong>
 
                         <br><br>
 
-                        Esta dinámica no tiene
+                        <span data-mass-ui>Esta dinámica no tiene
                         Reglas Oficiales publicadas
                         dentro del nuevo sistema
-                        de versionado legal.
+                        de versionado legal.</span>
                     </div>
                 `;
 
@@ -21075,10 +21082,10 @@ if (soloLectura === true) {
                                     "
                                 >
                                     🔒
-                                    ${escaparHTML(
+                                    <span data-mass-ui>${escaparHTML(
                                         documento.titulo
                                         || "Reglas Oficiales"
-                                    )}
+                                    )}</span>
                                 </div>
 
                                 <div
@@ -21086,7 +21093,7 @@ if (soloLectura === true) {
                                         margin-bottom:8px;
                                     "
                                 >
-                                    Versión:
+                                    <span data-mass-ui>Versión:</span>
                                     <strong>
                                         ${Number(
                                             documento.version
@@ -21100,10 +21107,10 @@ if (soloLectura === true) {
                                         margin-bottom:12px;
                                     "
                                 >
-                                    Publicada:
-                                    ${formatearFecha(
+                                    <span data-mass-ui>Publicada:</span>
+                                    <time data-mass-fecha-publica="instante" datetime="${escaparHTML(documento.publicada_en || '')}">${formatearFecha(
                                         documento.publicada_en
-                                    )}
+                                    )}</time>
                                 </div>
 
                                 <div
@@ -21115,10 +21122,10 @@ if (soloLectura === true) {
                                         background:#0f172a;
                                         line-height:1.55;
                                     "
-                                >${escaparHTML(
+                                ><small data-mass-ui>Texto publicado por el organizador</small> <button type="button" data-copiar-reglas data-mass-ui>Copiar texto publicado</button> <small role="status"></small><br><span data-original-reglas>${escaparHTML(
                                     documento.contenido
                                     || ""
-                                )}</div>
+                                )}</span></div>
 
                             </div>
                         `;
@@ -21143,24 +21150,24 @@ if (soloLectura === true) {
                 >
 
                     <strong>
-                        ${escaparHTML(
+                        <span data-mass-public-copy>${escaparHTML(
                             dinamicaTitulo
-                        )}
+                        )}</span>
                     </strong>
 
                     <br>
 
-                    Organizador:
+                    <span data-mass-ui>Organizador:</span>
                     ${escaparHTML(
                         organizadorNombre
                     )}
 
                     <br><br>
 
-                    🔒 Las versiones publicadas son oficiales,
+                    <span data-mass-ui>🔒 Las versiones publicadas son oficiales,
                         quedan protegidas contra modificaciones
                         y se muestran en modo solo lectura
-                        para preservar su integridad.
+                        para preservar su integridad.</span>
 
                 </div>
 
@@ -57973,6 +57980,9 @@ function mostrarModalLegalProgresivo(contenidoLegal) {
     idiomaOriginal.textContent = texto.lang === "es" ? "Texto original publicado en español" :
       texto.lang === "en" ? "Texto original publicado en inglés" : "Texto original publicado";
     cuerpo.append(idiomaOriginal, texto);
+    if (fuenteTipo === "documento_legal" && texto.lang !== "en") {
+      window.MassLecturaLegal?.mostrar(texto, idiomaOriginal, texto.textContent);
+    }
 
 
     // --------------------------------------------------------
@@ -68970,9 +68980,9 @@ function renderOrganizadoresPaginados(){
                             margin-top:-4px;
                         "
                     >
-                        ${massEscaparHTML(
+                        <span data-mass-public-copy>${massEscaparHTML(
                             org.slogan
-                        )}
+                        )}</span>
                     </p>
                 `
                 : ""
@@ -68981,11 +68991,11 @@ function renderOrganizadoresPaginados(){
 
         <p>
             🎯 ${total}
-            ${
+            <span data-mass-ui>${
                 total === 1
                     ? "dinámica activa"
                     : "dinámicas activas"
-            }
+            }</span>
         </p>
 
 
@@ -69012,11 +69022,11 @@ function renderOrganizadoresPaginados(){
                             )
                         "
                     >
-                        ${
+                        <span data-mass-ui>${
                             total === 1
                                 ? "🎯 Ver dinámica"
                                 : "🎯 Ver dinámicas"
-                        }
+                        }</span>
                     </button>
                 `
                 : ""
@@ -69029,7 +69039,7 @@ function renderOrganizadoresPaginados(){
 
     listaOrg.innerHTML += `
     <div style="text-align:center; margin:18px 0; color:#39ff14; font-weight:bold;">
-        Mostrando ${mostrandoInicio}-${mostrandoFin} de ${organizadoresActivosCache.length} organizadores
+        <span data-mass-formato="Mostrando {0}–{1} de {2} organizadores" data-mass-valores="[${mostrandoInicio},${mostrandoFin},${organizadoresActivosCache.length}]">Mostrando ${mostrandoInicio}-${mostrandoFin} de ${organizadoresActivosCache.length} organizadores</span>
     </div>
 
     <div style="text-align:center; margin:18px 0;">
@@ -69038,7 +69048,7 @@ function renderOrganizadoresPaginados(){
         </button>
 
         <span style="margin:0 12px; color:#39ff14; font-weight:bold;">
-            Página ${paginaOrganizadores} de ${totalPaginas}
+            <span data-mass-formato="Página {0} de {1}" data-mass-valores="[${paginaOrganizadores},${totalPaginas}]">Página ${paginaOrganizadores} de ${totalPaginas}</span>
         </span>
 
         <button onclick="cambiarPaginaOrganizadores(${paginaOrganizadores + 1})" ${paginaOrganizadores >= totalPaginas ? "disabled" : ""}>
@@ -70894,7 +70904,7 @@ function crearContactoSoportePublicoOrganizador(
                         "
                     >
                         ${configuracion.icono}
-                        ${textoBoton}
+                        <span data-mass-public-copy>${textoBoton}</span>
                     </button>
                 `);
 
@@ -70930,7 +70940,7 @@ function crearContactoSoportePublicoOrganizador(
                         "
                     >
                         ${configuracion.icono}
-                        ${etiqueta}
+                        <span data-mass-public-copy>${etiqueta}</span>
                     </div>
 
 
@@ -70945,7 +70955,7 @@ function crearContactoSoportePublicoOrganizador(
                                         margin-bottom:8px;
                                     "
                                 >
-                                    ${texto}
+                                    <span data-mass-public-copy>${texto}</span>
                                 </div>
                             `
                             : ""
@@ -70963,7 +70973,7 @@ function crearContactoSoportePublicoOrganizador(
                                         margin-bottom:12px;
                                     "
                                 >
-                                    🕒 ${horario}
+                                    🕒 <span data-mass-public-copy>${horario}</span>
                                 </div>
                             `
                             : ""
@@ -70988,7 +70998,7 @@ function crearContactoSoportePublicoOrganizador(
                             cursor:pointer;
                         "
                     >
-                        ${
+                        <span data-mass-ui>${
                             tipo === "chat_mass"
                                 ? "💬 Abrir Chat MASS"
 
@@ -71009,7 +71019,7 @@ function crearContactoSoportePublicoOrganizador(
                                 ? "☎️ Llamar"
 
                             : "🌐 Abrir sitio"
-                        }
+                        }</span>
                     </button>
 
                 </div>
@@ -71078,7 +71088,7 @@ function crearContactoSoportePublicoOrganizador(
                         margin-bottom:10px;
                     "
                 >
-                    Comunícate con
+                    <span data-mass-ui>Comunícate con</span>
                     <b>${nombreOrganizador}</b>.
                 </div>
 
@@ -71139,7 +71149,7 @@ function crearContactoSoportePublicoOrganizador(
                     margin-bottom:18px;
                 "
             >
-                Comunícate directamente con
+                <span data-mass-ui>Comunícate directamente con</span>
                 <b>${nombreOrganizador}</b>.
             </p>
 
@@ -71167,8 +71177,8 @@ function crearContactoSoportePublicoOrganizador(
                     line-height:1.4;
                 "
             >
-                Estos canales pertenecen al Organizador.
-                El soporte de TE-TO-KA es independiente.
+                <span data-mass-ui>Estos canales pertenecen al Organizador.
+                El soporte de TE-TO-KA es independiente.</span>
             </div>
 
         </div>
@@ -71591,7 +71601,7 @@ function crearRedesSocialesPublicasOrganizador(
                     </span>
 
                     <span>
-                        ${configuracion.titulo}
+                        <span data-mass-ui>${configuracion.titulo}</span>
                     </span>
                 </a>
             `);
@@ -71640,7 +71650,7 @@ function crearRedesSocialesPublicasOrganizador(
                     margin-bottom:7px;
                 "
             >
-                ✨ Síguenos en nuestras redes
+                <span data-mass-ui>✨ Síguenos en nuestras redes</span>
             </div>
 
 
@@ -71651,8 +71661,8 @@ function crearRedesSocialesPublicasOrganizador(
                     margin-bottom:12px;
                 "
             >
-                Conoce más y visita nuestros
-                canales oficiales.
+                <span data-mass-ui>Conoce más y visita nuestros
+                canales oficiales.</span>
             </div>
 
 
@@ -72009,10 +72019,7 @@ function pintarEstadoSeguimientoOrganizadorPerfil(
             : "false";
 
 
-    boton.textContent =
-        siguiendo
-            ? "✓ Siguiendo"
-            : "🔔 Seguir";
+    window.MassIdioma.rotulo(boton, siguiendo ? "✓ Siguiendo" : "🔔 Seguir");
 
 
     boton.setAttribute(
@@ -72031,14 +72038,11 @@ function pintarEstadoSeguimientoOrganizadorPerfil(
                     : "Seguir a este Organizador"
             )
             : "Inicia sesión con tu MASS ID para seguir";
+    boton.dataset.massTitle = "";
+    window.MassIdioma.aplicar(boton);
 
 
-    contador.textContent =
-        `${total} ${
-            total === 1
-                ? "seguidor"
-                : "seguidores"
-        }`;
+    window.MassIdioma.rotulo(contador, total === 1 ? "{0} seguidor" : "{0} seguidores", total);
 }
 
 
@@ -72084,8 +72088,7 @@ async function cargarEstadoSeguimientoOrganizadorPerfil(
 
 
         if (contador) {
-            contador.textContent =
-                "Seguidores no disponibles";
+            window.MassIdioma.rotulo(contador, "Seguidores no disponibles");
         }
 
 
@@ -72377,10 +72380,7 @@ function pintarEstadoMeGustaOrganizadorPerfil(
             : "false";
 
 
-    boton.textContent =
-        meGustaActivo
-            ? "👍 Te gusta"
-            : "👍 Me gusta";
+    window.MassIdioma.rotulo(boton, meGustaActivo ? "👍 Te gusta" : "👍 Me gusta");
 
 
     boton.setAttribute(
@@ -72399,6 +72399,8 @@ function pintarEstadoMeGustaOrganizadorPerfil(
                     : "Indicar que te gusta este Organizador"
             )
             : "Inicia sesión con tu MASS ID para indicar Me gusta";
+    boton.dataset.massTitle = "";
+    window.MassIdioma.aplicar(boton);
 
 
     boton.style.background =
@@ -72413,8 +72415,7 @@ function pintarEstadoMeGustaOrganizadorPerfil(
             : "white";
 
 
-    contador.textContent =
-        `${total} Me gusta`;
+    window.MassIdioma.rotulo(contador, "{0} Me gusta", total);
 }
 
 
@@ -72860,12 +72861,7 @@ function renderizarComentariosOrganizadorPerfil(
         );
 
 
-    totalBox.textContent =
-        `${total} ${
-            total === 1
-                ? "comentario"
-                : "comentarios"
-        }`;
+    window.MassIdioma.rotulo(totalBox, total === 1 ? "{0} comentario" : "{0} comentarios", total);
 
 
     listaBox.innerHTML =
@@ -72884,8 +72880,7 @@ function renderizarComentariosOrganizadorPerfil(
             "padding:18px;text-align:center;color:#aaa;background:#111;border-radius:14px;";
 
 
-        vacio.textContent =
-            "Sé el primero en comentar.";
+        window.MassIdioma.rotulo(vacio, "Sé el primero en comentar.");
 
 
         listaBox.appendChild(
@@ -74861,7 +74856,7 @@ const textoVolverPerfil =
                     padding:10px 16px;
                 "
             >
-                ${textoVolverPerfil}
+                <span data-mass-ui>${textoVolverPerfil}</span>
             </button>
 
 
@@ -75014,7 +75009,7 @@ const textoVolverPerfil =
                                         margin-bottom:10px;
                                     "
                                 >
-                                    ${slogan}
+                                    <span data-mass-public-copy>${slogan}</span>
                                 </div>
                             `
                             : ""
@@ -75041,7 +75036,7 @@ const textoVolverPerfil =
                             margin-bottom:18px;
                         "
                     >
-                        ✓ Organizador MASS
+                        <span data-mass-ui>✓ Organizador MASS</span>
                     </div>
 
                     <div
@@ -75101,7 +75096,7 @@ const textoVolverPerfil =
         font-weight:bold;
     "
 >
-        Cargando seguidores...
+        <span data-mass-ui>Cargando seguidores...</span>
     </div>
 
     <button data-mass-ui=📤&#32;Compartir
@@ -75188,7 +75183,7 @@ const textoVolverPerfil =
         font-weight:bold;
     "
 >
-        Cargando Me gusta...
+        <span data-mass-ui>Cargando Me gusta...</span>
     </div>
 
 </div>
@@ -75207,7 +75202,7 @@ const textoVolverPerfil =
                                         line-height:1.6;
                                     "
                                 >
-                                    ${descripcion}
+                                    <span data-mass-public-copy>${descripcion}</span>
                                 </div>
                             `
                             : ""
@@ -75240,7 +75235,7 @@ const textoVolverPerfil =
                                             color:#ddd;
                                         "
                                     >
-                                        🏷️ ${categoria}
+                                        🏷️ <span data-mass-public-copy>${categoria}</span>
                                     </span>
                                 `
                                 : ""
@@ -75293,9 +75288,9 @@ const textoVolverPerfil =
                                         white-space:pre-line;
                                     "
                                 >
-                                    🕒 <b>Horario comercial</b>
+                                    🕒 <b><span data-mass-ui>Horario comercial</span></b>
                                     <br>
-                                    ${horario}
+                                    <span data-mass-public-copy>${horario}</span>
                                 </div>
                             `
                             : ""
@@ -75323,11 +75318,11 @@ const textoVolverPerfil =
                                             )
                                         "
                                     >
-                                        🎯 ${
+                                        🎯 <span data-mass-ui>${
                                             totalDinamicas === 1
                                                 ? "Ver dinámica"
                                                 : "Ver dinámicas"
-                                        }
+                                        }</span>
                                         (${totalDinamicas})
                                     </button>
                                 `
@@ -75365,7 +75360,7 @@ const textoVolverPerfil =
                                         data-mass-soporte-tipo="chat_mass"
                                         data-mass-soporte-valor=""
                                     >
-                                        💬 Chat MASS
+                                        <span data-mass-ui>💬 Chat MASS</span>
                                     </button>
                                 `
                                 : ""
@@ -75387,7 +75382,7 @@ const textoVolverPerfil =
                                         font-size:13px;
                                     "
                                 >
-                                    🌐 Convertidor MASS disponible
+                                    <span data-mass-ui>🌐 Convertidor MASS disponible</span>
                                 </div>
                             `
                             : ""
@@ -75419,7 +75414,7 @@ const textoVolverPerfil =
     "
 >
     <div class="mass-sponsor-empty">
-        Cargando patrocinadores...
+        <span data-mass-ui>Cargando patrocinadores...</span>
     </div>
 </div>
 
@@ -75478,7 +75473,7 @@ const textoVolverPerfil =
                 font-weight:bold;
             "
         >
-            0 comentarios
+            <span data-mass-ui>0 comentarios</span>
         </div>
 
     </div>
@@ -75566,7 +75561,7 @@ const textoVolverPerfil =
             text-align:left;
         "
     >
-        ⏳ Cargando comentarios...
+        <span data-mass-ui>⏳ Cargando comentarios...</span>
     </div>
 
 </div>
@@ -76058,7 +76053,7 @@ function massCrearTarjetaPatrocinador(p = {}) {
 
       </div>
 
-      <h4 class="mass-sponsor-name">
+      <h4 data-mass-public-copy class="mass-sponsor-name">
         ${nombre}
       </h4>
 
@@ -76066,12 +76061,12 @@ function massCrearTarjetaPatrocinador(p = {}) {
         descripcion
           ? `
             <p class="mass-sponsor-description">
-              ${descripcion}
+              <span data-mass-public-copy>${descripcion}</span>
             </p>
           `
           : `
             <p class="mass-sponsor-description">
-              Patrocinador oficial
+              <span data-mass-ui>Patrocinador oficial</span>
             </p>
           `
       }
@@ -76080,7 +76075,7 @@ function massCrearTarjetaPatrocinador(p = {}) {
         promocion
           ? `
             <div class="mass-sponsor-promo">
-              🎁 ${promocion}
+              🎁 <span data-mass-public-copy>${promocion}</span>
             </div>
           `
           : `
@@ -76088,7 +76083,7 @@ function massCrearTarjetaPatrocinador(p = {}) {
               class="mass-sponsor-promo"
               style="visibility:hidden;"
             >
-              Promoción
+              <span data-mass-ui>Promoción</span>
             </div>
           `
       }
@@ -76157,7 +76152,7 @@ function massCrearCarruselPatrocinadores(
         titulo
           ? `
             <h3 class="mass-sponsor-section-title">
-              ${titulo}
+              <span data-mass-ui>${titulo}</span>
             </h3>
           `
           : ""
@@ -76167,7 +76162,7 @@ function massCrearCarruselPatrocinadores(
         subtitulo
           ? `
             <p class="mass-sponsor-section-subtitle">
-              ${subtitulo}
+              <span data-mass-ui>${subtitulo}</span>
             </p>
           `
           : ""
@@ -76185,7 +76180,7 @@ function massCrearCarruselPatrocinadores(
             mass-sponsor-arrow
             mass-sponsor-arrow-prev
           "
-          aria-label="Patrocinador anterior"
+          data-mass-aria aria-label="Patrocinador anterior"
         >
           ‹
         </button>
@@ -76210,7 +76205,7 @@ function massCrearCarruselPatrocinadores(
             mass-sponsor-arrow
             mass-sponsor-arrow-next
           "
-          aria-label="Patrocinador siguiente"
+          data-mass-aria aria-label="Patrocinador siguiente"
         >
           ›
         </button>
@@ -76879,7 +76874,7 @@ async function cargarPatrocinadoresPublicos(
 
     box.innerHTML = `
       <div class="mass-sponsor-empty">
-        No se pudieron cargar los patrocinadores.
+        <span data-mass-ui>No se pudieron cargar los patrocinadores.</span>
       </div>
     `;
 
@@ -76975,7 +76970,7 @@ async function cargarPatrocinadoresPublicos(
 
       box.innerHTML = `
         <div class="mass-sponsor-empty">
-          Este sorteo todavía no tiene patrocinadores.
+          <span data-mass-ui>Este sorteo todavía no tiene patrocinadores.</span>
         </div>
       `;
 
@@ -84457,8 +84452,7 @@ function renderizarComentariosRifa(
         `;
 
 
-        vacio.textContent =
-            "Sé el primero en comentar esta dinámica.";
+        window.MassIdioma.rotulo(vacio, "Sé el primero en comentar esta dinámica.");
 
 
         lista.appendChild(
@@ -86165,7 +86159,7 @@ if (lista) {
 
 const actividadBox = document.getElementById("actividadLive");
 if (actividadBox) {
-  actividadBox.innerHTML = "Esperando movimientos...";
+  window.MassIdioma.rotulo(actividadBox, "Esperando movimientos...");
 }
 
     const { data: rifa, error } = await supabaseClient
@@ -86444,7 +86438,7 @@ if (logoOrg) {
 	document.getElementById("nombreRifa").innerHTML = `
 
   <div class="mass-rifa-titulo-publico">
-    ${rifa.titulo || "Sorteo seleccionado"}
+    <span data-mass-public-copy>${massEscaparHTML(rifa.titulo || "Sorteo seleccionado")}</span>
   </div>
 
 
@@ -86456,8 +86450,8 @@ if (logoOrg) {
       </span>
 
       <span>
-        <strong>Premio:</strong>
-        ${rifa.premio || ""}
+        <strong><span data-mass-ui>Premio:</span></strong>
+        <span data-mass-public-copy>${massEscaparHTML(rifa.premio || "")}</span>
       </span>
     </div>
 
@@ -86471,7 +86465,7 @@ if (logoOrg) {
             </span>
 
             <span style="color:#ccc;">
-              ${rifa.aviso}
+              <span data-mass-public-copy>${massEscaparHTML(rifa.aviso)}</span>
             </span>
           </div>
         `
@@ -86485,7 +86479,7 @@ if (logoOrg) {
       </span>
 
       <span class="mass-rifa-acento-publico">
-        <strong>Mínimo para sortear:</strong>
+        <strong><span data-mass-ui>Mínimo para sortear:</span></strong>
         ${
           rifa.minimo_venta ||
           rifa.minimo_sorteo ||
@@ -86503,8 +86497,8 @@ if (logoOrg) {
       </span>
 
       <span>
-        <strong>Se jugará con:</strong>
-        ${rifa.metodo_sorteo || "Pendiente"}
+        <strong><span data-mass-ui>Se jugará con:</span></strong>
+        <span data-mass-ui>${massEscaparHTML(rifa.metodo_sorteo || "Pendiente")}</span>
       </span>
     </div>
 
@@ -86530,7 +86524,7 @@ if (logoOrg) {
       </span>
 
       <span>
-        <strong>Modalidad:</strong>
+        <strong><span data-mass-ui>Modalidad:</span></strong>
 
         ${
           [
@@ -86545,16 +86539,16 @@ if (logoOrg) {
           )
             ? `
                 ${Number(rifa.modalidad || 1)}
-                ${
+                <span data-mass-ui>${
                   Number(rifa.modalidad || 1) === 1
                     ? "número por boleto"
                     : "números por boleto"
-                }
+                }</span>
               `
             : `
-                Últimas
+                <span data-mass-ui>Últimas</span>
                 ${rifa.cifras_sorteo || 0}
-                cifras
+                <span data-mass-ui>cifras</span>
               `
         }
       </span>
@@ -86616,10 +86610,10 @@ const textoPreciosPublicos =
             preciosDivisasPublicos[codigo];
 
           return precioDivisa != null
-            ? `${precioDivisa} MASS ${codigo}`
-            : `MASS ${codigo}`;
+            ? `${massEscaparHTML(String(precioDivisa))} MASS ${massEscaparHTML(codigo)}`
+            : `MASS ${massEscaparHTML(codigo)}`;
         })
-        .join(" o ")
+        .join(' <span data-mass-ui>o</span> ')
     : (
         unidadMass
           ? `${precioMass} MASS ${unidadMass}`
@@ -86628,10 +86622,10 @@ const textoPreciosPublicos =
 
 const textoDivisasPublicas =
   divisasAceptadasPublicas.length
-    ? divisasAceptadasPublicas.join(" y ")
+    ? divisasAceptadasPublicas.map(massEscaparHTML).join(' <span data-mass-ui>y</span> ')
     : (
         unidadMass ||
-        "Sin configurar"
+        '<span data-mass-ui>Sin configurar</span>'
       );
 
 document.getElementById("precioRifa").innerHTML = `
@@ -86644,7 +86638,7 @@ document.getElementById("precioRifa").innerHTML = `
       </span>
 
       <span>
-        <strong>Precio por boleto:</strong>
+        <strong><span data-mass-ui>Precio por boleto:</span></strong>
         ${textoPreciosPublicos}
       </span>
     </div>
@@ -86656,7 +86650,7 @@ document.getElementById("precioRifa").innerHTML = `
       </span>
 
       <span>
-        <strong>Divisas aceptadas:</strong>
+        <strong><span data-mass-ui>Divisas aceptadas:</span></strong>
         ${textoDivisasPublicas}
       </span>
     </div>
@@ -86731,14 +86725,14 @@ document.getElementById("fechaRifa").innerHTML = `
       </span>
 
       <span>
-        <strong>Sorteo:</strong>
-        ${
+        <strong><span data-mass-ui>Sorteo:</span></strong>
+        <time data-mass-fecha-publica="dia" datetime="${massEscaparHTML(rifa.fecha_sorteo || rifa.fecha || '')}">${
           formatearFechaCorta(
             rifa.fecha_sorteo ||
             rifa.fecha ||
             ""
           )
-        }
+        }</time>
       </span>
     </div>
 
@@ -86752,7 +86746,7 @@ document.getElementById("fechaRifa").innerHTML = `
             </span>
 
             <span>
-              <strong>Hora:</strong>
+              <strong><span data-mass-ui>Hora:</span></strong>
               ${horaSorteoPublica}
             </span>
           </div>
@@ -86770,7 +86764,7 @@ document.getElementById("fechaRifa").innerHTML = `
             </span>
 
             <span>
-              <strong>Zona horaria:</strong>
+              <strong><span data-mass-ui>Zona horaria:</span></strong>
               ${zonaHorariaPublica}
             </span>
           </div>
@@ -86816,8 +86810,8 @@ background:#111;
 🎯 Números de esta rifa
 </h3>
 
-<b>${rifa.titulo || rifa.premio || "Sorteo seleccionado"}</b><br>
-🪙 ${rifa.precio_boleto || 0} por número<br>
+<b><span data-mass-public-copy>${massEscaparHTML(rifa.titulo || rifa.premio || "Sorteo seleccionado")}</span></b><br>
+🪙 ${rifa.precio_boleto || 0} <span data-mass-ui>por número</span><br>
 🎟️ ${rifa.total_numeros || ""} números
 
 </div>
@@ -87167,11 +87161,7 @@ async function cargarEstadisticasRifaPaginada(
 
   if (porcentajeRifa) {
 
-    porcentajeRifa.innerText =
-      `📊 Vendidos: ${vendidos} | ` +
-      `Reservados: ${reservados} | ` +
-      `Disponibles: ${disponibles} | ` +
-      `${porcentaje}%`;
+    window.MassIdioma.rotulo(porcentajeRifa, "📊 Vendidos: {0} | Reservados: {1} | Disponibles: {2} | {3}%", vendidos, reservados, disponibles, porcentaje);
 
   }
 
@@ -94651,8 +94641,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
         }
 
 
-        estado.textContent =
-            "🔐 Inicia sesión para consultar tus giros.";
+        window.MassIdioma.rotulo(estado, "🔐 Inicia sesión para consultar tus giros.");
 
         contenedor.innerHTML =
             "";
@@ -94660,8 +94649,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
 
         if (resumen) {
 
-            resumen.textContent =
-                "Necesitas una sesión activa para participar.";
+            window.MassIdioma.rotulo(resumen, "Necesitas una sesión activa para participar.");
         }
 
 
@@ -94669,8 +94657,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
     }
 
 
-    estado.textContent =
-        "🎟️ Buscando tus boletos disponibles...";
+    window.MassIdioma.rotulo(estado, "🎟️ Buscando tus boletos disponibles...");
 
     contenedor.innerHTML =
         "";
@@ -94715,8 +94702,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
             boletosUsuario.length === 0
         ) {
 
-            estado.textContent =
-                "🎟️ No tienes giros disponibles.";
+            window.MassIdioma.rotulo(estado, "🎟️ No tienes giros disponibles.");
 
             contenedor.innerHTML = `
                 <div
@@ -94729,16 +94715,15 @@ async function cargarBoletosDisponiblesLuckySpin() {
                         background:rgba(0,0,0,.45);
                     "
                 >
-                    Los boletos que ya utilizaron su giro
-                    permanecen visibles únicamente en
+                    <span data-mass-ui>Los boletos que ya utilizaron su giro
+                    permanecen visibles únicamente en</span>
                     <b data-mass-ui=Mis&#32;Boletos>Mis Boletos</b>.
                 </div>
             `;
 
             if (resumen) {
 
-                resumen.textContent =
-                    "🎟️ No tienes boletos listos para girar.";
+                window.MassIdioma.rotulo(resumen, "🎟️ No tienes boletos listos para girar.");
             }
 
             return false;
@@ -94843,8 +94828,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
             boletosElegibles.length === 0
         ) {
 
-            estado.textContent =
-                "🏁 No hay sorteos activos con giros disponibles.";
+            window.MassIdioma.rotulo(estado, "🏁 No hay sorteos activos con giros disponibles.");
 
             contenedor.innerHTML = `
                 <div
@@ -94857,17 +94841,16 @@ async function cargarBoletosDisponiblesLuckySpin() {
                         background:rgba(0,0,0,.45);
                     "
                 >
-                    Los boletos de sorteos finalizados
-                    continúan en <b data-mass-ui=Mis&#32;Boletos>Mis Boletos</b>,
-                    pero ya no participan en
-                    MASS Lucky Spin.
+                    <span data-mass-ui>Los boletos de sorteos finalizados
+                    continúan en</span> <b data-mass-ui=Mis&#32;Boletos>Mis Boletos</b>,
+                    <span data-mass-ui>pero ya no participan en
+                    MASS Lucky Spin.</span>
                 </div>
             `;
 
             if (resumen) {
 
-                resumen.textContent =
-                    "🏁 No tienes giros activos disponibles.";
+                window.MassIdioma.rotulo(resumen, "🏁 No tienes giros activos disponibles.");
             }
 
             return false;
@@ -94878,22 +94861,12 @@ async function cargarBoletosDisponiblesLuckySpin() {
         // 4. MOSTRAR LOS BOLETOS ELEGIBLES
         // =====================================================
 
-        estado.textContent =
-            `🎡 Tienes ${
-                boletosElegibles.length
-            } ${
-                boletosElegibles.length === 1
-                    ? "boleto listo"
-                    : "boletos listos"
-            } para girar`;
+        window.MassIdioma.rotulo(estado, boletosElegibles.length === 1 ? "🎡 Tienes {0} boleto listo para girar" : "🎡 Tienes {0} boletos listos para girar", boletosElegibles.length);
 
 
         if (resumen) {
 
-            resumen.textContent =
-                `🎟️ Giros disponibles: ${
-                    boletosElegibles.length
-                }`;
+            window.MassIdioma.rotulo(resumen, "🎟️ Giros disponibles: {0}", boletosElegibles.length);
         }
 
 
@@ -94996,8 +94969,7 @@ async function cargarBoletosDisponiblesLuckySpin() {
                         "div"
                     );
 
-                disponible.textContent =
-                    "🎡 Giro disponible";
+                window.MassIdioma.rotulo(disponible, "🎡 Giro disponible");
 
                 disponible.style.cssText = `
                     color:#fff;
@@ -97758,7 +97730,7 @@ const identificadorSeguro =
       >
         ${icono}
 🪪 ${identificadorSeguro}
-${accion} el boleto
+<span data-mass-ui>${accion} el boleto</span>
 <b>${numeroBaseTexto}</b>
       </div>
     `;
@@ -97775,7 +97747,7 @@ ${accion} el boleto
         <div>
           ${icono}
 🪪 ${identificadorSeguro}
-${accion} el paquete
+<span data-mass-ui>${accion} el paquete</span>
 <b>${numeroBaseTexto}</b>
         </div>
 
@@ -97786,9 +97758,9 @@ ${accion} el paquete
             font-size:14px;
           "
         >
-          🎟️ Incluye
+          <span data-mass-ui>🎟️ Incluye</span>
           ${modalidad}
-          números oficiales
+          <span data-mass-ui>números oficiales</span>
         </div>
       </div>
     `;
@@ -97958,8 +97930,8 @@ function mostrarPremioLuckySpinActividad(
       "
     >
       🏆 🪪 ${massIdSeguro}
-      ganó <b>${premioSeguro}</b>
-      con el boleto <b>${numeroSeguro}</b>
+      <span data-mass-ui>ganó</span> <b>${premioSeguro}</b>
+      <span data-mass-ui>con el boleto</span> <b>${numeroSeguro}</b>
     </div>
 
   `;
@@ -98163,8 +98135,7 @@ async function cargarActividadPublicaRifa(
 
   if (box) {
 
-    box.innerHTML =
-      "Esperando movimientos...";
+    window.MassIdioma.rotulo(box, "Esperando movimientos...");
   }
 
 
@@ -98219,8 +98190,7 @@ async function cargarActividadPublicaRifa(
     box
   ) {
 
-    box.innerHTML =
-      "Esperando movimientos...";
+    window.MassIdioma.rotulo(box, "Esperando movimientos...");
   }
 }
 
@@ -121415,5 +121385,11 @@ if (data.estado_verificacion === "en_revision") {
 }
 </script>
 
+<dialog id="lecturaPublicaMassId" aria-labelledby="tituloLecturaPublicaMassId">
+  <form method="dialog"><button data-mass-ui autofocus>Cerrar</button></form>
+  <h2 id="tituloLecturaPublicaMassId"></h2>
+  <small></small>
+  <article tabindex="0" translate="no"></article>
+</dialog>
 </body>
 </html>
