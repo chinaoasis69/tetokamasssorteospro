@@ -1164,7 +1164,7 @@ button{cursor:pointer}
 Powered by TE-TO-KA SOLUTIONS, LLC
 </div>
 <div class="mass-language-control">
-  <label>Idioma / Language
+  <label><span data-mass-ui>Idioma</span>
     <select data-mass-language dir="ltr">
       <option value="es" lang="es">Español</option>
       <option value="en" lang="en">English</option>
@@ -1853,7 +1853,7 @@ Selecciona una rifa
         border-right:1px solid rgba(57,255,20,.65);
       "
     >
-      <div style="font-size:16px; color:#bbb;">
+      <div style="font-size:16px; color:#bbb;" data-mass-ui>
         👤 Sesión activa
       </div>
 
@@ -1893,7 +1893,7 @@ Selecciona una rifa
           font-weight:bold;
           margin-bottom:8px;
         "
-      >
+       data-mass-ui>
         👤 Mi MASS ID
       </div>
 
@@ -1903,7 +1903,7 @@ Selecciona una rifa
           line-height:1.45;
           margin-bottom:14px;
         "
-      >
+       data-mass-ui>
         Administra tu perfil, seguridad y preferencias.
       </div>
 
@@ -1974,9 +1974,9 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 </div>  
 	  
     <div id="saldoBox" class="wallet-mass-box">
-  <div class="wallet-title">💰 WALLET MASS</div>
+  <div class="wallet-title" data-mass-ui>💰 WALLET MASS</div>
   <div class="wallet-amount">0 MASS</div>
-  <div class="wallet-subtitle">Disponible con este organizador</div>
+  <div class="wallet-subtitle" data-mass-ui>Disponible con este organizador</div>
 </div>
     <br>
 
@@ -2015,7 +2015,7 @@ Selecciona uno o varios boletos para reservar o comprar con tu Wallet MASS.
 >
 
     <h2 class="walletTitulo" style="margin-bottom:6px;">
-        💰 Recarga tu Wallet MASS
+        <span data-mass-ui>💰 Recarga tu Wallet MASS</span>
         <span id="walletArrow">▼</span>
     </h2>
 
@@ -2560,8 +2560,8 @@ Cargando historial...
 >
     <h2 data-mass-ui=🏆&#32;RESULTADOS&#32;DE&#32;SORTEOS>🏆 RESULTADOS DE SORTEOS</h2>
 
-    <p data-mass-ui=Consulta&#32;los&#32;resultados&#32;oficiales&#32;de&#32;las&#32;dinámicas.>
-        Consulta los resultados oficiales de las dinámicas.
+    <p data-mass-ui>
+        Consulta los resultados oficiales de los sorteos.
     </p>
 
 	<label data-mass-ui=Elige&#32;un&#32;organizador
@@ -2593,7 +2593,7 @@ Cargando historial...
     </option>
 </select>
 
-    <label data-mass-ui=Elige&#32;una&#32;dinámica
+    <label data-mass-ui
         for="selectorResultadosSorteos"
         style="
             display:block;
@@ -2602,7 +2602,7 @@ Cargando historial...
             font-weight:bold;
         "
     >
-        Elige una dinámica
+        Elige un sorteo
     </label>
 
     <select
@@ -2700,7 +2700,7 @@ Cargando historial...
   </header>
   <div class="tokayo-contenido">
     <div class="mass-language-control">
-  <label>Idioma / Language
+  <label><span data-mass-ui>Idioma</span>
     <select data-mass-language dir="ltr">
       <option value="es" lang="es">Español</option>
       <option value="en" lang="en">English</option>
@@ -2752,8 +2752,8 @@ Cargando historial...
           <summary data-tokayo-claves="getting started join enter" data-tokayo-inicio>How do I participate for the first time?</summary>
           <ol>
           <li>Sign in with your MASS ID. If this is your first visit, select Create account and complete registration.</li>
-          <li>Choose View active organizers on the home page. Find the organizer, open their raffles and select the one you want.</li>
-          <li>Check the prize, ticket price and Official Rules for that raffle.</li>
+          <li>Choose View active organizers on the home page. Find the organizer, open their draws and select the one you want.</li>
+          <li>Check the prize, ticket price and Official Rules for that draw.</li>
           <li>Choose available tickets. Select Reserve tickets to hold them, or check the total and your balance with this organizer before choosing Buy with MASS.</li>
           </ol>
         </template>
@@ -2788,8 +2788,8 @@ Cargando historial...
         <p>Con la plantilla de MASS, puedes abrir preguntas como «¿Quién puede participar?», «¿Cómo se elige al ganador?» o «¿Cómo y cuándo puedo reclamar mi premio?». Cada respuesta reproduce el apartado que publicó el organizador. También puedes leer el texto completo, incluidas las reglas que el organizador haya escrito en formato libre.</p>
       
         <template>
-          <summary data-tokayo-claves="official rules requirements eligibility">Where can I read the conditions for entering a raffle?</summary>
-          <p>Open the raffle and select Participant FAQ to see the rules its organizer published, including the version. If more than one version is available, you can select which one to read. You can also select View Official Rules on the raffle.</p>
+          <summary data-tokayo-claves="official rules requirements eligibility">Where can I read the conditions for entering a draw?</summary>
+          <p>Open the draw and select Participant FAQ to see the rules its organizer published, including the version. If more than one version is available, you can select which one to read. You can also select View Official Rules on the draw.</p>
           <p>When the organizer uses the MASS template, sections cover eligibility, winner selection and prize collection. You can also read the full published text, including custom rules written by the organizer.</p>
         </template>
       </details>
@@ -2804,7 +2804,7 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="random lucky number pick tickets">How do I pick my numbers or have them chosen at random?</summary>
-          <p>In the raffle, select Available only to choose numbers from the grid. Select Lucky number to choose at random and pick one of the quantities shown. Review your selection in the Purchase Center before reserving or buying.</p>
+          <p>In the draw, select Available only to choose numbers from the grid. Select Lucky number to choose at random and pick one of the quantities shown. Review your selection in the Purchase Center before reserving or buying.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="reserve">
@@ -2818,8 +2818,8 @@ Cargando historial...
         <template>
           <summary data-tokayo-claves="hold book reserve tickets pay reservation" data-tokayo-inicio>How do I reserve tickets and pay for them later?</summary>
           <ol>
-          <li>Select your numbers, choose Reserve tickets and confirm the quantity. Wait for the reservation message. The deadline depends on the raffle.</li>
-          <li>To pay, open My tickets → View my tickets. Find the raffle and select View tickets.</li>
+          <li>Select your numbers, choose Reserve tickets and confirm the quantity. Wait for the reservation message. The deadline depends on the draw.</li>
+          <li>To pay, open My tickets → View my tickets. Find the draw and select View tickets.</li>
           <li>Find the ticket marked Reserved. While the reservation is valid, select Pay with MASS and confirm using your balance with that organizer.</li>
           </ol>
         </template>
@@ -2832,7 +2832,7 @@ Cargando historial...
         <template>
           <summary data-tokayo-claves="expired unpaid reservation deadline">What happens if I do not pay for a reserved number before the draw?</summary>
           <p>The number becomes available again when the organizer&#x27;s first applicable deadline is reached. A maximum hold time runs from when you reserved. A pre-draw cutoff releases unpaid reservations at the specified time. If both are disabled, reservations do not expire automatically under either setting.</p>
-          <p>For example, a 24-hour cutoff for a Saturday 8 p.m. draw releases unpaid reservations on Friday at 8 p.m., even if their individual hold times run longer. Check the raffle&#x27;s Official Rules or ask the organizer about its deadlines.</p>
+          <p>For example, a 24-hour cutoff for a Saturday 8 p.m. draw releases unpaid reservations on Friday at 8 p.m., even if their individual hold times run longer. Check the draw&#x27;s Official Rules or ask the organizer about its deadlines.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="wallet-buy">
@@ -2842,7 +2842,7 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="purchase tickets wallet balance">How do I buy tickets with my MASS Wallet and find my purchase?</summary>
-          <p>Select numbers in the raffle. In the Purchase Center, check your tickets, the total and your available balance. Top up first if needed. Select Buy with MASS and complete any acceptance steps shown.</p>
+          <p>Select numbers in the draw. In the Purchase Center, check your tickets, the total and your available balance. Top up first if needed. Select Buy with MASS and complete any acceptance steps shown.</p>
           <p>Find your numbers under My tickets → View my tickets. For the transaction record, open My MASS purchases → View my MASS purchases.</p>
         </template>
       </details>
@@ -2854,9 +2854,9 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="minimum threshold reschedule">What if the minimum ticket sales are not reached?</summary>
-          <p>The raffle shows the percentage of numbers that must be sold. In an automatic random draw, if sales fall short at draw time, the raffle closes without selecting a winner. With 100 numbers and a 60% minimum, 59 sold and one reserved count as 59 sold.</p>
-          <p>If the organizer reschedules, a purchased ticket keeps its number for the new date without another payment. A reserved but unpaid number becomes available in the new raffle.</p>
-          <p>Check My tickets for your number and the rescheduled raffle for its new date and time. If no date is available or a different draw method applies, read its Official Rules or contact the organizer.</p>
+          <p>The draw shows the percentage of numbers that must be sold. In an automatic random draw, if sales fall short at draw time, the draw closes without selecting a winner. With 100 numbers and a 60% minimum, 59 sold and one reserved count as 59 sold.</p>
+          <p>If the organizer reschedules, a purchased ticket keeps its number for the new date without another payment. A reserved but unpaid number becomes available in the new draw.</p>
+          <p>Check My tickets for your number and the rescheduled draw for its new date and time. If no date is available or a different draw method applies, read its Official Rules or contact the organizer.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="review">
@@ -2878,7 +2878,7 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="different balance wallet organizer">Why does my balance change when I switch organizers?</summary>
-          <p>Each organizer has a separate MASS Wallet for your transactions with them. Open the raffle&#x27;s organizer and check your available balance in the Purchase Center. Before sending a top-up, check the organizer&#x27;s name and the selected payment currency.</p>
+          <p>Each organizer has a separate MASS Wallet for your transactions with them. Open the draw&#x27;s organizer and check your available balance in the Purchase Center. Before sending a top-up, check the organizer&#x27;s name and the selected payment currency.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="top-up">
@@ -2893,7 +2893,7 @@ Cargando historial...
         <template>
           <summary data-tokayo-claves="add funds top up wallet deposit bank transfer" data-tokayo-inicio>How do I top up with a transfer or deposit?</summary>
           <ol>
-          <li>Sign in, select your organizer or open their raffle. Under Top up your MASS Wallet → Available payment methods, choose a method enabled for wallet top-ups.</li>
+          <li>Sign in, select your organizer or open their draw. Under Top up your MASS Wallet → Available payment methods, choose a method enabled for wallet top-ups.</li>
           <li>Check the account holder, destination and instructions. Pay through the indicated channel and keep the receipt.</li>
           <li>Select the image or PDF receipt in the same top-up and confirm the organizer if prompted. Wait for the submission confirmation.</li>
           <li>Check My MASS top-ups for the status. Your balance is credited once the organizer verifies receipt of the funds.</li>
@@ -2949,8 +2949,8 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="free ticket extra spin additional numbers pack bundle paid ticket another spin">Which tickets earn a MASS Lucky Spin?</summary>
-          <p>When MASS Lucky Spin is enabled for a raffle, each purchased and paid ticket earns one spin linked to its main number. Additional numbers in a ticket package do not earn extra spins. A free MASS ticket won in Lucky Spin does not earn another spin.</p>
-          <p>For example, one paid ticket containing four numbers earns one spin. The raffle&#x27;s Official Rules govern how those numbers participate in the main draw.</p>
+          <p>When MASS Lucky Spin is enabled for a draw, each purchased and paid ticket earns one spin linked to its main number. Additional numbers in a ticket package do not earn extra spins. A free MASS ticket won in Lucky Spin does not earn another spin.</p>
+          <p>For example, one paid ticket containing four numbers earns one spin. The draw&#x27;s Official Rules govern how those numbers participate in the main draw.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="spin">
@@ -2959,7 +2959,7 @@ Cargando historial...
       
         <template>
           <summary data-tokayo-claves="spin wheel use available spin">How do I use my ticket&#x27;s MASS Lucky Spin?</summary>
-          <p>Under MASS Lucky Spin, choose Select ticket. Pick a listed ticket and select Spin now. The list shows tickets with an unused spin in eligible raffles. Tickets remain under My tickets after you use their spin.</p>
+          <p>Under MASS Lucky Spin, choose Select ticket. Pick a listed ticket and select Spin now. The list shows tickets with an unused spin in eligible draws. Tickets remain under My tickets after you use their spin.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="unused-spins">
@@ -2967,8 +2967,8 @@ Cargando historial...
         <p>Usa tus giros mientras la rifa esté activa, antes de la fecha y hora del sorteo. Cuando termina esa rifa, los giros que te quedaron pendientes dejan de estar disponibles. Tu boleto sigue en <strong>Mis boletos</strong> y los premios que ya ganaste se consultan en <strong>Mis Premios</strong>.</p>
       
         <template>
-          <summary data-tokayo-claves="expired spins unused after draw">What happens to unused spins when the raffle ends?</summary>
-          <p>Use spins while the raffle is active, before its draw date and time. Unused spins become unavailable when that raffle ends. Your ticket remains under My tickets and prizes you already won appear under My prizes.</p>
+          <summary data-tokayo-claves="expired spins unused after draw">What happens to unused spins when the draw ends?</summary>
+          <p>Use spins while the draw is active, before its draw date and time. Unused spins become unavailable when that draw ends. Your ticket remains under My tickets and prizes you already won appear under My prizes.</p>
         </template>
       </details>
       <details data-mass-topic="es" data-mass-guide-key="claim-spin">
@@ -2986,7 +2986,7 @@ Cargando historial...
         <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
       
         <template>
-          <summary data-tokayo-claves="winner delivery receipt prize">Where do I see winners and confirm I received my raffle prize?</summary>
+          <summary data-tokayo-claves="winner delivery receipt prize">Where do I see winners and confirm I received my draw prize?</summary>
           <p>Open Winners → Winner history to see published results. If you won, open My prizes and check the delivery status.</p>
           <p>Confirm receipt only after receiving the prize. If delivery is reported and you are still waiting, use I did not receive my prize when the option is available.</p>
         </template>
@@ -2996,8 +2996,8 @@ Cargando historial...
         <p>Abre la rifa y busca <strong>Contacto y Soporte</strong> para ver los canales que el organizador haya publicado. Si tienes la sesión iniciada, también puedes abrir <strong>Chat con el organizador</strong>, escribir tu consulta y pulsar <strong>Enviar mensaje</strong>. Incluye el nombre de la rifa y el número de boleto si tu pregunta es sobre una participación.</p>
       
         <template>
-          <summary data-tokayo-claves="contact support chat talk to someone">How do I contact my raffle organizer?</summary>
-          <p>Open the raffle and look for Contact and support to see the organizer&#x27;s published channels. When signed in, you can also open Chat with the organizer, write your question and select Send message. Include the raffle name and ticket number when asking about an entry.</p>
+          <summary data-tokayo-claves="contact support chat talk to someone">How do I contact my draw organizer?</summary>
+          <p>Open the draw and look for Contact and support to see the organizer&#x27;s published channels. When signed in, you can also open Chat with the organizer, write your question and select Send message. Include the draw name and ticket number when asking about an entry.</p>
         </template>
       </details>
     </section>
@@ -3026,13 +3026,13 @@ Cargando historial...
           </ol>
         
         <template>
-          <summary data-tokayo-claves="getting started first steps before setup" data-tokayo-inicio>Where should I start before creating my first raffle?</summary>
+          <summary data-tokayo-claves="getting started first steps before setup" data-tokayo-inicio>Where should I start before creating my first draw?</summary>
           <ol>
           <li>In the Admin panel, open MASS finances → Manage currencies. Check which active currency is marked as primary. Add or reactivate the currency you want and select Make primary if needed.</li>
           <li>Under Manage payment methods, choose a country and configure or edit a method. For participant top-ups, enable MASS Wallet top-ups if supported. Enter the required details, save, and verify the method is active.</li>
           <li>Using a participant account, select your organization and open the wallet&#x27;s available payment methods. Review the destination and instructions.</li>
-          <li>Return to Draws and prizes → Raffles → New raffle. Enter the prize, price, numbers and date. Save the raffle to schedule it.</li>
-          <li>Publish the Official Rules for the scheduled raffle, then activate it to open participation.</li>
+          <li>Return to Draws and prizes → Draws → New draw. Enter the prize, price, numbers and date. Save the draw to schedule it.</li>
+          <li>Publish the Official Rules for the scheduled draw, then activate it to open participation.</li>
           </ol>
         </template>
       </details>
@@ -3051,13 +3051,13 @@ Cargando historial...
           </ol>
         
         <template>
-          <summary data-tokayo-claves="create new draw set up raffle" data-tokayo-inicio>How do I create my first raffle?</summary>
+          <summary data-tokayo-claves="create new draw set up raffle" data-tokayo-inicio>How do I create my first draw?</summary>
           <ol>
-          <li>In the Admin panel, open Draws and prizes → Raffles → New raffle.</li>
+          <li>In the Admin panel, open Draws and prizes → Draws → New draw.</li>
           <li>Enter the title, first prize and ticket price in the primary currency. Enter a number count between 100 and 1,000,000 in multiples of 100. Select how many numbers each ticket includes.</li>
           <li>Choose the date, time and time zone. Set reservation deadlines and the minimum percentage of numbers that must sell.</li>
           <li>Select the draw method. For an automatic random draw with multiple prizes, name each prize. Select the supported number of ending digits if the method requires it.</li>
-          <li>Select Save raffle. The raffle is scheduled. Publish its Official Rules and activate it to open participation.</li>
+          <li>Select Save draw. The draw is scheduled. Publish its Official Rules and activate it to open participation.</li>
           </ol>
         </template>
       </details>
@@ -3070,11 +3070,11 @@ Cargando historial...
           </ol>
         
         <template>
-          <summary data-tokayo-claves="publish official rules activate raffle">How do I publish the rules and activate a raffle?</summary>
+          <summary data-tokayo-claves="publish official rules activate raffle">How do I publish the rules and activate a draw?</summary>
           <ol>
-          <li>Under Raffles, find the raffle and open Official Rules → Create first draft, or Edit draft if a draft already exists.</li>
+          <li>Under Draws, find the draw and open Official Rules → Create first draft, or Edit draft if a draft already exists.</li>
           <li>Complete the participation conditions, draw method and prize delivery details. Review the preview and save the draft.</li>
-          <li>Select Publish under Official Rules and confirm. Return to the scheduled raffle and select Activate raffle.</li>
+          <li>Select Publish under Official Rules and confirm. Return to the scheduled draw and select Activate draw.</li>
           </ol>
         </template>
       </details>
@@ -3093,8 +3093,8 @@ Cargando historial...
           <p>Si quedó con el mínimo de ventas sin alcanzar y aparece <strong>Reprogramar dinámica</strong>, abre esa opción, revisa la nueva fecha, hora y condiciones y confirma. Los botones disponibles dependen del estado de la rifa y de tus permisos.</p>
         
         <template>
-          <summary data-tokayo-claves="edit pause resume reschedule draw">How do I edit, pause or reschedule a raffle?</summary>
-          <p>Open the raffle by title under Raffles. Select Edit raffle to change available fields, Pause raffle to pause it or Resume raffle to restart it. If sales fell below the minimum and Reschedule raffle appears, review the new date, time and conditions before confirming. Available actions depend on raffle status and your permissions.</p>
+          <summary data-tokayo-claves="edit pause resume reschedule draw">How do I edit, pause or reschedule a draw?</summary>
+          <p>Open the draw by title under Draws. Select Edit draw to change available fields, Pause draw to pause it or Resume draw to restart it. If sales fell below the minimum and Reschedule draw appears, review the new date, time and conditions before confirming. Available actions depend on draw status and your permissions.</p>
         </template>
       </details>
         <details data-mass-topic="es" data-mass-guide-key="share">
@@ -3102,8 +3102,8 @@ Cargando historial...
           <p>Abre la dinámica en la vista pública y pulsa <strong>Compartir</strong>. Elige una aplicación o copia el enlace que te ofrece la pantalla. El participante puede consultar sus números desde su cuenta en <strong>Mis boletos → Ver mis boletos</strong>.</p>
         
         <template>
-          <summary data-tokayo-claves="share link copy raffle">How do I share a raffle and where can participants see their tickets?</summary>
-          <p>Open the raffle in the public view and select Share. Choose an app or copy the link provided. Participants can see their numbers under My tickets → View my tickets.</p>
+          <summary data-tokayo-claves="share link copy raffle">How do I share a draw and where can participants see their tickets?</summary>
+          <p>Open the draw in the public view and select Share. Choose an app or copy the link provided. Participants can see their numbers under My tickets → View my tickets.</p>
         </template>
       </details>
       </section>
@@ -3116,7 +3116,7 @@ Cargando historial...
         
         <template>
           <summary data-tokayo-claves="prizes preliminary draw">How do I manage prizes and preliminary draws?</summary>
-          <p>Find the raffle by title under Raffles. Select Prizes to see its prizes. To prepare a preliminary draw, select Preliminary draws → Create preliminary draw on the same card and complete the form.</p>
+          <p>Find the draw by title under Draws. Select Prizes to see its prizes. To prepare a preliminary draw, select Preliminary draws → Create preliminary draw on the same card and complete the form.</p>
         </template>
       </details>
         <details data-mass-topic="es" data-mass-guide-key="add-spin-prize">
@@ -3131,11 +3131,11 @@ Cargando historial...
         
         <template>
           <summary data-tokayo-claves="add prize wheel sponsored reward" data-tokayo-inicio>How do I add a MASS Lucky Spin prize?</summary>
-          <p>If a new sponsor provides the prize for this raffle, first register them under Sponsors → Add sponsor. Choose Specific raffle, select the raffle and continue. Complete and save the sponsor profile. If the sponsor is already active for that raffle or you supply the prize, start with step 1.</p>
+          <p>If a new sponsor provides the prize for this draw, first register them under Sponsors → Add sponsor. Choose Specific draw, select the draw and continue. Complete and save the sponsor profile. If the sponsor is already active for that draw or you supply the prize, start with step 1.</p>
           <ol>
-          <li>Under Draws and prizes → MASS Lucky Spin prizes, select a scheduled or active raffle and choose Add prize.</li>
+          <li>Under Draws and prizes → MASS Lucky Spin prizes, select a scheduled or active draw and choose Add prize.</li>
           <li>Enter the prize name and choose its type: product or prize, promotion or coupon, or free MASS ticket.</li>
-          <li>Under Provided by, choose Organizer for your own prize. For a sponsored prize, choose Sponsor, then select the provider from the active sponsors for that raffle.</li>
+          <li>Under Provided by, choose Organizer for your own prize. For a sponsored prize, choose Sponsor, then select the provider from the active sponsors for that draw.</li>
           <li>Enter how many units are available. For three identical coupons, enter 3. The description and internal code are optional. Save the prize. Its card shows the provider and how many units were distributed and remain.</li>
           </ol>
         </template>
@@ -3155,7 +3155,7 @@ Cargando historial...
         
         <template>
           <summary data-tokayo-claves="publish winner manual automatic result">How do I publish a winner?</summary>
-          <p>Open Draws and prizes → Winners. Choose the raffle and prize. Enter the winning number for a manual result or wait for the official result shown for an automatic draw. Check the details and select Publish winner when available. Participants can see the result under Winners.</p>
+          <p>Open Draws and prizes → Winners. Choose the draw and prize. Enter the winning number for a manual result or wait for the official result shown for an automatic draw. Check the details and select Publish winner when available. Participants can see the result under Winners.</p>
         </template>
       </details>
         <details data-mass-topic="es" data-mass-guide-key="sponsor">
@@ -3168,13 +3168,13 @@ Cargando historial...
           <p>Si ya tienes abierta la rifa en <strong>Sorteos</strong>, puedes usar <strong>Patrocinadores de esta dinámica → Agregar patrocinador a esta rifa</strong>. Ese botón abre la misma ficha con la rifa ya seleccionada. Basta con guardarla por una de las dos rutas.</p>
         
         <template>
-          <summary data-tokayo-claves="register sponsor business sponsorship">How do I add a sponsor to a raffle?</summary>
+          <summary data-tokayo-claves="register sponsor business sponsorship">How do I add a sponsor to a draw?</summary>
           <ol>
-          <li>Open Draws and prizes → Sponsors → Add sponsor. Under Assign sponsor to, choose Specific raffle. General organizer sponsor creates an organization-level profile without linking it to a particular raffle.</li>
-          <li>Choose a scheduled or active raffle, continue, enter the sponsor&#x27;s name and any other details you want to show, and save.</li>
-          <li>If they provide a prize, open MASS Lucky Spin prizes for that same raffle, add the prize, choose Sponsor under Provided by and select their name.</li>
+          <li>Open Draws and prizes → Sponsors → Add sponsor. Under Assign sponsor to, choose Specific draw. General organizer sponsor creates an organization-level profile without linking it to a particular draw.</li>
+          <li>Choose a scheduled or active draw, continue, enter the sponsor&#x27;s name and any other details you want to show, and save.</li>
+          <li>If they provide a prize, open MASS Lucky Spin prizes for that same draw, add the prize, choose Sponsor under Provided by and select their name.</li>
           </ol>
-          <p>You can also open the raffle in Raffles and select Sponsors for this raffle → Add sponsor to this raffle. Either route saves the same profile once.</p>
+          <p>You can also open the draw in Draws and select Sponsors for this draw → Add sponsor to this draw. Either route saves the same profile once.</p>
         </template>
       </details>
       </section>
@@ -3188,7 +3188,7 @@ Cargando historial...
         
         <template>
           <summary data-tokayo-claves="set up currency payment methods">How do I configure currencies and payment methods?</summary>
-          <p>Under MASS finances → Manage currencies, add a missing currency or reactivate an existing one. If the panel reports zero or multiple primary currencies, refresh. If the warning persists, contact support before changing settings. Additional raffle currencies are references. Use the MASS Converter for estimates.</p>
+          <p>Under MASS finances → Manage currencies, add a missing currency or reactivate an existing one. If the panel reports zero or multiple primary currencies, refresh. If the warning persists, contact support before changing settings. Additional draw currencies are references. Use the MASS Converter for estimates.</p>
           <p>Under Manage payment methods, select the country. To correct a method, select Edit, check the account holder, destination and instructions, and save. Enable it if needed. The participant wallet shows active methods enabled for MASS Wallet top-ups.</p>
         </template>
       </details>
@@ -3229,7 +3229,7 @@ Cargando historial...
         
         <template>
           <summary data-tokayo-claves="collaborator team permissions access">How do I add a team member and choose their permissions?</summary>
-          <p>As the owner, open Settings and team → My team / Access → Add team member. Look up their MASS ID and verify their identity before adding them. In their profile select the functions they need and save permissions. To create raffles they need permission to create draws.</p>
+          <p>As the owner, open Settings and team → My team / Access → Add team member. Look up their MASS ID and verify their identity before adding them. In their profile select the functions they need and save permissions. To create draws they need permission to create draws.</p>
         </template>
       </details>
         <details data-mass-topic="es" data-mass-guide-key="profile">
@@ -3259,7 +3259,7 @@ Cargando historial...
 <div id="panelAdmin" class="card" style="display:none;">
   <h2 data-mass-ui=📊&#32;Panel&#32;Administrativo>📊 Panel Administrativo</h2>
   <div class="mass-language-control">
-  <label>Idioma / Language
+  <label><span data-mass-ui>Idioma</span>
     <select data-mass-language dir="ltr">
       <option value="es" lang="es">Español</option>
       <option value="en" lang="en">English</option>
@@ -13454,7 +13454,7 @@ async function cargarOrganizadoresConResultados(){
         if(contenedor){
 
             contenedor.innerHTML = `
-                <p>
+                <p data-mass-ui>
                     Todavía no existen resultados
                     oficiales publicados.
                 </p>
@@ -13523,8 +13523,8 @@ async function cargarOrganizadoresConResultados(){
         document.createElement("option");
 
     opcionInicial.value = "";
-    opcionInicial.textContent =
-        massTexto("Elige un organizador");
+    opcionInicial.dataset.massUi = "";
+    opcionInicial.textContent = "Elige un organizador";
 
     selectorOrganizador.appendChild(
         opcionInicial
@@ -13537,10 +13537,9 @@ async function cargarOrganizadoresConResultados(){
 
         opcion.value = org.id;
 
-        opcion.textContent =
-            org.nombre_publico ||
-            org.nombre ||
-            "Organizador";
+        const nombre = org.nombre_publico || org.nombre;
+        if (!nombre) opcion.dataset.massUi = "";
+        opcion.textContent = nombre || "Organizador";
 
         selectorOrganizador.appendChild(
             opcion
@@ -13626,7 +13625,7 @@ async function seleccionarOrganizadorResultados(){
     if(contenedor){
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 Cargando resultados del organizador...
             </p>
         `;
@@ -13680,7 +13679,7 @@ async function cargarDinamicasConResultados(){
         `;
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 Primero selecciona un organizador
                 para consultar sus resultados.
             </p>
@@ -13719,7 +13718,7 @@ async function cargarDinamicasConResultados(){
         `;
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 No fue posible cargar los resultados.
             </p>
         `;
@@ -13756,7 +13755,7 @@ async function cargarDinamicasConResultados(){
         `;
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 Este organizador todavía no tiene
                 resultados oficiales publicados.
             </p>
@@ -13818,7 +13817,7 @@ async function cargarDinamicasConResultados(){
         `;
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 No hay dinámicas finalizadas con
                 resultados oficiales publicados.
             </p>
@@ -13833,8 +13832,8 @@ async function cargarDinamicasConResultados(){
         document.createElement("option");
 
     opcionInicial.value = "";
-    opcionInicial.textContent =
-        massTexto("Elige una dinámica");
+    opcionInicial.dataset.massUi = "";
+    opcionInicial.textContent = "Elige un sorteo";
 
     selector.appendChild(opcionInicial);
 
@@ -13848,14 +13847,9 @@ async function cargarDinamicasConResultados(){
         const fechaResultado =
             fechaResultadoPorRifa[String(rifa.id)];
 
-        const fechaTexto = fechaResultado
-            ? new Date(fechaResultado)
-                .toLocaleDateString("es-MX")
-            : "";
-
-        opcion.textContent = fechaTexto
-            ? `${rifa.titulo || "Dinámica"} — ${fechaTexto}`
-            : rifa.titulo || "Dinámica";
+        opcion.dataset.massResultDate = fechaResultado || "";
+        opcion.dataset.massDrawTitle = rifa.titulo || "";
+        opcion.textContent = rifa.titulo || "Dinámica";
 
         selector.appendChild(opcion);
     });
@@ -14114,7 +14108,7 @@ async function cargarResultadosPublicos(){
     if(!organizadorId){
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 Primero selecciona un organizador.
             </p>
         `;
@@ -14123,7 +14117,7 @@ async function cargarResultadosPublicos(){
     }
 
     contenedor.innerHTML = `
-        <p>
+        <p data-mass-ui>
             Cargando resultados oficiales...
         </p>
     `;
@@ -14158,7 +14152,7 @@ async function cargarResultadosPublicos(){
         );
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 No fue posible cargar los resultados.
             </p>
         `;
@@ -14169,7 +14163,7 @@ async function cargarResultadosPublicos(){
     if(!resultados || resultados.length === 0){
 
         contenedor.innerHTML = `
-            <p>
+            <p data-mass-ui>
                 Esta dinámica todavía no tiene
                 resultados oficiales publicados.
             </p>
@@ -14197,10 +14191,12 @@ async function cargarResultadosPublicos(){
             const fechaTexto =
                 fechaResultado &&
                 !Number.isNaN(fechaResultado.getTime())
-                    ? fechaResultado.toLocaleDateString(
-                        "es-MX"
-                    )
-                    : "Fecha no disponible";
+                    ? fechaResultado.toISOString()
+                    : "";
+
+            const estadosEntrega = { pendiente: "Pendiente de entrega", contactado: "Contactado", entregado: "Entregado" };
+            const estado = String(resultado.estado_entrega || "pendiente").toLowerCase();
+            const estadoTraducible = Object.hasOwn(estadosEntrega, estado) ? estadosEntrega[estado] : "";
 
             const imagenOriginal =
                 String(
@@ -14232,7 +14228,7 @@ async function cargarResultadosPublicos(){
                             ? `
                                 <img
                                     src="${escaparTexto(imagenSegura)}"
-                                    alt="Foto del ganador o entrega"
+                                    data-mass-alt alt="Foto del ganador o entrega"
                                     style="
                                         display:block;
                                         width:100%;
@@ -14254,15 +14250,14 @@ async function cargarResultadosPublicos(){
 
                     <h3>
                         🏆 ${
-                            escaparTexto(
-                                resultado.lugar_premio ||
-                                `${indice + 1}.º Premio`
-                            )
+                            resultado.lugar_premio
+                                ? escaparTexto(resultado.lugar_premio)
+                                : `<span data-mass-place="${indice + 1}">${indice + 1}.º Premio</span>`
                         }
                     </h3>
 
                     <p>
-                        🎟️ <b>Número ganador:</b><br>
+                        🎟️ <b data-mass-ui>Número ganador:</b><br>
                         <span
                             style="
                                 font-size:26px;
@@ -14271,10 +14266,7 @@ async function cargarResultadosPublicos(){
                             "
                         >
                             ${
-                                escaparTexto(
-                                    resultado.numero_ganador ||
-                                    "No disponible"
-                                )
+                                resultado.numero_ganador ? escaparTexto(resultado.numero_ganador) : '<span data-mass-ui>No disponible</span>'
                             }
                         </span>
                     </p>
@@ -14289,31 +14281,22 @@ async function cargarResultadosPublicos(){
                             "
                         >
                             ${
-                                escaparTexto(
-                                    resultado.mass_id ||
-                                    "MASS ID no disponible"
-                                )
+                                resultado.mass_id ? escaparTexto(resultado.mass_id) : '<span data-mass-ui>MASS ID no disponible</span>'
                             }
                         </span>
                     </p>
 
                     <p>
-                        🎁 <b>Premio:</b><br>
+                        🎁 <b data-mass-ui>Premio:</b><br>
                         ${
-                            escaparTexto(
-                                resultado.premio ||
-                                "Premio no disponible"
-                            )
+                            resultado.premio ? escaparTexto(resultado.premio) : '<span data-mass-ui>Premio no disponible</span>'
                         }
                     </p>
 
                     <p>
-                        📍 <b>Estado de entrega:</b><br>
+                        📍 <b data-mass-ui>Estado de entrega:</b><br>
                         ${
-                            escaparTexto(
-                                resultado.estado_entrega ||
-                                "Pendiente de entrega"
-                            )
+                            estadoTraducible ? `<span data-mass-ui>${estadoTraducible}</span>` : escaparTexto(resultado.estado_entrega)
                         }
                     </p>
 
@@ -14332,8 +14315,10 @@ async function cargarResultadosPublicos(){
                     }
 
                     <p>
-                        📅 <b>Fecha del resultado:</b><br>
-                        ${escaparTexto(fechaTexto)}
+                        📅 <b data-mass-ui>Fecha del resultado:</b><br>
+                        ${fechaTexto
+                            ? `<time data-mass-result-date datetime="${fechaTexto}">${fechaResultado.toLocaleDateString("es-MX")}</time>`
+                            : '<span data-mass-ui>Fecha no disponible</span>'}
                     </p>
                 </div>
 			</div>
@@ -14356,9 +14341,8 @@ async function cargarResultadosPublicos(){
                     onclick="
                         irAResultadoPublico(${indice})
                     "
-                    aria-label="
-                        Ver resultado ${indice + 1}
-                    "
+                    data-mass-result-number="${indice + 1}"
+                    aria-label="Ver resultado ${indice + 1}"
                     aria-current="
                         ${indice === 0 ? "true" : "false"}
                     "
@@ -14380,7 +14364,7 @@ async function cargarResultadosPublicos(){
                     mass-resultados-anterior
                 "
                 onclick="cambiarResultadoPublico(-1)"
-                aria-label="Resultado anterior"
+                data-mass-aria aria-label="Resultado anterior"
             >
                 ‹
             </button>
@@ -14396,7 +14380,7 @@ async function cargarResultadosPublicos(){
                     mass-resultados-siguiente
                 "
                 onclick="cambiarResultadoPublico(1)"
-                aria-label="Resultado siguiente"
+                data-mass-aria aria-label="Resultado siguiente"
             >
                 ›
             </button>
@@ -60807,7 +60791,7 @@ async function apartarBoletosInterno() {
     );
 
     alert(
-      "❌ No fue posible reservar los boletos.\n\n" +
+      massTexto("❌ No fue posible reservar los boletos.") + "\n\n" +
       (error.message || "")
     );
 
@@ -60878,7 +60862,7 @@ async function apartarBoletosInterno() {
   if (seleccionTexto) {
 
     seleccionTexto.innerHTML =
-      "Selecciona un número disponible";
+      "<span data-mass-ui>Selecciona un número disponible</span>";
 
   }
 
@@ -61389,7 +61373,7 @@ async function comprarConSaldo() {
     if (seleccionTexto) {
 
       seleccionTexto.innerHTML =
-        "Selecciona un número disponible";
+        "<span data-mass-ui>Selecciona un número disponible</span>";
     }
 
 
@@ -65012,7 +64996,7 @@ cantidadPuntoMass =
     );
 
     alert(
-      "Error al subir comprobante ❌\n\n" +
+      massTexto("Error al subir comprobante ❌") + "\n\n" +
       uploadError.message
     );
 
@@ -65497,8 +65481,7 @@ console.log("ORGANIZADOR BUSCADO:", organizadorId);
     const saldoBox = document.getElementById("saldoBox");
 
     if (saldoBox) {
-        saldoBox.innerText =
-            "💰 Selecciona un organizador para consultar tu saldo MASS.";
+        saldoBox.innerHTML = "<span data-mass-ui>💰 Selecciona un organizador para consultar tu saldo MASS.</span>";
     }
 
     console.warn("No hay organizador seleccionado. Se cancela cargarSaldo().");
@@ -65527,27 +65510,12 @@ console.log("ORGANIZADOR BUSCADO:", organizadorId);
       : ""
   );
 
-if (!data) {
-  document.getElementById("saldoBox").innerText =
-    "💰 Saldo disponible con este organizador: 0 MASS" +
-    (
-      unidadMassMostrar
-        ? ` ${unidadMassMostrar}`
-        : ""
-    );
-
-  return;
-}
-
-document.getElementById("saldoBox").innerText =
-  "💰 Saldo disponible con este organizador: " +
-  data.saldo +
-  " MASS" +
-  (
-    unidadMassMostrar
-      ? ` ${unidadMassMostrar}`
-      : ""
-  );
+  const saldoBox = document.getElementById("saldoBox");
+  const etiquetaSaldo = document.createElement("span");
+  etiquetaSaldo.dataset.massUi = "";
+  etiquetaSaldo.textContent = "💰 Saldo disponible con este organizador:";
+  const unidad = unidadMassMostrar ? " MASS " + unidadMassMostrar : " MASS";
+  saldoBox.replaceChildren(etiquetaSaldo, " " + (data?.saldo ?? 0) + unidad);
 }
 
 function limpiarMetodosPago() {
@@ -88084,12 +88052,12 @@ async function irPaginaBoletos() {
 
   document.getElementById("seleccionTexto").innerHTML =
   boletosSeleccionados.length
-    ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
+    ? "<span data-mass-ui>Boletos seleccionados:</span><br>" + boletosSeleccionados.map(x => `
         <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
           ${x.numero} ❌
         </button>
       `).join("")
-    : "Selecciona un número disponible";
+    : "<span data-mass-ui>Selecciona un número disponible</span>";
 
 	actualizarResumenCompra();
 
@@ -88105,12 +88073,12 @@ function quitarBoletoSeleccionado(id){
 
   document.getElementById("seleccionTexto").innerHTML =
     boletosSeleccionados.length
-      ? "Boletos seleccionados:<br>" + boletosSeleccionados.map(x => `
+      ? "<span data-mass-ui>Boletos seleccionados:</span><br>" + boletosSeleccionados.map(x => `
           <button onclick="quitarBoletoSeleccionado('${x.id}')" style="margin:4px;">
             ${x.numero} ❌
           </button>
         `).join("")
-      : "Selecciona un número disponible";
+      : "<span data-mass-ui>Selecciona un número disponible</span>";
 	
 	actualizarResumenCompra();
 
@@ -89682,7 +89650,7 @@ async function numeroSuerte(cantidad = 1) {
     if (seleccionTexto) {
 
       seleccionTexto.innerHTML =
-        "Boletos seleccionados:<br>" +
+        "<span data-mass-ui>Boletos seleccionados:</span><br>" +
 
         boletosSeleccionados
           .map(
@@ -115878,8 +115846,8 @@ async function completarVerificacionInicialMassIdSeguro({
     if (!correoConfirmado) {
 
       alert(
-        "📧 Primero debes confirmar tu correo electrónico.\n\n" +
-        "Revisa tu bandeja de entrada y vuelve a iniciar sesión."
+        massTexto("📧 Primero debes confirmar tu correo electrónico.") + "\n\n" +
+        massTexto("Revisa tu bandeja de entrada y vuelve a iniciar sesión.")
       );
 
 
@@ -118346,7 +118314,7 @@ font-family:Arial, sans-serif;">
   Una cuenta para acceder a todo el ecosistema MASS
 </p>
 <div class="mass-language-control">
-  <label>Idioma / Language
+  <label><span data-mass-ui>Idioma</span>
     <select data-mass-language dir="ltr">
       <option value="es" lang="es">Español</option>
       <option value="en" lang="en">English</option>
