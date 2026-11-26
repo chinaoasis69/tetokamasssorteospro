@@ -1141,6 +1141,14 @@ button{cursor:pointer}
 </style>
 <link rel="stylesheet" href="/tokayo.css">
 <script defer src="/tokayo.js"></script>
+<script defer src="/sorteo-externo-ganadores.js"></script>
+<style>
+#panelResultadoExterno[hidden], #panelResultadoExterno label[hidden] { display: none; }
+#panelResultadoExterno { overflow-wrap: anywhere; }
+#panelResultadoExterno label { display: block; margin: 12px 0; }
+#panelResultadoExterno input:not([type="checkbox"]) { display: block; box-sizing: border-box; width: 100%; margin: 6px 0 0; }
+#panelResultadoExterno input[type="checkbox"] { width: auto; margin-inline-start: 8px; }
+</style>
 </head>
 
 <body>
@@ -27814,6 +27822,8 @@ async function mostrarGanadoresAdmin() {
       </select>
     </div>
 
+    <section class="form-section" id="panelResultadoExterno" aria-live="polite" hidden></section>
+
     <div class="form-section">
       <label>🎁 Premio</label>
       <select id="ganadorPremio">
@@ -28874,6 +28884,8 @@ async function manejarCambioSorteoGanador(){
 
     const rifaSelect =
         document.getElementById("ganadorRifa");
+
+    window.mostrarResultadoExternoGanadores?.(rifaSelect);
 
     const opcionSeleccionada =
         rifaSelect.options[
