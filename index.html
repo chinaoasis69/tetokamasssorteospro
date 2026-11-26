@@ -2841,6 +2841,11 @@ Cargando historial...
         <p>Abre <strong>Mis Premios → Ver mis premios</strong> y localiza el premio de MASS Lucky Spin. Si figura como <strong>Premio pendiente de canje</strong>, presenta al organizador el QR que aparece en la tarjeta para recibirlo. Si ganaste un <strong>Boleto Gratis MASS</strong>, se entrega automáticamente y puedes consultar su número en <strong>Mis boletos</strong>.</p>
       </details>
       <details>
+        <summary data-tokayo-claves="resultado oficial pick3 pick 3 texas lotería nacional terminación número sin vender sin titular boleto coincidencia">¿Cómo sé si mi boleto coincide con el resultado de Pick 3 Texas o Lotería Nacional?</summary>
+        <p>Consulta en las reglas de tu rifa la edición y cuántas cifras cuentan. El organizador registra el número oficial completo y su fuente. MASS compara las últimas cifras indicadas con los boletos participantes al cierre. Por ejemplo, si cuentan dos cifras y el resultado es 007, la terminación es 07.</p>
+        <p>Si hay coincidencia, consulta el ganador cuando el organizador lo publique en <strong>Ganadores</strong>. Si ningún boleto coincide, las ventas siguen cerradas. Consulta las reglas de esa rifa para conocer el siguiente paso.</p>
+      </details>
+      <details>
         <summary>¿Dónde veo los ganadores y cómo confirmo que recibí mi premio del sorteo?</summary>
         <p>En <strong>Ganadores → Historial de ganadores</strong>, consulta los resultados publicados por el organizador. Si ganaste, entra a <strong>Mis Premios → Ver mis premios</strong> y revisa el estado de entrega del premio.</p>
         <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
@@ -2932,8 +2937,17 @@ Cargando historial...
           <p>Abre <strong>Sorteos y premios → Canjear QR MASS Lucky Spin → Iniciar cámara</strong>. Apunta al QR y revisa el premio y su estado. Al entregar el premio, pulsa <strong>Confirmar entrega del premio</strong> si está disponible. Escanear el QR solo abre la consulta.</p>
         </details>
         <details>
+          <summary data-tokayo-claves="capturar ingresar introduzco registrar número ganador oficial pick3 pick 3 texas lotería nacional enlace fuente edición fijar sin vender">¿Dónde registro el número oficial de Pick 3 Texas o Lotería Nacional?</summary>
+          <ol>
+            <li>En <strong>Reglas oficiales → Plantilla guiada MASS → 5. Método de selección del ganador</strong>, indica la edición, fecha, hora, zona horaria, cifras y qué ocurrirá si ningún boleto coincide. Publica las reglas.</li>
+            <li>Antes del cierre de ventas, entra en <strong>Sorteos y premios → Ganadores</strong>, selecciona la rifa y abre <strong>Resultado oficial del sorteo</strong>. Comprueba los datos y pulsa <strong>Fijar edición del sorteo</strong>. La edición queda fija.</li>
+            <li>Cuando el padrón esté sellado, se haya alcanzado el mínimo y llegue la hora del sorteo, escribe el número completo con sus ceros iniciales y el enlace HTTPS a la fuente oficial. Revisa ambos antes de pulsar <strong>Registrar resultado oficial</strong>.</li>
+          </ol>
+          <p>MASS compara la terminación configurada con los boletos participantes al cierre. Si coincide, publica el ganador en un paso posterior. Si ningún boleto coincide, las ventas siguen cerradas.</p>
+        </details>
+        <details>
           <summary>¿Cómo publico un ganador?</summary>
-          <p>Abre <strong>Sorteos y premios → Ganadores</strong>. Elige primero el sorteo y después el premio. Si el resultado es manual, captura el número ganador. Si es automático, espera el resultado oficial que muestra la app. Revisa los datos y, cuando esté disponible, pulsa <strong>Publicar ganador</strong>. Los participantes pueden consultar la sección <strong>Ganadores</strong>.</p>
+          <p>Abre <strong>Sorteos y premios → Ganadores</strong>. Elige primero el sorteo y después el premio. Para Pick 3 Texas o Lotería Nacional, registra primero el resultado en <strong>Resultado oficial del sorteo</strong> y comprueba que hay un boleto coincidente. Para otros métodos manuales, captura el número ganador. Si es automático, espera el resultado oficial que muestra la app. Revisa los datos y, cuando esté disponible, pulsa <strong>Publicar ganador</strong>. Los participantes pueden consultar la sección <strong>Ganadores</strong>.</p>
         </details>
         <details>
           <summary data-tokayo-claves="registrar patrocinador alta negocio patrocinio agregar patrocinador">¿Cómo muestro un patrocinador en una rifa?</summary>
@@ -21752,6 +21766,9 @@ const dinamicaMetodoSorteoTexto =
         : "Método configurado";
 
 
+const usaResultadoExterno = ["pick 3 texas", "lotería nacional", "loteria nacional"]
+    .includes(dinamicaMetodoSorteo.toLowerCase());
+
 const dinamicaCifrasSorteoTexto =
     dinamicaCifrasSorteo > 0
         ? (
@@ -22376,6 +22393,10 @@ window.actualizarSeleccionPlantillaV2 = function () {
         } else {
 
             texto += ".";
+        }
+
+        if (usaResultadoExterno) {
+            texto += " Antes del cierre de ventas, el organizador fijará la edición indicada en estas reglas. Una vez sellado el padrón y llegada la hora del sorteo, registrará el número oficial completo, incluidos los ceros iniciales, y el enlace a la fuente oficial. MASS comparará la terminación con los boletos participantes al cierre. Si coincide, la publicación del ganador se hará por separado. Si ningún boleto coincide, las ventas seguirán cerradas y se aplicará lo previsto en estas reglas.";
         }
     }
 
@@ -24201,6 +24222,7 @@ if (textoPersonalizado) {
         >
             Selecciona cómo se describirá el método para determinar al ganador.
             MASS puede utilizar automáticamente la configuración actual de esta dinámica.
+            ${usaResultadoExterno ? "Para este sorteo externo, elige el método configurado y completa el texto con la edición oficial, fecha, hora, zona horaria y qué ocurrirá si ningún boleto coincide. Publica las reglas y fija esa misma edición en Ganadores antes del cierre de ventas." : ""}
         </p>
 
         <div
