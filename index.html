@@ -2843,10 +2843,14 @@ Cargando historial...
       <details>
         <summary data-tokayo-claves="resultado oficial pick3 pick 3 texas lotería nacional terminación número sin vender sin titular boleto coincidencia">¿Cómo sé si mi boleto coincide con el resultado de Pick 3 Texas o Lotería Nacional?</summary>
         <p>Consulta en las reglas de tu rifa la edición y cuántas cifras cuentan. El organizador registra el número oficial completo y su fuente. MASS compara las últimas cifras indicadas con los boletos participantes al cierre. Por ejemplo, si cuentan dos cifras y el resultado es 007, la terminación es 07.</p>
-        <p>Si hay coincidencia, consulta el ganador cuando el organizador lo publique en <strong>Ganadores</strong>. Si ningún boleto coincide, las ventas siguen cerradas. Consulta las reglas de esa rifa para conocer el siguiente paso.</p>
+        <p>Si hay coincidencia, consulta el ganador cuando el organizador lo publique en <strong>Ganadores</strong>. Si se alcanzó el mínimo y ningún boleto coincide, el organizador reprogramará la rifa. Tu boleto participante conserva su validez para la siguiente fecha sin pagar de nuevo.</p>
       </details>
       <details>
-        <summary>¿Dónde veo los ganadores y cómo confirmo que recibí mi premio del sorteo?</summary>
+        <summary data-tokayo-claves="reprogramación reprogramar reprogramada nueva fecha seguir vendiendo vendidos participan sin vender no salió ganador">¿Qué pasa con mi boleto si no sale un número ganador y se reprograma el sorteo?</summary>
+          <p>Si se alcanzó el mínimo y el número oficial salió sin titular, el organizador reprogramará la misma rifa. Tu boleto vendido y participante sigue en la siguiente fecha sin otra compra. Si las reglas publicadas antes de la primera venta y la mecánica autorizada lo permiten, el organizador puede ofrecer los números disponibles. Quienes compren en esa etapa participan desde el siguiente sorteo.</p>
+        </details>
+        <details>
+          <summary>¿Dónde veo los ganadores y cómo confirmo que recibí mi premio del sorteo?</summary>
         <p>En <strong>Ganadores → Historial de ganadores</strong>, consulta los resultados publicados por el organizador. Si ganaste, entra a <strong>Mis Premios → Ver mis premios</strong> y revisa el estado de entrega del premio.</p>
         <p>Cuando la tarjeta te permita responder, confirma la recepción solo después de recibir el premio. Si la entrega aparece reportada y sigues esperando, usa <strong>No recibí mi premio</strong> cuando se muestre esa opción.</p>
       </details>
@@ -2943,7 +2947,11 @@ Cargando historial...
             <li>Antes del cierre de ventas, entra en <strong>Sorteos y premios → Ganadores</strong>, selecciona la rifa y abre <strong>Resultado oficial del sorteo</strong>. Comprueba los datos y pulsa <strong>Fijar edición del sorteo</strong>. La edición queda fija.</li>
             <li>Cuando el padrón esté sellado, se haya alcanzado el mínimo y llegue la hora del sorteo, escribe el número completo con sus ceros iniciales y el enlace HTTPS a la fuente oficial. Revisa ambos antes de pulsar <strong>Registrar resultado oficial</strong>.</li>
           </ol>
-          <p>MASS compara la terminación configurada con los boletos participantes al cierre. Si coincide, publica el ganador en un paso posterior. Si ningún boleto coincide, las ventas siguen cerradas.</p>
+          <p>MASS compara la terminación configurada con los boletos participantes al cierre. Si coincide, publica el ganador en un paso posterior. Si se alcanzó el mínimo y ningún boleto coincide, conserva el resultado oficial y comunica la nueva fecha. Los boletos participantes siguen vigentes.</p>
+        </details>
+        <details>
+          <summary data-tokayo-claves="reprogramación reprogramar reprogramada nueva fecha seguir vendiendo vendidos participan sin vender no salió ganador">¿Puedo seguir vendiendo boletos disponibles si reprogramo por un número sin ganador?</summary>
+          <p>Si se alcanzó el mínimo de participación y el resultado oficial no coincide con ningún boleto participante al cierre, el organizador reprogramará la misma rifa para una nueva fecha. Los boletos vendidos que participaban en el sorteo anterior seguirán participando sin otro pago. Las ventas permanecerán cerradas salvo que la mecánica autorizada y las reglas publicadas antes de la primera venta permitan abrir una nueva etapa. Si el organizador abre esa etapa, solo podrán venderse los números disponibles. Esos boletos participarán a partir del siguiente sorteo.</p>
         </details>
         <details>
           <summary>¿Cómo publico un ganador?</summary>
@@ -22396,7 +22404,7 @@ window.actualizarSeleccionPlantillaV2 = function () {
         }
 
         if (usaResultadoExterno) {
-            texto += " Antes del cierre de ventas, el organizador fijará la edición indicada en estas reglas. Una vez sellado el padrón y llegada la hora del sorteo, registrará el número oficial completo, incluidos los ceros iniciales, y el enlace a la fuente oficial. MASS comparará la terminación con los boletos participantes al cierre. Si coincide, la publicación del ganador se hará por separado. Si ningún boleto coincide, las ventas seguirán cerradas y se aplicará lo previsto en estas reglas.";
+            texto += " Antes del cierre de ventas, el organizador fijará la edición indicada en estas reglas. Una vez sellado el padrón y llegada la hora del sorteo, registrará el número oficial completo, incluidos los ceros iniciales, y el enlace a la fuente oficial. MASS comparará la terminación con los boletos participantes al cierre. Si coincide, la publicación del ganador se hará por separado. Si se alcanzó el mínimo de participación y el resultado oficial no coincide con ningún boleto participante al cierre, el organizador reprogramará la misma rifa para una nueva fecha. Los boletos vendidos que participaban en el sorteo anterior seguirán participando sin otro pago. Las ventas permanecerán cerradas salvo que la mecánica autorizada y las reglas publicadas antes de la primera venta permitan abrir una nueva etapa. Si el organizador abre esa etapa, solo podrán venderse los números disponibles. Esos boletos participarán a partir del siguiente sorteo.";
         }
     }
 
@@ -24222,7 +24230,7 @@ if (textoPersonalizado) {
         >
             Selecciona cómo se describirá el método para determinar al ganador.
             MASS puede utilizar automáticamente la configuración actual de esta dinámica.
-            ${usaResultadoExterno ? "Para este sorteo externo, elige el método configurado y completa el texto con la edición oficial, fecha, hora, zona horaria y qué ocurrirá si ningún boleto coincide. Publica las reglas y fija esa misma edición en Ganadores antes del cierre de ventas." : ""}
+            ${usaResultadoExterno ? "Para este sorteo externo, elige el método configurado y completa el texto con la edición oficial, fecha, hora y zona horaria. Indica expresamente si, en caso de reprogramación, las ventas permanecerán cerradas o si el organizador podrá volver a ofrecer los números disponibles. Publica las reglas y fija esa misma edición en Ganadores antes del cierre de ventas." : ""}
         </p>
 
         <div
